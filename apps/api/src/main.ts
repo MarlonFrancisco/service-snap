@@ -1,6 +1,6 @@
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import express from 'express';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './modules/app.module';
 
 let cachedApp: INestApplication | null = null;
@@ -15,22 +15,15 @@ export async function createApp(): Promise<INestApplication> {
     return cachedApp;
   }
 
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true preserva os bytes originais para constructEvent da Stripe
+  // (não usar express.json custom — o parser do Nest já consome o stream).
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
+
+  app.useBodyParser('json', { limit: '10mb' });
 
   app.useGlobalPipes(new ValidationPipe());
-
-  // Um único parser JSON: captura rawBody no webhook (necessário para constructEvent)
-  // e aplica limite de payload para uploads nas demais rotas.
-  app.use(
-    express.json({
-      limit: '10mb',
-      verify: (req: express.Request & { rawBody?: Buffer }, _res, buf) => {
-        if (req.originalUrl === '/subscription/webhook') {
-          req.rawBody = buf;
-        }
-      },
-    }),
-  );
 
   app.getHttpAdapter().getInstance().set('trust proxy', true);
 

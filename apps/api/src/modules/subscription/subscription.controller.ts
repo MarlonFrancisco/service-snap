@@ -7,6 +7,7 @@ import {
   HttpCode,
   Patch,
   Post,
+  type RawBodyRequest,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -15,8 +16,6 @@ import type { JwtPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SubscriptionService } from './subscription.service';
-
-type StripeWebhookRequest = Request & { rawBody?: Buffer };
 
 @Controller('subscription')
 export class SubscriptionController {
@@ -59,7 +58,7 @@ export class SubscriptionController {
   @Post('webhook')
   @HttpCode(200)
   async webhook(
-    @Req() req: StripeWebhookRequest,
+    @Req() req: RawBodyRequest<Request>,
     @Headers('stripe-signature') signature: string,
   ) {
     return this.subscriptionService.webhook(req.rawBody, signature);
