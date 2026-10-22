@@ -5,6 +5,7 @@ import { AppModule } from './modules/app.module';
 
 let cachedApp: INestApplication | null = null;
 
+const isServeless = process.env.IS_SERVELESS === 'true';
 const isProduction = process.env.NODE_ENV === 'production';
 
 export async function createApp(): Promise<INestApplication> {
@@ -59,7 +60,7 @@ async function bootstrap() {
 }
 
 // Executa apenas se for o arquivo principal (não quando importado em serverless)
-if (!isProduction) {
+if (!isServeless) {
   void bootstrap();
 }
 

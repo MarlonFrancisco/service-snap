@@ -3,7 +3,7 @@
   "globalEnv": [
     "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
     "NEXT_PUBLIC_API_URL",
-    "NEXT_PUBLIC_APP_URL",
+    "NEXT_PUBLIC_CDN_URL",
     "VERCEL_AUTOMATION_API_BYPASS_SECRET",
     "FRONTEND_URL",
     "REDIS_HOST",
@@ -16,21 +16,16 @@
 
     "UPSTASH_SEARCH_REST_URL",
     "UPSTASH_SEARCH_REST_TOKEN",
-    "UPSTASH_DISABLE_TELEMETRY",
-
-    "TURBO_TELEMETRY_DISABLED",
-    "DO_NOT_TRACK",
 
     "NODE_ENV",
+    "IS_SERVELESS",
+    "PORT",
     "STRIPE_API_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "DB_URL",
     "DB_SYNCHRONIZE",
     "DB_LOGGING",
     "JWT_SECRET",
-    "AWS_ACCESS_KEY_ID",
-    "AWS_SECRET_ACCESS_KEY",
-    "AWS_REGION",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
 
@@ -51,7 +46,7 @@
       "env": [
         "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
         "NEXT_PUBLIC_API_URL",
-        "NEXT_PUBLIC_APP_URL",
+        "NEXT_PUBLIC_CDN_URL",
         "VERCEL_AUTOMATION_API_BYPASS_SECRET",
         "FRONTEND_URL",
         "REDIS_HOST",
@@ -62,20 +57,23 @@
         "SUPABASE_URL",
         "SUPABASE_API_KEY",
 
+        "UPSTASH_SEARCH_REST_URL",
+        "UPSTASH_SEARCH_REST_TOKEN",
+
         "NODE_ENV",
+        "IS_SERVELESS",
+        "PORT",
         "STRIPE_API_KEY",
         "STRIPE_WEBHOOK_SECRET",
         "DB_URL",
         "DB_SYNCHRONIZE",
         "DB_LOGGING",
         "JWT_SECRET",
-        "AWS_ACCESS_KEY_ID",
-        "AWS_SECRET_ACCESS_KEY",
-        "AWS_REGION",
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
 
-        "SENDGRID_API_KEY"
+        "SENDGRID_API_KEY",
+        "WHATSAPP_VERIFY_TOKEN"
       ]
     },
     "lint": {}
