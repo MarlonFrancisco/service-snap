@@ -1,3 +1,9 @@
+## 0.12.1 (2026-10-22)
+
+### Fix
+
+- **api**: require existing Stripe customer on subscription create
+
 ## 0.12.0 (2026-10-22)
 
 ### Feat
