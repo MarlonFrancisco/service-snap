@@ -1,4 +1,5 @@
 import { useStoreMemberMutations } from '@/hooks/partner/store/use-store-member-mutations/use-store-member-mutations.hook';
+import { useStoreMembersQuery } from '@/hooks/use-query/use-store-members-query';
 import { useStoresStore } from '@/store';
 import { IProfessional } from '@/types/api';
 import { useCallback } from 'react';
@@ -11,8 +12,12 @@ export const useProfessionalTab = () => {
   const { setIsAddProfessional } = useStoresStore();
 
   const form = useFormContext<TStoreFormSchema>();
+  const storeId = form.watch('id');
 
-  const professionals = form.watch('storeMembers');
+  const { storeMembers, isPendingStoreMembers } = useStoreMembersQuery({
+    storeId,
+    enabled: !!storeId,
+  });
 
   const handleAddProfessional = useCallback(
     (professional?: IProfessional) => {
@@ -23,52 +28,41 @@ export const useProfessionalTab = () => {
 
   const handleDeleteProfessional = useCallback(
     (professionalId: string) => {
+      if (!storeId) return;
+
       deleteStoreMemberMutation.mutate(
         {
-          storeId: form.getValues('id')!,
+          storeId,
           professionalId,
         },
         {
           onSuccess: () => {
-            const updatedProfessionals = professionals.filter(
-              (professional) => professional.id !== professionalId,
-            );
-            form.setValue('storeMembers', updatedProfessionals);
             setIsAddProfessional({ isOpen: false });
           },
         },
       );
     },
-    [professionals, form, deleteStoreMemberMutation, setIsAddProfessional],
+    [storeId, deleteStoreMemberMutation, setIsAddProfessional],
   );
 
   const handleToggleProfessionalStatus = useCallback(
-    async (professional: IProfessional) => {
-      updateStoreMemberMutation.mutate(
-        {
-          storeId: form.getValues('id')!,
-          professional: {
-            id: professional.id,
-            isActive: !professional.isActive,
-          },
+    (professional: IProfessional) => {
+      if (!storeId) return;
+
+      updateStoreMemberMutation.mutate({
+        storeId,
+        professional: {
+          id: professional.id,
+          isActive: !professional.isActive,
         },
-        {
-          onSuccess: () => {
-            const updatedProfessionals = professionals.map((professional) =>
-              professional.id === professional.id
-                ? { ...professional, isActive: !professional.isActive }
-                : professional,
-            );
-            form.setValue('storeMembers', updatedProfessionals);
-          },
-        },
-      );
+      });
     },
-    [professionals, form, updateStoreMemberMutation],
+    [storeId, updateStoreMemberMutation],
   );
 
   return {
-    professionals,
+    professionals: storeMembers,
+    isLoadingProfessionals: !!storeId && isPendingStoreMembers,
     handleAddProfessional,
     handleDeleteProfessional,
     handleToggleProfessionalStatus,

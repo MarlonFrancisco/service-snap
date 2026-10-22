@@ -1,6 +1,6 @@
 import { useStoreMemberMutations } from '@/hooks/partner/store/use-store-member-mutations/use-store-member-mutations.hook';
 import { useServicesStore, useStoresStore } from '@/store';
-import { IProfessional, IUser } from '@/types/api';
+import { IUser } from '@/types/api';
 import { IService } from '@/types/api/service.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useIsMobile } from '@repo/ui/index';
@@ -82,15 +82,7 @@ export const useAddProfessionalModal = () => {
           },
         },
         {
-          onSuccess: (prof: IProfessional) => {
-            const oldProfessionals = storeForm.getValues('storeMembers');
-
-            const professionals = isEditing
-              ? oldProfessionals.map((p) => (p.id === prof.id ? prof : p))
-              : [...oldProfessionals, prof];
-
-            storeForm.setValue('storeMembers', professionals);
-
+          onSuccess: () => {
             setIsAddProfessional({ isOpen: false });
           },
         },

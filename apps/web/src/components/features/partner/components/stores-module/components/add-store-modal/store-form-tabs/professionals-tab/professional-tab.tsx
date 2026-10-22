@@ -1,5 +1,5 @@
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
-import { Badge, Button, TabsContent } from '@repo/ui';
+import { Badge, Button, Spinner, TabsContent } from '@repo/ui';
 import {
   Calendar,
   Edit,
@@ -22,6 +22,7 @@ import { useProfessionalTab } from './professional-tab.hook';
 export const ProfessionalTab = () => {
   const {
     professionals,
+    isLoadingProfessionals,
     handleAddProfessional,
     handleDeleteProfessional,
     handleToggleProfessionalStatus,
@@ -33,14 +34,17 @@ export const ProfessionalTab = () => {
         <div>
           <h3 className="text-sm text-gray-900">Equipe da Loja</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            {professionals.length}{' '}
-            {professionals.length === 1 ? 'colaborador' : 'colaboradores'}{' '}
-            cadastrados
+            {isLoadingProfessionals
+              ? 'Carregando colaboradores...'
+              : `${professionals.length} ${
+                  professionals.length === 1 ? 'colaborador' : 'colaboradores'
+                } cadastrados`}
           </p>
         </div>
         <Button
           size="sm"
           onClick={() => handleAddProfessional()}
+          disabled={isLoadingProfessionals}
           className="bg-gray-900 hover:bg-gray-800 text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
         >
           <UserPlus className="h-4 w-4 mr-2" />
@@ -48,7 +52,11 @@ export const ProfessionalTab = () => {
         </Button>
       </div>
 
-      {professionals.length > 0 ? (
+      {isLoadingProfessionals ? (
+        <div className="flex items-center justify-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+          <Spinner />
+        </div>
+      ) : professionals.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {professionals.map((professional) => {
             const RoleIcon = getRoleIcon(professional.role);

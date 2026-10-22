@@ -36,6 +36,7 @@ export const CACHE_QUERY_KEYS = {
   plans: (currency: TCurrencyCode) => ['plans', { currency }],
   currentPlan: () => ['subscription/current-plan'],
   stores: () => ['partner/stores'],
+  storeMembers: (storeId: string) => [`partner/stores/${storeId}/members`],
   schedules: (storeId: string) => [`partner/schedules/${storeId}`],
   blockedTimes: (storeId: string) => [
     `partner/schedules/blocked-times/${storeId}`,

@@ -35,7 +35,6 @@ import {
   Phone,
   Play,
   Trash2,
-  Users,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
@@ -141,11 +140,6 @@ export const StoreCard = ({ store, index }: TStoreCardConfig) => {
                     {orderedGallery.length}
                   </Badge>
                 )}
-
-                <Badge className="bg-white/95 text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-md text-xs ml-auto">
-                  <Users className="h-3 w-3 mr-1" />
-                  {store.storeMembers.length}
-                </Badge>
               </div>
             </div>
 
@@ -244,11 +238,6 @@ export const StoreCard = ({ store, index }: TStoreCardConfig) => {
                     {orderedGallery.length}
                   </Badge>
                 )}
-
-                <Badge className="bg-white/95 text-gray-900 border-gray-200/50 backdrop-blur-sm shadow-md text-xs ml-auto">
-                  <Users className="h-3 w-3 mr-1" />
-                  {store.storeMembers.length}
-                </Badge>
               </div>
             </div>
 
