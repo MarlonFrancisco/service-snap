@@ -35,7 +35,6 @@ export class SubscriptionController {
     @CurrentUser() user: JwtPayload,
   ) {
     return this.subscriptionService.create(
-      user.sub,
       body.priceId,
       user.paymentCustomerId,
       body.currency,

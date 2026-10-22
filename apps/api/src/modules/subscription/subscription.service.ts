@@ -191,7 +191,6 @@ export class SubscriptionService {
    * @returns Checkout session URL
    */
   async create(
-    userId: string,
     priceId: string,
     paymentCustomerId: string,
     expectedCurrency?: string,
@@ -211,20 +210,9 @@ export class SubscriptionService {
       );
     }
 
-    let hasSubscription = false;
-
-    if (!paymentCustomerId) {
-      const user = await this.userService.findById(userId);
-      paymentCustomerId = await this.userService.createStripeCustomer(user);
-      user.paymentCustomerId = paymentCustomerId;
-      await this.userService.update(user.id, user);
-      hasSubscription = true;
-    } else {
-      const subscription = await this.subscriptionRepository.findOne({
-        where: { user: { paymentCustomerId } },
-      });
-      hasSubscription = !!subscription;
-    }
+    const hasSubscription = await this.subscriptionRepository.findOne({
+      where: { user: { paymentCustomerId } },
+    });
 
     const trialPeriodDays = parseInt(product.metadata.TRIAL_PERIOD_DAYS || '0');
 
