@@ -1,5 +1,7 @@
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   Logger,
@@ -10,8 +12,10 @@ import { In, MoreThanOrEqual, type Repository } from 'typeorm';
 
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import type { Cache } from 'cache-manager';
 import Stripe from 'stripe';
 import {
+  getSubscriptionIdFromInvoice,
   getSubscriptionPeriodDate,
   normalizeSubscriptionMetadata,
 } from '../../utils';
@@ -26,6 +30,9 @@ import { CustomerSubscriptionUpdateDto } from './dto/customer-subscription-updat
 import { Subscription } from './subscription.entity';
 import { TSubscriptionStatus } from './subscription.types';
 
+/** Stripe retenta webhooks por ~3 dias; TTL cobre retries sem acumular chaves. */
+const WEBHOOK_EVENT_TTL_MS = 72 * 60 * 60 * 1000;
+
 @Injectable()
 export class SubscriptionService {
   private readonly logger = new Logger(SubscriptionService.name);
@@ -39,6 +46,7 @@ export class SubscriptionService {
     private readonly storesService: StoresService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   async cancel(userId: string) {
@@ -304,6 +312,13 @@ export class SubscriptionService {
         relations: ['user'],
       });
 
+      if (!subscription) {
+        this.logger.warn(
+          `[handleCustomerSubscriptionUpdated] Subscription not found: ${customerSubscription.subscriptionId}`,
+        );
+        return;
+      }
+
       const productDetails = await this.stripeService.products.retrieve(
         customerSubscription.productId,
       );
@@ -342,10 +357,40 @@ export class SubscriptionService {
     }
   }
 
+  async handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
+    if (session.mode !== 'subscription') {
+      this.logger.log(
+        `[webhook] Ignoring non-subscription checkout ${session.id}`,
+      );
+      return;
+    }
+
+    if (
+      session.payment_status !== 'paid' &&
+      session.payment_status !== 'no_payment_required'
+    ) {
+      this.logger.warn(
+        `[webhook] Checkout ${session.id} payment_status=${session.payment_status}; waiting for async payment`,
+      );
+      return;
+    }
+
+    // Fonte da verdade do registro local: customer.subscription.created / invoice.paid
+    this.logger.log(
+      `[webhook] Checkout session completed: ${session.id} (subscription=${session.subscription})`,
+    );
+  }
+
   async handleInvoicePaid(invoiceData: Stripe.InvoicePaidEvent.Data) {
     try {
-      const subscriptionId = invoiceData.object.parent.subscription_details
-        .subscription as string;
+      const subscriptionId = getSubscriptionIdFromInvoice(invoiceData.object);
+
+      if (!subscriptionId) {
+        this.logger.warn(
+          `[handleInvoicePaid] Invoice ${invoiceData.object.id} has no subscription parent; skipping`,
+        );
+        return;
+      }
 
       const subscription = await this.subscriptionRepository.findOne({
         where: { subscriptionId },
@@ -360,13 +405,18 @@ export class SubscriptionService {
         throw new NotFoundException('Subscription not found');
       }
 
-      const { currentPeriodEnd } = getSubscriptionPeriodDate(
-        invoiceData.object.lines.data[0].period.start,
-        invoiceData.object.lines.data[0].period.end,
-      );
+      const linePeriod = invoiceData.object.lines.data[0]?.period;
+      if (linePeriod) {
+        const { currentPeriodEnd } = getSubscriptionPeriodDate(
+          linePeriod.start,
+          linePeriod.end,
+        );
+        subscription.currentPeriodEnd = currentPeriodEnd;
+      }
 
-      subscription.status = invoiceData.object.status as TSubscriptionStatus;
-      subscription.currentPeriodEnd = currentPeriodEnd;
+      const stripeSubscription =
+        await this.stripeService.subscriptions.retrieve(subscriptionId);
+      subscription.status = stripeSubscription.status as TSubscriptionStatus;
 
       await this.subscriptionRepository.save(subscription);
 
@@ -384,7 +434,16 @@ export class SubscriptionService {
     event: Stripe.InvoicePaymentFailedEvent.Data,
   ) {
     try {
-      const { id: subscriptionId, attempt_count } = event.object;
+      const invoice = event.object;
+      const subscriptionId = getSubscriptionIdFromInvoice(invoice);
+      const { attempt_count } = invoice;
+
+      if (!subscriptionId) {
+        this.logger.warn(
+          `[handleInvoicePaymentFailed] Invoice ${invoice.id} has no subscription parent; skipping`,
+        );
+        return;
+      }
 
       const subscription = await this.subscriptionRepository.findOne({
         where: { subscriptionId },
@@ -398,13 +457,15 @@ export class SubscriptionService {
         throw new NotFoundException('Subscription not found');
       }
 
-      subscription.status = event.object.status as TSubscriptionStatus;
+      const stripeSubscription =
+        await this.stripeService.subscriptions.retrieve(subscriptionId);
+      subscription.status = stripeSubscription.status as TSubscriptionStatus;
 
       await this.subscriptionRepository.save(subscription);
 
       await this.notificationService.paymentFailed(
         subscription.user.email,
-        subscriptionId,
+        invoice.id,
         attempt_count,
       );
     } catch (error) {
@@ -412,7 +473,7 @@ export class SubscriptionService {
     }
   }
 
-  async webhook(event: Stripe.Event, signature: string) {
+  async webhook(rawBody: Buffer | undefined, signature: string) {
     const webhookSecret = this.configService.get<string>(
       'STRIPE_WEBHOOK_SECRET',
     );
@@ -425,29 +486,61 @@ export class SubscriptionService {
       throw new BadRequestException('Missing stripe-signature header');
     }
 
-    const events = {
-      'checkout.session.completed': async () => {
-        this.logger.log(`[webhook] Checkout session completed: ${event.id}`);
-      },
-      'invoice.paid': async () =>
+    if (!rawBody?.length) {
+      throw new BadRequestException('Missing raw request body');
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      event = this.stripeService.webhooks.constructEvent(
+        rawBody,
+        signature,
+        webhookSecret,
+      );
+    } catch (error) {
+      this.logger.warn(
+        `[webhook] Signature verification failed: ${error instanceof Error ? error.message : error}`,
+      );
+      throw new BadRequestException('Invalid Stripe signature');
+    }
+
+    const cacheKey = `stripe:webhook:event:${event.id}`;
+    const alreadyProcessed = await this.cacheManager.get(cacheKey);
+
+    if (alreadyProcessed) {
+      this.logger.log(`[webhook] Duplicate event ${event.id}; skipping`);
+      return { received: true, duplicate: true };
+    }
+
+    const handlers: Record<string, () => Promise<unknown>> = {
+      'checkout.session.completed': () =>
+        this.handleCheckoutSessionCompleted(
+          event.data.object as Stripe.Checkout.Session,
+        ),
+      'checkout.session.async_payment_succeeded': () =>
+        this.handleCheckoutSessionCompleted(
+          event.data.object as Stripe.Checkout.Session,
+        ),
+      'invoice.paid': () =>
         this.handleInvoicePaid(event.data as Stripe.InvoicePaidEvent.Data),
-      'invoice.payment_failed': async () =>
+      'invoice.payment_failed': () =>
         this.handleInvoicePaymentFailed(
           event.data as Stripe.InvoicePaymentFailedEvent.Data,
         ),
-      'customer.subscription.created': async () =>
+      'customer.subscription.created': () =>
         this.handleCustomerSubscriptionCreated(
           CustomerSubscriptionCreatedDto.fromStripe(
             event.data as Stripe.CustomerSubscriptionCreatedEvent.Data,
           ),
         ),
-      'customer.subscription.updated': async () =>
+      'customer.subscription.updated': () =>
         this.handleCustomerSubscriptionUpdated(
           CustomerSubscriptionUpdateDto.fromStripe(
             event.data as Stripe.CustomerSubscriptionUpdatedEvent.Data,
           ),
         ),
-      'customer.subscription.deleted': async () => {
+      'customer.subscription.deleted': () => {
         const subscriptionId = (
           event.data
             .object as Stripe.CustomerSubscriptionDeletedEvent.Data['object']
@@ -457,6 +550,17 @@ export class SubscriptionService {
       },
     };
 
-    return await events[event.type]?.();
+    const handler = handlers[event.type];
+
+    if (!handler) {
+      this.logger.log(`[webhook] Unhandled event type: ${event.type}`);
+      return { received: true };
+    }
+
+    await handler();
+
+    await this.cacheManager.set(cacheKey, '1', WEBHOOK_EVENT_TTL_MS);
+
+    return { received: true };
   }
 }

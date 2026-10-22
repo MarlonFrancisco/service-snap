@@ -27,3 +27,14 @@ export const normalizeSubscriptionMetadata = (metadata: Stripe.Metadata) => {
     DASHBOARD_CUSTOMERS_ACCESS: metadata.DASHBOARD_CUSTOMERS_ACCESS === 'true',
   };
 };
+
+/** Extrai o subscription ID de um Invoice (API com `parent.subscription_details`). */
+export const getSubscriptionIdFromInvoice = (
+  invoice: Stripe.Invoice,
+): string | null => {
+  const subscription = invoice.parent?.subscription_details?.subscription;
+  if (!subscription) {
+    return null;
+  }
+  return typeof subscription === 'string' ? subscription : subscription.id;
+};

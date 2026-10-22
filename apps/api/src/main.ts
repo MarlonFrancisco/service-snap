@@ -1,6 +1,6 @@
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import express, { json } from 'express';
+import express from 'express';
 import { AppModule } from './modules/app.module';
 
 let cachedApp: INestApplication | null = null;
@@ -19,19 +19,18 @@ export async function createApp(): Promise<INestApplication> {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  const rawBodyMiddleware = express.json({
-    verify: (req: any, res, buf) => {
-      if (req.originalUrl === '/subscription/webhook') {
-        req.rawBody = buf;
-      }
-      return true;
-    },
-  });
-
-  app.use(rawBodyMiddleware);
-
-  // Aumenta o limite de payload para uploads de imagens (padrão: 100kb)
-  app.use(json({ limit: '10mb' }));
+  // Um único parser JSON: captura rawBody no webhook (necessário para constructEvent)
+  // e aplica limite de payload para uploads nas demais rotas.
+  app.use(
+    express.json({
+      limit: '10mb',
+      verify: (req: express.Request & { rawBody?: Buffer }, _res, buf) => {
+        if (req.originalUrl === '/subscription/webhook') {
+          req.rawBody = buf;
+        }
+      },
+    }),
+  );
 
   app.getHttpAdapter().getInstance().set('trust proxy', true);
 
