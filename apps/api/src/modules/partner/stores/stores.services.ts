@@ -19,7 +19,16 @@ export class StoresService {
   ) {}
 
   async create(storeDto: CreateStoreDto): Promise<Store> {
-    return this.storesRepository.save(storeDto);
+    const store = this.storesRepository.create(storeDto);
+    const savedStore = await this.storesRepository.save(store);
+
+    return {
+      ...savedStore,
+      gallery: [],
+      storeMembers: [],
+      services: [],
+      schedules: [],
+    };
   }
 
   async findAll(
