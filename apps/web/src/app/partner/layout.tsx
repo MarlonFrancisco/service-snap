@@ -20,6 +20,10 @@ export default async function PartnerLayout({ children }: PartnerLayoutProps) {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get('access_token')?.value;
 
+  if (!accessToken) {
+    redirect('/pricing');
+  }
+
   const { persistClient, restoreClient } =
     await createRedisPersister(queryClient);
 

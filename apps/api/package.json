@@ -13,10 +13,10 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
-    "migrate:stores-to-search": "ts-node -O '{\"module\":\"commonjs\"}' src/scripts/migrate-stores-to-search.ts",
-    "seed:stores:json": "ts-node -O '{\"module\":\"commonjs\"}' src/scripts/seed-stores.ts",
-    "reset:db": "ts-node -O '{\"module\":\"commonjs\"}' src/scripts/reset-db.ts",
-    "products:update": "ts-node -O '{\"module\":\"commonjs\"}' src/scripts/update-stripe-products-metadata.ts"
+    "migrate:stores-to-search": "ts-node --project tsconfig.scripts.json src/scripts/migrate-stores-to-search.ts",
+    "seed:stores:json": "ts-node --project tsconfig.scripts.json src/scripts/seed-stores.ts",
+    "reset:db": "ts-node --project tsconfig.scripts.json src/scripts/reset-db.ts",
+    "products:update": "ts-node --project tsconfig.scripts.json src/scripts/update-stripe-products-metadata.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

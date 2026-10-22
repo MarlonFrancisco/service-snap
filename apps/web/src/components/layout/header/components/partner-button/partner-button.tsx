@@ -14,7 +14,7 @@ export const PartnerButton = ({
     if (currentPlan?.isActive) {
       router.push('/partner');
     } else {
-      router.push('/partner/plans');
+      router.push('/pricing');
     }
   };
 

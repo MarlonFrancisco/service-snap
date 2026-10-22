@@ -9,6 +9,13 @@ async function migrateStoresToSearch() {
     token: process.env.UPSTASH_SEARCH_REST_TOKEN,
   });
 
+  try {
+    await searchClient.index('stores').deleteIndex();
+    console.log('Store index deleted');
+  } catch (error) {
+    console.log('Store index did not exist yet, continuing...');
+  }
+
   // Initialize database connection using pg client directly
   const pgClient = new Client(process.env.DB_URL);
 
