@@ -19,16 +19,7 @@ export class StoresService {
   ) {}
 
   async create(storeDto: CreateStoreDto): Promise<Store> {
-    const store = this.storesRepository.create(storeDto);
-    const savedStore = await this.storesRepository.save(store);
-
-    return {
-      ...savedStore,
-      gallery: [],
-      storeMembers: [],
-      services: [],
-      schedules: [],
-    };
+    return this.storesRepository.save(storeDto);
   }
 
   async findAll(
@@ -53,6 +44,7 @@ export class StoresService {
       where: { id, owner: { id: config.ownerId } },
       relations: config.relations,
       select: config.select,
+      relationLoadStrategy: 'query',
     });
 
     if (!store) {

@@ -99,7 +99,7 @@ export class StoreMemberService {
       storeMember.services = storeMemberDto.services as Service[];
     }
 
-    if (storeMemberDto.isActive) {
+    if (typeof storeMemberDto.isActive === 'boolean') {
       storeMember.isActive = storeMemberDto.isActive;
     }
 
