@@ -17,7 +17,7 @@ export const useStoreMemberMutations = () => {
       (old: IProfessional[] = []) => updater(old),
     );
 
-    // Agenda / partner store ativos leem `useStoreQuery` → activeStore.storeMembers
+    // Agenda lê `activeStore.storeMembers` via useStoreQuery
     queryClient.setQueryData(
       CACHE_QUERY_KEYS.store(storeId),
       (old: IStore | undefined) => {
