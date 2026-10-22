@@ -11,6 +11,13 @@ alwaysApply: true
 - Se a sessão estiver em `main` ou outra branch, fazer checkout de `release` antes de commitir.
 - Commits do dia a dia usam mensagens convencionais (`feat:`, `fix:`, `chore:`, etc.) — **não** rodar bump de versão a cada commit.
 
+## Escopo por app (obrigatório)
+
+- **Nunca** misturar mudanças de apps diferentes no mesmo commit (ex.: `apps/api` + `apps/web`).
+- Cada commit deve cobrir **um único escopo de aplicativo** (`api`, `web`, ou raiz compartilhada como `turbo.json` / `.cursor` / root config).
+- Se o trabalho tocar mais de um app, fazer **commits separados** (um por app), mesmo que façam parte da mesma feature.
+- Preferir o escopo Conventional Commits alinhado ao app: `fix(api): …`, `feat(web): …`, etc.
+
 ## Publicar uma nova versão
 
 Só quando o usuário pedir explicitamente para publicar / liberar versão:
