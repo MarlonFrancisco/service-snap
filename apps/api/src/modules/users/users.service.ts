@@ -51,6 +51,15 @@ export class UsersService {
     });
   }
 
+  async createStripeCustomer(userData: Partial<User>): Promise<string> {
+    const customer = await this.stripeService.customers.create({
+      email: userData.email,
+      name: `${userData.firstName} ${userData.lastName}`,
+      phone: userData.telephone,
+    });
+    return customer.id;
+  }
+
   async create(userData: Partial<User>): Promise<User> {
     const customer = await this.stripeService.customers.create({
       email: userData.email,
