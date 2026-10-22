@@ -1,12 +1,16 @@
 import { ValidationPipe, type INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { json, raw, urlencoded, type Request, type Response } from 'express';
 import { AppModule } from './modules/app.module';
 
 let cachedApp: INestApplication | null = null;
 
 const isServeless = process.env.IS_SERVELESS === 'true';
 const isProduction = process.env.NODE_ENV === 'production';
+
+/** Path do webhook Stripe — body deve permanecer bytes exatos (HMAC). */
+const STRIPE_WEBHOOK_PATH = '/subscription/webhook';
 
 export async function createApp(): Promise<INestApplication> {
   // Cache da app APENAS em produção serverless
@@ -15,29 +19,34 @@ export async function createApp(): Promise<INestApplication> {
     return cachedApp;
   }
 
-  // rawBody: true preserva os bytes originais para constructEvent da Stripe
-  // (não usar express.json custom — o parser do Nest já consome o stream).
+  // bodyParser: false — registramos parsers manualmente para o webhook
+  // receber Buffer bruto (Nest rawBody:true sozinho falha na Vercel: o JSON
+  // é re-serializado e o constructEvent rejeita a assinatura).
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    rawBody: true,
+    bodyParser: false,
   });
 
-  app.useBodyParser('json', { limit: '10mb' });
+  const http = app.getHttpAdapter().getInstance();
+
+  // raw ANTES do json — só nesta rota; req.body vira Buffer
+  http.use(
+    STRIPE_WEBHOOK_PATH,
+    raw({ type: 'application/json', limit: '10mb' }),
+  );
+  http.use(json({ limit: '10mb' }));
+  http.use(urlencoded({ extended: true, limit: '10mb' }));
 
   app.useGlobalPipes(new ValidationPipe());
 
-  app.getHttpAdapter().getInstance().set('trust proxy', true);
+  http.set('trust proxy', true);
 
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3001',
     credentials: true,
   });
 
-  // Global prefix para todas as rotas (opcional)
-  // app.setGlobalPrefix('api');
-
   await app.init();
 
-  // Cacheia somente em produção serverless
   if (isProduction) {
     cachedApp = app;
   }
@@ -51,10 +60,16 @@ async function bootstrap() {
   await app.listen(port);
 }
 
-// Executa apenas se for o arquivo principal (não quando importado em serverless)
 if (!isServeless) {
   void bootstrap();
 }
+
+/** Impede o @vercel/node de parsear o body (quebra assinatura Stripe). */
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function handler(req: Request, res: Response) {
   const app = await createApp();

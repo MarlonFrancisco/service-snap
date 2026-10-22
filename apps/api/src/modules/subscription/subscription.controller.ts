@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,7 +8,6 @@ import {
   HttpCode,
   Patch,
   Post,
-  type RawBodyRequest,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +16,20 @@ import type { JwtPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SubscriptionService } from './subscription.service';
+
+function getStripeWebhookRawBody(req: Request): Buffer {
+  // express.raw() nesta rota deixa req.body como Buffer
+  if (Buffer.isBuffer(req.body)) {
+    return req.body;
+  }
+  if (typeof req.body === 'string') {
+    return Buffer.from(req.body);
+  }
+  // Objeto JSON = body já foi parseado/re-serializado → assinatura inválida
+  throw new BadRequestException(
+    'Stripe webhook body was parsed as JSON; raw bytes are required',
+  );
+}
 
 @Controller('subscription')
 export class SubscriptionController {
@@ -58,9 +72,12 @@ export class SubscriptionController {
   @Post('webhook')
   @HttpCode(200)
   async webhook(
-    @Req() req: RawBodyRequest<Request>,
+    @Req() req: Request,
     @Headers('stripe-signature') signature: string,
   ) {
-    return this.subscriptionService.webhook(req.rawBody, signature);
+    return this.subscriptionService.webhook(
+      getStripeWebhookRawBody(req),
+      signature,
+    );
   }
 }
