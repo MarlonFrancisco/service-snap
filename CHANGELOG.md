@@ -1,3 +1,18 @@
+## 0.12.0 (2026-10-22)
+
+### Feat
+
+- **web**: load store members async from members endpoint
+
+### Fix
+
+- **web**: sync store cache on member mutations and harden members UI
+- **api**: restore empty relation arrays on store create
+- **api**: slim store list payload and fix member isActive updates
+- **api**: harden Stripe subscription webhook verification and handlers
+- **subscription**: create Stripe customer before checkout when missing
+- **web**: redirect unauthenticated partners to pricing
+
 ## 0.11.0 (2025-12-13)
 
 ### Feat
