@@ -24,7 +24,7 @@ export function useAgendaToolbar() {
     (state) => state.setSelectedProfessional,
   );
   const professionals = usePartnerStore(
-    (state) => state.activeStore.storeMembers,
+    (state) => state.activeStore.storeMembers || [],
   );
   const setIsAddAppointmentOpen = useAgendaStore(
     (state) => state.setIsAddAppointmentOpen,

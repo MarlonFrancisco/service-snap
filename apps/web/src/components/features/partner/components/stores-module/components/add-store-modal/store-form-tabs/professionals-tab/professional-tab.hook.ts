@@ -14,10 +14,11 @@ export const useProfessionalTab = () => {
   const form = useFormContext<TStoreFormSchema>();
   const storeId = form.watch('id');
 
-  const { storeMembers, isPendingStoreMembers } = useStoreMembersQuery({
-    storeId,
-    enabled: !!storeId,
-  });
+  const { storeMembers, isPendingStoreMembers, isError, refetch } =
+    useStoreMembersQuery({
+      storeId,
+      enabled: !!storeId,
+    });
 
   const handleAddProfessional = useCallback(
     (professional?: IProfessional) => {
@@ -63,6 +64,8 @@ export const useProfessionalTab = () => {
   return {
     professionals: storeMembers,
     isLoadingProfessionals: !!storeId && isPendingStoreMembers,
+    isErrorProfessionals: isError,
+    refetchProfessionals: refetch,
     handleAddProfessional,
     handleDeleteProfessional,
     handleToggleProfessionalStatus,

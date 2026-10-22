@@ -1,5 +1,6 @@
 import { StoreMembersService } from '@/service/store/store-members.service';
 import { IProfessional } from '@/types/api';
+import { IStore } from '@/types/api/stores.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -14,6 +15,21 @@ export const useStoreMemberMutations = () => {
     queryClient.setQueryData(
       CACHE_QUERY_KEYS.storeMembers(storeId),
       (old: IProfessional[] = []) => updater(old),
+    );
+
+    // Agenda / partner store ativos leem `useStoreQuery` → activeStore.storeMembers
+    queryClient.setQueryData(
+      CACHE_QUERY_KEYS.store(storeId),
+      (old: IStore | undefined) => {
+        if (!old) {
+          return old;
+        }
+
+        return {
+          ...old,
+          storeMembers: updater(old.storeMembers || []),
+        };
+      },
     );
   };
 

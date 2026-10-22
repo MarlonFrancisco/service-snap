@@ -23,6 +23,8 @@ export const ProfessionalTab = () => {
   const {
     professionals,
     isLoadingProfessionals,
+    isErrorProfessionals,
+    refetchProfessionals,
     handleAddProfessional,
     handleDeleteProfessional,
     handleToggleProfessionalStatus,
@@ -36,15 +38,17 @@ export const ProfessionalTab = () => {
           <p className="text-xs text-gray-500 mt-0.5">
             {isLoadingProfessionals
               ? 'Carregando colaboradores...'
-              : `${professionals.length} ${
-                  professionals.length === 1 ? 'colaborador' : 'colaboradores'
-                } cadastrados`}
+              : isErrorProfessionals
+                ? 'Não foi possível carregar a equipe'
+                : `${professionals.length} ${
+                    professionals.length === 1 ? 'colaborador' : 'colaboradores'
+                  } cadastrados`}
           </p>
         </div>
         <Button
           size="sm"
           onClick={() => handleAddProfessional()}
-          disabled={isLoadingProfessionals}
+          disabled={isLoadingProfessionals || isErrorProfessionals}
           className="bg-gray-900 hover:bg-gray-800 text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
         >
           <UserPlus className="h-4 w-4 mr-2" />
@@ -55,6 +59,21 @@ export const ProfessionalTab = () => {
       {isLoadingProfessionals ? (
         <div className="flex items-center justify-center py-12 bg-gray-50 rounded-lg border border-gray-200">
           <Spinner />
+        </div>
+      ) : isErrorProfessionals ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+          <Users className="h-12 w-12 text-gray-300 mx-auto" />
+          <p className="text-sm text-gray-600">
+            Erro ao carregar colaboradores desta loja
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => refetchProfessionals()}
+            className="border-gray-200"
+          >
+            Tentar novamente
+          </Button>
         </div>
       ) : professionals.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">

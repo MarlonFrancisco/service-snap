@@ -30,7 +30,7 @@ import {
 export const useAgendaDayView = () => {
   // Store selectors
   const professionals = usePartnerStore(
-    (state) => state.activeStore.storeMembers,
+    (state) => state.activeStore.storeMembers || [],
   );
   const days = useAgendaStore((state) => state.days);
   const weekDates = useAgendaStore(selectWeekDates);

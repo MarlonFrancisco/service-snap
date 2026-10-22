@@ -9,16 +9,25 @@ export const useStoreMembersQuery = ({
   storeId?: string;
   enabled?: boolean;
 }) => {
+  const canFetch = enabled && !!storeId;
+
   const {
     data: storeMembers = [],
     isPending: isPendingStoreMembers,
     isError,
     isFetching,
+    refetch,
   } = useQuery({
-    queryKey: CACHE_QUERY_KEYS.storeMembers(storeId || ''),
+    queryKey: CACHE_QUERY_KEYS.storeMembers(storeId!),
     queryFn: () => StoreMembersService.get(storeId!),
-    enabled: enabled && !!storeId,
+    enabled: canFetch,
   });
 
-  return { storeMembers, isPendingStoreMembers, isFetching, isError };
+  return {
+    storeMembers,
+    isPendingStoreMembers: canFetch && isPendingStoreMembers,
+    isFetching,
+    isError: canFetch && isError,
+    refetch,
+  };
 };

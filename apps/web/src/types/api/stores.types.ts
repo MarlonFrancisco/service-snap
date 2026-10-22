@@ -51,7 +51,8 @@ export interface IStore extends TWorkingHours {
   lunchStartTime: string;
   lunchEndTime: string;
   gallery: IStoreGallery[];
-  storeMembers: IProfessional[];
+  /** Ausente na listagem slim (`GET /partner/stores`); presente no detalhe / agenda. */
+  storeMembers?: IProfessional[];
   services: IService[];
   email?: string;
   website?: string;

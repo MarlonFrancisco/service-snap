@@ -60,9 +60,10 @@ export const useAddAppointment = () => {
     (state) => state.setIsAddAppointmentOpen,
   );
 
-  const { storeMembers: professionals, services } = usePartnerStore(
-    (state) => state.activeStore,
+  const professionals = usePartnerStore(
+    (state) => state.activeStore.storeMembers || [],
   );
+  const services = usePartnerStore((state) => state.activeStore.services || []);
 
   const { createAppointment, isCreatingAppointment } =
     useAddAppointmentMutations();

@@ -16,11 +16,11 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
           CACHE_QUERY_KEYS.store(storeId),
           (old: IStore) => ({
             ...old,
-            storeMembers: old.storeMembers.map((storeMember) =>
+            storeMembers: (old?.storeMembers || []).map((storeMember) =>
               storeMember.id === data.storeMember.id
                 ? {
                     ...storeMember,
-                    blockedTimes: [...storeMember.blockedTimes, data],
+                    blockedTimes: [...(storeMember.blockedTimes || []), data],
                   }
                 : storeMember,
             ),
@@ -47,11 +47,11 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
           CACHE_QUERY_KEYS.store(storeId),
           (old: IStore) => ({
             ...old,
-            storeMembers: old.storeMembers.map((storeMember) =>
+            storeMembers: (old?.storeMembers || []).map((storeMember) =>
               storeMember.id === data.storeMember.id
                 ? {
                     ...storeMember,
-                    blockedTimes: storeMember.blockedTimes.filter(
+                    blockedTimes: (storeMember.blockedTimes || []).filter(
                       (blockedTime) => blockedTime.id !== data.id,
                     ),
                   }
@@ -89,11 +89,11 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
         CACHE_QUERY_KEYS.store(storeId),
         (old: IStore) => ({
           ...old,
-          storeMembers: old.storeMembers.map((storeMember) =>
+          storeMembers: (old?.storeMembers || []).map((storeMember) =>
             storeMember.id === data[0]!.storeMember.id
               ? {
                   ...storeMember,
-                  blockedTimes: [...storeMember.blockedTimes, ...data],
+                  blockedTimes: [...(storeMember.blockedTimes || []), ...data],
                 }
               : storeMember,
           ),
@@ -130,11 +130,11 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
         CACHE_QUERY_KEYS.store(storeId),
         (old: IStore) => ({
           ...old,
-          storeMembers: old.storeMembers.map((storeMember) =>
+          storeMembers: (old?.storeMembers || []).map((storeMember) =>
             storeMember.id === data[0]!.storeMember.id
               ? {
                   ...storeMember,
-                  blockedTimes: storeMember.blockedTimes.filter(
+                  blockedTimes: (storeMember.blockedTimes || []).filter(
                     (blockedTime) =>
                       !data.some((bt) => bt.id === blockedTime.id),
                   ),
