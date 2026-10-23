@@ -16,11 +16,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           logging: configService.get<boolean>('DB_LOGGING', false),
           ssl: false,
           autoLoadEntities: true,
+          // Serverless: default ~10 retries (~30s) turns a bad DB_URL into
+          // multi-second TTFB even for Upstash-only routes. Fail fast instead.
+          retryAttempts: 1,
+          retryDelay: 500,
           extra: {
             max: 5,
-            connectionTimeoutMillis: 10000,
+            connectionTimeoutMillis: 3000,
             idleTimeoutMillis: 30000,
-            statement_timeout: 60000,
+            statement_timeout: 15000,
           },
         };
       },
