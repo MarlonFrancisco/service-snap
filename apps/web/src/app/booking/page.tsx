@@ -13,6 +13,25 @@ type SearchPageProps = {
   }>;
 };
 
+const REDIS_BUDGET_MS = 800;
+const SEARCH_PREFETCH_MS = 4000;
+
+async function withBudget<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<undefined>((resolve) => {
+        timer = setTimeout(() => resolve(undefined), ms);
+      }),
+    ]);
+  } catch {
+    return undefined;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const queryClient = getQueryClient();
   const params = await searchParams;
@@ -20,23 +39,26 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const location = params.location?.trim() || undefined;
   const category = params.category?.trim() || undefined;
 
+  if (!query) {
+    redirect('/');
+  }
+
   const { persistClient, restoreClient } =
     await createRedisPersister(queryClient);
 
-  if (query) {
-    await restoreClient();
+  // Redis is best-effort cache — never let a hung Redis dominate TTFB.
+  await withBudget(restoreClient(), REDIS_BUDGET_MS);
 
-    const searchKey = { query, location, category };
-
-    await queryClient.prefetchQuery({
+  const searchKey = { query, location, category };
+  await withBudget(
+    queryClient.prefetchQuery({
       queryKey: CACHE_QUERY_KEYS.search(searchKey),
       queryFn: () => SearchService.searchStores(searchKey),
-    });
+    }),
+    SEARCH_PREFETCH_MS,
+  );
 
-    await persistClient();
-  } else {
-    redirect('/');
-  }
+  void withBudget(persistClient(), REDIS_BUDGET_MS);
 
   const dehydratedState = dehydrate(queryClient);
 

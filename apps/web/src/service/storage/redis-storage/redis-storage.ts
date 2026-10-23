@@ -5,17 +5,62 @@ export class RedisStorage {
     host: process.env.REDIS_HOST,
     port: Number(process.env.REDIS_PORT),
     password: process.env.REDIS_PASSWORD,
+    connectTimeout: 1500,
+    maxRetriesPerRequest: 1,
+    enableOfflineQueue: false,
+    lazyConnect: true,
   });
 
+  private async ensureConnected() {
+    if (this.redis.status === 'ready' || this.redis.status === 'connecting') {
+      if (this.redis.status === 'connecting') {
+        await new Promise<void>((resolve, reject) => {
+          const onReady = () => {
+            cleanup();
+            resolve();
+          };
+          const onError = (error: Error) => {
+            cleanup();
+            reject(error);
+          };
+          const cleanup = () => {
+            this.redis.off('ready', onReady);
+            this.redis.off('error', onError);
+          };
+          this.redis.once('ready', onReady);
+          this.redis.once('error', onError);
+        });
+      }
+      return;
+    }
+
+    await this.redis.connect();
+  }
+
   async getItem(key: string) {
-    return this.redis.get(key);
+    try {
+      await this.ensureConnected();
+      return await this.redis.get(key);
+    } catch {
+      return null;
+    }
   }
 
   async setItem(key: string, value: string) {
-    return this.redis.set(key, value);
+    try {
+      await this.ensureConnected();
+      await this.redis.set(key, value);
+    } catch {
+      // best-effort SSR cache
+    }
   }
 
   async removeItem(key: string) {
-    await this.redis.del(key);
+    try {
+      await this.ensureConnected();
+      await this.redis.del(key);
+    } catch {
+      // best-effort SSR cache
+    }
   }
 }
