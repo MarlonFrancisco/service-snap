@@ -19,7 +19,7 @@ export default function AboutPage() {
           <div className="text-center mb-12">
             <h1 className="text-4xl text-[#1a2b4c] mb-4">Sobre Nós</h1>
             <p className="text-gray-600">
-              Conectando pessoas aos melhores serviços de beleza e bem-estar
+              Conectando pessoas aos melhores profissionais de serviços locais
             </p>
           </div>
 
@@ -29,12 +29,12 @@ export default function AboutPage() {
               <h2 className="text-2xl text-[#1a2b4c] mb-4">Nossa História</h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 O ServiceSnap nasceu da visão de simplificar a forma como as
-                pessoas encontram e agendam serviços de beleza, bem-estar e
-                cuidados pessoais no Brasil. Percebemos que profissionais
-                qualificados perdiam tempo valioso gerenciando agendamentos
-                manualmente, enquanto clientes enfrentavam dificuldades para
-                encontrar e agendar serviços de qualidade de forma rápida e
-                confiável.
+                pessoas encontram e agendam serviços locais no Brasil — de
+                beleza e saúde a oficinas, consultorias e outros. Percebemos que
+                profissionais qualificados perdiam tempo valioso gerenciando
+                agendamentos manualmente, enquanto clientes enfrentavam
+                dificuldades para encontrar e agendar serviços de qualidade de
+                forma rápida e confiável.
               </p>
               <p className="text-gray-700 leading-relaxed">
                 Fundada em 2024, criamos uma plataforma completa que conecta

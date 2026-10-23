@@ -10,9 +10,9 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 - [x] **E-mails em domínios diferentes** — unificar para `general@ssnap.io` (terms/privacy; sem `privacy@…`)
 - [x] **Links do header/footer** — “Entrar ou registrar-se” não aponta para `#`; “Seja um parceiro” sem duplicata; “Como funciona” com destino correto (hoje `/about`)
 - [x] **H1 da home** — animação letra a letra não quebra o H1 (“ServiceSnap. S e r v i c e S n a p .”)
-- [ ] **Sitemap** — além do P1 (`/pricing`): categorias/lojas quando existirem; `lastmod` coerente (não dez/2025 em prod)
-- [ ] **Pricing** — planos no HTML inicial (não só seletor Mensal/Anual); calculadora de ROI sem valores padrão sem fonte
-- [ ] **Termos vs home** — alinhar escopo legal (beleza/bem-estar) com categorias da home (advocacia, mecânica, etc.) ou ajustar copy
+- [x] **Sitemap** — além do P1 (`/pricing`): categorias/lojas quando existirem; `lastmod` coerente (não dez/2025 em prod)
+- [x] **Pricing** — planos no HTML inicial (não só seletor Mensal/Anual); calculadora de ROI sem valores padrão sem fonte
+- [x] **Termos vs home** — alinhar escopo legal (beleza/bem-estar) com categorias da home (advocacia, mecânica, etc.) ou ajustar copy
 - [x] **Soft 404 de loja** — loja inexistente não fica em shell vazia; `ApiHttpError` 404 → `BookingNotFound` (sem retry)  
   → ex.: `/booking/<uuid-inexistente>`
 - [x] **`/checkout` sem sessão** — não ficar em “Verificando pagamento…” sem contexto; redirect ou empty state claro
@@ -49,7 +49,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Done when
 
-- [ ] Visitante não encontra soft 404, checkout órfão nem H1 quebrado
+- [x] Visitante não encontra soft 404, checkout órfão nem H1 quebrado
 - [ ] Painel parceiro não mostra analytics/moeda/placeholder mentindo
 - [ ] F5–F7 e G6–G7 têm caminho claro no backlog de produto (mesmo que ainda não shipados)
 

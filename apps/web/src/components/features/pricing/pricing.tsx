@@ -91,7 +91,13 @@ const benefits: Benefit[] = [
 ];
 
 export const Pricing = () => {
-  const { plans, type, setType, currentPlan } = usePricing();
+  const { plans, monthlyPlans, type, setType, currentPlan } = usePricing();
+
+  const monthlyPlanPriceInReais = (() => {
+    const source =
+      monthlyPlans.find((plan) => plan.popular) ?? monthlyPlans[0];
+    return source ? source.price / 100 : undefined;
+  })();
 
   return (
     <Header>
@@ -300,7 +306,7 @@ export const Pricing = () => {
               </p>
             </motion.div>
 
-            <ROICalculator />
+            <ROICalculator monthlyPlanPrice={monthlyPlanPriceInReais} />
           </div>
         </div>
 

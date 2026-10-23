@@ -14,6 +14,7 @@ export const usePricing = () => {
 
   return {
     plans: filteredPlans,
+    monthlyPlans: data?.month ?? [],
     isPendingPlans,
     type,
     setType,

@@ -1,37 +1,46 @@
+import { PUBLIC_CATEGORY_NAMES } from '@/utils/constants/public-categories.constants';
 import { Calendar, MapPin, Star, Users } from 'lucide-react';
 
-export const featuredCategories = [
-  { name: 'Salão de Beleza', count: '1.2K+', icon: '💄' },
-  { name: 'Barbearia', count: '890', icon: '✂️' },
-  { name: 'Spa & Massagem', count: '450', icon: '🧘‍♀️' },
-  { name: 'Odontologia', count: '320', icon: '🦷' },
-  { name: 'Personal Trainer', count: '760', icon: '💪' },
-  { name: 'Estética', count: '540', icon: '✨' },
-  { name: 'Manicure', count: '680', icon: '💅' },
-  { name: 'Psicologia', count: '420', icon: '🧠' },
-  { name: 'Nutrição', count: '380', icon: '🥗' },
-  { name: 'Fisioterapia', count: '510', icon: '🏥' },
-  { name: 'Pilates', count: '290', icon: '🤸‍♀️' },
-  { name: 'Tatuagem', count: '340', icon: '🎨' },
-  { name: 'Pet Shop', count: '620', icon: '🐶' },
-  { name: 'Fotografia', count: '280', icon: '📸' },
-  { name: 'Mecânica', count: '450', icon: '🔧' },
-  { name: 'Limpeza', count: '590', icon: '🧹' },
-  { name: 'Advocacia', count: '310', icon: '⚖️' },
-  { name: 'Contabilidade', count: '270', icon: '📊' },
-  { name: 'Academia', count: '720', icon: '🏋️' },
-  { name: 'Yoga', count: '330', icon: '🧘' },
-  { name: 'Veterinário', count: '410', icon: '🩺' },
-  { name: 'Dermatologia', count: '390', icon: '💆' },
-  { name: 'Consultoria', count: '260', icon: '💼' },
-  { name: 'Design', count: '350', icon: '🎨' },
-  { name: 'Marketing', count: '300', icon: '📱' },
-  { name: 'Carpintaria', count: '240', icon: '🪵' },
-  { name: 'Jardinagem', count: '370', icon: '🌱' },
-  { name: 'Eletricista', count: '490', icon: '⚡' },
-  { name: 'Encanador', count: '460', icon: '🔩' },
-  { name: 'Pintura', count: '380', icon: '🎨' },
-];
+const categoryMeta: Record<
+  (typeof PUBLIC_CATEGORY_NAMES)[number],
+  { count: string; icon: string }
+> = {
+  'Salão de Beleza': { count: '1.2K+', icon: '💄' },
+  Barbearia: { count: '890', icon: '✂️' },
+  'Spa & Massagem': { count: '450', icon: '🧘‍♀️' },
+  Odontologia: { count: '320', icon: '🦷' },
+  'Personal Trainer': { count: '760', icon: '💪' },
+  Estética: { count: '540', icon: '✨' },
+  Manicure: { count: '680', icon: '💅' },
+  Psicologia: { count: '420', icon: '🧠' },
+  Nutrição: { count: '380', icon: '🥗' },
+  Fisioterapia: { count: '510', icon: '🏥' },
+  Pilates: { count: '290', icon: '🤸‍♀️' },
+  Tatuagem: { count: '340', icon: '🎨' },
+  'Pet Shop': { count: '620', icon: '🐶' },
+  Fotografia: { count: '280', icon: '📸' },
+  Mecânica: { count: '450', icon: '🔧' },
+  Limpeza: { count: '590', icon: '🧹' },
+  Advocacia: { count: '310', icon: '⚖️' },
+  Contabilidade: { count: '270', icon: '📊' },
+  Academia: { count: '720', icon: '🏋️' },
+  Yoga: { count: '330', icon: '🧘' },
+  Veterinário: { count: '410', icon: '🩺' },
+  Dermatologia: { count: '390', icon: '💆' },
+  Consultoria: { count: '260', icon: '💼' },
+  Design: { count: '350', icon: '🎨' },
+  Marketing: { count: '300', icon: '📱' },
+  Carpintaria: { count: '240', icon: '🪵' },
+  Jardinagem: { count: '370', icon: '🌱' },
+  Eletricista: { count: '490', icon: '⚡' },
+  Encanador: { count: '460', icon: '🔩' },
+  Pintura: { count: '380', icon: '🎨' },
+};
+
+export const featuredCategories = PUBLIC_CATEGORY_NAMES.map((name) => ({
+  name,
+  ...categoryMeta[name],
+}));
 
 export const stats = [
   {
