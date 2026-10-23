@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { plainToInstance } from 'class-transformer';
 import { SaveWhatsappConfigDto } from './dto/save-whatsapp-config.dto';
+import { TestWhatsappDto } from './dto/test-whatsapp.dto';
 import { WhatsappService } from './whatsapp.service';
 
 @Controller('partner/stores/:storeId/whatsapp')
@@ -44,5 +45,23 @@ export class WhatsappController {
     }
 
     return config;
+  }
+
+  @Get('status')
+  async getStatus(@Param('storeId') storeId: string) {
+    return this.whatsappService.getConnectionStatus(storeId);
+  }
+
+  @Get('templates')
+  async getTemplates(@Param('storeId') storeId: string) {
+    return this.whatsappService.listTemplates(storeId);
+  }
+
+  @Post('test')
+  async sendTest(
+    @Param('storeId') storeId: string,
+    @Body() body: TestWhatsappDto,
+  ) {
+    return this.whatsappService.sendTestMessage(storeId, body.to);
   }
 }
