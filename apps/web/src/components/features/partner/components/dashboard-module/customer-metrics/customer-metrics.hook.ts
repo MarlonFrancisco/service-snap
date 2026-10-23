@@ -48,13 +48,22 @@ export function useCustomerMetrics() {
         },
         {
           label: 'LTV Médio',
-          value: `R$ ${customers.averageLTV.value}`,
+          value: new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL',
+          }).format(customers.averageLTV.value),
           icon: 'DollarSign',
           trend: `${customers.averageLTV.comparison.percentageChange > 0 ? '+' : ''}${customers.averageLTV.comparison.percentageChange}%`,
           trendUp: customers.averageLTV.comparison.percentageChange > 0,
           trendNeutral: customers.averageLTV.comparison.percentageChange === 0,
           comparison: 'vs mês anterior',
-          detail: `CAC: R$ ${customers.averageLTV.cac || 0}`,
+          detail:
+            customers.averageLTV.cac != null
+              ? `CAC: ${new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(customers.averageLTV.cac)}`
+              : 'CAC indisponível',
         },
         {
           label: 'NPS Score',

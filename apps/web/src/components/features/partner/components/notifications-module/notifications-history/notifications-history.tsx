@@ -198,9 +198,11 @@ export function NotificationsHistory() {
 
                         {/* Recipient */}
                         {notification.recipient && (
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Icons.User className="h-3 w-3" />
-                            {notification.recipient}
+                          <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
+                            <Icons.User className="h-3 w-3 shrink-0" />
+                            <span className="truncate break-all">
+                              {notification.recipient}
+                            </span>
                           </div>
                         )}
 

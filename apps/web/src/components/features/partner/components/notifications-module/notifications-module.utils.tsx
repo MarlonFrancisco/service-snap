@@ -44,7 +44,13 @@ export function formatTimestamp(date: Date): string {
   if (hours < 24) return `${hours}h atrás`;
   if (days === 1) return 'Ontem';
   if (days < 7) return `${days} dias atrás`;
-  return date.toLocaleDateString('pt-BR');
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 /**

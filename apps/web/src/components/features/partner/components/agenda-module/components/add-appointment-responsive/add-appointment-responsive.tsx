@@ -1,3 +1,4 @@
+import { formatPriceByCountry } from '@repo/shared/formatters';
 import { usePartnerStore } from '@/store';
 import { selectTimeSlots } from '@/store/admin/agenda';
 import {
@@ -84,7 +85,7 @@ export function AddAppointmentResponsive() {
                       {services.map((service) => (
                         <SelectItem key={service.id} value={service.id}>
                           {service.name} - {service.duration}min - R${' '}
-                          {service.price.toFixed(2)}
+                          {formatPriceByCountry(service.price)}
                         </SelectItem>
                       ))}
                     </SelectContent>

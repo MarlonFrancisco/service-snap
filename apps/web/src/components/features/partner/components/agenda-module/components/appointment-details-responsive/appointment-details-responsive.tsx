@@ -1,3 +1,4 @@
+import { formatPriceByCountry } from '@repo/shared/formatters';
 import {
   Badge,
   Button,
@@ -192,7 +193,7 @@ export function AppointmentDetailsResponsive() {
               Preço
             </p>
             <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-              R$ {detailsAppointment.service.price.toFixed(2)}
+              {formatPriceByCountry(detailsAppointment.service.price)}
             </p>
           </div>
         </div>

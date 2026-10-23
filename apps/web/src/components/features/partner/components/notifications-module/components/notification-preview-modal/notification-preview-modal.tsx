@@ -119,7 +119,7 @@ const EmailTemplate = ({ customMessage }: { customMessage: string }) => {
         <div className="text-center text-xs text-gray-500 pt-4 border-t">
           <p>Precisa de ajuda? Responda este e-mail ou ligue (11) 9999-9999</p>
           <p className="mt-1">
-            © 2024 ServiceSnap - Agendamentos Inteligentes
+            © {new Date().getFullYear()} ServiceSnap - Agendamentos Inteligentes
           </p>
         </div>
       </div>

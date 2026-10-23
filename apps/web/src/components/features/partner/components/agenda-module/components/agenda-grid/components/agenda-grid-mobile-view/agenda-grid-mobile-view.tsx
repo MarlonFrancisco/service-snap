@@ -1,3 +1,4 @@
+import { formatPriceByCountry } from '@repo/shared/formatters';
 import {
   Badge,
   Button,
@@ -332,7 +333,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                               ) : null}
                               <div className="mt-2 flex items-center gap-2 text-sm text-gray-700">
                                 <DollarSign className="h-4 w-4 text-gray-600" />
-                                R$ {appointment.service.price.toFixed(2)}
+                                {formatPriceByCountry(appointment.service.price)}
                               </div>
                             </div>
                             <Badge

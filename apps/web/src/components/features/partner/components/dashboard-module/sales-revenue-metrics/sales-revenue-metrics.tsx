@@ -93,23 +93,23 @@ export function SalesRevenueMetricsModule() {
   const stats = [
     {
       label: 'Receita',
-      value: `R$ ${sales.revenue.value.toLocaleString()}`,
+      value: `R$ ${sales.revenue.value.toLocaleString('pt-BR')}`,
       icon: DollarSign,
       trend: `${sales.revenue.percentageChange > 0 ? '+' : ''}${sales.revenue.percentageChange}%`,
       trendUp: sales.revenue.percentageChange > 0,
       trendNeutral: sales.revenue.percentageChange === 0,
       comparison: getComparisonText(),
-      detail: `${sales.revenue.percentageChange > 0 ? '+' : ''}R$ ${sales.revenue.absoluteChange.toLocaleString()}`,
+      detail: `${sales.revenue.percentageChange > 0 ? '+' : ''}R$ ${sales.revenue.absoluteChange.toLocaleString('pt-BR')}`,
     },
     {
       label: 'Ticket Médio',
-      value: `R$ ${sales.averageTicket.value.toLocaleString()}`,
+      value: `R$ ${sales.averageTicket.value.toLocaleString('pt-BR')}`,
       icon: Receipt,
       trend: `${sales.averageTicket.percentageChange > 0 ? '+' : ''}${sales.averageTicket.percentageChange}%`,
       trendUp: sales.averageTicket.percentageChange > 0,
       trendNeutral: sales.averageTicket.percentageChange === 0,
       comparison: getComparisonText(),
-      detail: `${sales.averageTicket.percentageChange > 0 ? '+' : ''}R$ ${sales.averageTicket.absoluteChange.toLocaleString()}`,
+      detail: `${sales.averageTicket.percentageChange > 0 ? '+' : ''}R$ ${sales.averageTicket.absoluteChange.toLocaleString('pt-BR')}`,
     },
     {
       label: 'Taxa de Conversão',
@@ -123,7 +123,7 @@ export function SalesRevenueMetricsModule() {
     },
     {
       label: 'Receita/Hora',
-      value: `R$ ${sales.revenuePerHour.value.toLocaleString()}`,
+      value: `R$ ${sales.revenuePerHour.value.toLocaleString('pt-BR')}`,
       icon: Clock,
       trend: `${sales.revenuePerHour.percentageChange > 0 ? '+' : ''}${sales.revenuePerHour.percentageChange}%`,
       trendUp: sales.revenuePerHour.percentageChange > 0,
@@ -141,7 +141,7 @@ export function SalesRevenueMetricsModule() {
           <p className="text-xs text-gray-500 mb-1">Performance de Vendas</p>
           <div className="flex items-baseline gap-2">
             <h2 className="text-gray-900">
-              R$ {sales.revenue.value.toLocaleString()}
+              R$ {sales.revenue.value.toLocaleString('pt-BR')}
             </h2>
             <TrendBadge value={sales.revenue.percentageChange} />
           </div>
@@ -187,10 +187,10 @@ export function SalesRevenueMetricsModule() {
                     </p>
                     <div className="flex flex-wrap items-baseline gap-x-2">
                       <p className="text-2xl sm:text-3xl">
-                        R$ {sales.goal.current.toLocaleString()}
+                        R$ {sales.goal.current.toLocaleString('pt-BR')}
                       </p>
                       <span className="text-sm text-white/60">
-                        / R$ {sales.goal.target.toLocaleString()}
+                        / R$ {sales.goal.target.toLocaleString('pt-BR')}
                       </span>
                     </div>
                   </div>
@@ -205,7 +205,7 @@ export function SalesRevenueMetricsModule() {
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-xs text-white/70">
                     {sales.goal.percentage}% concluído - faltam R${' '}
-                    {sales.goal.remaining.toLocaleString()}
+                    {sales.goal.remaining.toLocaleString('pt-BR')}
                   </p>
                   <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-xs">
                     <Sparkles className="w-3 h-3 mr-1" />
@@ -270,7 +270,7 @@ export function SalesRevenueMetricsModule() {
                   </p>
                   <p className="text-xs text-gray-500">
                     R${' '}
-                    {sales.insights.mostProfitableDay.averageRevenue.toLocaleString()}{' '}
+                    {sales.insights.mostProfitableDay.averageRevenue.toLocaleString('pt-BR')}{' '}
                     em média
                   </p>
                 </div>
@@ -386,9 +386,9 @@ export function SalesRevenueMetricsModule() {
                     }}
                     formatter={(value: any, name: string) => {
                       if (name === 'revenue')
-                        return [`R$ ${value.toLocaleString()}`, 'Receita'];
+                        return [`R$ ${value.toLocaleString('pt-BR')}`, 'Receita'];
                       if (name === 'goal')
-                        return [`R$ ${value.toLocaleString()}`, 'Meta'];
+                        return [`R$ ${value.toLocaleString('pt-BR')}`, 'Meta'];
                       return [value, 'Agendamentos'];
                     }}
                   />
@@ -464,7 +464,7 @@ export function SalesRevenueMetricsModule() {
                       boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                     }}
                     formatter={(value: any) => [
-                      `R$ ${value.toLocaleString()}`,
+                      `R$ ${value.toLocaleString('pt-BR')}`,
                       'Receita',
                     ]}
                   />
@@ -529,7 +529,7 @@ export function SalesRevenueMetricsModule() {
                       </Badge>
                     </div>
                     <p className="text-lg text-gray-900">
-                      R$ {category.revenue.toLocaleString()}
+                      R$ {category.revenue.toLocaleString('pt-BR')}
                     </p>
                     <Progress
                       value={
@@ -600,7 +600,7 @@ export function SalesRevenueMetricsModule() {
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-sm text-gray-900">
-                            R$ {service.revenue.toLocaleString()}
+                            R$ {service.revenue.toLocaleString('pt-BR')}
                           </p>
                           <Badge
                             variant="outline"
@@ -671,7 +671,7 @@ export function SalesRevenueMetricsModule() {
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-gray-600 text-xs">
-                            R$ {hour.revenue.toLocaleString()}
+                            R$ {hour.revenue.toLocaleString('pt-BR')}
                           </span>
                           <Badge
                             variant="outline"

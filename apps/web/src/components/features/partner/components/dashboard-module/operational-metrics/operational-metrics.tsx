@@ -176,6 +176,11 @@ export function OperationalMetricsModule() {
     });
     return dayData;
   });
+  const heatmapHasActivity = heatmapData.some((row) =>
+    ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'].some(
+      (day) => Number(row[day] ?? 0) > 0,
+    ),
+  );
 
   // Service duration
   const serviceDurationAvg = operational.serviceDuration.map((item) => ({
@@ -313,7 +318,7 @@ export function OperationalMetricsModule() {
                     Potencial de R${' '}
                     {idleTimeOpportunities
                       .reduce((sum, opp) => sum + opp.potentialRevenue, 0)
-                      .toLocaleString()}{' '}
+                      .toLocaleString('pt-BR')}{' '}
                     em horários ociosos
                   </p>
                   <p className="text-xs text-gray-500">
@@ -433,7 +438,7 @@ export function OperationalMetricsModule() {
                             return [`${value}%`, 'Utilizado'];
                           if (name === 'idle') return [`${value}%`, 'Ocioso'];
                           if (name === 'revenue')
-                            return [`R$ ${value.toLocaleString()}`, 'Receita'];
+                            return [`R$ ${value.toLocaleString('pt-BR')}`, 'Receita'];
                           return [value, name];
                         }}
                       />
@@ -723,8 +728,22 @@ export function OperationalMetricsModule() {
               </div>
             </CardHeader>
             <CardContent className="px-3 sm:px-6">
+              {!heatmapHasActivity ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="text-sm text-gray-500 mb-1">
+                    Sem ocupação no período
+                  </p>
+                  <p className="text-xs text-gray-400">
+                    O mapa de calor aparece quando houver agendamentos
+                  </p>
+                </div>
+              ) : null}
               {/* Legend */}
-              <div className="flex flex-wrap items-center justify-end gap-3 mb-4 text-xs">
+              <div
+                className={`flex flex-wrap items-center justify-end gap-3 mb-4 text-xs ${
+                  !heatmapHasActivity ? 'hidden' : ''
+                }`}
+              >
                 <span className="text-gray-500 font-medium">
                   Taxa de ocupação:
                 </span>
@@ -773,59 +792,61 @@ export function OperationalMetricsModule() {
               </div>
 
               {/* Heatmap Grid */}
-              <div className="overflow-x-auto -mx-3 sm:mx-0">
-                <div className="min-w-[600px] sm:min-w-0">
-                  <div className="grid grid-cols-8 gap-2 mb-2">
-                    <div className="text-xs text-gray-500 font-medium"></div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Seg
-                    </div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Ter
-                    </div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Qua
-                    </div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Qui
-                    </div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Sex
-                    </div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Sáb
-                    </div>
-                    <div className="text-xs text-gray-700 font-medium text-center">
-                      Dom
-                    </div>
-                  </div>
-
-                  {heatmapData.map((row, index) => (
-                    <div key={index} className="grid grid-cols-8 gap-2 mb-2">
-                      <div className="text-xs text-gray-600 font-medium flex items-center">
-                        {row.hour}
+              {heatmapHasActivity ? (
+                <div className="overflow-x-auto -mx-3 sm:mx-0">
+                  <div className="min-w-[600px] sm:min-w-0">
+                    <div className="grid grid-cols-8 gap-2 mb-2">
+                      <div className="text-xs text-gray-500 font-medium"></div>
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Seg
                       </div>
-                      {['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'].map(
-                        (day) => {
-                          const value = (row[day] as number) || 0;
-                          return (
-                            <div
-                              key={day}
-                              className="aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all hover:scale-105"
-                              style={{
-                                backgroundColor: getOccupancyColor(value),
-                                color: getTextColor(value),
-                              }}
-                            >
-                              {value}%
-                            </div>
-                          );
-                        },
-                      )}
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Ter
+                      </div>
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Qua
+                      </div>
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Qui
+                      </div>
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Sex
+                      </div>
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Sáb
+                      </div>
+                      <div className="text-xs text-gray-700 font-medium text-center">
+                        Dom
+                      </div>
                     </div>
-                  ))}
+
+                    {heatmapData.map((row, index) => (
+                      <div key={index} className="grid grid-cols-8 gap-2 mb-2">
+                        <div className="text-xs text-gray-600 font-medium flex items-center">
+                          {row.hour}
+                        </div>
+                        {['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom'].map(
+                          (day) => {
+                            const value = (row[day] as number) || 0;
+                            return (
+                              <div
+                                key={day}
+                                className="aspect-square rounded-lg flex items-center justify-center text-xs font-medium transition-all hover:scale-105"
+                                style={{
+                                  backgroundColor: getOccupancyColor(value),
+                                  color: getTextColor(value),
+                                }}
+                              >
+                                {value}%
+                              </div>
+                            );
+                          },
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : null}
 
               {/* Idle Time Opportunities */}
               <div className="mt-6 p-5 bg-gray-50 rounded-xl border border-gray-200">
@@ -867,7 +888,7 @@ export function OperationalMetricsModule() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium text-gray-900">
-                          +R$ {opp.potentialRevenue.toLocaleString()}
+                          +R$ {opp.potentialRevenue.toLocaleString('pt-BR')}
                         </p>
                         <p className="text-xs text-gray-400">potencial</p>
                       </div>
@@ -949,7 +970,7 @@ export function OperationalMetricsModule() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-900 font-medium">
-                            R$ {prof.revenue.toLocaleString()}
+                            R$ {prof.revenue.toLocaleString('pt-BR')}
                           </p>
                           <p className="text-xs text-gray-500">
                             R$ {Math.round(prof.revenue / prof.bookings)}/agend.

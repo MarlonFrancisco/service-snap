@@ -268,7 +268,8 @@ export interface IDashboardCustomers {
     comparison: {
       percentageChange: number; // vs mês anterior (%)
     };
-    cac: number; // CAC (Custo de Aquisição por Cliente) em R$
+    /** CAC when known; null until acquisition spend is tracked. */
+    cac: number | null;
   };
 
   // 4. NPS Score
