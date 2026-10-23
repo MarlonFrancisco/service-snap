@@ -1,6 +1,6 @@
 import { Footer } from '@/components/layout';
 import { Header } from '@/components/layout/header/header';
-import { CONTACT_EMAIL, PRIVACY_EMAIL } from '@/utils/constants/site.constants';
+import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
 
 export default function PrivacyPage() {
   return (
@@ -284,10 +284,10 @@ export default function PrivacyPage() {
               <p className="text-gray-700 leading-relaxed mt-4">
                 Para exercer seus direitos, entre em contato através do email:{' '}
                 <a
-                  href={`mailto:${PRIVACY_EMAIL}`}
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="text-[#20b2aa] hover:underline"
                 >
-                  {PRIVACY_EMAIL}
+                  {CONTACT_EMAIL}
                 </a>
               </p>
             </section>
