@@ -7,7 +7,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Público / site
 
-- [x] **E-mails em domínios diferentes** — unificar `general@ssnap.io` vs `privacy@servicesnap.com` (terms/privacy)
+- [x] **E-mails em domínios diferentes** — unificar para `general@ssnap.io` (terms/privacy; sem `privacy@…`)
 - [x] **Links do header/footer** — “Entrar ou registrar-se” não aponta para `#`; “Seja um parceiro” sem duplicata; “Como funciona” com destino correto (hoje `/about`)
 - [x] **H1 da home** — animação letra a letra não quebra o H1 (“ServiceSnap. S e r v i c e S n a p .”)
 - [ ] **Sitemap** — além do P1 (`/pricing`): categorias/lojas quando existirem; `lastmod` coerente (não dez/2025 em prod)
