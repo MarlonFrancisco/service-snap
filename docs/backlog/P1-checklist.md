@@ -9,36 +9,35 @@ Marque com `[x]` conforme for fechando.
 
 ## Confiança pública
 
-- [ ] **Contato real** — trocar placeholders em `/contact` (telefone `(11) 9999-9999`, WhatsApp, endereço “Rua das Flores”) por dados reais ou omitir até existirem  
+- [x] **Contato real** — placeholders removidos; só e-mail `general@ssnap.io` até haver telefone/endereço reais  
   → `apps/web/src/app/contact/page.tsx`
-- [ ] **Redes sociais** — remover `href="#"` no footer e em `/contact`; links válidos ou seção oculta  
+- [x] **Redes sociais** — `href="#"` removidos; footer aponta para contato/planos (sem perfis inventados)  
   → `apps/web/src/components/layout/footer/footer.tsx`, `contact/page.tsx`
-- [ ] **JSON-LD `sameAs`** — alinhar (ou remover) perfis em `layout.tsx` com as URLs reais  
+- [x] **JSON-LD `sameAs`** — removido até existirem URLs reais  
   → `apps/web/src/app/layout.tsx`
-- [ ] **Claims honestos** — remover “milhares…” sem fonte na home/pricing; copy comprovável  
+- [x] **Claims honestos** — “milhares…” removido na home/pricing  
   → `features/features.tsx`, `pricing/pricing.tsx`
-- [ ] **Formulário de contato** — submit funcional ou CTA claro (mailto/WhatsApp), sem botão morto
+- [x] **Formulário de contato** — submit abre `mailto:` com a mensagem composta
 
 ---
 
 ## SEO & indexação
 
-- [ ] **Title / description únicos** por rota pública (`/`, `/booking`, `/pricing`, `/about`, `/contact`, `/help`)
-- [ ] **Open Graph + Twitter Card** (title, description, image)
-- [ ] **Canonical** por página
-- [ ] **Sitemap** incluir `/pricing` (e rotas públicas estáveis)  
+- [x] **Title / description únicos** por rota pública (`/`, `/booking`, `/pricing`, `/about`, `/contact`, `/help`)
+- [x] **Open Graph + Twitter Card** (title, description, image)
+- [x] **Canonical** por página
+- [x] **Sitemap** incluir `/pricing` (e rotas públicas estáveis)  
   → `apps/web/src/app/sitemap.ts`
-- [ ] **`noindex` em preview/dev** (`dev.ssnap.io` / Vercel preview); prod continua indexável  
-  → preferir `robots.ts` dinâmico por `VERCEL_ENV`
+- [x] **`noindex` em preview/dev** — `app/robots.ts` + `robots` metadata via `VERCEL_ENV` / `NEXT_PUBLIC_ALLOW_INDEXING`
 
 ---
 
 ## Home & busca (cold-start visível)
 
-- [ ] **Empty state útil na home** — lista de espera / “indique profissional” / CTA claro quando não há lojas (estado vazio não some / não fica quebrado)  
+- [x] **Empty state útil na home** — indicar profissional, lista de espera, seja parceiro  
   → `recomendations/`, empty states
 - [ ] **Busca: relevância** — filtro real de categoria/local; resultados coerentes com a query
-- [ ] **Busca: empty state honesto** — não mostrar “nenhum resultado” quando há resultados (e vice-versa)
+- [x] **Busca: empty state honesto** — empty só após load; loading com skeleton; sem `hidden`+`flex` conflitante
 
 ---
 
