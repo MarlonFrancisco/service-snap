@@ -19,10 +19,12 @@ export default async function BookingPage({
   const { id } = await params;
   const queryClient = getQueryClient();
 
+  let store: Awaited<ReturnType<typeof StoreService.get>> | undefined;
+
   try {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const result = await Promise.race<PrefetchResult>([
-      StoreService.get(id).then((store) => ({ type: 'data' as const, store })),
+      StoreService.get(id).then((data) => ({ type: 'data' as const, store: data })),
       new Promise<{ type: 'timeout' }>((resolve) => {
         timer = setTimeout(() => resolve({ type: 'timeout' }), STORE_PREFETCH_MS);
       }),
@@ -31,15 +33,20 @@ export default async function BookingPage({
     });
 
     if (result.type === 'data') {
-      if (!result.store?.id) {
-        notFound();
-      }
-      queryClient.setQueryData(CACHE_QUERY_KEYS.store(id), result.store);
+      store = result.store;
     }
   } catch (error) {
     if (isNotFoundError(error)) {
       notFound();
     }
+  }
+
+  // Outside try/catch so Next.js notFound() is not swallowed.
+  if (store !== undefined) {
+    if (!store?.id) {
+      notFound();
+    }
+    queryClient.setQueryData(CACHE_QUERY_KEYS.store(id), store);
   }
 
   const dehydratedState = dehydrate(queryClient);
