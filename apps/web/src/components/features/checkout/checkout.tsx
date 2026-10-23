@@ -114,8 +114,7 @@ export const Checkout = () => {
           <AlertCircle className="mx-auto h-10 w-10 text-gray-400" />
           <h1 className="text-xl text-gray-900">Nenhuma sessão de pagamento</h1>
           <p className="text-sm text-gray-600">
-            Este link de checkout precisa do retorno da Stripe (
-            <code className="text-xs">session_id</code>). Se você ainda não
+            Este link de checkout é inválido ou expirou. Se você ainda não
             assinou um plano, escolha um para continuar.
           </p>
           <Button onClick={() => router.push('/pricing')}>Ver planos</Button>
