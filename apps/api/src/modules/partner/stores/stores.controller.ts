@@ -30,6 +30,8 @@ export class StoresController {
   @Public()
   @Get(':id')
   async getStore(@Param('id') id: string) {
+    // Public booking only needs member-scoped schedules/blockedTimes.
+    // Top-level `schedules` duplicated the full history and inflated payload.
     return this.storesService.findOne(id, {
       relations: [
         'gallery',
@@ -40,7 +42,6 @@ export class StoresController {
         'storeMembers.schedules',
         'services',
         'services.category',
-        'schedules',
         'reviews',
       ],
     });
