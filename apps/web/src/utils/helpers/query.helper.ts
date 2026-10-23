@@ -78,4 +78,10 @@ export const CACHE_QUERY_KEYS = {
     category?: string;
   }) => ['search', params],
   whatsappConfig: (storeId: string) => [`partner/stores/${storeId}/whatsapp`],
+  whatsappStatus: (storeId: string) => [
+    `partner/stores/${storeId}/whatsapp/status`,
+  ],
+  whatsappTemplates: (storeId: string) => [
+    `partner/stores/${storeId}/whatsapp/templates`,
+  ],
 };
