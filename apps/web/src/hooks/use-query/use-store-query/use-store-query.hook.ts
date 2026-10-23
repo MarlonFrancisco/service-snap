@@ -1,3 +1,4 @@
+import { isNotFoundError } from '@/service/api';
 import { StoreService } from '@/service/store';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +12,8 @@ export const useStoreQuery = ({ storeId }: { storeId: string }) => {
     queryKey: CACHE_QUERY_KEYS.store(storeId),
     queryFn: () => StoreService.get(storeId),
     enabled: !!storeId,
+    retry: (failureCount, error) =>
+      !isNotFoundError(error) && failureCount <= 2,
   });
 
   return { store, isPendingStore, isError };
