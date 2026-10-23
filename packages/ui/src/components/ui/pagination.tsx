@@ -67,33 +67,35 @@ function PaginationLink({
 
 function PaginationPrevious({
   className,
+  children = 'Anterior',
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label="Ir para página anterior"
       size="default"
       className={cn('gap-1 px-2.5 sm:pl-2.5', className)}
       {...props}
     >
       <ChevronLeft />
-      <span className="hidden sm:block">Previous</span>
+      <span className="hidden sm:block">{children}</span>
     </PaginationLink>
   );
 }
 
 function PaginationNext({
   className,
+  children = 'Próximo',
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label="Ir para próxima página"
       size="default"
       className={cn('gap-1 px-2.5 sm:pr-2.5', className)}
       {...props}
     >
-      <span className="hidden sm:block">Next</span>
+      <span className="hidden sm:block">{children}</span>
       <ChevronRight />
     </PaginationLink>
   );
