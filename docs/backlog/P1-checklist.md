@@ -43,8 +43,11 @@ Marque com `[x]` conforme for fechando.
 
 ## Performance (prod)
 
-- [ ] **Home / busca / loja** — investigar streaming lento (~35–42 s observados em prod); meta: TTFB/interativo aceitável para demo
-- [ ] Confirmar se é ambiente, waterfall de dados ou bloqueio de streaming; documentar causa e fix
+- [x] **Home / busca / loja** — investigar streaming lento (~35–42 s observados em prod); meta: TTFB/interativo aceitável para demo
+- [x] Confirmar se é ambiente, waterfall de dados ou bloqueio de streaming; documentar causa e fix  
+  → **Causa (prod):** `DB_URL` inválida na API (`password authentication failed for user "postgres"` → Neon `ECIRCUITBREAKER`). TypeORM retryava ~10× (~28–35 s) no boot Nest; a home SSR `await` o `GET /recommendation/popular-stores` e bloqueava o HTML. `service-snap-dev-api` (release) responde ~1 s; `service-snap-api` (prod/main) falha.  
+  → **Fix código:** fail-fast TypeORM (`retryAttempts: 1`, timeout 3 s); budget no prefetch SSR home/busca/loja; Redis SSR com timeout/lazy; payload da loja sem `schedules` top-level.  
+  → **Ops pendente:** corrigir `DB_URL`/senha Postgres no projeto Vercel `service-span-api` (production).
 
 ---
 
