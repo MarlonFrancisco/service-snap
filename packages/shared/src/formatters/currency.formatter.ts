@@ -84,8 +84,10 @@ export function formatPriceByCurrency(
   value: number,
   currency: TCurrencyCode = 'BRL',
 ): string {
+  const country = Object.values(COUNTRIES).find((c) => c.currency === currency);
   return formatPrice(value, {
     currency,
+    locale: country?.locale || 'en-US',
   });
 }
 /**
