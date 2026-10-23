@@ -29,9 +29,11 @@ export class WhatsappService {
   }
 
   public static async getStatus(storeId: string) {
-    return this.apiClient.get<IWhatsappStatusResponse>(
-      `/partner/stores/${storeId}/whatsapp/status`,
-    );
+    const response = await this.apiClient.get<
+      IWhatsappStatusResponse | { statusCode?: number; message?: string }
+    >(`/partner/stores/${storeId}/whatsapp/status`);
+    assertApiOk(response);
+    return response as IWhatsappStatusResponse;
   }
 
   public static async getTemplates(storeId: string) {

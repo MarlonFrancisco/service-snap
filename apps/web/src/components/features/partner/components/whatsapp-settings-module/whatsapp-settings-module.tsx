@@ -34,7 +34,13 @@ import { toast } from 'sonner';
 import { WhatsappSettingsModuleSkeleton } from './whatsapp-settings-module-skeleton';
 import { useWhatsappSettingsModule } from './whatsapp-settings-module.hook';
 
-const statusBadge = (status?: TWhatsappConnectionStatus) => {
+const statusBadge = (
+  status?: TWhatsappConnectionStatus,
+  isPending?: boolean,
+) => {
+  if (isPending && !status) {
+    return { label: 'A verificar…', variant: 'outline' as const };
+  }
   switch (status) {
     case 'connected':
       return { label: 'Conectado', variant: 'default' as const };
@@ -42,8 +48,10 @@ const statusBadge = (status?: TWhatsappConnectionStatus) => {
       return { label: 'Desativado', variant: 'secondary' as const };
     case 'error':
       return { label: 'Erro', variant: 'destructive' as const };
-    default:
+    case 'incomplete':
       return { label: 'Incompleto', variant: 'outline' as const };
+    default:
+      return { label: 'A verificar…', variant: 'outline' as const };
   }
 };
 
@@ -69,11 +77,15 @@ export const WhatsappSettingsModule = () => {
 
   if (isWhatsappPending) return <WhatsappSettingsModuleSkeleton />;
 
-  const badge = statusBadge(whatsappStatus?.status);
+  const badge = statusBadge(
+    whatsappStatus?.status,
+    isWhatsappStatusPending,
+  );
   const templatesErrorMessage =
     whatsappTemplatesError instanceof Error
       ? whatsappTemplatesError.message
       : 'Não foi possível carregar os templates.';
+  const statusReady = Boolean(whatsappStatus) && !isWhatsappStatusPending;
 
   return (
     <div className="space-y-6 pb-6">
@@ -101,8 +113,10 @@ export const WhatsappSettingsModule = () => {
               <Badge variant={badge.variant}>{badge.label}</Badge>
             </CardTitle>
             <CardDescription>
-              {whatsappStatus?.message ||
-                'Validamos as credenciais com a Cloud API da Meta.'}
+              {isWhatsappStatusPending && !whatsappStatus
+                ? 'A validar credenciais com a Cloud API da Meta…'
+                : whatsappStatus?.message ||
+                  'Validamos as credenciais com a Cloud API da Meta.'}
             </CardDescription>
           </div>
           <Button
@@ -139,10 +153,15 @@ export const WhatsappSettingsModule = () => {
               <CheckCircle2 className="h-4 w-4" />
               Pronto para lembretes e mensagens do ServiceSnap.
             </p>
-          ) : (
+          ) : statusReady ? (
             <p className="flex items-center gap-2 text-amber-700">
               <TriangleAlert className="h-4 w-4" />
               Complete e salve as credenciais abaixo, depois atualize o status.
+            </p>
+          ) : (
+            <p className="flex items-center gap-2 text-gray-600">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              A verificar conexão…
             </p>
           )}
         </CardContent>
@@ -155,8 +174,10 @@ export const WhatsappSettingsModule = () => {
             Teste de envio
           </CardTitle>
           <CardDescription>
-            Envia uma mensagem de texto de teste para o número informado (com
-            DDI, ex.: 5511999999999).
+            Envia uma mensagem de texto de sessão para o número informado (com
+            DDI, ex.: 5511999999999). Só funciona se esse número já tiver
+            conversado com o seu WhatsApp Business nas últimas 24h — fora dessa
+            janela a Meta exige template aprovado.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row gap-3">
