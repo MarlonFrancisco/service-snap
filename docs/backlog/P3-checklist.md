@@ -17,7 +17,7 @@ Prioridade no doc: **Baixa = P3**. Marque com `[x]` conforme for fechando.
 ## Área parceiro (dev)
 
 - [ ] **A7 — WhatsApp** — títulos das páginas WhatsApp não ser “Dashboard”
-- [ ] **A8 — Upgrade** — quem já é Enterprise não vê calculadora de ROI / “Por que fazer upgrade?”
+- [x] **A8 — Upgrade** — quem já é Enterprise não vê calculadora de ROI / “Por que fazer upgrade?”
 - [ ] **A9 — Console** — zerar o erro de console comum a todas as páginas do parceiro
 - [ ] **A14 — Agenda** — horário repetido nas células; filtro sem truncar (“Todos os Profissionais”); “Outubro de 2026” com capitalização correta
 - [ ] **A15 — Rotas do cliente** — `/bookings`, `/favorites`, `/settings` (ou IA clara de que tudo vive em `/profile`)
