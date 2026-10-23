@@ -52,18 +52,18 @@ Marque com `[x]` conforme for fechando.
 
 - [x] **WhatsApp usável** — status Meta, teste de envio, lista de templates, link para histórico; token de webhook mascarado na UI  
   → `whatsapp-settings-module/` + `GET/POST .../whatsapp/status|templates|test`
-- [ ] **Billing UX** — fluxo claro de cancelamento vs upgrade; faturas coerentes (sem estados contraditórios)  
-  → `plans-module/`
+- [x] **Billing UX** — fluxo claro de cancelamento vs upgrade; faturas coerentes (sem estados contraditórios)  
+  → `plans-module/` + `PlanCard` (badge único); upgrade bloqueado com cancel agendado; faturas sem draft
 
 ---
 
 ## Done when
 
-- [ ] Contato/redes/claims não enganam um visitante novo
-- [ ] Dev/preview não indexa; prod tem meta/OG básicos
-- [ ] Home vazia comunica próximo passo (não parece bug)
-- [ ] Busca não mente sobre resultados
-- [ ] WhatsApp e billing não bloqueiam um parceiro piloto
+- [x] Contato/redes/claims não enganam um visitante novo
+- [x] Dev/preview não indexa; prod tem meta/OG básicos
+- [x] Home vazia comunica próximo passo (não parece bug)
+- [x] Busca não mente sobre resultados
+- [x] WhatsApp e billing não bloqueiam um parceiro piloto
 
 ---
 

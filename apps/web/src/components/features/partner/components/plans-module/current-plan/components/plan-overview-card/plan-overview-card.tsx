@@ -111,19 +111,27 @@ export function PlanOverviewCard({
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">
-                    Próxima cobrança
+                    {currentPlan.cancelAtPeriodEnd
+                      ? 'Acesso até'
+                      : 'Próxima cobrança'}
                   </span>
                   <Badge variant="outline" className="text-xs">
                     {formattedNextBillingDate}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Valor</span>
+                  <span className="text-sm text-gray-600">
+                    {currentPlan.cancelAtPeriodEnd
+                      ? 'Cobrança futura'
+                      : 'Valor'}
+                  </span>
                   <span className="text-gray-900">
-                    {formatPriceByCurrency(
-                      currentPlan.price,
-                      currentPlan.currency,
-                    )}
+                    {currentPlan.cancelAtPeriodEnd
+                      ? 'Nenhuma (cancelamento agendado)'
+                      : formatPriceByCurrency(
+                          currentPlan.price,
+                          currentPlan.currency,
+                        )}
                   </span>
                 </div>
               </div>
