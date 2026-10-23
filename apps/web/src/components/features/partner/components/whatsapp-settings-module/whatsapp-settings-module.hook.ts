@@ -2,7 +2,7 @@ import { useWhatsappMutation } from '@/hooks/partner';
 import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query';
 import { usePartnerStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   IWhatsappSettingsSchema,
@@ -10,11 +10,23 @@ import {
 } from './whatsapp-settings.schema';
 
 export const useWhatsappSettingsModule = () => {
-  const { saveConfig, isSaveConfigPending } = useWhatsappMutation();
+  const { saveConfig, isSaveConfigPending, sendTest, isSendTestPending } =
+    useWhatsappMutation();
   const { activeStore } = usePartnerStore();
-  const { whatsappConfig, isWhatsappPending } = useWhatsappQuery(
-    activeStore.id,
-  );
+  const {
+    whatsappConfig,
+    isWhatsappPending,
+    whatsappStatus,
+    isWhatsappStatusPending,
+    refetchWhatsappStatus,
+    whatsappTemplates,
+    isWhatsappTemplatesPending,
+    isWhatsappTemplatesError,
+    whatsappTemplatesError,
+    refetchWhatsappTemplates,
+  } = useWhatsappQuery(activeStore.id);
+
+  const [testPhone, setTestPhone] = useState('');
 
   const form = useForm<IWhatsappSettingsSchema>({
     resolver: zodResolver(whatsappSettingsSchema),
@@ -30,10 +42,16 @@ export const useWhatsappSettingsModule = () => {
   useEffect(() => {
     if (whatsappConfig) {
       form.setValue('isActive', whatsappConfig.isActive ?? false);
-      form.setValue('phoneNumberId', whatsappConfig.phoneNumberId);
-      form.setValue('businessAccountId', whatsappConfig.businessAccountId);
-      form.setValue('accessToken', whatsappConfig.accessToken);
-      form.setValue('webhookVerifyToken', whatsappConfig.webhookVerifyToken);
+      form.setValue('phoneNumberId', whatsappConfig.phoneNumberId || '');
+      form.setValue(
+        'businessAccountId',
+        whatsappConfig.businessAccountId || '',
+      );
+      form.setValue('accessToken', whatsappConfig.accessToken || '');
+      form.setValue(
+        'webhookVerifyToken',
+        whatsappConfig.webhookVerifyToken || '',
+      );
     }
   }, [whatsappConfig, form]);
 
@@ -45,10 +63,30 @@ export const useWhatsappSettingsModule = () => {
     });
   });
 
+  const handleSendTest = () => {
+    if (!testPhone.trim()) return;
+    sendTest({
+      storeId: activeStore.id,
+      payload: { to: testPhone.trim() },
+    });
+  };
+
   return {
     isSaveConfigPending,
     isWhatsappPending,
     form,
     handleSubmit,
+    whatsappStatus,
+    isWhatsappStatusPending,
+    refetchWhatsappStatus,
+    whatsappTemplates,
+    isWhatsappTemplatesPending,
+    isWhatsappTemplatesError,
+    whatsappTemplatesError,
+    refetchWhatsappTemplates,
+    testPhone,
+    setTestPhone,
+    handleSendTest,
+    isSendTestPending,
   };
 };
