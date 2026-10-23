@@ -70,7 +70,7 @@ export const Footer = () => {
                 </li>
                 <li>
                   <Link
-                    href="/about"
+                    href="/help"
                     className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
                   >
                     Como funciona

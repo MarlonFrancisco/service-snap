@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout';
 import { Header } from '@/components/layout/header/header';
+import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
 
 export default function TermsPage() {
   return (
@@ -145,10 +146,10 @@ export default function TermsPage() {
                 <li>
                   Notificar-nos imediatamente através de{' '}
                   <a
-                    href="mailto:general@ssnap.io"
+                    href={`mailto:${CONTACT_EMAIL}`}
                     className="text-[#20b2aa] hover:underline"
                   >
-                    general@ssnap.io
+                    {CONTACT_EMAIL}
                   </a>{' '}
                   sobre qualquer uso não autorizado
                 </li>
@@ -460,8 +461,11 @@ export default function TermsPage() {
               <ul className="list-none space-y-2 text-gray-700">
                 <li>
                   <strong>E-mail Geral:</strong>{' '}
-                  <a href="mailto:general@ssnap.io" className="hover:underline">
-                    general@ssnap.io
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="hover:underline"
+                  >
+                    {CONTACT_EMAIL}
                   </a>
                 </li>
                 <li>

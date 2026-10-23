@@ -9,7 +9,8 @@ export const HeroSubtitle = () => {
     <>
       <TextAnimate
         animation="slideLeft"
-        by="character"
+        by="word"
+        as="p"
         className="text-base sm:text-lg text-neutral-600 mb-6 max-w-xl mx-auto"
       >
         Encontre e agende com os melhores profissionais perto de você. Simples,

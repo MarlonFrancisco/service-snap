@@ -1,3 +1,5 @@
+import { ApiHttpError } from './http-error';
+
 export class HttpClientService {
   private readonly baseUrl: string;
 
@@ -24,9 +26,24 @@ export class HttpClientService {
 
     try {
       const response = await fetch(url, { ...config, headers });
+      const body = await response.json().catch(() => null);
 
-      return response.json();
+      if (!response.ok) {
+        const message =
+          body &&
+          typeof body === 'object' &&
+          'message' in body &&
+          typeof (body as { message: unknown }).message === 'string'
+            ? (body as { message: string }).message
+            : undefined;
+        throw new ApiHttpError(response.status, body, message);
+      }
+
+      return body as T;
     } catch (error) {
+      if (error instanceof ApiHttpError) {
+        throw error;
+      }
       console.error(error);
       throw error;
     }
