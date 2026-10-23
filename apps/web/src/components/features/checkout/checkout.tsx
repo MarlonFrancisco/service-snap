@@ -13,7 +13,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 interface LoadingStep {
@@ -23,7 +23,9 @@ interface LoadingStep {
 }
 
 export const Checkout = () => {
-  const [isValidating, setIsValidating] = useState(true);
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get('session_id');
+  const [isValidating, setIsValidating] = useState(Boolean(sessionId));
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [hasTimeout, setHasTimeout] = useState(false);
@@ -39,6 +41,10 @@ export const Checkout = () => {
   ];
 
   useEffect(() => {
+    if (!sessionId) {
+      return;
+    }
+
     // Simula validação do pagamento com steps
     let currentProgress = 0;
     const totalDuration = loadingSteps.reduce(
@@ -92,11 +98,30 @@ export const Checkout = () => {
       clearInterval(progressTimer);
       stepTimers.forEach((timer) => clearTimeout(timer));
     };
-  }, [isValidating, shouldReduceMotion]);
+  }, [isValidating, shouldReduceMotion, sessionId]);
 
   const handleGoToDashboard = () => {
     router.push('/partner/dashboard');
   };
+
+  if (!sessionId) {
+    return (
+      <main
+        className="min-h-screen bg-white flex items-center justify-center px-4 sm:px-6"
+        role="main"
+      >
+        <div className="text-center w-full max-w-md space-y-4">
+          <AlertCircle className="mx-auto h-10 w-10 text-gray-400" />
+          <h1 className="text-xl text-gray-900">Nenhuma sessão de pagamento</h1>
+          <p className="text-sm text-gray-600">
+            Este link de checkout é inválido ou expirou. Se você ainda não
+            assinou um plano, escolha um para continuar.
+          </p>
+          <Button onClick={() => router.push('/pricing')}>Ver planos</Button>
+        </div>
+      </main>
+    );
+  }
 
   const formatActivationDate = () => {
     return new Intl.DateTimeFormat('pt-BR', {

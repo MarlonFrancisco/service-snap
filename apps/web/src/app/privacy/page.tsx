@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout';
 import { Header } from '@/components/layout/header/header';
+import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
 
 export default function PrivacyPage() {
   return (
@@ -283,10 +284,10 @@ export default function PrivacyPage() {
               <p className="text-gray-700 leading-relaxed mt-4">
                 Para exercer seus direitos, entre em contato através do email:{' '}
                 <a
-                  href="mailto:privacy@servicesnap.com"
+                  href={`mailto:${CONTACT_EMAIL}`}
                   className="text-[#20b2aa] hover:underline"
                 >
-                  privacy@servicesnap.com
+                  {CONTACT_EMAIL}
                 </a>
               </p>
             </section>
@@ -347,8 +348,11 @@ export default function PrivacyPage() {
               <ul className="list-none space-y-2 text-gray-700">
                 <li>
                   <strong>E-mail:</strong>{' '}
-                  <a href="mailto:general@ssnap.io" className="hover:underline">
-                    general@ssnap.io
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="hover:underline"
+                  >
+                    {CONTACT_EMAIL}
                   </a>
                 </li>
               </ul>

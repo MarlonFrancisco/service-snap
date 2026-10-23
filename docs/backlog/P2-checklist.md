@@ -7,15 +7,15 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Público / site
 
-- [ ] **E-mails em domínios diferentes** — unificar `general@ssnap.io` vs `privacy@servicesnap.com` (terms/privacy)
-- [ ] **Links do header/footer** — “Entrar ou registrar-se” não aponta para `#`; “Seja um parceiro” sem duplicata; “Como funciona” com destino correto (hoje `/about`)
-- [ ] **H1 da home** — animação letra a letra não quebra o H1 (“ServiceSnap. S e r v i c e S n a p .”)
+- [x] **E-mails em domínios diferentes** — unificar para `general@ssnap.io` (terms/privacy; sem `privacy@…`)
+- [x] **Links do header/footer** — “Entrar ou registrar-se” não aponta para `#`; “Seja um parceiro” sem duplicata; “Como funciona” com destino correto (hoje `/about`)
+- [x] **H1 da home** — animação letra a letra não quebra o H1 (“ServiceSnap. S e r v i c e S n a p .”)
 - [ ] **Sitemap** — além do P1 (`/pricing`): categorias/lojas quando existirem; `lastmod` coerente (não dez/2025 em prod)
 - [ ] **Pricing** — planos no HTML inicial (não só seletor Mensal/Anual); calculadora de ROI sem valores padrão sem fonte
 - [ ] **Termos vs home** — alinhar escopo legal (beleza/bem-estar) com categorias da home (advocacia, mecânica, etc.) ou ajustar copy
-- [ ] **Soft 404 de loja** — loja inexistente não responde 200 vazia; HTTP 404 / “não encontrado”  
+- [x] **Soft 404 de loja** — loja inexistente não fica em shell vazia; `ApiHttpError` 404 → `BookingNotFound` (sem retry)  
   → ex.: `/booking/<uuid-inexistente>`
-- [ ] **`/checkout` sem sessão** — não ficar em “Verificando pagamento…” sem contexto; redirect ou empty state claro
+- [x] **`/checkout` sem sessão** — não ficar em “Verificando pagamento…” sem contexto; redirect ou empty state claro
 
 ---
 
@@ -25,7 +25,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 - [ ] **A3 — WhatsApp** — Verify Token do webhook **não** em texto puro
 - [ ] **A4 — Analytics** — remover placeholders (CAC R$ 50, Tempo Médio 30min, heatmap fake); formato BR (`R$ 14.000`); eixo do gráfico legível; empty state em agendamentos
 - [ ] **A6 — Moeda** — padronizar (`R$ 199,90` etc.; sem misturar `R$199.90` / `100.00 R$`)
-- [ ] **A10 — Upgrade** — card Enterprise sem corte; não marcar Business como “Mais popular” e “Plano Atual” ao mesmo tempo
+- [x] **A10 — Upgrade** — card Enterprise sem corte; não marcar Business como “Mais popular” e “Plano Atual” ao mesmo tempo
 - [ ] **A11 — Histórico de notificações** — datas localizadas; e-mail legível; paginação em PT (“Anterior/Próximo”)
 - [ ] **A12 — Perfil do cliente** — contador “1 Agendamento” coerente com a lista (ou lista preenchida)
 - [ ] **A13 — Home logada** — imagens do carrossel; erros de console; camada invisível não intercepta menu; © ano atual
