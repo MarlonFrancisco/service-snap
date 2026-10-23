@@ -226,11 +226,7 @@ export const WhatsappSettingsModule = () => {
             )}
           {whatsappStatus?.status === 'connected' &&
             isWhatsappTemplatesError && (
-              <p className="text-sm text-red-600">
-                {Array.isArray(templatesErrorMessage)
-                  ? templatesErrorMessage.join(', ')
-                  : templatesErrorMessage}
-              </p>
+              <p className="text-sm text-red-600">{templatesErrorMessage}</p>
             )}
           {whatsappStatus?.status === 'connected' &&
             !isWhatsappTemplatesPending &&
