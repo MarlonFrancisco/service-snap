@@ -195,6 +195,27 @@ export class SubscriptionService {
     paymentCustomerId: string,
     expectedCurrency?: string,
   ) {
+    const hasSubscription = await this.subscriptionRepository.findOne({
+      where: {
+        user: { paymentCustomerId },
+        status: In(['active', 'paid', 'trialing']),
+      },
+    });
+
+    // Block checkout while cancel_at_period_end is set — UI already guides
+    // partners to reactivate first; enforce the same rule server-side.
+    if (hasSubscription?.subscriptionId) {
+      const stripeSubscription =
+        await this.stripeService.subscriptions.retrieve(
+          hasSubscription.subscriptionId,
+        );
+      if (stripeSubscription.cancel_at_period_end) {
+        throw new BadRequestException(
+          'Há um cancelamento agendado nesta assinatura. Reative o plano atual antes de iniciar um novo checkout.',
+        );
+      }
+    }
+
     const price = await this.stripeService.prices.retrieve(priceId);
     const product = await this.stripeService.products.retrieve(
       price.product as string,
@@ -209,10 +230,6 @@ export class SubscriptionService {
         `Price currency (${price.currency.toUpperCase()}) does not match expected currency (${expectedCurrency.toUpperCase()})`,
       );
     }
-
-    const hasSubscription = await this.subscriptionRepository.findOne({
-      where: { user: { paymentCustomerId } },
-    });
 
     const trialPeriodDays = parseInt(product.metadata.TRIAL_PERIOD_DAYS || '0');
 
