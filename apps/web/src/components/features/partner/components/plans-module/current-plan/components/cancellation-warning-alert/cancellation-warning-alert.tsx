@@ -35,8 +35,9 @@ export function CancellationWarningAlert() {
             .
           </p>
           <p className="text-sm text-orange-600">
-            Após essa data, você perderá o acesso a plataforma e não será mais
-            cobrado.
+            Após essa data, você perderá o acesso à plataforma e não será mais
+            cobrado. Para mudar de plano antes disso, reative a assinatura em
+            “Meu plano” e só então use “Upgrade”.
           </p>
         </AlertDescription>
       </Alert>

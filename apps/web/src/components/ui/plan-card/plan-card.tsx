@@ -47,17 +47,16 @@ export const PlanCard = ({
             : 'border border-gray-200'
         } ${isCurrentPlan ? 'opacity-75' : ''}`}
       >
-        {plan.popular && (
+        {/* Never show "Mais popular" together with "Plano Atual" — confusing in partner upgrade. */}
+        {isCurrentPlan ? (
+          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-white">
+            Plano Atual
+          </Badge>
+        ) : plan.popular ? (
           <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white">
             Mais popular
           </Badge>
-        )}
-
-        {isCurrentPlan && (
-          <Badge className="absolute -top-3 right-4 bg-gray-100 text-gray-700 border-gray-300">
-            Plano Atual
-          </Badge>
-        )}
+        ) : null}
 
         <div className="mb-8">
           <h3 className="text-xl text-gray-900 mb-2">{plan.name}</h3>

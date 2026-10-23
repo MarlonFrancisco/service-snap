@@ -47,21 +47,41 @@ export function useUpgradePlan() {
     return data?.[type] || [];
   }, [data, type]);
 
+  const currentPlanIndex = useMemo(() => {
+    if (!currentPlan?.planId) return -1;
+    return filteredPlans.findIndex(
+      (plan) =>
+        plan.id === currentPlan.planId &&
+        plan.interval === currentPlan.billingPeriod,
+    );
+  }, [filteredPlans, currentPlan?.planId, currentPlan?.billingPeriod]);
+
+  const isOnHighestPlan = useMemo(() => {
+    if (!filteredPlans.length || currentPlanIndex < 0) return false;
+    return currentPlanIndex === filteredPlans.length - 1;
+  }, [filteredPlans.length, currentPlanIndex]);
+
+  const isCancellationScheduled = Boolean(currentPlan?.cancelAtPeriodEnd);
+
   const handleSelectPlan = useCallback(
     (planId: string) => {
+      if (isCancellationScheduled) return;
       createSubscriptionMutation.mutate(planId, {
         onSuccess: ({ url }) => {
           window.location.href = url;
         },
       });
     },
-    [createSubscriptionMutation],
+    [createSubscriptionMutation, isCancellationScheduled],
   );
 
   return {
     plans: filteredPlans,
     benefits,
     currentPlan,
+    currentPlanIndex,
+    isOnHighestPlan,
+    isCancellationScheduled,
     isPendingPlans,
     isCreatingSubscription: createSubscriptionMutation.isPending,
     handleSelectPlan,
