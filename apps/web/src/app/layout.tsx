@@ -5,6 +5,7 @@ import { QueryProvider } from '@/providers';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
@@ -145,11 +146,12 @@ const monaSans = localFont({
   fallback: ['system-ui', 'sans-serif'],
 });
 
-export const metadata: Metadata = {
-  title: 'ServiceSnap - Agende seus serviços favoritos',
+export const metadata: Metadata = createPageMetadata({
+  title: 'ServiceSnap — Agende serviços perto de você',
   description:
-    'Encontre e agende com os melhores profissionais perto de você. Simples, rápido e confiável.',
-};
+    'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
+  path: '/',
+});
 
 export default async function RootLayout({
   children,
@@ -203,9 +205,9 @@ export default async function RootLayout({
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'ServiceSnap - Agende seus serviços favoritos',
+              name: 'ServiceSnap — Agende serviços perto de você',
               description:
-                'Encontre e agende com os melhores profissionais perto de você. Simples, rápido e confiável.',
+                'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
               url: 'https://ssnap.io',
               image: 'https://ssnap.io/logo.png',
               publisher: {
@@ -213,12 +215,6 @@ export default async function RootLayout({
                 name: 'ServiceSnap',
                 url: 'https://ssnap.io',
               },
-              sameAs: [
-                'https://www.facebook.com/servicesnap',
-                'https://www.instagram.com/servicesnap',
-                'https://www.twitter.com/servicesnap',
-                'https://www.linkedin.com/company/servicesnap',
-              ],
               inLanguage: 'pt-BR',
               potentialAction: {
                 '@type': 'SearchAction',

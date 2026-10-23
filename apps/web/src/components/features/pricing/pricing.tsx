@@ -109,8 +109,8 @@ export const Pricing = () => {
                 Transforme seu negócio com ServiceSnap
               </h1>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Junte-se a milhares de profissionais que já economizam tempo e
-                aumentam sua receita
+                Organize agenda, lembretes e clientes em um só lugar — e foque no
+                que importa: atender bem
               </p>
             </motion.div>
 

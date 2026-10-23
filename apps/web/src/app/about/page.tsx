@@ -1,5 +1,13 @@
 import { Footer } from '@/components/layout';
 import { Header } from '@/components/layout/header/header';
+import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
+
+export const metadata = createPageMetadata({
+  title: 'Sobre nós | ServiceSnap',
+  description:
+    'Conheça o ServiceSnap: a plataforma que conecta pessoas a profissionais de serviços no Brasil.',
+  path: '/about',
+});
 
 export default function AboutPage() {
   return (
