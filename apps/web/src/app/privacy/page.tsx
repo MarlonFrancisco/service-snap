@@ -1,5 +1,6 @@
 import { Footer } from '@/components/layout';
 import { Header } from '@/components/layout/header/header';
+import { PLATFORM_DESCRIPTION } from '@/utils/constants/platform.constants';
 import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
 
 export default function PrivacyPage() {
@@ -25,10 +26,9 @@ export default function PrivacyPage() {
                 1. Informações Gerais
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                Esta Política de Privacidade descreve como o ServiceSnap, uma
-                plataforma brasileira de agendamento de serviços de beleza,
-                bem-estar e cuidados pessoais, coleta, usa, armazena e protege
-                suas informações pessoais. Respeitamos sua privacidade e estamos
+                Esta Política de Privacidade descreve como o ServiceSnap, um{' '}
+                {PLATFORM_DESCRIPTION}, coleta, usa, armazena e protege suas
+                informações pessoais. Respeitamos sua privacidade e estamos
                 comprometidos em proteger seus dados pessoais de acordo com a
                 Lei Geral de Proteção de Dados (LGPD) e melhores práticas
                 internacionais.

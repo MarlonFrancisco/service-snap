@@ -1,5 +1,9 @@
 import { Footer } from '@/components/layout';
 import { Header } from '@/components/layout/header/header';
+import {
+  PLATFORM_DESCRIPTION,
+  PLATFORM_SCOPE_SHORT,
+} from '@/utils/constants/platform.constants';
 import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
 
 export default function TermsPage() {
@@ -40,9 +44,8 @@ export default function TermsPage() {
                 2. Descrição do Serviço
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
-                O ServiceSnap é um marketplace digital brasileiro que conecta
-                clientes a prestadores verificados de serviços de beleza,
-                bem-estar e cuidados pessoais. Nossa plataforma oferece:
+                O ServiceSnap é um {PLATFORM_DESCRIPTION}. Nossa plataforma
+                oferece:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-gray-700">
                 <li>
@@ -76,9 +79,9 @@ export default function TermsPage() {
               </ul>
               <p className="text-gray-700 leading-relaxed mt-4">
                 <strong>Importante:</strong> O ServiceSnap atua exclusivamente
-                como intermediário tecnológico. Não prestamos os serviços de
-                beleza e bem-estar diretamente - estes são fornecidos pelos
-                profissionais cadastrados na plataforma.
+                como intermediário tecnológico. Não prestamos os serviços
+                agendados na plataforma — estes são fornecidos pelos
+                profissionais e negócios cadastrados ({PLATFORM_SCOPE_SHORT}).
               </p>
             </section>
 
@@ -349,8 +352,8 @@ export default function TermsPage() {
               </h2>
               <p className="text-gray-700 leading-relaxed mb-4">
                 <strong>Papel da Plataforma:</strong> O ServiceSnap atua
-                exclusivamente como intermediário tecnológico. NÃO prestamos
-                serviços de beleza, bem-estar ou cuidados pessoais diretamente.
+                exclusivamente como intermediário tecnológico. NÃO prestamos os
+                serviços agendados na plataforma diretamente.
               </p>
               <p className="text-gray-700 leading-relaxed mb-4">
                 <strong>Responsabilidades Limitadas:</strong>

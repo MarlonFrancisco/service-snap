@@ -22,6 +22,11 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import {
+  ROI_DISCLAIMER,
+  ROI_ILLUSTRATIVE_BOOKINGS_LIFT,
+  ROI_ILLUSTRATIVE_NO_SHOW_REDUCTION_PP,
+} from './roi-calculator.constants';
 
 // Animated counter component
 function AnimatedNumber({
@@ -72,20 +77,41 @@ function AnimatedNumber({
   );
 }
 
-export function ROICalculator() {
-  const [monthlyAppointments, setMonthlyAppointments] = useState([150]);
-  const [averagePrice, setAveragePrice] = useState(45);
-  const [noShowRate, setNoShowRate] = useState([15]);
-  const [selectedPlan, setSelectedPlan] = useState(79); // Professional plan
+type ROICalculatorProps = {
+  /** Monthly plan price in major units (e.g. reais), from live `/plans` when available. */
+  monthlyPlanPrice?: number;
+};
+
+export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
+  // Empty until the user fills in — no invented market defaults.
+  const [monthlyAppointments, setMonthlyAppointments] = useState([0]);
+  const [averagePrice, setAveragePrice] = useState(0);
+  const [noShowRate, setNoShowRate] = useState([0]);
+  const [selectedPlan, setSelectedPlan] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
+
+  useEffect(() => {
+    if (
+      typeof monthlyPlanPrice === 'number' &&
+      Number.isFinite(monthlyPlanPrice) &&
+      monthlyPlanPrice > 0
+    ) {
+      setSelectedPlan(monthlyPlanPrice);
+    }
+  }, [monthlyPlanPrice]);
 
   // Calculations with validation
   const currentRevenue = (monthlyAppointments[0] || 0) * (averagePrice || 0);
   const lostRevenueNoShow = (currentRevenue * (noShowRate[0] || 0)) / 100;
 
-  // With ServiceSnap improvements
-  const improvedNoShowRate = Math.max(5, (noShowRate[0] || 0) - 8); // Reduce by 8%
-  const additionalBookings = Math.round((monthlyAppointments[0] || 0) * 0.15); // 15% more bookings
+  // Illustrative scenario deltas (see ROI_DISCLAIMER) — not measured benchmarks.
+  const improvedNoShowRate = Math.max(
+    0,
+    (noShowRate[0] || 0) - ROI_ILLUSTRATIVE_NO_SHOW_REDUCTION_PP,
+  );
+  const additionalBookings = Math.round(
+    (monthlyAppointments[0] || 0) * ROI_ILLUSTRATIVE_BOOKINGS_LIFT,
+  );
   const newMonthlyAppointments =
     (monthlyAppointments[0] || 0) + additionalBookings;
   const newRevenue = newMonthlyAppointments * (averagePrice || 0);
@@ -139,7 +165,7 @@ export function ROICalculator() {
                   Calculadora de ROI
                 </CardTitle>
                 <p className="text-sm text-gray-600">
-                  Simule seu retorno sobre investimento
+                  Informe os números do seu negócio para simular o retorno
                 </p>
               </div>
             </div>
@@ -147,6 +173,7 @@ export function ROICalculator() {
               Resultado em tempo real
             </Badge>
           </div>
+          <p className="mt-4 text-xs text-gray-500">{ROI_DISCLAIMER}</p>
         </CardHeader>
 
         <CardContent className="p-6">
@@ -182,12 +209,12 @@ export function ROICalculator() {
                       value={monthlyAppointments}
                       onValueChange={setMonthlyAppointments}
                       max={500}
-                      min={50}
+                      min={0}
                       step={10}
                       className="cursor-pointer"
                     />
                     <div className="flex justify-between mt-1.5 text-xs text-gray-400">
-                      <span>50</span>
+                      <span>0</span>
                       <span>500</span>
                     </div>
                   </div>
@@ -208,7 +235,8 @@ export function ROICalculator() {
                       <Input
                         id="avgPrice"
                         type="number"
-                        value={averagePrice}
+                        value={averagePrice || ''}
+                        placeholder="Ex.: 45"
                         onChange={(e) =>
                           setAveragePrice(
                             Math.max(0, Number(e.target.value) || 0),
@@ -238,12 +266,12 @@ export function ROICalculator() {
                       value={noShowRate}
                       onValueChange={setNoShowRate}
                       max={30}
-                      min={5}
+                      min={0}
                       step={1}
                       className="cursor-pointer"
                     />
                     <div className="flex justify-between mt-1.5 text-xs text-gray-400">
-                      <span>5%</span>
+                      <span>0%</span>
                       <span>30%</span>
                     </div>
                   </div>
@@ -263,7 +291,8 @@ export function ROICalculator() {
                       <Input
                         id="planPrice"
                         type="number"
-                        value={selectedPlan}
+                        value={selectedPlan || ''}
+                        placeholder="Preencha ou use o plano da página"
                         onChange={(e) =>
                           setSelectedPlan(
                             Math.max(0, Number(e.target.value) || 0),
