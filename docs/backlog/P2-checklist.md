@@ -22,13 +22,13 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 ## Área parceiro (dev)
 
 - [ ] **A1 — Painel** — telas de Profissionais e Clientes; onboarding para parceiro novo; relatórios/exportação (limites do plano “Profissionais 1/20” refletidos na UI)
-- [ ] **A3 — WhatsApp** — Verify Token do webhook **não** em texto puro
-- [ ] **A4 — Analytics** — remover placeholders (CAC R$ 50, Tempo Médio 30min, heatmap fake); formato BR (`R$ 14.000`); eixo do gráfico legível; empty state em agendamentos
-- [ ] **A6 — Moeda** — padronizar (`R$ 199,90` etc.; sem misturar `R$199.90` / `100.00 R$`)
+- [x] **A3 — WhatsApp** — Verify Token do webhook **não** em texto puro *(UI mask no P1; checklist alinhado)*
+- [x] **A4 — Analytics** — remover placeholders (CAC R$ 50, Tempo Médio 30min, heatmap fake); formato BR (`R$ 14.000`); eixo do gráfico legível; empty state em agendamentos
+- [x] **A6 — Moeda** — padronizar (`R$ 199,90` etc.; sem misturar `R$199.90` / `100.00 R$`)
 - [x] **A10 — Upgrade** — card Enterprise sem corte; não marcar Business como “Mais popular” e “Plano Atual” ao mesmo tempo
-- [ ] **A11 — Histórico de notificações** — datas localizadas; e-mail legível; paginação em PT (“Anterior/Próximo”)
-- [ ] **A12 — Perfil do cliente** — contador “1 Agendamento” coerente com a lista (ou lista preenchida)
-- [ ] **A13 — Home logada** — imagens do carrossel; erros de console; camada invisível não intercepta menu; © ano atual
+- [x] **A11 — Histórico de notificações** — datas localizadas; e-mail legível; paginação em PT (“Anterior/Próximo”)
+- [x] **A12 — Perfil do cliente** — contador “1 Agendamento” coerente com a lista (ou lista preenchida)
+- [x] **A13 — Home logada** — imagens do carrossel; erros de console; camada invisível não intercepta menu; © ano atual
 
 ---
 
@@ -50,7 +50,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 ## Done when
 
 - [x] Visitante não encontra soft 404, checkout órfão nem H1 quebrado
-- [ ] Painel parceiro não mostra analytics/moeda/placeholder mentindo
+- [x] Painel parceiro não mostra analytics/moeda/placeholder mentindo
 - [ ] F5–F7 e G6–G7 têm caminho claro no backlog de produto (mesmo que ainda não shipados)
 
 ---
