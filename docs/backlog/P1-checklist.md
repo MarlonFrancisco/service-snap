@@ -50,8 +50,8 @@ Marque com `[x]` conforme for fechando.
 
 ## Área parceiro
 
-- [ ] **WhatsApp usável** — status da conexão, teste de envio, templates, log/histórico (não só formulários técnicos Meta)  
-  → `notifications-module/whatsapp-settings/`
+- [x] **WhatsApp usável** — status Meta, teste de envio, lista de templates, link para histórico; token de webhook mascarado na UI  
+  → `whatsapp-settings-module/` + `GET/POST .../whatsapp/status|templates|test`
 - [ ] **Billing UX** — fluxo claro de cancelamento vs upgrade; faturas coerentes (sem estados contraditórios)  
   → `plans-module/`
 
