@@ -1,3 +1,4 @@
+import { isNotFoundError } from '@/service/api';
 import { TCurrencyCode } from '@repo/shared/constants';
 import { isServer, QueryClient } from '@tanstack/react-query';
 
@@ -9,9 +10,8 @@ const makeQueryClient = () => {
       queries: {
         refetchOnWindowFocus: false,
         staleTime: maxAgeCache,
-        retry: (failureCount) => {
-          return failureCount <= 2;
-        },
+        retry: (failureCount, error) =>
+          !isNotFoundError(error) && failureCount <= 2,
       },
     },
   });
