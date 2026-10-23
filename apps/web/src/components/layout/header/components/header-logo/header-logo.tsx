@@ -11,12 +11,18 @@ export const HeaderLogo = ({
   const logoSrc = variant === 'dark' ? '/logo-white.png' : '/logo.png';
 
   return (
-    <Link href="/" aria-label="Home" {...props}>
+    <Link
+      href="/"
+      aria-label="Home"
+      className="inline-flex items-center leading-none"
+      {...props}
+    >
       <Image
         src={logoSrc}
         alt="ServiceSnap logo"
         width={width}
         height={height}
+        className="block"
         preload
       />
     </Link>
