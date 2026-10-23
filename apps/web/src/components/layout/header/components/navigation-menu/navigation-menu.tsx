@@ -65,7 +65,7 @@ export const NavigationMenu = () => {
                       key={item.label}
                       type="button"
                       onClick={item.onClick}
-                      className={`${className} appearance-none border-0 p-6 sm:py-16 sm:px-0 font-inherit text-inherit cursor-pointer`}
+                      className={`${className} appearance-none border-0 cursor-pointer`}
                     >
                       {item.label}
                       <span className="absolute inset-y-0 -z-10 w-screen group-odd:right-0 group-even:left-0 bg-transparent sm:border-b sm:border-t sm:border-neutral-200/10 hover:display-none" />
