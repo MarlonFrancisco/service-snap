@@ -1,7 +1,7 @@
 # Checklist P1 — Confiança & higiene (Roadmap)
 
-Fonte: auditoria *ServiceSnap — Roadmap de Produto e Crescimento* (22–23/10/2026).  
-Objetivo: corrigir confiança pública antes de escalar (cold-start / G1–G8 ficam fora).
+Fonte: [ServiceSnap — Roadmap de Produto e Crescimento](https://servicesnap-roadmap-de-produto-e-m6ob.pages.grok.bot/) (auditoria 22–23/10/2026).  
+Objetivo: corrigir confiança pública antes de escalar. Ver também [`P2-checklist.md`](./P2-checklist.md) e [`P3-checklist.md`](./P3-checklist.md).
 
 Marque com `[x]` conforme for fechando.
 
@@ -30,7 +30,7 @@ Marque com `[x]` conforme for fechando.
   → `apps/web/src/app/sitemap.ts`
 - [ ] **`noindex` em preview/dev** (`dev.ssnap.io` / Vercel preview); prod continua indexável  
   → preferir `robots.ts` dinâmico por `VERCEL_ENV`
-- [ ] **Soft 404 de loja** — loja inexistente retorna HTTP 404 real
+- [ ] Soft 404 de loja → movido para **P2** (ver `P2-checklist.md`)
 
 ---
 
