@@ -6,7 +6,11 @@ export const useCategoriesGrid = () => {
 
   const handleCategoryClick = useCallback(
     (categoryName: string) => {
-      router.push(`/booking?query=${encodeURIComponent(categoryName)}`);
+      const params = new URLSearchParams({
+        query: categoryName,
+        category: categoryName,
+      });
+      router.push(`/booking?${params.toString()}`);
     },
     [router],
   );
