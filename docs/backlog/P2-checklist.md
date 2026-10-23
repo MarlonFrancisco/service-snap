@@ -13,7 +13,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 - [ ] **Sitemap** — além do P1 (`/pricing`): categorias/lojas quando existirem; `lastmod` coerente (não dez/2025 em prod)
 - [ ] **Pricing** — planos no HTML inicial (não só seletor Mensal/Anual); calculadora de ROI sem valores padrão sem fonte
 - [ ] **Termos vs home** — alinhar escopo legal (beleza/bem-estar) com categorias da home (advocacia, mecânica, etc.) ou ajustar copy
-- [x] **Soft 404 de loja** — loja inexistente não responde 200 vazia; HTTP 404 / “não encontrado”  
+- [x] **Soft 404 de loja** — loja inexistente não fica em shell vazia; `ApiHttpError` 404 → `BookingNotFound` (sem retry)  
   → ex.: `/booking/<uuid-inexistente>`
 - [x] **`/checkout` sem sessão** — não ficar em “Verificando pagamento…” sem contexto; redirect ou empty state claro
 
