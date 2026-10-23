@@ -57,7 +57,7 @@ export const NavigationMenu = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2">
               {navigationItems.map((item) => {
                 const className =
-                  'text-2xl sm:text-5xl text-center group relative isolate -mx-6 bg-foreground px-6 py-6 even:mt-px sm:mx-0 sm:px-0 sm:py-16 sm:odd:pr-16 sm:even:mt-0 sm:even:border-l sm:even:border-neutral-200/10 sm:even:pl-16 w-full';
+                  'text-2xl sm:text-5xl text-center group relative isolate -mx-6 bg-foreground px-6 py-6 even:mt-px sm:mx-0 sm:px-0 sm:py-16 sm:odd:pr-16 sm:even:mt-0 sm:even:border-l sm:even:border-neutral-200/10 sm:even:pl-16 w-full whitespace-normal break-words';
 
                 if (item.onClick && !item.href) {
                   return (
@@ -65,7 +65,7 @@ export const NavigationMenu = () => {
                       key={item.label}
                       type="button"
                       onClick={item.onClick}
-                      className={className}
+                      className={`${className} appearance-none border-0 p-6 sm:py-16 sm:px-0 font-inherit text-inherit cursor-pointer`}
                     >
                       {item.label}
                       <span className="absolute inset-y-0 -z-10 w-screen group-odd:right-0 group-even:left-0 bg-transparent sm:border-b sm:border-t sm:border-neutral-200/10 hover:display-none" />
