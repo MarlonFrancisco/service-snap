@@ -30,7 +30,6 @@ Marque com `[x]` conforme for fechando.
   → `apps/web/src/app/sitemap.ts`
 - [ ] **`noindex` em preview/dev** (`dev.ssnap.io` / Vercel preview); prod continua indexável  
   → preferir `robots.ts` dinâmico por `VERCEL_ENV`
-- [ ] Soft 404 de loja → movido para **P2** (ver `P2-checklist.md`)
 
 ---
 
