@@ -45,14 +45,17 @@ export class WhatsappService {
     return to.replace(/\D/g, '');
   }
 
-  private assertSendableConfig(config: WhatsappConfig | null): WhatsappConfig {
+  private assertSendableConfig(
+    config: WhatsappConfig | null,
+    action: 'testar o envio' | 'listar templates' = 'testar o envio',
+  ): WhatsappConfig {
     if (
       !config?.phoneNumberId ||
       !config?.accessToken ||
       !config?.businessAccountId
     ) {
       throw new BadRequestException(
-        'Configure Phone Number ID, Business Account ID e Access Token antes de testar.',
+        `Configure Phone Number ID, Business Account ID e Access Token antes de ${action}.`,
       );
     }
     return config;
@@ -309,7 +312,7 @@ export class WhatsappService {
     const config = await this.whatsappConfigRepository.findOne({
       where: { store: { id: storeId } },
     });
-    const ready = this.assertSendableConfig(config);
+    const ready = this.assertSendableConfig(config, 'listar templates');
 
     try {
       const { data } = await axios.get(
