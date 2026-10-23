@@ -1,12 +1,41 @@
 'use client';
 
+import { PUBLIC_CONTACT_EMAIL } from '@/utils/constants/contact.constants';
 import { Button, Input, Textarea } from '@repo/ui';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
+import Link from 'next/link';
+import { FormEvent, useState } from 'react';
 
 export default function ContactPage() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [subject, setSubject] = useState('');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const lines = [
+      name && `Nome: ${name}`,
+      email && `E-mail: ${email}`,
+      phone && `Telefone: ${phone}`,
+      '',
+      message,
+    ].filter((line) => line !== undefined);
+
+    const mailto = new URL(`mailto:${PUBLIC_CONTACT_EMAIL}`);
+    mailto.searchParams.set(
+      'subject',
+      subject.trim() || 'Contato via ssnap.io',
+    );
+    mailto.searchParams.set('body', lines.join('\n'));
+
+    window.location.href = mailto.toString();
+  };
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <div className="border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Button
@@ -20,18 +49,16 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
           <div>
             <h1 className="text-4xl text-[#1a2b4c] mb-4">Entre em Contato</h1>
             <p className="text-gray-600 mb-8">
-              Tem alguma dúvida, sugestão ou precisa de ajuda? Entre em contato
-              conosco.
+              Tem alguma dúvida, sugestão ou precisa de ajuda? Escreva para nós
+              — abrimos seu cliente de e-mail com a mensagem pronta.
             </p>
 
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
                 <label
                   htmlFor="name"
@@ -42,8 +69,11 @@ export default function ContactPage() {
                 <Input
                   id="name"
                   type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
                   placeholder="Digite seu nome completo"
                   className="w-full"
+                  required
                 />
               </div>
 
@@ -57,8 +87,11 @@ export default function ContactPage() {
                 <Input
                   id="email"
                   type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="Digite seu e-mail"
                   className="w-full"
+                  required
                 />
               </div>
 
@@ -67,11 +100,14 @@ export default function ContactPage() {
                   htmlFor="phone"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Telefone
+                  Telefone{' '}
+                  <span className="text-gray-400 font-normal">(opcional)</span>
                 </label>
                 <Input
                   id="phone"
                   type="tel"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
                   placeholder="Digite seu telefone"
                   className="w-full"
                 />
@@ -87,6 +123,8 @@ export default function ContactPage() {
                 <Input
                   id="subject"
                   type="text"
+                  value={subject}
+                  onChange={(event) => setSubject(event.target.value)}
                   placeholder="Assunto da mensagem"
                   className="w-full"
                 />
@@ -102,8 +140,11 @@ export default function ContactPage() {
                 <Textarea
                   id="message"
                   rows={5}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
                   placeholder="Digite sua mensagem..."
                   className="w-full"
+                  required
                 />
               </div>
 
@@ -111,12 +152,11 @@ export default function ContactPage() {
                 type="submit"
                 className="w-full bg-[#20b2aa] hover:bg-[#20b2aa]/90 text-white"
               >
-                Enviar Mensagem
+                Abrir e-mail para enviar
               </Button>
             </form>
           </div>
 
-          {/* Contact Information */}
           <div>
             <h2 className="text-2xl text-[#1a2b4c] mb-6">
               Informações de Contato
@@ -125,51 +165,49 @@ export default function ContactPage() {
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-medium text-[#1a2b4c] mb-2">
-                  Atendimento ao Cliente
+                  Atendimento
                 </h3>
-                <div className="space-y-2 text-gray-600">
+                <div className="space-y-3 text-gray-600">
                   <p>
-                    <strong>E-mail:</strong> general@ssnap.io
+                    <strong>E-mail:</strong>{' '}
+                    <a
+                      href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
+                      className="text-[#20b2aa] hover:underline"
+                    >
+                      {PUBLIC_CONTACT_EMAIL}
+                    </a>
                   </p>
-                  <p>
-                    <strong>Telefone:</strong> (11) 9999-9999
-                  </p>
-                  <p>
-                    <strong>WhatsApp:</strong> (11) 99999-9999
-                  </p>
-                  <p>
-                    <strong>Horário:</strong> Segunda a sexta, 8h às 18h
+                  <p className="text-sm text-gray-500">
+                    Respondemos por e-mail em dias úteis. Telefone, WhatsApp e
+                    endereço físico serão publicados quando estiverem
+                    disponíveis — não usamos números placeholder.
                   </p>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-[#1a2b4c] mb-2">
-                  Endereço
-                </h3>
-                <div className="space-y-1 text-gray-600">
-                  <p>Rua das Flores, 123</p>
-                  <p>Jardim Paulista</p>
-                  <p>São Paulo - SP</p>
-                  <p>CEP: 01415-000</p>
-                </div>
+                <a
+                  href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
+                  className="inline-flex items-center gap-2 text-[#20b2aa] hover:underline"
+                >
+                  <Mail className="w-4 h-4" />
+                  Enviar e-mail direto
+                </a>
               </div>
 
               <div>
                 <h3 className="text-lg font-medium text-[#1a2b4c] mb-2">
-                  Redes Sociais
+                  Quer ser parceiro?
                 </h3>
-                <div className="flex space-x-4">
-                  <a href="#" className="text-gray-600 hover:text-[#20b2aa]">
-                    Facebook
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-[#20b2aa]">
-                    Instagram
-                  </a>
-                  <a href="#" className="text-gray-600 hover:text-[#20b2aa]">
-                    LinkedIn
-                  </a>
-                </div>
+                <p className="text-gray-600 mb-3 text-sm">
+                  Conheça os planos e cadastre seu negócio no ServiceSnap.
+                </p>
+                <Link
+                  href="/pricing"
+                  className="text-sm font-medium text-[#20b2aa] hover:underline"
+                >
+                  Ver planos →
+                </Link>
               </div>
             </div>
           </div>

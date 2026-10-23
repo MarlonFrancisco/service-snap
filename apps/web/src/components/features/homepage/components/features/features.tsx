@@ -56,8 +56,8 @@ export const Features = () => {
               Qualidade garantida
             </h3>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Sistema de avaliações transparente com feedback real de milhares
-              de clientes satisfeitos.
+              Sistema de avaliações transparente para você escolher com base em
+              experiências reais de outros clientes.
             </p>
           </motion.div>
         </div>

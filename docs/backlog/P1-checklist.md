@@ -1,0 +1,70 @@
+# Checklist P1 — Confiança & higiene (Roadmap)
+
+Fonte: [ServiceSnap — Roadmap de Produto e Crescimento](https://servicesnap-roadmap-de-produto-e-m6ob.pages.grok.bot/) (auditoria 22–23/10/2026).  
+Objetivo: corrigir confiança pública antes de escalar. Ver também [`P2-checklist.md`](./P2-checklist.md) e [`P3-checklist.md`](./P3-checklist.md).
+
+Marque com `[x]` conforme for fechando.
+
+---
+
+## Confiança pública
+
+- [x] **Contato real** — placeholders removidos; só e-mail `general@ssnap.io` até haver telefone/endereço reais  
+  → `apps/web/src/app/contact/page.tsx`
+- [x] **Redes sociais** — `href="#"` removidos; footer aponta para contato/planos (sem perfis inventados)  
+  → `apps/web/src/components/layout/footer/footer.tsx`, `contact/page.tsx`
+- [x] **JSON-LD `sameAs`** — removido até existirem URLs reais  
+  → `apps/web/src/app/layout.tsx`
+- [x] **Claims honestos** — “milhares…” removido na home/pricing  
+  → `features/features.tsx`, `pricing/pricing.tsx`
+- [x] **Formulário de contato** — submit abre `mailto:` com a mensagem composta
+
+---
+
+## SEO & indexação
+
+- [x] **Title / description únicos** por rota pública (`/`, `/booking`, `/pricing`, `/about`, `/contact`, `/help`)
+- [x] **Open Graph + Twitter Card** (title, description, image)
+- [x] **Canonical** por página
+- [x] **Sitemap** incluir `/pricing` (e rotas públicas estáveis)  
+  → `apps/web/src/app/sitemap.ts`
+- [x] **`noindex` em preview/dev** — `app/robots.ts` + `robots` metadata via `VERCEL_ENV` / `NEXT_PUBLIC_ALLOW_INDEXING`
+
+---
+
+## Home & busca (cold-start visível)
+
+- [x] **Empty state útil na home** — indicar profissional, lista de espera, seja parceiro  
+  → `recomendations/`, empty states
+- [ ] **Busca: relevância** — filtro real de categoria/local; resultados coerentes com a query
+- [x] **Busca: empty state honesto** — empty só após load; loading com skeleton; sem `hidden`+`flex` conflitante
+
+---
+
+## Performance (prod)
+
+- [ ] **Home / busca / loja** — investigar streaming lento (~35–42 s observados em prod); meta: TTFB/interativo aceitável para demo
+- [ ] Confirmar se é ambiente, waterfall de dados ou bloqueio de streaming; documentar causa e fix
+
+---
+
+## Área parceiro
+
+- [ ] **WhatsApp usável** — status da conexão, teste de envio, templates, log/histórico (não só formulários técnicos Meta)  
+  → `notifications-module/whatsapp-settings/`
+- [ ] **Billing UX** — fluxo claro de cancelamento vs upgrade; faturas coerentes (sem estados contraditórios)  
+  → `plans-module/`
+
+---
+
+## Done when
+
+- [ ] Contato/redes/claims não enganam um visitante novo
+- [ ] Dev/preview não indexa; prod tem meta/OG básicos
+- [ ] Home vazia comunica próximo passo (não parece bug)
+- [ ] Busca não mente sobre resultados
+- [ ] WhatsApp e billing não bloqueiam um parceiro piloto
+
+---
+
+*Checklist local — não são issues do GitHub. Atualize este arquivo conforme o progresso.*
