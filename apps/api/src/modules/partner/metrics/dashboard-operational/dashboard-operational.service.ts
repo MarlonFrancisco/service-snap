@@ -218,8 +218,8 @@ export class DashboardOperationalService {
   }
 
   private formatAverageTime(result: AverageTimeResult) {
-    const currentValue = Number(result.current_avg_duration) || 30;
-    const previousValue = Number(result.prev_avg_duration) || 30;
+    const currentValue = Number(result.current_avg_duration) || 0;
+    const previousValue = Number(result.prev_avg_duration) || 0;
     const percentageChange =
       previousValue > 0
         ? parseFloat(
