@@ -21,7 +21,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ROI_DISCLAIMER,
   ROI_ILLUSTRATIVE_BOOKINGS_LIFT,
@@ -89,8 +89,11 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
   const [noShowRate, setNoShowRate] = useState([0]);
   const [selectedPlan, setSelectedPlan] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
+  const planPriceTouchedRef = useRef(false);
 
+  // Seed once from live `/plans` — never overwrite a value the user typed.
   useEffect(() => {
+    if (planPriceTouchedRef.current) return;
     if (
       typeof monthlyPlanPrice === 'number' &&
       Number.isFinite(monthlyPlanPrice) &&
@@ -293,11 +296,12 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                         type="number"
                         value={selectedPlan || ''}
                         placeholder="Preencha ou use o plano da página"
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          planPriceTouchedRef.current = true;
                           setSelectedPlan(
                             Math.max(0, Number(e.target.value) || 0),
-                          )
-                        }
+                          );
+                        }}
                         className="pl-10"
                         min="0"
                       />
