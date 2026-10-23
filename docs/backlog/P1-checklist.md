@@ -36,7 +36,7 @@ Marque com `[x]` conforme for fechando.
 
 - [x] **Empty state útil na home** — indicar profissional, lista de espera, seja parceiro  
   → `recomendations/`, empty states
-- [ ] **Busca: relevância** — filtro real de categoria/local; resultados coerentes com a query
+- [x] **Busca: relevância** — parse de intent (categoria/local), filtro pós-Upstash (vazio > irrelevante), params `category`/`location`, index com `categoryNames`/`serviceNames`/`searchText`
 - [x] **Busca: empty state honesto** — empty só após load; loading com skeleton; sem `hidden`+`flex` conflitante
 
 ---

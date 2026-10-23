@@ -13,6 +13,8 @@ export function ResultsList() {
   const params = useSearchParams();
   const { data, isPending } = useSearchQuery({
     query: params.get('query')!,
+    location: params.get('location'),
+    category: params.get('category'),
   });
 
   const selectedStore = useSearchStore((state) => state.selectedStore);

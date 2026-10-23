@@ -111,17 +111,17 @@ export class UpstashSearchService {
       this.logger.warn(
         `Cannot search in index ${indexName}: client not available`,
       );
-      return { results: [], count: 0 };
+      return [];
     }
 
     try {
       const results = await index.search({
-        query,
+        query: query || '*',
         limit: options?.limit ?? 100,
         filter: options?.filter,
       });
 
-      return results;
+      return Array.isArray(results) ? results : [];
     } catch (error) {
       this.logger.error(`Search failed in index ${indexName}:`, error);
       throw error;

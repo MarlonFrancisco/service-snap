@@ -13,6 +13,10 @@ export interface IStoreSearchContent {
   zipCode: string;
   services: Service[];
   categories: Category[];
+  /** Flattened for full-text / relevance matching */
+  categoryNames: string[];
+  serviceNames: string[];
+  searchText: string;
   openTime: string;
   closeTime: string;
   businessDays: {

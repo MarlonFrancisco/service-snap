@@ -18,6 +18,8 @@ export function SearchResults() {
   const params = useSearchParams();
   const { data, isPending, isError } = useSearchQuery({
     query: params.get('query')!,
+    location: params.get('location'),
+    category: params.get('category'),
   });
 
   const hasResults = Boolean(data && data.length > 0);
@@ -51,7 +53,11 @@ export function SearchResults() {
             className="flex py-20"
             icon={Search}
             title="Nenhum resultado encontrado"
-            description="Tente outros termos, outra categoria ou outra região. Se a rede ainda estiver chegando aí, indique um profissional pelo contato."
+            description={
+              params.get('category') || params.get('location')
+                ? 'Nada bate com essa categoria ou local. Tente outro termo ou região — não mostramos resultados irrelevantes.'
+                : 'Tente outros termos, outra categoria ou outra região. Se a rede ainda estiver chegando aí, indique um profissional pelo contato.'
+            }
             actionLabel="Voltar para a página inicial"
             onAction={() => router.push('/')}
           />

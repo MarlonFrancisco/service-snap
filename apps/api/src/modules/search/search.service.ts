@@ -1,4 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  filterAndRankSearchHits,
+  parseSearchIntent,
+  type TSearchHit,
+} from '../../utils/helpers/search-relevance.helpers';
 import { UpstashSearchService } from '../upstash-search/upstash-search.service';
 import { IStoreSearchContent, IStoreSearchMetadata } from './search.types';
 
@@ -48,21 +53,40 @@ export class SearchService {
   }
 
   /**
-   * Search for stores
+   * Search for stores with category/location relevance filtering.
+   * Prefer empty results over irrelevant matches when constraints are present.
    */
   async search(
     query: string,
     options?: {
       filter?: string;
+      location?: string;
+      category?: string;
     },
   ) {
     try {
-      const results = await this.upstashService.search(STORES_INDEX, query, {
-        limit: 100,
-        filter: options?.filter,
+      const intent = parseSearchIntent(query, {
+        location: options?.location,
+        category: options?.category,
       });
 
-      return results;
+      const results = await this.upstashService.search(
+        STORES_INDEX,
+        intent.searchQuery,
+        {
+          limit: 100,
+          filter: options?.filter,
+        },
+      );
+
+      const hits = normalizeSearchHits(results);
+      const ranked = filterAndRankSearchHits(hits, intent);
+
+      this.logger.debug(
+        `Search q="${intent.rawQuery}" → engine="${intent.searchQuery}" loc=${intent.location ?? '-'} cat=${intent.category ?? '-'} raw=${hits.length} kept=${ranked.length}`,
+      );
+
+      return ranked;
     } catch (error) {
       this.logger.error('Search failed:', error);
       throw error;
@@ -81,10 +105,26 @@ export class SearchService {
         }),
       });
 
-      return results;
+      return normalizeSearchHits(results);
     } catch (error) {
       this.logger.error('Search failed:', error);
       throw error;
     }
   }
+}
+
+function normalizeSearchHits(results: unknown): TSearchHit[] {
+  if (Array.isArray(results)) {
+    return results as TSearchHit[];
+  }
+
+  if (
+    results &&
+    typeof results === 'object' &&
+    Array.isArray((results as { results?: unknown }).results)
+  ) {
+    return (results as { results: TSearchHit[] }).results;
+  }
+
+  return [];
 }

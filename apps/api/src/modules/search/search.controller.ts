@@ -6,7 +6,14 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get()
-  async search(@Query('query') query: string) {
-    return this.searchService.search(query);
+  async search(
+    @Query('query') query: string,
+    @Query('location') location?: string,
+    @Query('category') category?: string,
+  ) {
+    return this.searchService.search(query ?? '', {
+      location,
+      category,
+    });
   }
 }

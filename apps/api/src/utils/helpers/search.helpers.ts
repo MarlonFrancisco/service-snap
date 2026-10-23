@@ -16,6 +16,26 @@ export const mountStoreSearchIndex = (
   content: IStoreSearchContent;
   metadata: IStoreSearchMetadata;
 } => {
+  const categoryNames = (store.categories || [])
+    .map((category) => category?.name)
+    .filter((name): name is string => Boolean(name));
+
+  const serviceNames = (store.services || [])
+    .map((service) => service?.name)
+    .filter((name): name is string => Boolean(name));
+
+  const searchText = [
+    store.name,
+    store.description,
+    store.city,
+    store.state,
+    store.address,
+    ...categoryNames,
+    ...serviceNames,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return {
     content: {
       name: store.name,
@@ -27,6 +47,9 @@ export const mountStoreSearchIndex = (
       zipCode: store.zipCode,
       services: store.services,
       categories: store.categories,
+      categoryNames,
+      serviceNames,
+      searchText,
       openTime: store.openTime,
       closeTime: store.closeTime,
       businessDays: store.businessDays,

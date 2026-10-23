@@ -13,6 +13,10 @@ export const buildSearchUrl = (searchFilters: ISearchFilters) => {
     params.append('query', searchFilters.query);
   }
 
+  if (searchFilters.categories?.length) {
+    params.append('category', searchFilters.categories[0]!);
+  }
+
   if (searchFilters.date) {
     params.append('date', searchFilters.date.toISOString());
   }

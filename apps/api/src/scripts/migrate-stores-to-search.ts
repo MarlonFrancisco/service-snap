@@ -65,33 +65,53 @@ async function migrateStoresToSearch() {
     }
 
     // Prepare documents for indexing
-    const documents = stores.map((store: any) => ({
-      id: store.id,
-      content: {
-        name: store.name,
-        description: store.description,
-        address: store.address,
-        city: store.city,
-        state: store.state,
-        zipCode: store.zipCode,
-        services: store.services || [],
-        openTime: store.openTime,
-        closeTime: store.closeTime,
-        businessDays: store.businessDays,
-      },
-      metadata: {
-        ownerId: store.ownerId,
-        createdAt: store.createdAt,
-        telephone: store.telephone,
-        email: store.email,
-        website: store.website,
-        instagram: store.instagram,
-        facebook: store.facebook,
-        amenities: store.amenities,
-        gallery: store.gallery || [],
-        reviews: store.reviews || [],
-      },
-    }));
+    const documents = stores.map((store: any) => {
+      const services = store.services || [];
+      const serviceNames = services
+        .map((service: { name?: string }) => service?.name)
+        .filter(Boolean);
+      const searchText = [
+        store.name,
+        store.description,
+        store.city,
+        store.state,
+        store.address,
+        ...serviceNames,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      return {
+        id: store.id,
+        content: {
+          name: store.name,
+          description: store.description,
+          address: store.address,
+          city: store.city,
+          state: store.state,
+          zipCode: store.zipCode,
+          services,
+          serviceNames,
+          categoryNames: [],
+          searchText,
+          openTime: store.openTime,
+          closeTime: store.closeTime,
+          businessDays: store.businessDays,
+        },
+        metadata: {
+          ownerId: store.ownerId,
+          createdAt: store.createdAt,
+          telephone: store.telephone,
+          email: store.email,
+          website: store.website,
+          instagram: store.instagram,
+          facebook: store.facebook,
+          amenities: store.amenities,
+          gallery: store.gallery || [],
+          reviews: store.reviews || [],
+        },
+      };
+    });
 
     // Upsert documents in batches (Upstash Search may have batch size limits)
     const batchSize = 100;
