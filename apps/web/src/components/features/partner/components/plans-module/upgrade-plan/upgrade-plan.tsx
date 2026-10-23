@@ -100,6 +100,9 @@ export function UpgradePlan() {
               const isCurrentPlan =
                 plan.id === currentPlan?.planId &&
                 plan.interval === currentPlan?.billingPeriod;
+              const isSameTierDifferentInterval =
+                plan.id === currentPlan?.planId &&
+                plan.interval !== currentPlan?.billingPeriod;
               const isUpgrade =
                 currentPlanIndex >= 0 ? index > currentPlanIndex : true;
               const isDowngrade =
@@ -109,11 +112,13 @@ export function UpgradePlan() {
                 ? 'Seu plano atual'
                 : isCancellationScheduled
                   ? 'Reative o plano atual primeiro'
-                  : isUpgrade
-                    ? 'Fazer upgrade'
-                    : isDowngrade
-                      ? 'Mudar para este plano'
-                      : 'Assinar plano';
+                  : isSameTierDifferentInterval
+                    ? `Mudar para ${plan.interval === 'month' ? 'mensal' : 'anual'}`
+                    : isUpgrade
+                      ? 'Fazer upgrade'
+                      : isDowngrade
+                        ? 'Mudar para este plano'
+                        : 'Assinar plano';
 
               return (
                 <CarouselItem
@@ -126,9 +131,8 @@ export function UpgradePlan() {
                     isCurrentPlan={isCurrentPlan}
                     customButtonText={buttonText}
                     onSelectPlan={handleSelectPlan}
-                    isLoading={
-                      isCreatingSubscription || isCancellationScheduled
-                    }
+                    isLoading={isCreatingSubscription}
+                    disabled={isCancellationScheduled}
                   />
                 </CarouselItem>
               );

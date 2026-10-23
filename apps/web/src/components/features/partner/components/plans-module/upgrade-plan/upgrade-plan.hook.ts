@@ -1,7 +1,7 @@
 import { useSubscriptionMutations } from '@/hooks';
 import { usePlansQuery } from '@/hooks/use-query/use-plans-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const benefits = [
   {
@@ -42,19 +42,31 @@ export function useUpgradePlan() {
   const { createSubscriptionMutation } = useSubscriptionMutations();
 
   const [type, setType] = useState<'month' | 'year'>('month');
+  const [hasUserPickedInterval, setHasUserPickedInterval] = useState(false);
+
+  // Default toggle to the subscription's billing period so rank/ROI stay coherent.
+  useEffect(() => {
+    if (hasUserPickedInterval) return;
+    if (currentPlan?.billingPeriod === 'year' || currentPlan?.billingPeriod === 'month') {
+      setType(currentPlan.billingPeriod);
+    }
+  }, [currentPlan?.billingPeriod, hasUserPickedInterval]);
+
+  const handleSetType = useCallback((next: 'month' | 'year') => {
+    setHasUserPickedInterval(true);
+    setType(next);
+  }, []);
 
   const filteredPlans = useMemo(() => {
     return data?.[type] || [];
   }, [data, type]);
 
+  // Rank by product id within the toggled interval list — ignore interval mismatch
+  // so month↔year toggle does not reset every card to "upgrade" / show ROI wrongly.
   const currentPlanIndex = useMemo(() => {
     if (!currentPlan?.planId) return -1;
-    return filteredPlans.findIndex(
-      (plan) =>
-        plan.id === currentPlan.planId &&
-        plan.interval === currentPlan.billingPeriod,
-    );
-  }, [filteredPlans, currentPlan?.planId, currentPlan?.billingPeriod]);
+    return filteredPlans.findIndex((plan) => plan.id === currentPlan.planId);
+  }, [filteredPlans, currentPlan?.planId]);
 
   const isOnHighestPlan = useMemo(() => {
     if (!filteredPlans.length || currentPlanIndex < 0) return false;
@@ -86,6 +98,6 @@ export function useUpgradePlan() {
     isCreatingSubscription: createSubscriptionMutation.isPending,
     handleSelectPlan,
     type,
-    setType,
+    setType: handleSetType,
   };
 }

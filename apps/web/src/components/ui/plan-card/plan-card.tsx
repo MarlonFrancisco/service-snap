@@ -14,6 +14,7 @@ export const PlanCard = ({
   customButtonText,
   onSelectPlan,
   isLoading = false,
+  disabled = false,
 }: TPlanCardConfig) => {
   const { handleCreateSubscription } = usePlanCard({ priceId: plan.priceId });
 
@@ -23,8 +24,10 @@ export const PlanCard = ({
   const originalPrice = hasDiscount
     ? priceInReais / (1 - plan.discount / 100)
     : priceInReais;
+  const isDisabled = isCurrentPlan || isLoading || disabled;
 
   const handleClick = () => {
+    if (isDisabled) return;
     if (onSelectPlan) {
       onSelectPlan(plan.priceId);
     } else {
@@ -103,7 +106,7 @@ export const PlanCard = ({
                 : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
           }`}
           onClick={handleClick}
-          disabled={isCurrentPlan || isLoading}
+          disabled={isDisabled}
         >
           {customButtonText || 'Assinar plano'}
         </Button>

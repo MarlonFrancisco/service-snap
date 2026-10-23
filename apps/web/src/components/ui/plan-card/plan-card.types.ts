@@ -8,4 +8,6 @@ export type TPlanCardConfig = {
   customButtonText?: string;
   onSelectPlan?: (priceId: string) => void;
   isLoading?: boolean;
+  /** Policy disable (e.g. cancel scheduled) — separate from pending loading. */
+  disabled?: boolean;
 };
