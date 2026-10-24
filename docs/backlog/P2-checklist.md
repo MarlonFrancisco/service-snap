@@ -21,7 +21,8 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Área parceiro (dev)
 
-- [ ] **A1 — Painel** — telas de Profissionais e Clientes; onboarding para parceiro novo; relatórios/exportação (limites do plano “Profissionais 1/20” refletidos na UI)
+- [ ] **A1 — Painel** — telas de Profissionais e Clientes; onboarding para parceiro novo; relatórios/exportação  
+  → limites `PRO_LIMIT` na UI/API (aba Equipe + 403 no create) feitos; falta Clientes/onboarding/exportação
 - [x] **A3 — WhatsApp** — Verify Token do webhook **não** em texto puro *(UI mask no P1; checklist alinhado)*
 - [x] **A4 — Analytics** — remover placeholders (CAC R$ 50, Tempo Médio 30min, heatmap fake); formato BR (`R$ 14.000`); eixo do gráfico legível; empty state em agendamentos
 - [x] **A6 — Moeda** — padronizar (`R$ 199,90` etc.; sem misturar `R$199.90` / `100.00 R$`)
@@ -35,7 +36,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 ## Funcionalidades (produto)
 
 - [ ] **F5** — Páginas `/categoria/cidade` com metadata própria + JSON-LD `LocalBusiness`
-- [ ] **F6** — Busca IA com filtro real de categoria/local + empty state honesto *(complementa bugs de busca no P1)*
+- [x] **F6** — Busca IA com filtro real de categoria/local + empty state honesto *(shipped no P1 — relevância + empty state)*
 - [ ] **F7** — Sinal/depósito Pix anti no-show
 
 ---
