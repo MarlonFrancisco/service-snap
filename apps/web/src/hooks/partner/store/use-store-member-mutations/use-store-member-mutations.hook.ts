@@ -8,6 +8,12 @@ import { toast } from 'sonner';
 export const useStoreMemberMutations = () => {
   const queryClient = useQueryClient();
 
+  const invalidateCurrentPlan = () => {
+    void queryClient.invalidateQueries({
+      queryKey: CACHE_QUERY_KEYS.currentPlan(),
+    });
+  };
+
   const updateStoreMembersCache = (
     storeId: string,
     updater: (members: IProfessional[]) => IProfessional[],
@@ -55,10 +61,15 @@ export const useStoreMemberMutations = () => {
       updateStoreMembersCache(storeId, (members) =>
         members.filter((m) => m.id !== data.id),
       );
+      invalidateCurrentPlan();
       toast.success('Membro da loja excluído com sucesso');
     },
-    onError: () => {
-      toast.error('Erro ao excluir membro da loja');
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erro ao excluir membro da loja';
+      toast.error(message);
     },
   });
 
@@ -70,10 +81,15 @@ export const useStoreMemberMutations = () => {
     onSuccess: (data, variables) => {
       const storeId = data.store?.id || variables.storeId;
       updateStoreMembersCache(storeId, (members) => [...members, data]);
+      invalidateCurrentPlan();
       toast.success('Membro da loja adicionado com sucesso');
     },
-    onError: () => {
-      toast.error('Erro ao adicionar membro da loja');
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Erro ao adicionar membro da loja';
+      toast.error(message);
     },
   });
 
