@@ -7,6 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { Public } from '../../../auth/decorators/public.decorator';
 import { CreateSchedulesDto } from './dto/create-schedule.dto';
 import { ScheduleDto } from './dto/schedule.dto';
 import { ScheduleService } from './schedule.service';
@@ -14,6 +15,13 @@ import { ScheduleService } from './schedule.service';
 @Controller('partner/stores/:storeId/schedules')
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
+
+  /** Public booking availability — no customer PII. */
+  @Public()
+  @Get('availability')
+  findAvailability(@Param('storeId') storeId: string) {
+    return this.scheduleService.findAvailability(storeId);
+  }
 
   @Get()
   findAll(@Param('storeId') storeId: string) {
