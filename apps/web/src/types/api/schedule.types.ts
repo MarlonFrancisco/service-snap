@@ -33,3 +33,13 @@ export interface ICreateAppointment {
   storeMember: Partial<IProfessional>;
   store: Partial<IStore>;
 }
+
+/** Public booking availability — no customer PII. */
+export interface IScheduleAvailability {
+  id: string;
+  startTime: string;
+  endTime: string;
+  date: string;
+  status: TAppointmentStatus;
+  storeMember: { id: string };
+}
