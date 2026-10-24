@@ -1,6 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, MoreThanOrEqual, Repository } from 'typeorm';
+import { Subscription } from '../../../subscription/subscription.entity';
 import { UsersService } from '../../../users/users.service';
 import { Service } from '../category/service/service.entity';
 import { Store } from '../store.entity';
@@ -13,6 +18,8 @@ export class StoreMemberService {
   constructor(
     @InjectRepository(StoreMember)
     private readonly storeMemberRepository: Repository<StoreMember>,
+    @InjectRepository(Subscription)
+    private readonly subscriptionRepository: Repository<Subscription>,
     private readonly userService: UsersService,
   ) {}
 
@@ -54,7 +61,12 @@ export class StoreMemberService {
     });
   }
 
-  async create(storeMemberDto: CreateStoreMemberDto): Promise<StoreMember> {
+  async create(
+    storeMemberDto: CreateStoreMemberDto,
+    ownerUserId: string,
+  ): Promise<StoreMember> {
+    await this.assertWithinProfessionalLimit(ownerUserId);
+
     const user = await this.userService.findByOne({
       email: storeMemberDto.user?.email,
     });
@@ -116,5 +128,37 @@ export class StoreMemberService {
     });
 
     return { id, store: { id: storeId } as Store };
+  }
+
+  /** PRO_LIMIT === 0 means unlimited (matches partner UI). */
+  private async assertWithinProfessionalLimit(ownerUserId: string) {
+    const subscription = await this.subscriptionRepository.findOne({
+      where: {
+        user: { id: ownerUserId },
+        status: In(['active', 'paid', 'trialing']),
+        currentPeriodEnd: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    const proLimit = subscription?.features?.PRO_LIMIT ?? 0;
+    if (!proLimit) {
+      return;
+    }
+
+    const currentCount = await this.storeMemberRepository
+      .createQueryBuilder('member')
+      .innerJoin('member.store', 'store')
+      .innerJoin('store.owner', 'owner')
+      .where('owner.id = :ownerUserId', { ownerUserId })
+      .andWhere('store.isActive = true')
+      .andWhere('store.isDeleted = false')
+      .andWhere('member.isDeleted = false')
+      .getCount();
+
+    if (currentCount >= proLimit) {
+      throw new ForbiddenException(
+        `Limite de profissionais do plano atingido (${currentCount}/${proLimit}). Faça upgrade para adicionar mais.`,
+      );
+    }
   }
 }

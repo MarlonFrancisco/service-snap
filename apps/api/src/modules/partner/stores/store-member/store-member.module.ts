@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Subscription } from '../../../subscription/subscription.entity';
 import { UsersModule } from '../../../users';
 import { BlockedTimeModule } from './blocked-time/blocked-time.module';
 import { StoreMemberController } from './store-member.controller';
@@ -8,7 +9,7 @@ import { StoreMemberService } from './store-member.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StoreMember]),
+    TypeOrmModule.forFeature([StoreMember, Subscription]),
     UsersModule,
     BlockedTimeModule,
   ],
