@@ -68,6 +68,9 @@ export function CheckoutStep() {
                   ],
                 }),
               );
+              void queryClient.invalidateQueries({
+                queryKey: CACHE_QUERY_KEYS.schedulesAvailability(store!.id),
+              });
 
               router.push('/profile');
             },

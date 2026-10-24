@@ -1,11 +1,12 @@
 'use client';
+import { useSchedulesQuery } from '@/hooks/use-query/use-schedules-query';
 import { generateTimeSlots } from '@/store/admin/agenda/agenda.helpers';
 import { TWorkingDays } from '@/types/api/stores.types';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
 import { Button, Calendar as CalendarComponent, Card } from '@repo/ui';
 import { Calendar, Clock } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
@@ -21,9 +22,20 @@ export function DateTimeSelectionStep() {
   const selectedTime = watch('selectedTime');
   const selectedProfessional = watch('selectedProfessional');
   const [availableSlots, setAvailableSlots] = useState<ITimeSlot[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
-  const generateMockSlots = (): ITimeSlot[] => {
+  const { schedules, isPendingSchedules } = useSchedulesQuery({
+    storeId: store?.id,
+  });
+
+  const professionalSchedules = useMemo(() => {
+    // "Qualquer profissional": não restringe por agenda (mesmo comportamento anterior).
+    if (!selectedProfessional) return [];
+    return schedules.filter(
+      (schedule) => schedule.storeMember.id === selectedProfessional.id,
+    );
+  }, [schedules, selectedProfessional]);
+
+  const generateSlots = (): ITimeSlot[] => {
     const selectedDateToIso = selectedDate?.toISOString().split('T')[0];
 
     const slots: ITimeSlot[] = [];
@@ -41,19 +53,18 @@ export function DateTimeSelectionStep() {
           blockedTime.date === selectedDateToIso && blockedTime.time === time,
       );
 
-      const isScheduledTime = selectedProfessional?.schedules?.some(
-        (schedule) => {
-          const startTimeNormalized = schedule.startTime.replace(':', '');
-          const endTimeNormalized = schedule.endTime.replace(':', '');
-          const timeNormalized = time.replace(':', '');
+      const isScheduledTime = professionalSchedules.some((schedule) => {
+        const scheduleDate = String(schedule.date).slice(0, 10);
+        const startTimeNormalized = schedule.startTime.replace(':', '');
+        const endTimeNormalized = schedule.endTime.replace(':', '');
+        const timeNormalized = time.replace(':', '');
 
-          return (
-            schedule.date === selectedDateToIso &&
-            startTimeNormalized <= timeNormalized &&
-            endTimeNormalized > timeNormalized
-          );
-        },
-      );
+        return (
+          scheduleDate === selectedDateToIso &&
+          startTimeNormalized <= timeNormalized &&
+          endTimeNormalized > timeNormalized
+        );
+      });
 
       slots.push({
         time,
@@ -65,16 +76,11 @@ export function DateTimeSelectionStep() {
   };
 
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!selectedDate || isPendingSchedules) return;
+    setAvailableSlots(generateSlots());
+  }, [selectedDate, isPendingSchedules, professionalSchedules, selectedProfessional]);
 
-    setIsLoadingSlots(true);
-
-    setTimeout(() => {
-      const slots = generateMockSlots();
-      setAvailableSlots(slots);
-      setIsLoadingSlots(false);
-    }, 500);
-  }, [selectedDate]);
+  const isLoadingSlots = isPendingSchedules;
 
   const handleDateSelect = (date: Date | undefined) => {
     setValue('selectedDate', date);

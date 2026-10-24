@@ -1,4 +1,8 @@
-import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
+import {
+  IAppointment,
+  ICreateAppointment,
+  IScheduleAvailability,
+} from '@/types/api/schedule.types';
 import { apiClient } from '../../api';
 import { HttpClientService } from '../../api/http-client.service';
 
@@ -16,6 +20,12 @@ export class ScheduleService {
   static async getAll(storeId: string) {
     return await this.apiClient.get<IAppointment[]>(
       `/partner/stores/${storeId}/schedules`,
+    );
+  }
+
+  static async getAvailability(storeId: string) {
+    return await this.apiClient.get<IScheduleAvailability[]>(
+      `/partner/stores/${storeId}/schedules/availability`,
     );
   }
 

@@ -30,8 +30,8 @@ export class StoresController {
   @Public()
   @Get(':id')
   async getStore(@Param('id') id: string) {
-    // Public booking only needs member-scoped schedules/blockedTimes.
-    // Top-level `schedules` duplicated the full history and inflated payload.
+    // Schedules are loaded async on the client (GET .../schedules/availability).
+    // Keep member blockedTimes for booking slot checks.
     return this.storesService.findOne(id, {
       relations: [
         'gallery',
@@ -39,7 +39,6 @@ export class StoresController {
         'storeMembers.user',
         'storeMembers.services',
         'storeMembers.blockedTimes',
-        'storeMembers.schedules',
         'services',
         'services.category',
         'reviews',

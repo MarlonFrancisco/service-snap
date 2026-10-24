@@ -58,7 +58,8 @@ export interface IStore extends TWorkingHours {
   website?: string;
   instagram?: string;
   facebook?: string;
-  schedules: IAppointment[];
+  /** Ausente no detalhe público slim; agenda parceiro carrega via endpoint próprio. */
+  schedules?: IAppointment[];
   businessDays: TWorkingDays;
   notificationsHistory: INotificationsHistory[];
   notificationsSettings: INotificationsSettings;
