@@ -65,6 +65,9 @@ export function GeneralMetricsModule() {
   }));
 
   const performanceData = overview.appointmentsByDay;
+  const hasPerformanceActivity = performanceData.some(
+    (day) => (day.appointments ?? 0) > 0 || (day.revenue ?? 0) > 0,
+  );
 
   // Obter texto de comparação baseado no período
   const getComparisonText = () => {
@@ -212,7 +215,7 @@ export function GeneralMetricsModule() {
               </div>
             </CardHeader>
             <CardContent className="px-3 sm:px-6">
-              {performanceData.length === 0 || !performanceData ? (
+              {!hasPerformanceActivity ? (
                 <div className="flex flex-col items-center justify-center h-[250px] sm:h-[300px] text-center">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                     <Target className="h-8 w-8 text-gray-400" />
@@ -229,7 +232,7 @@ export function GeneralMetricsModule() {
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                       data={performanceData}
-                      margin={{ top: 10, right: 5, left: -15, bottom: 0 }}
+                      margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
                     >
                       <defs>
                         <linearGradient
@@ -287,7 +290,10 @@ export function GeneralMetricsModule() {
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
-                        width={35}
+                        width={48}
+                        tickFormatter={(value) =>
+                          Number(value).toLocaleString('pt-BR')
+                        }
                       />
                       <YAxis
                         yAxisId="right"
@@ -296,7 +302,10 @@ export function GeneralMetricsModule() {
                         fontSize={10}
                         tickLine={false}
                         axisLine={false}
-                        width={35}
+                        width={56}
+                        tickFormatter={(value) =>
+                          Number(value).toLocaleString('pt-BR')
+                        }
                       />
                       <Tooltip
                         contentStyle={{

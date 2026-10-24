@@ -316,7 +316,7 @@ export function CustomerMetricsModule() {
                         </div>
                         <div className="text-right">
                           <p className="text-sm text-gray-900">
-                            R$ {segment.ltv.toLocaleString()}
+                            R$ {segment.ltv.toLocaleString('pt-BR')}
                           </p>
                           <Badge
                             variant="outline"
@@ -408,7 +408,7 @@ export function CustomerMetricsModule() {
                         <div className="flex items-center gap-2">
                           <div className="text-right">
                             <p className="text-sm text-gray-900">
-                              R$ {customer.spent.toLocaleString()}
+                              R$ {customer.spent.toLocaleString('pt-BR')}
                             </p>
                           </div>
                         </div>

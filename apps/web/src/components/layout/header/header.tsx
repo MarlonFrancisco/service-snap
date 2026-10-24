@@ -51,7 +51,10 @@ export const Header = ({
 
         {/* Header Bar */}
         <motion.div
-          className="relative z-50 overflow-hidden h-full bg-foreground will-change-max-height"
+          className={cn(
+            'relative z-50 overflow-hidden h-full bg-foreground will-change-max-height',
+            !isMenuOpen && 'pointer-events-none',
+          )}
           aria-hidden={!isMenuOpen}
           inert={isMenuOpen ? false : true}
           {...dropdownAnimation(isMenuOpen)}

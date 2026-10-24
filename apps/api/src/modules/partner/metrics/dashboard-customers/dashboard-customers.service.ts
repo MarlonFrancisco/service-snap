@@ -230,14 +230,13 @@ export class DashboardCustomersService {
           )
         : 0;
 
-    const cac = 50; // Valor padrão em R$
-
     return {
       value: Math.round(currentLTV),
       comparison: {
         percentageChange,
       },
-      cac,
+      // No acquisition-cost data yet — omit inventing a placeholder CAC.
+      cac: null,
     };
   }
 

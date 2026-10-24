@@ -4,8 +4,14 @@ import { useMemo } from 'react';
 export const useProfileStats = () => {
   const { user, isPendingUser } = useUserQuery();
 
+  // Match bookings-section list (scheduled + completed; exclude cancelled).
   const totalBookings = useMemo(() => {
-    return user?.schedules?.length ?? 0;
+    return (
+      user?.schedules?.filter(
+        (schedule) =>
+          schedule.status === 'scheduled' || schedule.status === 'completed',
+      ).length ?? 0
+    );
   }, [user?.schedules]);
 
   const upcomingCount = useMemo(() => {

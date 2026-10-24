@@ -1,3 +1,4 @@
+import { formatPriceByCountry } from '@repo/shared/formatters';
 import { Card, CardContent, useIsMobile } from '@repo/ui';
 import { ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import { memo } from 'react';
@@ -197,7 +198,7 @@ export const AgendaDayView = memo(() => {
 
                         <div className="flex-shrink-0 text-right pt-0.5">
                           <span className="text-sm font-semibold text-gray-900">
-                            R$ {appointment.service.price.toFixed(2)}
+                            {formatPriceByCountry(appointment.service.price)}
                           </span>
                         </div>
                       </div>
