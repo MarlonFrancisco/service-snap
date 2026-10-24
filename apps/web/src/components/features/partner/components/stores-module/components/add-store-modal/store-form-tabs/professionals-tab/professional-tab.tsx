@@ -25,10 +25,17 @@ export const ProfessionalTab = () => {
     isLoadingProfessionals,
     isErrorProfessionals,
     refetchProfessionals,
+    professionalsUsage,
     handleAddProfessional,
+    handleUpgrade,
     handleDeleteProfessional,
     handleToggleProfessionalStatus,
   } = useProfessionalTab();
+
+  const isAddDisabled =
+    isLoadingProfessionals ||
+    isErrorProfessionals ||
+    !!professionalsUsage?.isAtLimit;
 
   return (
     <TabsContent value="staff" className="space-y-4 mt-0">
@@ -42,19 +49,42 @@ export const ProfessionalTab = () => {
                 ? 'Não foi possível carregar a equipe'
                 : `${professionals.length} ${
                     professionals.length === 1 ? 'colaborador' : 'colaboradores'
-                  } cadastrados`}
+                  } nesta loja`}
+            {professionalsUsage && !isLoadingProfessionals
+              ? ` · ${professionalsUsage.label}`
+              : null}
           </p>
         </div>
-        <Button
-          size="sm"
-          onClick={() => handleAddProfessional()}
-          disabled={isLoadingProfessionals || isErrorProfessionals}
-          className="bg-gray-900 hover:bg-gray-800 text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          Adicionar Colaborador
-        </Button>
+        {professionalsUsage?.isAtLimit ? (
+          <Button
+            size="sm"
+            onClick={handleUpgrade}
+            className="bg-gray-900 hover:bg-gray-800 text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
+          >
+            Fazer upgrade
+          </Button>
+        ) : (
+          <Button
+            size="sm"
+            onClick={() => handleAddProfessional()}
+            disabled={isAddDisabled}
+            className="bg-gray-900 hover:bg-gray-800 text-white min-h-[44px] sm:min-h-[36px] w-full sm:w-auto"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Adicionar Colaborador
+          </Button>
+        )}
       </div>
+
+      {professionalsUsage?.isAtLimit ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+          <p className="text-xs text-amber-800">
+            Limite de profissionais do plano atingido (
+            {professionalsUsage.current}/{professionalsUsage.limit}). Faça
+            upgrade para adicionar mais colaboradores.
+          </p>
+        </div>
+      ) : null}
 
       {isLoadingProfessionals ? (
         <div className="flex items-center justify-center py-12 bg-gray-50 rounded-lg border border-gray-200">
