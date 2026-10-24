@@ -7,9 +7,10 @@ import { useCallback, useMemo } from 'react';
 import { NAVIGATION_ITEMS } from '../../header.constants';
 
 const navItemClassName =
-  // md (not sm): keep a single column while the mobile-only partner item is in the list
-  // (PartnerButton appears in the header bar from md up — same breakpoint as useIsMobile).
-  'text-2xl md:text-5xl text-center group relative isolate -mx-6 bg-foreground px-6 py-6 even:mt-px md:mx-0 md:px-0 md:py-16 md:odd:pr-16 md:even:mt-0 md:even:border-l md:even:border-neutral-200/10 md:even:pl-16 w-full whitespace-normal break-words';
+  // No -mx-6 on mobile: w-full + negative margin left the item viewport-left but
+  // short on the right (~48px), so text-center sat left of the true midpoint.
+  // md (not sm): 2-col grid only when the mobile-only partner item leaves the list.
+  'text-2xl md:text-5xl text-center group relative isolate mx-0 bg-foreground px-6 py-6 even:mt-px md:px-0 md:py-16 md:odd:pr-16 md:even:mt-0 md:even:border-l md:even:border-neutral-200/10 md:even:pl-16 w-full whitespace-normal break-words';
 
 export const NavigationMenu = () => {
   const openAuthAction = useAuthStore((state) => state.openAuthAction);
