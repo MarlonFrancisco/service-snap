@@ -1,10 +1,11 @@
+import type { PeriodFilterValue } from '@/components/features/partner/components/dashboard-module/components/period-filter-with-refresh';
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query/use-metrics-query.hook';
 import { usePartnerStore } from '@/store/partner/partner.store';
-import { PeriodType } from '@/types/api/metrics.types';
-import { useState } from 'react';
+import { downloadCsv, rowsToCsv } from '@/utils/helpers/csv.helper';
+import { useCallback, useState } from 'react';
 
 export function useCustomerMetrics() {
-  const [period, setPeriod] = useState<PeriodType>('month');
+  const [period, setPeriod] = useState<PeriodFilterValue>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const activeStore = usePartnerStore((state) => state.activeStore);
@@ -130,6 +131,64 @@ export function useCustomerMetrics() {
     setTimeout(() => setIsRefreshing(false), 2000);
   };
 
+  const handleExportCsv = useCallback(() => {
+    if (!customers) return;
+
+    const money = (value: number) =>
+      value.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+    const date = (value: Date | string) =>
+      new Date(value).toLocaleDateString('pt-BR');
+
+    const summaryRows = [
+      ['Base de clientes', customers.customerBase.value, '', ''],
+      ['Taxa de retenção (%)', customers.retentionRate.value, '', ''],
+      ['LTV médio (R$)', money(customers.averageLTV.value), '', ''],
+      ['NPS', customers.npsScore.value, '', ''],
+    ];
+
+    const vipRows = (customers.topVIPCustomers || []).map((item) => [
+      item.customerName,
+      item.visits,
+      money(item.totalSpent),
+      date(item.lastVisit),
+    ]);
+
+    const segmentRows = (customers.ltvBySegment || []).map((item) => [
+      item.segment,
+      item.customerCount,
+      money(item.averageLTV),
+      `${item.retentionRate}%`,
+    ]);
+
+    const csv = [
+      rowsToCsv(['Métrica', 'Valor', '', ''], summaryRows),
+      '',
+      rowsToCsv(
+        ['Cliente', 'Visitas', 'Total gasto (R$)', 'Última visita'],
+        vipRows,
+      ),
+      '',
+      rowsToCsv(
+        ['Segmento', 'Clientes', 'LTV médio (R$)', 'Retenção'],
+        segmentRows,
+      ),
+    ].join('\n');
+
+    const stamp = new Date().toISOString().slice(0, 10);
+    const storeSlug = (activeStore?.name || 'loja')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    downloadCsv(`clientes-${storeSlug || 'loja'}-${stamp}.csv`, csv);
+  }, [customers, activeStore?.name]);
+
   return {
     period,
     periodLabels,
@@ -142,6 +201,12 @@ export function useCustomerMetrics() {
     isEnabledCustomers,
     setPeriod,
     handleRefresh,
+    handleExportCsv,
     isRefreshing,
+    canExport:
+      !!customers &&
+      ((customers.topVIPCustomers?.length || 0) > 0 ||
+        (customers.ltvBySegment?.length || 0) > 0 ||
+        (customers.customerBase?.value || 0) > 0),
   };
 }

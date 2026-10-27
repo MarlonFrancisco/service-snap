@@ -3,13 +3,14 @@ import { TrendBadge } from '@/components/features/partner/components/dashboard-m
 import { PeriodFilterWithRefresh } from '@/components/features/partner/components/dashboard-module/components/period-filter-with-refresh';
 import {
   Badge,
+  Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   Progress,
 } from '@repo/ui';
-import { Crown, DollarSign, Heart, Star, Users } from 'lucide-react';
+import { Crown, DollarSign, Download, Heart, Star, Users } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
   Area,
@@ -38,7 +39,9 @@ export function CustomerMetricsModule() {
     isEnabledCustomers,
     customers,
     handleRefresh,
+    handleExportCsv,
     isRefreshing,
+    canExport,
   } = useCustomerMetrics();
 
   if (isLoading && isEnabledCustomers) {
@@ -65,13 +68,26 @@ export function CustomerMetricsModule() {
           </div>
         </div>
 
-        <PeriodFilterWithRefresh
-          value={period}
-          onValueChange={setPeriod}
-          periodLabels={periodLabels}
-          onRefresh={handleRefresh}
-          isRefreshing={isRefreshing}
-        />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+          <PeriodFilterWithRefresh
+            value={period}
+            onValueChange={setPeriod}
+            periodLabels={periodLabels}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={handleExportCsv}
+            disabled={!canExport}
+            className="min-h-[36px]"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
       {/* Quick Stats */}

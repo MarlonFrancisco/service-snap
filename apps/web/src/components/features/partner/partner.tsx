@@ -14,6 +14,7 @@ import {
 } from '@repo/ui';
 import type { ReactNode } from 'react';
 import { AdminSidebar, StoreSelector } from './components';
+import { OnboardingChecklist } from './components/onboarding-checklist';
 import { usePartner } from './partner.hook';
 
 type TPartnerProps = {
@@ -71,7 +72,10 @@ export function Partner({ children }: TPartnerProps) {
 
           {/* Module Content */}
           <div className="flex-1 overflow-y-auto">
-            <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+            <div className="p-4 sm:p-6 lg:p-8">
+              <OnboardingChecklist />
+              {children}
+            </div>
           </div>
         </SidebarInset>
       </div>

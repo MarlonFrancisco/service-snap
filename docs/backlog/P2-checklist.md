@@ -21,8 +21,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Área parceiro (dev)
 
-- [ ] **A1 — Painel** — telas de Profissionais e Clientes; onboarding para parceiro novo; relatórios/exportação  
-  → limites `PRO_LIMIT` na UI/API (aba Equipe + 403 no create) feitos; falta Clientes/onboarding/exportação
+- [x] **A1 — Painel** — Profissionais (limites `PRO_LIMIT`); Clientes (dashboard + CSV); onboarding checklist no shell do parceiro
 - [x] **A3 — WhatsApp** — Verify Token do webhook **não** em texto puro *(UI mask no P1; checklist alinhado)*
 - [x] **A4 — Analytics** — remover placeholders (CAC R$ 50, Tempo Médio 30min, heatmap fake); formato BR (`R$ 14.000`); eixo do gráfico legível; empty state em agendamentos
 - [x] **A6 — Moeda** — padronizar (`R$ 199,90` etc.; sem misturar `R$199.90` / `100.00 R$`)
@@ -51,7 +50,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 - [x] Visitante não encontra soft 404, checkout órfão nem H1 quebrado
 - [x] Painel parceiro não mostra analytics/moeda/placeholder mentindo
-- [ ] F5–F7 e G6–G7 têm caminho claro no backlog de produto (mesmo que ainda não shipados)
+- [x] F5–F6 shipados; G6–G7 ficam no backlog de crescimento (indicação / Instagram + Google Perfil)
 
 ---
 
