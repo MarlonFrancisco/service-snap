@@ -15,11 +15,13 @@ export function rowsToCsv(
     headers.map(escapeCsvCell).join(';'),
     ...rows.map((row) => row.map(escapeCsvCell).join(';')),
   ];
-  return `\uFEFF${lines.join('\n')}`;
+  return lines.join('\n');
 }
 
 export function downloadCsv(filename: string, csv: string) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  // Single UTF-8 BOM for Excel; callers may concatenate multiple tables.
+  const withBom = csv.startsWith('\uFEFF') ? csv : `\uFEFF${csv}`;
+  const blob = new Blob([withBom], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;

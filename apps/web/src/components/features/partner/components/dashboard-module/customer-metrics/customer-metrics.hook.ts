@@ -1,11 +1,11 @@
+import type { PeriodFilterValue } from '@/components/features/partner/components/dashboard-module/components/period-filter-with-refresh';
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query/use-metrics-query.hook';
 import { usePartnerStore } from '@/store/partner/partner.store';
-import { PeriodType } from '@/types/api/metrics.types';
 import { downloadCsv, rowsToCsv } from '@/utils/helpers/csv.helper';
 import { useCallback, useState } from 'react';
 
 export function useCustomerMetrics() {
-  const [period, setPeriod] = useState<PeriodType>('month');
+  const [period, setPeriod] = useState<PeriodFilterValue>('month');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const activeStore = usePartnerStore((state) => state.activeStore);
