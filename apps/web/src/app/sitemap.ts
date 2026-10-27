@@ -2,6 +2,11 @@ import { RecomendationService } from '@/service/recomendation';
 import { LEGAL_PAGES_UPDATED_AT } from '@/utils/constants/platform.constants';
 import { PUBLIC_CATEGORY_NAMES } from '@/utils/constants/public-categories.constants';
 import { SITE_URL } from '@/utils/constants/site.constants';
+import {
+  categoryCityPath,
+  resolvePublicCategory,
+  slugifyPlace,
+} from '@/utils/helpers/category-city.helper';
 import { withBudget } from '@/utils/helpers/promise.helper';
 import type { MetadataRoute } from 'next';
 
@@ -94,5 +99,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [...staticPages, ...categoryPages, ...storePages];
+  const placePages: MetadataRoute.Sitemap = [];
+  const seenPlaces = new Set<string>();
+
+  for (const store of popularStores) {
+    const citySlug = slugifyPlace(store.content?.city || '');
+    if (!citySlug) continue;
+
+    for (const name of store.content?.categoryNames ?? []) {
+      const category = resolvePublicCategory(name);
+      if (!category) continue;
+
+      const path = categoryCityPath(category.slug, citySlug);
+      if (seenPlaces.has(path)) continue;
+      seenPlaces.add(path);
+      placePages.push({
+        url: `${SITE_URL}${path}`,
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      });
+    }
+  }
+
+  return [...staticPages, ...categoryPages, ...placePages, ...storePages];
 }
