@@ -12,6 +12,8 @@ export interface IStoreSearchContent {
   state: string;
   zipCode: string;
   services: IService[];
+  /** Present on indexed stores; used by category/city sitemap entries. */
+  categoryNames?: string[];
   openTime: string;
   closeTime: string;
   businessDays: {
