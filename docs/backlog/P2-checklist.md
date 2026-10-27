@@ -35,7 +35,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Funcionalidades (produto)
 
-- [ ] **F5** — Páginas `/categoria/cidade` com metadata própria + JSON-LD `LocalBusiness`
+- [x] **F5** — Páginas `/categoria/[categoria]/[cidade]` com metadata própria + JSON-LD `LocalBusiness` (sitemap só quando a loja indexada tem categoria pública e cidade)
 - [x] **F6** — Busca IA com filtro real de categoria/local + empty state honesto *(shipped no P1 — relevância + empty state)*
 - [ ] **F7** — Sinal/depósito Pix anti no-show
 
