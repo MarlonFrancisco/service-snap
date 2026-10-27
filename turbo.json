@@ -29,7 +29,7 @@
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
 
-    "SENDGRID_API_KEY",
+    "RESEND_API_KEY",
 
     "WHATSAPP_VERIFY_TOKEN"
   ],
@@ -72,7 +72,7 @@
         "GOOGLE_CLIENT_ID",
         "GOOGLE_CLIENT_SECRET",
 
-        "SENDGRID_API_KEY",
+        "RESEND_API_KEY",
         "WHATSAPP_VERIFY_TOKEN"
       ]
     },
