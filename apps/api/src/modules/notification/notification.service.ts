@@ -1,36 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import SendGrid from '@sendgrid/mail';
 import fs from 'fs/promises';
 import handlebars from 'handlebars';
 import path from 'path';
+import { Resend } from 'resend';
 import { WhatsappService } from '../partner/stores/whatsapp';
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name);
+  private readonly resend: Resend;
+  private readonly fromEmail = 'ServiceSnap <general@ssnap.io>';
+
   constructor(
     private readonly configService: ConfigService,
     private readonly whatsappService: WhatsappService,
   ) {
-    SendGrid.setApiKey(configService.get<string>('SENDGRID_API_KEY'));
+    this.resend = new Resend(configService.get<string>('RESEND_API_KEY'));
   }
 
-  async sendSMS(phoneNumber: string, message: string) {
-    return SendGrid.send({
-      to: phoneNumber,
-      from: 'general@ssnap.io',
-      subject: 'SMS Notification',
-      text: message,
-    });
+  async sendSMS(phoneNumber: string, _message: string) {
+    this.logger.warn(
+      `SMS não configurado (Resend é só e-mail). Destino: ${phoneNumber}`,
+    );
+    throw new ServiceUnavailableException(
+      'Envio de SMS ainda não está disponível. Use e-mail ou WhatsApp.',
+    );
   }
 
   async sendEmail(to: string, subject: string, body: string) {
-    return SendGrid.send({
-      to: to,
-      from: 'general@ssnap.io',
-      subject: subject,
+    const { data, error } = await this.resend.emails.send({
+      from: this.fromEmail,
+      to: [to],
+      subject,
       html: body,
     });
+
+    if (error) {
+      this.logger.error(`Falha ao enviar e-mail para ${to}: ${error.message}`);
+      throw new ServiceUnavailableException(
+        error.message || 'Falha ao enviar e-mail',
+      );
+    }
+
+    return data;
   }
 
   async sendWhatsapp({
