@@ -1,7 +1,17 @@
 import { useAuthStore } from '@/store/auth/auth.store';
-import { Button, Checkbox, Input, Label } from '@repo/ui';
+import { useLocaleStore } from '@/store/locale';
+import type { TCountryCode } from '@repo/shared/constants';
+import {
+  formatPhone,
+  getPhoneCodeOptions,
+  getPhoneFormat,
+  getPhonePlaceholder,
+  isValidPhoneLength,
+  normalizePhone,
+} from '@repo/shared/validators';
+import { Button, Checkbox, Input, Label, PhoneInput } from '@repo/ui';
 import { ArrowLeft, ArrowRight, User } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AuthStep } from '../../auth.types';
 
 interface SignupStepProps {
@@ -15,12 +25,18 @@ interface SignupStepProps {
   onBack: () => void;
 }
 
+const phoneCodeOptions = getPhoneCodeOptions();
+
 export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
+  const localeCountry = useLocaleStore((state) => state.country);
+  const [phoneCountry, setPhoneCountry] = useState<TCountryCode>(
+    localeCountry || 'BR',
+  );
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: userData.email,
-    telephone: userData.phone,
+    telephone: userData.phone ? formatPhone(userData.phone, phoneCountry) : '',
     acceptedTerms: false,
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -28,10 +44,25 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
   const onAuth = useAuthStore((state) => state.onAuth);
 
   const contact = userData.email || userData.phone;
-  const isEmail = contact.includes('@');
+  const isEmail = Boolean(userData.email?.includes('@'));
+
+  const phoneMask = useMemo(() => getPhoneFormat(phoneCountry), [phoneCountry]);
+  const phonePlaceholder = useMemo(
+    () => getPhonePlaceholder(phoneCountry),
+    [phoneCountry],
+  );
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCountryChange = (code: string) => {
+    const next = code as TCountryCode;
+    setPhoneCountry(next);
+    setFormData((prev) => ({
+      ...prev,
+      telephone: formatPhone(prev.telephone, next),
+    }));
   };
 
   const handleContinue = async () => {
@@ -39,10 +70,16 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
 
     setIsLoading(true);
 
+    const telephone = isEmail
+      ? normalizePhone(formData.telephone, phoneCountry)
+      : userData.phone || normalizePhone(formData.telephone, phoneCountry);
+
     await registerAction({
-      ...formData,
-      email: isEmail ? userData.email : formData.email,
-      telephone: isEmail ? userData.phone : formData.telephone,
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      acceptedTerms: formData.acceptedTerms,
+      email: isEmail ? userData.email : formData.email.trim(),
+      telephone,
     });
 
     setIsLoading(false);
@@ -50,6 +87,7 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
     if (userData.isNewUser) {
       onNext('profile-selection', {
         ...userData,
+        phone: telephone,
         name: `${formData.firstName} ${formData.lastName}`,
         isNewUser: true,
       });
@@ -58,16 +96,21 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
     }
   };
 
+  const isTelephoneValid = isEmail
+    ? isValidPhoneLength(formData.telephone, phoneCountry)
+    : Boolean(userData.phone || formData.telephone.trim());
+
   const isFormValid =
     formData.firstName.trim().length >= 2 &&
     formData.lastName.trim().length >= 2 &&
-    formData.email.trim().length >= 2 &&
-    formData.telephone.trim().length >= 2 &&
+    (isEmail
+      ? Boolean(userData.email)
+      : formData.email.trim().includes('@')) &&
+    isTelephoneValid &&
     formData.acceptedTerms;
 
   return (
     <div className="w-full max-w-lg">
-      {/* Header */}
       <div className="flex items-center justify-between p-8 pb-6">
         <Button
           variant="ghost"
@@ -85,10 +128,8 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
         <div className="w-10"></div>
       </div>
 
-      {/* Content */}
       <div className="px-8 pb-8">
         <div className="space-y-8">
-          {/* Header Section */}
           <div className="text-center space-y-3">
             <h2 className="text-foreground font-semibold text-2xl leading-tight">
               Complete seu perfil
@@ -99,9 +140,7 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
             </p>
           </div>
 
-          {/* Form Fields */}
           <div className="space-y-6">
-            {/* Contact Display */}
             <div className="relative p-5 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl border border-primary/20">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-primary/15 rounded-2xl flex items-center justify-center ring-1 ring-primary/20">
@@ -125,7 +164,6 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
                   <div className="w-2 h-2 bg-primary rounded-full"></div>
                 </div>
               </div>
-              {/* Verification badge */}
               <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
                 <svg
                   className="w-3 h-3 text-primary-foreground"
@@ -141,7 +179,6 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
               </div>
             </div>
 
-            {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
                 <label className="text-foreground font-medium text-sm">
@@ -187,26 +224,27 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
               </div>
             </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label className="text-foreground font-medium text-sm">
-                {isEmail ? 'Telefone' : 'Email'}
+                {isEmail ? 'Telefone *' : 'Email *'}
               </label>
-              <div className="relative">
+              <div className="relative group">
                 {isEmail ? (
-                  <Input
-                    type="tel"
-                    placeholder="Telefone"
+                  <PhoneInput
                     value={formData.telephone}
-                    onChange={(e) =>
-                      handleInputChange('telephone', e.target.value)
-                    }
-                    className="h-12 px-4 bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl transition-all duration-200 group-hover:border-border/80"
+                    onChange={(value) => handleInputChange('telephone', value)}
+                    countryCode={phoneCountry}
+                    onCountryChange={handleCountryChange}
+                    phoneCodeOptions={phoneCodeOptions}
+                    mask={phoneMask}
+                    phonePlaceholder={phonePlaceholder}
+                    triggerClassName="!h-12 w-[7.75rem] px-3 bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 !rounded-xl text-sm shadow-none"
+                    inputClassName="!h-12 px-4 bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 !rounded-xl text-base shadow-none group-hover:border-border/80"
                   />
                 ) : (
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder="seuemail@exemplo.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className="h-12 px-4 bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-xl transition-all duration-200 group-hover:border-border/80"
@@ -215,7 +253,6 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
               </div>
             </div>
 
-            {/* Terms Checkbox */}
             <div className="space-y-4">
               <Label className="flex items-start cursor-pointer p-4 bg-muted/20 rounded-2xl border border-border/50 hover:border-border transition-colors">
                 <Checkbox
@@ -242,7 +279,6 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
               </Label>
             </div>
 
-            {/* Create Account Button */}
             <Button
               onClick={handleContinue}
               disabled={!isFormValid || isLoading}
@@ -262,7 +298,6 @@ export function SignupStep({ userData, onNext, onBack }: SignupStepProps) {
             </Button>
           </div>
 
-          {/* Security Notice */}
           <div className="text-center">
             <p className="text-xs text-muted-foreground leading-relaxed">
               Suas informações são protegidas com criptografia de ponta e nunca

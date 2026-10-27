@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/auth/auth.store';
 import { Button, Input, Separator } from '@repo/ui';
-import { ArrowRight, Globe, Mail, Phone } from 'lucide-react';
+import { ArrowRight, Globe, Mail } from 'lucide-react';
 import { useState } from 'react';
 import { AuthStep } from '../../auth.types';
 import { GoogleAuth } from '../google-auth';
@@ -12,9 +12,6 @@ interface LoginStepProps {
 
 export function LoginStep({ onNext }: LoginStepProps) {
   const [contact, setContact] = useState('');
-  const [countryCode, setCountryCode] = useState('+55');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [contactType, setContactType] = useState<'email' | 'phone'>('email');
   const [isLoading, setIsLoading] = useState(false);
   const createAuthSessionAction = useAuthStore(
     (state) => state.createAuthSessionAction,
@@ -23,26 +20,18 @@ export function LoginStep({ onNext }: LoginStepProps) {
   const handleContinue = async () => {
     setIsLoading(true);
 
-    const isEmail = contactType === 'email';
-    const fullPhone =
-      contactType === 'phone' ? `${countryCode}${phoneNumber}` : undefined;
-
     await createAuthSessionAction({
-      email: isEmail ? contact : undefined,
-      telephone: fullPhone,
+      email: contact.trim(),
     });
 
     setIsLoading(false);
 
     onNext('verification', {
-      [isEmail ? 'email' : 'phone']: isEmail ? contact : fullPhone,
+      email: contact.trim(),
     });
   };
 
-  const isValidContact =
-    contactType === 'email'
-      ? contact.trim().length > 0
-      : phoneNumber.trim().length > 0;
+  const isValidContact = contact.trim().includes('@');
 
   return (
     <div className="w-full max-w-lg">
@@ -65,63 +54,26 @@ export function LoginStep({ onNext }: LoginStepProps) {
             {/* Input Field */}
             <div className="space-y-3">
               <label className="text-foreground font-medium text-sm block transition-colors">
-                {contactType === 'email'
-                  ? 'Endereço de email'
-                  : 'Número de telefone'}
+                Endereço de email
               </label>
 
-              {contactType === 'email' ? (
-                <div className="relative group">
-                  <Input
-                    type="email"
-                    placeholder="seuemail@exemplo.com"
-                    value={contact}
-                    onChange={(e) => setContact(e.target.value)}
-                    className="w-full h-14 px-5 pr-14 text-base bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl transition-all duration-300 group-hover:border-border/80"
-                  />
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <div
-                      className={`transition-colors duration-300 ${contact ? 'text-primary' : 'text-muted-foreground'}`}
-                    >
-                      <Mail className="h-5 w-5" />
-                    </div>
+              <div className="relative group">
+                <Input
+                  type="email"
+                  placeholder="seuemail@exemplo.com"
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  className="w-full h-14 px-5 pr-14 text-base bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl transition-all duration-300 group-hover:border-border/80"
+                />
+                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <div
+                    className={`transition-colors duration-300 ${contact ? 'text-primary' : 'text-muted-foreground'}`}
+                  >
+                    <Mail className="h-5 w-5" />
                   </div>
-                  <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
                 </div>
-              ) : (
-                <div className="flex gap-3 relative group">
-                  {/* Country Code */}
-                  <div className="relative w-28">
-                    <Input
-                      type="text"
-                      placeholder="+55"
-                      value={countryCode}
-                      onChange={(e) => setCountryCode(e.target.value)}
-                      className="w-full h-14 px-4 text-base font-medium text-center bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl transition-all duration-300 group-hover:border-border/80"
-                      maxLength={4}
-                    />
-                  </div>
-
-                  {/* Phone Number */}
-                  <div className="relative flex-1">
-                    <Input
-                      type="tel"
-                      placeholder="(11) 99999-9999"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="w-full h-14 px-5 pr-14 text-base bg-input border-2 border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl transition-all duration-300 group-hover:border-border/80"
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                      <div
-                        className={`transition-colors duration-300 ${phoneNumber ? 'text-primary' : 'text-muted-foreground'}`}
-                      >
-                        <Phone className="h-5 w-5" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                </div>
-              )}
+                <div className="absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              </div>
             </div>
 
             {/* Continue Button */}
