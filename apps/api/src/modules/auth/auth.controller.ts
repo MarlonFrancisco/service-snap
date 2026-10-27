@@ -46,11 +46,13 @@ export class AuthController {
         maxAge: tokens.expires_in * 1000,
       });
 
-      res.cookie('user_identification', user.id, {
-        httpOnly: false,
-        secure: this.isProduction,
-        maxAge: tokens.expires_in * 1000,
-      });
+      if (user) {
+        res.cookie('user_identification', user.id, {
+          httpOnly: false,
+          secure: this.isProduction,
+          maxAge: tokens.expires_in * 1000,
+        });
+      }
 
       return { user };
     } catch (error) {
@@ -61,11 +63,27 @@ export class AuthController {
   @HttpCode(201)
   @Post('register')
   @UseGuards(JwtAuthGuard)
-  async register(@Body() body: RegisterDto, @Req() req: Request) {
-    await this.authService.register(
+  async register(
+    @Body() body: RegisterDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, tokens } = await this.authService.register(
       body,
       getAccessTokenFromCookie(req.headers.cookie),
     );
+
+    res.cookie('access_token', tokens.access_token, {
+      httpOnly: true,
+      secure: this.isProduction,
+      maxAge: tokens.expires_in * 1000,
+    });
+
+    res.cookie('user_identification', user.id, {
+      httpOnly: false,
+      secure: this.isProduction,
+      maxAge: tokens.expires_in * 1000,
+    });
   }
 
   @Post('social/google')

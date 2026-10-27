@@ -94,7 +94,6 @@ export class AuthService {
     const user = await this.userService.findByOne({
       email: body.email,
       telephone: body.telephone,
-      includeSubscriptions: true,
     });
 
     if (!user) {
@@ -129,6 +128,17 @@ export class AuthService {
 
   async register(body: RegisterDto, token: string) {
     const tokenPayload = await this.verifyToken(token);
-    await this.userService.update(tokenPayload.sub, body);
+    const user = await this.userService.update(tokenPayload.sub, body);
+    const tokens = await this.generateTokens({
+      sub: user.id,
+      email: user.email,
+      telephone: user.telephone,
+      paymentCustomerId: user.paymentCustomerId,
+    });
+
+    return {
+      user,
+      tokens,
+    };
   }
 }
