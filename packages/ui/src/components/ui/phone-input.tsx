@@ -1,6 +1,6 @@
 import { cn } from '@repo/ui/lib/utils';
 import * as React from 'react';
-import { getFlagEmoji } from './country-select';
+import { CountryFlag } from './country-flag';
 import { Input } from './input';
 import {
   Select,
@@ -25,6 +25,30 @@ export interface PhoneInputProps
   phoneCodeOptions?: PhoneCodeOption[];
   showCountrySelect?: boolean;
   phonePlaceholder?: string;
+  /** Mask using `#` for digits, e.g. `(##) #####-####` */
+  mask?: string;
+  triggerClassName?: string;
+  inputClassName?: string;
+}
+
+function applyPhoneMask(raw: string, mask?: string): string {
+  const digits = raw.replace(/\D/g, '');
+  if (!mask) return digits;
+
+  let result = '';
+  let digitIndex = 0;
+
+  for (const char of mask) {
+    if (digitIndex >= digits.length) break;
+    if (char === '#') {
+      result += digits[digitIndex];
+      digitIndex += 1;
+    } else {
+      result += char;
+    }
+  }
+
+  return result;
 }
 
 function PhoneInput({
@@ -35,7 +59,10 @@ function PhoneInput({
   phoneCodeOptions = [],
   showCountrySelect = true,
   phonePlaceholder = '(00) 00000-0000',
+  mask,
   className,
+  triggerClassName,
+  inputClassName,
   disabled,
   ...props
 }: PhoneInputProps) {
@@ -44,28 +71,32 @@ function PhoneInput({
   );
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value;
-    // Allow only digits, spaces, parentheses, and dashes
-    const cleanValue = rawValue.replace(/[^\d\s()-]/g, '');
-    onChange?.(cleanValue);
+    onChange?.(applyPhoneMask(e.target.value, mask));
+  };
+
+  const handleCountryChange = (nextCountry: string) => {
+    onCountryChange?.(nextCountry);
   };
 
   return (
-    <div className={cn('flex gap-2', className)}>
+    <div className={cn('flex items-center gap-2', className)}>
       {showCountrySelect && phoneCodeOptions.length > 0 && (
         <Select
           value={countryCode}
-          onValueChange={onCountryChange}
+          onValueChange={handleCountryChange}
           disabled={disabled}
         >
-          <SelectTrigger className="w-[100px] shrink-0">
+          <SelectTrigger
+            className={cn(
+              'w-[7.5rem] shrink-0 [&>span]:flex [&>span]:items-center',
+              triggerClassName,
+            )}
+          >
             <SelectValue>
               {selectedOption && (
-                <span className="flex items-center gap-1.5">
-                  <span className="text-base">
-                    {getFlagEmoji(selectedOption.countryCode)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
+                <span className="flex items-center gap-2 leading-none">
+                  <CountryFlag code={selectedOption.countryCode} />
+                  <span className="text-sm font-medium text-foreground">
                     {selectedOption.phoneCode}
                   </span>
                 </span>
@@ -75,12 +106,10 @@ function PhoneInput({
           <SelectContent>
             {phoneCodeOptions.map((option) => (
               <SelectItem key={option.countryCode} value={option.countryCode}>
-                <span className="flex items-center gap-2">
-                  <span className="text-base">
-                    {getFlagEmoji(option.countryCode)}
-                  </span>
-                  <span className="text-xs">{option.phoneCode}</span>
-                  <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                <span className="flex items-center gap-2 leading-none">
+                  <CountryFlag code={option.countryCode} />
+                  <span className="w-10 text-sm">{option.phoneCode}</span>
+                  <span className="truncate text-sm text-muted-foreground">
                     {option.name}
                   </span>
                 </span>
@@ -96,11 +125,11 @@ function PhoneInput({
         onChange={handlePhoneChange}
         placeholder={phonePlaceholder}
         disabled={disabled}
-        className="flex-1"
+        className={cn('flex-1', inputClassName)}
         {...props}
       />
     </div>
   );
 }
 
-export { PhoneInput };
+export { PhoneInput, applyPhoneMask };
