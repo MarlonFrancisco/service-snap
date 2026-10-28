@@ -41,7 +41,9 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 ## Crescimento
 
-- [ ] **G6** — Programa de indicação bilateral (cliente ↔ profissional)
+- [x] **G6** — Programa de indicação bilateral (cliente ↔ profissional)  
+  → `?ref=` + localStorage; código em User; atribuição no register/Google; `GET /users/me/referral`; card em `/profile` (privacidade) e `/partner/plans/me`  
+  → recompensas/créditos ficam para fatia futura
 - [ ] **G7** — Instagram com conteúdo de parceiros + Google Perfil da Empresa apontando para ServiceSnap
 
 ---
@@ -50,7 +52,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 - [x] Visitante não encontra soft 404, checkout órfão nem H1 quebrado
 - [x] Painel parceiro não mostra analytics/moeda/placeholder mentindo
-- [x] F5–F6 shipados; G6–G7 ficam no backlog de crescimento (indicação / Instagram + Google Perfil)
+- [x] F5–F6 shipados; G6 (atribuição + share links) shipado; G7 fica no backlog (Instagram + Google Perfil)
 
 ---
 
