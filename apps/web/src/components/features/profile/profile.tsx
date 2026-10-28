@@ -1,5 +1,6 @@
 'use client';
 
+import { ReferralShareCard } from '@/components/features/referral/referral-share-card';
 import { Header } from '@/components/layout';
 import { AnimatePresence } from 'motion/react';
 import { BookingsSection } from './components/bookings-section';
@@ -29,6 +30,10 @@ export const Profile = () => {
         <ProfileHeader />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+          <div className="mt-8">
+            <ReferralShareCard variant="client" />
+          </div>
+
           <ProfileTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
