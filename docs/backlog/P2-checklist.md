@@ -42,7 +42,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 ## Crescimento
 
 - [x] **G6** — Programa de indicação bilateral (cliente ↔ profissional)  
-  → `?ref=` + localStorage; código em User; atribuição no register/Google; `GET /users/me/referral`; card em `/profile` (privacidade) e `/partner/plans/me`  
+  → `?ref=` + localStorage; código em User; atribuição no register/Google; `GET /users/me/referral`; card no topo de `/profile` e em `/partner/plans/me`  
   → recompensas/créditos ficam para fatia futura
 - [ ] **G7** — Instagram com conteúdo de parceiros + Google Perfil da Empresa apontando para ServiceSnap
 
