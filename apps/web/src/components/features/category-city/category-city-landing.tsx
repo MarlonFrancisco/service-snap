@@ -4,7 +4,8 @@ import type {
   TCategoryCityBusiness,
   TResolvedCategoryCity,
 } from '@/utils/helpers/category-city.helper';
-import { MapPin, Search, Star } from 'lucide-react';
+import { instagramLabel } from '@/utils/helpers/social.helper';
+import { Instagram, MapPin, Search, Star } from 'lucide-react';
 import Link from 'next/link';
 
 type CategoryCityLandingProps = {
@@ -82,6 +83,12 @@ export function CategoryCityLanding({
                       {store.rating.toLocaleString('pt-BR')} ·{' '}
                       {store.reviewCount}{' '}
                       {store.reviewCount === 1 ? 'avaliação' : 'avaliações'}
+                    </p>
+                  ) : null}
+                  {store.instagramUrl ? (
+                    <p className="mt-2 flex items-center gap-1.5 text-sm text-gray-600">
+                      <Instagram className="h-3.5 w-3.5 shrink-0" />
+                      {instagramLabel(store.instagramUrl)}
                     </p>
                   ) : null}
                   {store.address || store.city ? (

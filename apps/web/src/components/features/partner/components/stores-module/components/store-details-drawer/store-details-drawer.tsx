@@ -1,3 +1,4 @@
+import { StorePublicPresence } from '@/components/features/partner/components/stores-module/components/store-public-presence';
 import { useStoreMutations } from '@/hooks/partner/store/use-store-mutations/use-store-mutations.hook';
 import { useStoresStore } from '@/store';
 import {
@@ -13,9 +14,6 @@ import {
 } from '@repo/ui';
 import {
   Clock,
-  Facebook,
-  Globe,
-  Instagram,
   Mail,
   MapPin,
   Phone,
@@ -110,41 +108,10 @@ export const StoreDetailsDrawer = () => {
               </div>
             </div>
 
-            {/* Social Links */}
-            {(store.website || store.instagram || store.facebook) && (
-              <div>
-                <p className="text-xs text-gray-500 mb-2">Redes Sociais</p>
-                <div className="flex items-center gap-2">
-                  {store.website && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-10 w-10 p-0"
-                    >
-                      <Globe className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {store.instagram && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-10 w-10 p-0"
-                    >
-                      <Instagram className="h-4 w-4" />
-                    </Button>
-                  )}
-                  {store.facebook && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-10 w-10 p-0"
-                    >
-                      <Facebook className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
+            <StorePublicPresence
+              storeId={store.id}
+              instagram={store.instagram}
+            />
 
             {/* Amenities */}
             {store.amenities && store.amenities.length > 0 && (

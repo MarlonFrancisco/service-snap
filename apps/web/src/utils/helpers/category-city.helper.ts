@@ -29,6 +29,8 @@ export type TCategoryCityBusiness = {
   country?: string;
   rating?: number;
   reviewCount?: number;
+  /** Absolute Instagram profile, when the partner filled one in. */
+  instagramUrl?: string;
 };
 
 export function slugifyPlace(value: string): string {
@@ -91,6 +93,7 @@ export function buildCategoryCityJsonLd(input: {
         ...(store.description ? { description: store.description } : {}),
         ...(store.telephone ? { telephone: store.telephone } : {}),
         ...(store.image ? { image: store.image } : {}),
+        ...(store.instagramUrl ? { sameAs: [store.instagramUrl] } : {}),
         address: {
           '@type': 'PostalAddress',
           ...(store.address ? { streetAddress: store.address } : {}),
