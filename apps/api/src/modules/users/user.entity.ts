@@ -56,6 +56,21 @@ export class User extends BaseEntity {
   @Column({ type: 'char', length: 2, default: 'BR', nullable: true })
   country: string;
 
+  /** Public share code for the bilateral referral program. */
+  @Column({
+    name: 'referral_code',
+    type: 'varchar',
+    length: 12,
+    unique: true,
+    nullable: true,
+  })
+  @Index()
+  referralCode: string | null;
+
+  /** User who referred this account (client or partner). */
+  @Column({ name: 'referred_by_id', type: 'uuid', nullable: true })
+  referredById: string | null;
+
   @OneToMany(() => Subscription, (subscription) => subscription.user)
   subscriptions: Subscription[];
 

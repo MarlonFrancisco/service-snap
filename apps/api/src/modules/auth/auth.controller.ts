@@ -88,11 +88,12 @@ export class AuthController {
 
   @Post('social/google')
   async googleLogin(
-    @Body() body: { token: string },
+    @Body() body: { token: string; referralCode?: string },
     @Res({ passthrough: true }) res: Response,
   ) {
     const { tokens, isNewUser, user } = await this.googleSSOService.login(
       body.token,
+      body.referralCode,
     );
 
     res.cookie('access_token', tokens.access_token, {

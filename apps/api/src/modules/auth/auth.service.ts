@@ -128,7 +128,15 @@ export class AuthService {
 
   async register(body: RegisterDto, token: string) {
     const tokenPayload = await this.verifyToken(token);
-    const user = await this.userService.update(tokenPayload.sub, body);
+    const { referralCode, ...profile } = body;
+    const user = await this.userService.update(tokenPayload.sub, profile);
+
+    if (referralCode) {
+      await this.userService.applyReferralCode(user.id, referralCode);
+    }
+
+    await this.userService.ensureReferralCode(user.id);
+
     const tokens = await this.generateTokens({
       sub: user.id,
       email: user.email,

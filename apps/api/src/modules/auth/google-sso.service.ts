@@ -46,7 +46,7 @@ export class GoogleSSOService extends OAuth2Client {
     }
   }
 
-  async login(token: string) {
+  async login(token: string, referralCode?: string) {
     const userInfo = await this.getUserInfo(token);
 
     let user = await this.usersService.findByOne({
@@ -66,7 +66,13 @@ export class GoogleSSOService extends OAuth2Client {
           acceptedTerms: true,
         }),
       );
+
+      if (referralCode) {
+        await this.usersService.applyReferralCode(user.id, referralCode);
+      }
     }
+
+    await this.usersService.ensureReferralCode(user.id);
 
     const tokens = await this.authService.generateTokens({
       sub: user.id,

@@ -24,3 +24,14 @@ export const getAccessTokenFromCookie = (cookie: string) => {
     ?.find((cookie) => cookie.includes('access_token'))
     ?.split('=')[1];
 };
+
+/** Short uppercase referral code (e.g. SNAP7K2Q). */
+export const generateReferralCode = (length = 8): string => {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(length);
+  let code = '';
+  for (let i = 0; i < length; i += 1) {
+    code += alphabet[bytes[i]! % alphabet.length];
+  }
+  return code;
+};
