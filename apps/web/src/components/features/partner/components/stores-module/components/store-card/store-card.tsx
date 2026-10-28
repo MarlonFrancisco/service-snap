@@ -1,4 +1,5 @@
 'use client';
+import { StorePublicPresence } from '@/components/features/partner/components/stores-module/components/store-public-presence';
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
 import { orderGalleryByMainImage } from '@/utils/helpers/gallery.helper';
 import {
@@ -26,10 +27,7 @@ import {
   ChevronRight,
   Clock,
   Edit,
-  Facebook,
-  Globe,
   Images,
-  Instagram,
   MapPin,
   Pause,
   Phone,
@@ -326,38 +324,10 @@ export const StoreCard = ({ store, index }: TStoreCardConfig) => {
                   </div>
                 </div>
 
-                {/* Social Links */}
-                {(store.website || store.instagram || store.facebook) && (
-                  <div className="flex items-center gap-2">
-                    {store.website && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-9 w-9 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      >
-                        <Globe className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {store.instagram && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-9 w-9 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      >
-                        <Instagram className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {store.facebook && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-9 w-9 p-0 text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      >
-                        <Facebook className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                )}
+                <StorePublicPresence
+                  storeId={store.id}
+                  instagram={store.instagram}
+                />
 
                 {/* Amenities */}
                 {store.amenities && store.amenities.length > 0 && (

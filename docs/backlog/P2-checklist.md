@@ -44,7 +44,9 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 - [x] **G6** — Programa de indicação bilateral (cliente ↔ profissional)  
   → `?ref=` + localStorage; código em User; atribuição no register/Google; `GET /users/me/referral`; card no topo de `/profile` e em `/partner/plans/me`  
   → recompensas/créditos ficam para fatia futura
-- [ ] **G7** — Instagram com conteúdo de parceiros + Google Perfil da Empresa apontando para ServiceSnap
+- [x] **G7** — Instagram com conteúdo de parceiros + Google Perfil da Empresa apontando para ServiceSnap  
+  → Instagram do parceiro na página pública `/booking/:id` e em `/categoria/cidade`; JSON-LD `LocalBusiness` com `url` do ServiceSnap e `sameAs` do Instagram  
+  → no painel da loja, link para copiar e colar no site do Google Perfil da Empresa
 
 ---
 
@@ -52,7 +54,7 @@ Prioridade no doc: **Média = P2**. Marque com `[x]` conforme for fechando.
 
 - [x] Visitante não encontra soft 404, checkout órfão nem H1 quebrado
 - [x] Painel parceiro não mostra analytics/moeda/placeholder mentindo
-- [x] F5–F6 shipados; G6 (atribuição + share links) shipado; G7 fica no backlog (Instagram + Google Perfil)
+- [x] F5–F6, G6 e G7 shipados (indicação; Instagram do parceiro + URL do Google Perfil)
 
 ---
 

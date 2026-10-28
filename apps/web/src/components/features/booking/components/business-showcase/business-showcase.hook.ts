@@ -4,6 +4,10 @@ import { useFavoritesMutations } from '@/hooks/use-mutations/use-favorites-mutat
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { TWorkingDays } from '@/types/api/stores.types';
 import { orderGalleryByMainImage } from '@/utils/helpers/gallery.helper';
+import {
+  instagramLabel,
+  toInstagramUrl,
+} from '@/utils/helpers/social.helper';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useGetStore } from '../../booking.hook';
@@ -19,6 +23,8 @@ interface BusinessShowcaseData {
   openTime: string;
   closeTime: string;
   businessDays: TWorkingDays;
+  instagramUrl: string | null;
+  instagramLabel: string | null;
 }
 
 export const useBusinessShowcase = () => {
@@ -60,6 +66,8 @@ export const useBusinessShowcase = () => {
       openTime: selectedStore.openTime,
       closeTime: selectedStore.closeTime,
       businessDays: selectedStore.businessDays || [],
+      instagramUrl: toInstagramUrl(selectedStore.instagram),
+      instagramLabel: instagramLabel(selectedStore.instagram),
     };
   }, [selectedStore]);
 

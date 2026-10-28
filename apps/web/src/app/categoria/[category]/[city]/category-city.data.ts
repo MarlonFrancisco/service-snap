@@ -1,6 +1,7 @@
 import { SearchService } from '@/service/search';
 import type { ISearchResult } from '@/types/api/search.types';
 import { SITE_URL } from '@/utils/constants/site.constants';
+import { toInstagramUrl } from '@/utils/helpers/social.helper';
 import {
   slugifyPlace,
   type TCategoryCityBusiness,
@@ -77,5 +78,6 @@ function toBusiness(result: ISearchResult): TCategoryCityBusiness {
     country: result.content.country || undefined,
     rating,
     reviewCount: reviewCount || undefined,
+    instagramUrl: toInstagramUrl(result.metadata?.instagram) || undefined,
   };
 }

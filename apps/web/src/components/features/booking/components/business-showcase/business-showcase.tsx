@@ -13,7 +13,15 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@repo/ui';
-import { Clock, Heart, Images, MapPinIcon, Share, Star } from 'lucide-react';
+import {
+  Clock,
+  Heart,
+  Images,
+  Instagram,
+  MapPinIcon,
+  Share,
+  Star,
+} from 'lucide-react';
 import { useBusinessShowcase } from './business-showcase.hook';
 
 export function BusinessShowcase() {
@@ -49,6 +57,8 @@ export function BusinessShowcase() {
     openTime,
     closeTime,
     businessDays,
+    instagramUrl,
+    instagramLabel,
   } = data;
 
   return (
@@ -252,6 +262,17 @@ export function BusinessShowcase() {
                 <MapPinIcon className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
                 <p className="text-sm text-gray-600">{businessAddress}</p>
               </div>
+              {instagramUrl && instagramLabel ? (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 text-sm text-gray-700 hover:text-gray-900"
+                >
+                  <Instagram className="h-4 w-4 flex-shrink-0" />
+                  {instagramLabel}
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
