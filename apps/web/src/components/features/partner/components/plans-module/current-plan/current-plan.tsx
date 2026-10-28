@@ -1,5 +1,6 @@
 'use client';
 
+import { ReferralShareCard } from '@/components/features/referral/referral-share-card';
 import { CancelReactivateDialog } from './components/cancel-reactivate-dialog';
 import { CancellationWarningAlert } from './components/cancellation-warning-alert';
 import { PaymentHistoryCard } from './components/payment-history-card';
@@ -24,7 +25,9 @@ export function CurrentPlan() {
         onCancelReactivateClick={() => setIsCancelDialogOpen(true)}
       />
 
-      <PlanFeaturesCard delay={0.1} />
+      <ReferralShareCard variant="partner" delay={0.08} />
+
+      <PlanFeaturesCard delay={0.12} />
 
       <PaymentHistoryCard delay={0.2} />
 

@@ -20,4 +20,8 @@ export class RegisterDto {
   @IsString()
   @IsOptional()
   paymentCustomerId: string;
+
+  @IsString()
+  @IsOptional()
+  referralCode?: string;
 }

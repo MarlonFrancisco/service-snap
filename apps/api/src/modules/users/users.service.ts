@@ -1,7 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import sharp from 'sharp';
 import type { Repository } from 'typeorm';
+import { generateReferralCode } from '../../utils';
 import { StorageService } from '../storage/storage.service';
 import { StripeService } from '../stripe';
 import { User } from './user.entity';
@@ -13,6 +19,7 @@ export class UsersService {
     private readonly userRepository: Repository<User>,
     private readonly stripeService: StripeService,
     private readonly storageService: StorageService,
+    private readonly configService: ConfigService,
   ) {}
 
   async findAll(): Promise<User[]> {
@@ -70,9 +77,81 @@ export class UsersService {
     const user = this.userRepository.create({
       ...userData,
       paymentCustomerId: customer.id,
+      referralCode: userData.referralCode || (await this.createUniqueReferralCode()),
     });
 
     return this.userRepository.save(user);
+  }
+
+  async findByReferralCode(code: string): Promise<User | null> {
+    const normalized = code?.trim().toUpperCase();
+    if (!normalized) return null;
+    return this.userRepository.findOne({
+      where: { referralCode: normalized },
+    });
+  }
+
+  async applyReferralCode(userId: string, referralCode?: string | null) {
+    const normalized = referralCode?.trim().toUpperCase();
+    if (!normalized) return;
+
+    const user = await this.findById(userId);
+    if (user.referredById) {
+      return;
+    }
+
+    const referrer = await this.findByReferralCode(normalized);
+    if (!referrer) {
+      throw new BadRequestException('Código de indicação inválido');
+    }
+    if (referrer.id === userId) {
+      throw new BadRequestException('Você não pode usar o próprio código');
+    }
+
+    await this.userRepository.update(userId, { referredById: referrer.id });
+  }
+
+  async ensureReferralCode(userId: string): Promise<string> {
+    const user = await this.findById(userId);
+    if (user.referralCode) {
+      return user.referralCode;
+    }
+
+    const code = await this.createUniqueReferralCode();
+    await this.userRepository.update(userId, { referralCode: code });
+    return code;
+  }
+
+  async getReferralSummary(userId: string) {
+    const code = await this.ensureReferralCode(userId);
+    const siteUrl = (
+      this.configService.get<string>('FRONTEND_URL') || 'https://ssnap.io'
+    ).replace(/\/$/, '');
+
+    const referredCount = await this.userRepository.count({
+      where: { referredById: userId, isDeleted: false },
+    });
+
+    return {
+      code,
+      referredCount,
+      clientInviteUrl: `${siteUrl}/?ref=${code}`,
+      partnerInviteUrl: `${siteUrl}/pricing?ref=${code}`,
+    };
+  }
+
+  private async createUniqueReferralCode(): Promise<string> {
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const code = generateReferralCode();
+      const existing = await this.userRepository.findOne({
+        where: { referralCode: code },
+        select: ['id'],
+      });
+      if (!existing) {
+        return code;
+      }
+    }
+    throw new BadRequestException('Não foi possível gerar código de indicação');
   }
 
   /**

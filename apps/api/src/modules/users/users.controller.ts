@@ -23,6 +23,11 @@ export class UsersController {
     return await this.usersService.getUserDetails(user.sub);
   }
 
+  @Get('/me/referral')
+  async getReferral(@CurrentUser() user: JwtPayload) {
+    return this.usersService.getReferralSummary(user.sub);
+  }
+
   @Patch('/me/avatar')
   async updateAvatar(
     @CurrentUser() user: JwtPayload,
