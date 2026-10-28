@@ -33,6 +33,7 @@ export const CACHE_QUERY_KEYS = {
   reviews: (storeId: string) => [`partner/stores/${storeId}/reviews`],
   recommendationStores: () => ['recommendation/popular-stores'],
   user: (userIdentification: string) => ['user', { userIdentification }],
+  referral: () => ['users/me/referral'],
   plans: (currency: TCurrencyCode) => ['plans', { currency }],
   currentPlan: () => ['subscription/current-plan'],
   stores: () => ['partner/stores'],

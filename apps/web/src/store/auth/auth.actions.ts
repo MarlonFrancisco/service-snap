@@ -2,6 +2,10 @@ import { AuthService } from '@/service/auth';
 import { TStoreAction } from '@/types/store.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
+import {
+  clearStoredReferralCode,
+  getStoredReferralCode,
+} from '@/utils/helpers/referral.helper';
 import { IAuthState } from './auth.types';
 
 export const openAuthAction: TStoreAction<
@@ -69,15 +73,24 @@ export const registerAction: TStoreAction<
       firstName,
       lastName,
       acceptedTerms,
+      referralCode: getStoredReferralCode(),
     });
+    clearStoredReferralCode();
     set({ fetchingStatus: 'success' });
   };
 
 export const googleLoginAction: TStoreAction<IAuthState, string> =
   (set) => async (token) => {
     set({ fetchingStatus: 'loading' });
-    const response = await AuthService.googleLogin(token);
+    const response = await AuthService.googleLogin(
+      token,
+      getStoredReferralCode(),
+    );
     const { isNewUser } = response;
+
+    if (isNewUser) {
+      clearStoredReferralCode();
+    }
 
     const queryClient = getQueryClient();
 

@@ -27,16 +27,18 @@ export class AuthService {
     firstName: string;
     lastName: string;
     acceptedTerms: boolean;
+    referralCode?: string;
   }) {
     return await this.apiClient.post<void>('/auth/register', payload);
   }
 
-  static async googleLogin(token: string) {
+  static async googleLogin(token: string, referralCode?: string) {
     return await this.apiClient.post<{
       isNewUser: boolean;
       user: IUser;
     }>('/auth/social/google', {
       token,
+      referralCode,
     });
   }
 }
