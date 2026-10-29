@@ -5,8 +5,9 @@ import { QueryProvider } from '@/providers';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { SITE_URL, THEME_COLOR } from '@/utils/constants/site.constants';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
 import Script from 'next/script';
@@ -146,12 +147,26 @@ const monaSans = localFont({
   fallback: ['system-ui', 'sans-serif'],
 });
 
-export const metadata: Metadata = createPageMetadata({
-  title: 'ServiceSnap — Agende serviços perto de você',
-  description:
-    'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
-  path: '/',
-});
+export const metadata: Metadata = {
+  ...createPageMetadata({
+    title: 'ServiceSnap — Agende serviços perto de você',
+    description:
+      'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
+    path: '/',
+  }),
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/manifest.json',
+};
+
+export const viewport: Viewport = {
+  themeColor: THEME_COLOR,
+};
 
 export default async function RootLayout({
   children,
@@ -209,7 +224,7 @@ export default async function RootLayout({
               description:
                 'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
               url: 'https://ssnap.io',
-              image: 'https://ssnap.io/logo.png',
+              image: `${SITE_URL}/og-image.png`,
               publisher: {
                 '@type': 'Organization',
                 name: 'ServiceSnap',

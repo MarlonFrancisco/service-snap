@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, SidebarHeader } from '@repo/ui';
-import { ArrowLeft, Building2 } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface AdminSidebarHeaderProps {
@@ -30,9 +30,13 @@ export function AdminSidebarHeader({ isCollapsed }: AdminSidebarHeaderProps) {
         <div
           className={`flex items-center gap-3 px-1 ${isCollapsed ? 'justify-center' : ''}`}
         >
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-gray-900 to-gray-700 flex items-center justify-center shadow-sm shrink-0">
-            <Building2 className="text-white h-4 w-4" />
-          </div>
+          <img
+            src="/app-icon.svg"
+            alt=""
+            width={36}
+            height={36}
+            className="w-9 h-9 rounded-xl shrink-0"
+          />
           {!isCollapsed && (
             <div className="min-w-0">
               <h2 className="text-gray-900 text-sm truncate">ServiceSnap</h2>
