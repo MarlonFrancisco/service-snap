@@ -7,7 +7,7 @@ Prioridade no doc: **Baixa = P3**. Marque com `[x]` conforme for fechando.
 
 ## Público / site
 
-- [ ] **`/booking` redirect** — hoje 307 → `/`; ideal **301** para SEO (status no doc: Parcial)
+- [x] **`/booking` redirect** — sem `?query=` responde **301** → `/` (middleware). Busca (`?query=`) e `/booking/:id` continuam, com canonical próprio. `/booking` saiu do sitemap.
 - [ ] **Dados de teste no dev** — evitar negócios não agendáveis (sorveteria, café, churrascaria) como vitrine
 - [ ] **Peso da home no dev** — ~466 KB HTML + 78 imagens no primeiro load; reduzir payload
 - [ ] **`/profile` sem login** — 307 → `/` sem pedir login; confirmar se é o esperado ou exigir auth

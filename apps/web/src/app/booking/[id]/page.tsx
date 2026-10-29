@@ -4,10 +4,27 @@ import type { IStore } from '@/types/api/stores.types';
 import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
 import { withBudget } from '@/utils/helpers/promise.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
+import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import { buildStoreJsonLd } from '@/utils/helpers/social.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import type { Metadata } from 'next';
 
 const STORE_PREFETCH_MS = 4000;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  return createPageMetadata({
+    title: 'Agendar | ServiceSnap',
+    description:
+      'Veja o profissional e agende um horário no ServiceSnap.',
+    path: `/booking/${id}`,
+  });
+}
 
 export default async function BookingPage({
   params,
