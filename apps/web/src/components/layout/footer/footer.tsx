@@ -123,7 +123,14 @@ export const Footer = () => {
 
         <div className="mt-16 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6">
           <Link href="/">
-            <Image src="/logo.png" alt="ServiceSnap" width={200} height={62} />
+            <Image
+              src="/d2-lockup-light.svg"
+              alt="ServiceSnap"
+              width={176}
+              height={44}
+              className="h-11 w-auto"
+              unoptimized
+            />
           </Link>
 
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
