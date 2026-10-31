@@ -26,6 +26,7 @@ export interface IProfessional {
   createdAt: Date;
   store?: IStore;
   services?: IService[];
-  schedules: IAppointment[];
+  /** Ausente no get store público; booking usa schedules/availability. */
+  schedules?: IAppointment[];
   blockedTimes: IBlockedTime[];
 }

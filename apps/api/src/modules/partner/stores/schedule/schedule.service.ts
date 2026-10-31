@@ -59,6 +59,27 @@ export class ScheduleService {
     });
   }
 
+  /**
+   * Slim public payload for booking slot checks (date/time + member id only).
+   */
+  async findAvailability(storeId: string): Promise<Schedule[]> {
+    return this.scheduleRepository.find({
+      where: {
+        store: { id: storeId },
+        status: In(['scheduled', 'completed']),
+      },
+      select: {
+        id: true,
+        date: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+        storeMember: { id: true },
+      },
+      relations: ['storeMember'],
+    });
+  }
+
   async findOne(id: string, relations: string[] = []): Promise<Schedule> {
     return this.scheduleRepository.findOne({ where: { id }, relations });
   }
