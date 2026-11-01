@@ -2,6 +2,7 @@
 
 import { LocaleDialog } from '@/components/layout/locale-dialog';
 import { useLocaleStore } from '@/store/locale';
+import { SOCIAL_LINKS } from '@/utils/constants/contact.constants';
 import { COUNTRIES, CURRENCIES } from '@repo/shared/constants';
 import { getFlagEmoji } from '@repo/ui';
 import { Globe } from 'lucide-react';
@@ -134,6 +135,27 @@ export const Footer = () => {
           </Link>
 
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+            {SOCIAL_LINKS.length > 0 ? (
+              <ul className="flex items-center gap-3" aria-label="Redes sociais">
+                {SOCIAL_LINKS.map((link) => {
+                  const Icon = link.icon;
+                  return (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={link.label}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
+                      >
+                        <Icon className="h-4 w-4" />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+
             <button
               type="button"
               onClick={() => setIsLocaleOpen(true)}
