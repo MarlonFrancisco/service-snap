@@ -3,6 +3,12 @@ import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
+const MEMBER_SINCE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+
 export const useProfileHeader = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,22 +36,24 @@ export const useProfileHeader = () => {
     [updateAvatar],
   );
 
-  const handleEditProfile = useCallback(() => {
-    toast.info('Funcionalidade em desenvolvimento');
-  }, []);
-
-  const handleSettings = useCallback(() => {
-    toast.info('Funcionalidade em desenvolvimento');
-  }, []);
-
-  const handleLogout = useCallback(() => {
-    toast.info('Logout em desenvolvimento');
+  const handleOpenFilePicker = useCallback(() => {
+    fileInputRef.current?.click();
   }, []);
 
   return {
     // User data
     user,
     isPendingUser,
+    fullName: user ? `${user.firstName} ${user.lastName}` : '',
+    initials: user
+      ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
+      : '',
+    avatarUrl: user?.avatar
+      ? `${process.env.NEXT_PUBLIC_CDN_URL}${user.avatar}`
+      : undefined,
+    memberSince: user
+      ? MEMBER_SINCE_FORMATTER.format(new Date(user.createdAt))
+      : '',
 
     // Photo upload state
     isUpdatingAvatar,
@@ -53,8 +61,6 @@ export const useProfileHeader = () => {
 
     // Handlers
     handlePhotoUpload,
-    handleEditProfile,
-    handleSettings,
-    handleLogout,
+    handleOpenFilePicker,
   };
 };

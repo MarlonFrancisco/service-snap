@@ -1,8 +1,6 @@
 'use client';
 
-import { NotFound } from '@/components/ui';
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
-import { useReviewsStore } from '@/store';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,30 +10,41 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Badge,
-  Button,
-  Card,
-  CardContent,
+  cn,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   Separator,
 } from '@repo/ui';
+import { Calendar, CalendarDays, Clock, MapPin, Phone } from 'lucide-react';
+import Link from 'next/link';
 import {
-  ArrowRight,
-  Calendar,
-  Check,
-  Clock,
-  MapPin,
-  Phone,
-  Star,
-  Users,
-  X,
-} from 'lucide-react';
-import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
+  PROFILE_ACTION_CLASS,
+  PROFILE_ACTION_PRIMARY_CLASS,
+  PROFILE_ACTIONS_CLASS,
+  PROFILE_CARDS_GRID_CLASS,
+  PROFILE_DIALOG_CLASS,
+  PROFILE_DIALOG_CONFIRM_CLASS,
+  PROFILE_DIALOG_DISMISS_CLASS,
+  PROFILE_SECTION_LEAD_CLASS,
+  PROFILE_SECTION_TITLE_CLASS,
+} from '../../profile.styles';
+import { ProfileEmptyState } from '../profile-empty-state';
 import { useBookingsSection } from './bookings-section.hook';
+import {
+  formatBookingDateFull,
+  formatBookingDateLong,
+  formatBookingDateShort,
+  formatBookingPrice,
+  formatPastBookingDateLong,
+  formatPastBookingDateShort,
+  getProfessionalName,
+} from './utils/bookings-section.helpers';
+
+const DETAIL_LABEL_CLASS = 'text-xs text-[#5F5C6E]';
+const DETAIL_VALUE_CLASS = 'mt-px font-semibold [overflow-wrap:anywhere]';
+const MODAL_ICON_CLASS = 'mt-0.5 size-4 shrink-0 text-[#5F5C6E]';
 
 export const BookingsSection = () => {
   const {
@@ -46,372 +55,215 @@ export const BookingsSection = () => {
     setSelectedBooking,
     setBookingToCancel,
     handleCancelBooking,
+    handleReview,
   } = useBookingsSection();
-
-  const setReviewsAttributesAction = useReviewsStore(
-    (state) => state.setReviewsAttributesAction,
-  );
-
-  const router = useRouter();
 
   if (upcomingBookings.length === 0 && pastBookings.length === 0) {
     return (
-      <NotFound
+      <ProfileEmptyState
+        icon={CalendarDays}
         title="Nenhum agendamento encontrado"
         description="Você ainda não tem nenhum agendamento. Clique no botão abaixo para explorar os serviços disponíveis."
         actionLabel="Explorar serviços"
-        onAction={() => router.push('/')}
-        className="min-h-auto"
       />
     );
   }
 
   return (
     <>
-      <motion.div
-        key="bookings"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        className="space-y-8"
-      >
-        {/* Upcoming Bookings */}
-        {upcomingBookings.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-gray-900 mb-1">Próximos agendamentos</h3>
-                <p className="text-gray-600">Seus compromissos confirmados</p>
-              </div>
-              <Badge variant="outline" className="border-gray-300 px-3 py-1">
-                {upcomingBookings.length}{' '}
-                {upcomingBookings.length === 1 ? 'agendamento' : 'agendamentos'}
-              </Badge>
-            </div>
-            <div className="space-y-5">
-              {upcomingBookings.map((booking, index) => (
-                <motion.div
-                  key={booking.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group"
-                >
-                  <Card className="border-gray-200 overflow-hidden hover:border-gray-300 py-0">
-                    <CardContent className="p-0">
-                      <div className="flex flex-col lg:flex-row">
-                        {/* Enhanced Image Section */}
-                        <div className="relative lg:w-80 xl:w-96 h-64 lg:h-auto overflow-hidden flex-shrink-0">
-                          <ImageWithFallback
-                            src={booking.store.gallery[0]?.url ?? ''}
-                            alt={booking.store.name ?? ''}
-                            fill
-                            sizes="(min-width: 768px) 300px, 200px"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                        </div>
+      {upcomingBookings.length > 0 && (
+        <section>
+          <h2 className={PROFILE_SECTION_TITLE_CLASS}>Próximos agendamentos</h2>
+          <p className={PROFILE_SECTION_LEAD_CLASS}>
+            Seus compromissos confirmados
+          </p>
+          <div className="space-y-4">
+            {upcomingBookings.map((booking) => (
+              <article
+                key={booking.id}
+                className="grid grid-cols-1 rounded-[22px] border border-[#E3E1EA] px-3 pt-3 pb-4 md:grid-cols-[150px_minmax(0,1fr)] md:gap-5 md:rounded-3xl md:p-4"
+              >
+                <div className="relative aspect-video overflow-hidden rounded-[14px] bg-[#E9E3F5] md:aspect-auto md:min-h-[150px] md:rounded-2xl">
+                  <ImageWithFallback
+                    src={booking.store.gallery[0]?.url ?? ''}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 150px, 100vw"
+                    className="object-cover"
+                  />
+                </div>
 
-                        {/* Enhanced Content Section */}
-                        <div className="flex-1 p-6 lg:p-8">
-                          {/* Header with Actions */}
-                          <div className="flex items-start justify-between gap-4 mb-6">
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-gray-900 mb-2 group-hover:text-gray-700 transition-colors">
-                                {booking.store.name}
-                              </h4>
-                              <p className="text-sm text-gray-600 mb-4">
-                                {booking.service.name}
-                              </p>
+                <div className="min-w-0">
+                  <h3 className="mx-1 mt-3 text-base font-bold md:mx-0 md:mt-0 md:text-[17px]">
+                    {booking.store.name}
+                  </h3>
+                  <p className="mx-1 mt-0.5 text-sm text-[#5F5C6E] md:mx-0 md:mt-[3px]">
+                    {booking.service.name} · {getProfessionalName(booking)}
+                  </p>
 
-                              {/* Professional Info */}
-                              <div className="flex items-center gap-2 mb-4">
-                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <Users className="h-4 w-4 text-gray-600" />
-                                </div>
-                                <div className="text-sm text-gray-900">
-                                  {booking.storeMember.user.firstName}{' '}
-                                  {booking.storeMember.user.lastName}
-                                </div>
-                              </div>
-                            </div>
+                  <dl className="mx-1 mt-3 grid grid-cols-2 gap-x-3.5 gap-y-2.5 text-sm md:mx-0 md:mt-3.5 md:grid-cols-[repeat(auto-fit,minmax(150px,1fr))] md:gap-x-[18px]">
+                    <div>
+                      <dt className={DETAIL_LABEL_CLASS}>Data</dt>
+                      <dd className={DETAIL_VALUE_CLASS}>
+                        <span className="md:hidden">
+                          {formatBookingDateShort(booking.date)}
+                        </span>
+                        <span className="hidden md:inline">
+                          {formatBookingDateLong(booking.date)}
+                        </span>
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={DETAIL_LABEL_CLASS}>Horário</dt>
+                      <dd className={DETAIL_VALUE_CLASS}>
+                        {booking.startTime} - {booking.endTime}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={DETAIL_LABEL_CLASS}>Total</dt>
+                      <dd className={DETAIL_VALUE_CLASS}>
+                        {formatBookingPrice(booking)}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className={DETAIL_LABEL_CLASS}>Local</dt>
+                      <dd className={DETAIL_VALUE_CLASS}>
+                        {booking.store.address}
+                      </dd>
+                    </div>
+                  </dl>
 
-                            {/* Price Tag */}
-                            <div className="ml-4 text-right flex-shrink-0">
-                              <div className="text-xs text-gray-500 mb-1">
-                                Total
-                              </div>
-                              <div className="text-gray-900">
-                                <span className="text-sm">
-                                  R$ {booking.service.price}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Timeline Info Grid */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div className="relative pl-12">
-                              <div className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                                <Calendar className="h-4 w-4 text-gray-600" />
-                              </div>
-                              <div className="text-xs text-gray-500 mb-1">
-                                Data
-                              </div>
-                              <div className="text-sm text-gray-900">
-                                {booking.date}
-                              </div>
-                            </div>
-
-                            <div className="relative pl-12">
-                              <div className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                                <Clock className="h-4 w-4 text-gray-600" />
-                              </div>
-                              <div className="text-xs text-gray-500 mb-1">
-                                Horário
-                              </div>
-                              <div className="text-sm text-gray-900">
-                                {booking.startTime} - {booking.endTime}
-                              </div>
-                            </div>
-
-                            <div className="relative pl-12">
-                              <div className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                                <MapPin className="h-4 w-4 text-gray-600" />
-                              </div>
-                              <div className="text-xs text-gray-500 mb-1">
-                                Local
-                              </div>
-                              <div className="text-sm text-gray-900 line-clamp-1">
-                                {booking.store.address}
-                              </div>
-                            </div>
-
-                            <div className="relative pl-12">
-                              <div className="absolute left-0 top-0 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                                <Phone className="h-4 w-4 text-gray-600" />
-                              </div>
-                              <div className="text-xs text-gray-500 mb-1">
-                                Contato
-                              </div>
-                              <div className="text-sm text-gray-900">
-                                {booking.store.telephone}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Actions Bar */}
-                          <div className="flex gap-2 pt-6 border-t border-gray-100">
-                            <Button
-                              variant="outline"
-                              onClick={() => setSelectedBooking(booking)}
-                              className="flex-1 border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-colors group/btn"
-                            >
-                              <span>Ver detalhes</span>
-                              <ArrowRight className="h-4 w-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => setBookingToCancel(booking)}
-                              className="flex-1 text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors"
-                            >
-                              <X className="h-4 w-4 mr-2" />
-                              Cancelar
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+                  <div className={PROFILE_ACTIONS_CLASS}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBooking(booking)}
+                      className={PROFILE_ACTION_PRIMARY_CLASS}
+                    >
+                      Ver detalhes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBookingToCancel(booking)}
+                      className={PROFILE_ACTION_CLASS}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Past Bookings */}
-        {pastBookings.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h3 className="text-gray-900 mb-1">Histórico</h3>
-                <p className="text-gray-600">Seus agendamentos concluídos</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {pastBookings.map((booking, index) => (
-                <motion.div
-                  key={booking.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="group"
-                >
-                  <Card className="border-gray-200 hover:shadow-xl hover:border-gray-300 transition-all duration-500 overflow-hidden py-0">
-                    <CardContent className="p-0">
-                      {/* Image with overlay */}
-                      <div className="relative h-52 overflow-hidden">
-                        <ImageWithFallback
-                          src={booking.store.gallery[0]?.url ?? ''}
-                          alt={booking.store.name ?? ''}
-                          fill
-                          sizes="(min-width: 768px) 300px, 200px"
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-                        {/* Status Badge */}
-                        <Badge className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm text-gray-900 border-0 shadow-lg">
-                          <Check className="h-3 w-3 mr-1" />
-                          Concluído
-                        </Badge>
-
-                        {/* Quick action on hover */}
-                        <div className="absolute inset-x-0 bottom-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                          <Button
-                            size="sm"
-                            className="w-full bg-white hover:bg-gray-100 text-gray-900 shadow-lg"
-                            onClick={() =>
-                              router.push(`/booking/${booking.store.id}`)
-                            }
-                          >
-                            <Calendar className="h-3.5 w-3.5 mr-2" />
-                            Reservar novamente
-                          </Button>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <div className="p-5">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-gray-900 mb-1 truncate group-hover:text-gray-700 transition-colors">
-                              {booking.store.name}
-                            </h4>
-                            <p className="text-gray-600 mb-3">
-                              {booking.service.name}
-                            </p>
-                          </div>
-                          <div className="ml-3 text-right flex-shrink-0">
-                            <div className="text-sm text-gray-900">
-                              R$ {booking.service.price}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                          <div className="flex items-center gap-2 text-gray-500">
-                            <Clock className="h-3.5 w-3.5" />
-                            <span>
-                              {new Date(booking.date).toLocaleDateString(
-                                'pt-BR',
-                                {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                },
-                              )}
-                            </span>
-                          </div>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
-                            onClick={() =>
-                              setReviewsAttributesAction({
-                                storeId: booking.store.id,
-                                businessName: booking.store.name,
-                                isOpen: true,
-                              })
-                            }
-                          >
-                            <Star className="h-3.5 w-3.5 mr-1.5" />
-                            Avaliar
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
+      {pastBookings.length > 0 && (
+        <section className={cn(upcomingBookings.length > 0 && 'mt-9 md:mt-11')}>
+          <h2 className={PROFILE_SECTION_TITLE_CLASS}>Histórico</h2>
+          <p className={PROFILE_SECTION_LEAD_CLASS}>
+            Seus agendamentos concluídos
+          </p>
+          <div className={PROFILE_CARDS_GRID_CLASS}>
+            {pastBookings.map((booking) => (
+              <article key={booking.id}>
+                <div className="relative aspect-video overflow-hidden rounded-[14px] bg-[#F3E8E1] md:aspect-[4/3] md:rounded-[20px]">
+                  <ImageWithFallback
+                    src={booking.store.gallery[0]?.url ?? ''}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 400px, 100vw"
+                    className="object-cover"
+                  />
+                  <span className="absolute top-2.5 left-2.5 rounded-full bg-white px-2.5 py-[5px] text-xs font-bold md:top-3 md:left-3 md:px-[11px]">
+                    Concluído
+                  </span>
+                </div>
+                <h3 className="mt-2.5 text-[15px] font-bold md:mt-3">
+                  {booking.store.name}
+                </h3>
+                <p className="mt-0.5 text-sm text-[#5F5C6E]">
+                  {booking.service.name} · {formatBookingPrice(booking)}
+                  <span className="md:hidden">
+                    {' · '}
+                    {formatPastBookingDateShort(booking.date)}
+                  </span>
+                </p>
+                <p className="mt-0.5 hidden text-sm text-[#5F5C6E] md:block">
+                  {formatPastBookingDateLong(booking.date)}
+                </p>
+                <div className={PROFILE_ACTIONS_CLASS}>
+                  <Link
+                    href={`/booking/${booking.store.id}`}
+                    className={PROFILE_ACTION_PRIMARY_CLASS}
+                  >
+                    Reservar novamente
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => handleReview(booking)}
+                    className={PROFILE_ACTION_CLASS}
+                  >
+                    Avaliar
+                  </button>
+                </div>
+              </article>
+            ))}
           </div>
-        )}
-      </motion.div>
+        </section>
+      )}
 
-      {/* Booking Details Modal */}
+      {/* Detalhes do agendamento */}
       <Dialog
         open={!!selectedBooking}
         onOpenChange={() => setSelectedBooking(undefined)}
       >
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className={cn(PROFILE_DIALOG_CLASS, 'sm:max-w-lg')}>
           <DialogHeader>
-            <DialogTitle className="text-gray-900">
+            <DialogTitle className="text-xl font-extrabold tracking-[-0.02em]">
               Detalhes do agendamento
             </DialogTitle>
           </DialogHeader>
           {selectedBooking && (
-            <div className="space-y-6">
+            <div className="space-y-6 text-sm">
               <div>
-                <h3 className="text-gray-900 mb-1">
+                <h3 className="text-[17px] font-bold">
                   {selectedBooking.store.name}
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="mt-0.5 mb-4 text-[#5F5C6E]">
                   {selectedBooking.service.name}
                 </p>
 
-                <div className="space-y-3">
+                <div className="space-y-3 font-semibold">
                   <div className="flex items-start gap-3">
-                    <Calendar className="h-4 w-4 text-gray-400 mt-0.5" />
-                    <div>
-                      <div className="text-gray-900">
-                        {new Date(selectedBooking.date).toLocaleDateString(
-                          'pt-BR',
-                          {
-                            weekday: 'long',
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric',
-                          },
-                        )}
-                      </div>
-                    </div>
+                    <Calendar className={MODAL_ICON_CLASS} aria-hidden />
+                    {formatBookingDateFull(selectedBooking.date)}
                   </div>
                   <div className="flex items-start gap-3">
-                    <Clock className="h-4 w-4 text-gray-400 mt-0.5" />
-                    <div className="text-gray-900">
-                      {selectedBooking.startTime} - {selectedBooking.endTime}
-                    </div>
+                    <Clock className={MODAL_ICON_CLASS} aria-hidden />
+                    {selectedBooking.startTime} - {selectedBooking.endTime}
                   </div>
                   <div className="flex items-start gap-3">
-                    <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
-                    <div className="text-gray-900">
-                      {selectedBooking.store.address}
-                    </div>
+                    <MapPin className={MODAL_ICON_CLASS} aria-hidden />
+                    {selectedBooking.store.address}
                   </div>
                   <div className="flex items-start gap-3">
-                    <Phone className="h-4 w-4 text-gray-400 mt-0.5" />
-                    <div className="text-gray-900">
-                      {selectedBooking.store.telephone}
-                    </div>
+                    <Phone className={MODAL_ICON_CLASS} aria-hidden />
+                    {selectedBooking.store.telephone}
                   </div>
                 </div>
               </div>
 
               <Separator />
 
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Profissional</span>
-                <span className="text-gray-900">
-                  {selectedBooking.storeMember.user.firstName}{' '}
-                  {selectedBooking.storeMember.user.lastName}
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-[#5F5C6E]">Profissional</span>
+                <span className="text-right font-semibold">
+                  {getProfessionalName(selectedBooking)}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Valor total</span>
-                <span className="text-gray-900">
-                  R$ {selectedBooking.service.price}
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-[#5F5C6E]">Valor total</span>
+                <span className="text-right font-extrabold">
+                  {formatBookingPrice(selectedBooking)}
                 </span>
               </div>
             </div>
@@ -423,7 +275,7 @@ export const BookingsSection = () => {
         open={!!bookingToCancel}
         onOpenChange={() => setBookingToCancel(undefined)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className={PROFILE_DIALOG_CLASS}>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancelar agendamento</AlertDialogTitle>
             <AlertDialogDescription>
@@ -431,8 +283,13 @@ export const BookingsSection = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCancelBooking}>
+            <AlertDialogCancel className={PROFILE_DIALOG_DISMISS_CLASS}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelBooking}
+              className={PROFILE_DIALOG_CONFIRM_CLASS}
+            >
               Cancelar agendamento
             </AlertDialogAction>
           </AlertDialogFooter>

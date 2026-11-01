@@ -3,6 +3,7 @@
 import { Button, Card, CardContent, Separator } from '@repo/ui';
 import { Copy, Gift, Loader2, Share2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ReferralClientPanel } from './components/referral-client-panel';
 import { useReferralShareCard } from './referral-share-card.hook';
 import type { TReferralShareCardConfig } from './referral-share-card.types';
 
@@ -10,6 +11,7 @@ export function ReferralShareCard({
   variant,
   delay = 0,
 }: TReferralShareCardConfig) {
+  const referralShare = useReferralShareCard({ variant });
   const {
     referral,
     isPendingReferral,
@@ -23,7 +25,11 @@ export function ReferralShareCard({
     handleCopyPrimary,
     handleCopySecondary,
     handleShare,
-  } = useReferralShareCard({ variant });
+  } = referralShare;
+
+  if (variant === 'client') {
+    return <ReferralClientPanel {...referralShare} />;
+  }
 
   return (
     <motion.div

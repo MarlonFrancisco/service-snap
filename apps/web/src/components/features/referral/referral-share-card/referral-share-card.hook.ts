@@ -13,6 +13,14 @@ async function copyText(value: string, successMessage: string) {
   }
 }
 
+const toDisplayUrl = (url?: string) => url?.replace(/^https?:\/\//, '') ?? '';
+
+const getReferredLabel = (count: number) => {
+  if (count === 0) return 'Nenhuma indicação registrada ainda.';
+  if (count === 1) return '1 pessoa entrou com o seu link.';
+  return `${count} pessoas entraram com o seu link.`;
+};
+
 export function useReferralShareCard({ variant }: TReferralShareCardConfig) {
   const { referral, isPendingReferral, isErrorReferral, refetchReferral } =
     useReferralQuery();
@@ -80,6 +88,9 @@ export function useReferralShareCard({ variant }: TReferralShareCardConfig) {
     primaryLabel,
     secondaryUrl,
     secondaryLabel,
+    primaryDisplayUrl: toDisplayUrl(primaryUrl),
+    secondaryDisplayUrl: toDisplayUrl(secondaryUrl),
+    referredLabel: getReferredLabel(referral?.referredCount ?? 0),
     handleCopyCode,
     handleCopyPrimary,
     handleCopySecondary,

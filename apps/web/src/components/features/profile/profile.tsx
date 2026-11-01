@@ -1,8 +1,7 @@
 'use client';
 
 import { ReferralShareCard } from '@/components/features/referral/referral-share-card';
-import { Header } from '@/components/layout';
-import { AnimatePresence } from 'motion/react';
+import { Footer, Header, MobileTabBar } from '@/components/layout';
 import { BookingsSection } from './components/bookings-section';
 import { FavoritesSection } from './components/favorites-section';
 import { ProfileHeader } from './components/profile-header';
@@ -10,20 +9,11 @@ import { ProfileTabs } from './components/profile-tabs';
 import { SettingsSection } from './components/settings-section';
 import { useProfile } from './profile.hook';
 import { ProfileSkeleton } from './profile.skeleton';
-import type { TProfileTab } from './profile.types';
-
-type TProfilePageConfig = {
-  initialTab?: TProfileTab;
-};
+import type { TProfilePageConfig } from './profile.types';
 
 export const Profile = ({ initialTab }: TProfilePageConfig) => {
-  const {
-    activeTab,
-    isPendingUser,
-    setActiveTab,
-    upcomingCount,
-    favoritesCount,
-  } = useProfile(initialTab);
+  const { activeTab, isPendingUser, bookingsCount, favoritesCount } =
+    useProfile(initialTab);
 
   if (isPendingUser) {
     return <ProfileSkeleton />;
@@ -31,34 +21,28 @@ export const Profile = ({ initialTab }: TProfilePageConfig) => {
 
   return (
     <Header>
-      <div className="min-h-screen">
+      <main className="mx-auto w-full max-w-[82.5rem] px-5 max-md:min-h-[calc(100dvh-9rem)] md:px-10">
         <ProfileHeader />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-          <div className="mt-8">
-            <ReferralShareCard variant="client" />
+        <ProfileTabs
+          activeTab={activeTab}
+          bookingsCount={bookingsCount}
+          favoritesCount={favoritesCount}
+        />
+
+        <div className="grid grid-cols-1 items-start gap-9 pt-6 pb-8 md:gap-10 md:pt-8 md:pb-0 min-[1021px]:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="min-w-0">
+            {activeTab === 'bookings' && <BookingsSection />}
+            {activeTab === 'favorites' && <FavoritesSection />}
+            {activeTab === 'settings' && <SettingsSection />}
           </div>
 
-          <ProfileTabs
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            upcomingCount={upcomingCount}
-            favoritesCount={favoritesCount}
-          />
-
-          <AnimatePresence mode="wait">
-            {activeTab === 'bookings' && (
-              <BookingsSection className="space-y-8 pb-12" />
-            )}
-
-            {activeTab === 'favorites' && (
-              <FavoritesSection className="pb-12" />
-            )}
-
-            {activeTab === 'settings' && <SettingsSection className="pb-12" />}
-          </AnimatePresence>
+          <ReferralShareCard variant="client" />
         </div>
-      </div>
+      </main>
+
+      <Footer compact />
+      <MobileTabBar />
     </Header>
   );
 };

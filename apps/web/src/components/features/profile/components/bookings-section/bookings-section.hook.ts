@@ -1,5 +1,6 @@
 import { useScheduleMutations } from '@/hooks';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
+import { useReviewsStore } from '@/store';
 import { IAppointment } from '@/types/api/schedule.types';
 import { IUser } from '@/types/api/users.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
@@ -19,6 +20,10 @@ export const useBookingsSection = () => {
   });
 
   const { user } = useUserQuery();
+
+  const setReviewsAttributesAction = useReviewsStore(
+    (state) => state.setReviewsAttributesAction,
+  );
 
   // TODO: Substituir mock data por dados reais da API
   const upcomingBookings = useMemo(() => {
@@ -55,6 +60,17 @@ export const useBookingsSection = () => {
     setBookingToCancel(undefined);
   }, [deleteSchedule, bookingToCancel]);
 
+  const handleReview = useCallback(
+    (booking: IAppointment) => {
+      setReviewsAttributesAction({
+        storeId: booking.store.id,
+        businessName: booking.store.name,
+        isOpen: true,
+      });
+    },
+    [setReviewsAttributesAction],
+  );
+
   return {
     upcomingBookings,
     pastBookings,
@@ -63,5 +79,6 @@ export const useBookingsSection = () => {
     setSelectedBooking,
     setBookingToCancel,
     handleCancelBooking,
+    handleReview,
   };
 };

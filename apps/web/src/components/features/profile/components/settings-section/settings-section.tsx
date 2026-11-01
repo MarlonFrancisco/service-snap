@@ -9,12 +9,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  Card,
-  CardContent,
-  Separator,
+  cn,
 } from '@repo/ui';
 import { ChevronRight, Loader2, Shield, Trash2 } from 'lucide-react';
-import { motion } from 'motion/react';
+import {
+  PROFILE_DIALOG_CLASS,
+  PROFILE_DIALOG_CONFIRM_CLASS,
+  PROFILE_DIALOG_DISMISS_CLASS,
+  PROFILE_FOCUS_CLASS,
+  PROFILE_SECTION_LEAD_CLASS,
+  PROFILE_SECTION_TITLE_CLASS,
+} from '../../profile.styles';
 import { useSettingsSection } from './settings-section.hook';
 
 export const SettingsSection = () => {
@@ -27,70 +32,52 @@ export const SettingsSection = () => {
 
   return (
     <>
-      <motion.div
-        key="settings"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-      >
-        <Card className="border-gray-200 py-0">
-          <CardContent className="p-8">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center">
-                <Shield className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h3 className="text-gray-900 mb-1">Privacidade e dados</h3>
-                <p className="text-gray-600">
-                  Gerencie suas informações pessoais
-                </p>
-              </div>
-            </div>
+      <section>
+        <h2 className={PROFILE_SECTION_TITLE_CLASS}>Privacidade e dados</h2>
+        <p className={PROFILE_SECTION_LEAD_CLASS}>
+          Gerencie suas informações pessoais
+        </p>
 
-            <Separator className="mb-8" />
+        <button
+          type="button"
+          onClick={() => setIsOpenDisabledAccountAlert(true)}
+          className={cn(
+            'flex w-full items-center justify-between gap-4 rounded-[22px] border border-[#E3E1EA] p-4 text-left transition-colors hover:bg-[#FEF2F2] md:rounded-3xl',
+            PROFILE_FOCUS_CLASS,
+          )}
+        >
+          <span className="flex min-w-0 items-center gap-3.5">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#FEF2F2] text-[#DC2626]">
+              <Trash2 className="size-5" aria-hidden />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-[15px] font-bold text-[#DC2626]">
+                Desativar conta
+              </span>
+              <span className="mt-0.5 block text-sm text-[#5F5C6E]">
+                Desativar sua conta e dados
+              </span>
+            </span>
+          </span>
+          <ChevronRight className="size-5 shrink-0 text-[#DC2626]" aria-hidden />
+        </button>
 
-            <div className="space-y-3">
-              <button
-                onClick={() => setIsOpenDisabledAccountAlert(true)}
-                className="w-full flex items-center justify-between p-5 hover:bg-red-50 rounded-xl transition-all group border border-transparent hover:border-red-200"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-100 transition-colors">
-                    <Trash2 className="h-5 w-5 text-red-600" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-red-600 mb-1">Desativar conta</div>
-                    <div className="text-gray-600">
-                      Desativar sua conta e dados
-                    </div>
-                  </div>
-                </div>
-                <ChevronRight className="h-5 w-5 text-red-400 group-hover:text-red-600 group-hover:translate-x-1 transition-all" />
-              </button>
-            </div>
-
-            <div className="mt-8 p-5 bg-blue-50 border border-blue-200 rounded-xl">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Shield className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-gray-900 mb-2">
-                    Seus dados estão seguros
-                  </div>
-                  <div className="text-gray-700 leading-relaxed">
-                    Protegemos suas informações com criptografia de ponta a
-                    ponta e nunca as compartilhamos sem sua permissão.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+        <div className="mt-4 flex items-start gap-3.5 rounded-[14px] bg-[#F7F6FA] p-4">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white">
+            <Shield className="size-5" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h3 className="text-[15px] font-bold">Seus dados estão seguros</h3>
+            <p className="mt-0.5 text-sm leading-normal text-[#5F5C6E]">
+              Protegemos suas informações com criptografia de ponta a ponta e
+              nunca as compartilhamos sem sua permissão.
+            </p>
+          </div>
+        </div>
+      </section>
 
       <AlertDialog open={isOpenDisabledAccountAlert}>
-        <AlertDialogContent>
+        <AlertDialogContent className={PROFILE_DIALOG_CLASS}>
           <AlertDialogHeader>
             <AlertDialogTitle>Desativar conta</AlertDialogTitle>
             <AlertDialogDescription>
@@ -100,15 +87,17 @@ export const SettingsSection = () => {
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() => setIsOpenDisabledAccountAlert(false)}
+              className={PROFILE_DIALOG_DISMISS_CLASS}
             >
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteAccount}
               disabled={isDeletingUser}
+              className={PROFILE_DIALOG_CONFIRM_CLASS}
             >
               {isDeletingUser ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="size-4 animate-spin" />
               ) : (
                 'Desativar'
               )}
