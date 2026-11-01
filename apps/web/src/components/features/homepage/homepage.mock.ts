@@ -38,4 +38,4 @@ export const EXPERIENCE_ROW_CONFIGS: TExperienceRowConfig[] = [
 ];
 
 export const PARTNER_IMAGE =
-  'https://images.unsplash.com/photo-1585747860715-2ba37e789b80?auto=format&fit=crop&w=1600&q=80';
+  'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1600&q=80';
