@@ -1,7 +1,7 @@
 import {
   ROI_ILLUSTRATIVE_BOOKINGS_LIFT,
   ROI_ILLUSTRATIVE_NO_SHOW_REDUCTION_PP,
-} from '@/components/features/roi-calculator/roi-calculator.constants';
+} from './pricing-roi-calculator.constants';
 import { useCallback, useMemo, useState } from 'react';
 
 export type TRoiField =

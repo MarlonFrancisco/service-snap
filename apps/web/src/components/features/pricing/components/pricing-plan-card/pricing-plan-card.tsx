@@ -2,12 +2,11 @@ import { cn } from '@repo/ui';
 import { usePricingPlanCard } from './pricing-plan-card.hook';
 import type { TPricingPlanCardConfig } from './pricing-plan-card.types';
 
-export const PricingPlanCard = ({
-  plan,
-  isCurrentPlan,
-}: TPricingPlanCardConfig) => {
+export const PricingPlanCard = (config: TPricingPlanCardConfig) => {
+  const { plan, isCurrentPlan } = config;
   const {
     handleSubscribe,
+    isDisabled,
     priceLabel,
     intervalLabel,
     originalPriceLabel,
@@ -15,7 +14,7 @@ export const PricingPlanCard = ({
     trialLabel,
     badgeLabel,
     actionLabel,
-  } = usePricingPlanCard({ plan, isCurrentPlan });
+  } = usePricingPlanCard(config);
 
   return (
     <article
@@ -72,10 +71,10 @@ export const PricingPlanCard = ({
       <button
         type="button"
         onClick={handleSubscribe}
-        disabled={isCurrentPlan}
+        disabled={isDisabled}
         className={cn(
           'order-1 mt-[1.125rem] w-full rounded-full border p-[0.9375rem] text-center text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F] md:order-none',
-          isCurrentPlan
+          isDisabled
             ? 'cursor-not-allowed border-[#E3E1EA] bg-[#F4F3F7] text-[#5F5C6E]'
             : plan.popular
               ? 'cursor-pointer border-[#0B0B0F] bg-[#0B0B0F] text-white hover:bg-[#2B2B2B]'

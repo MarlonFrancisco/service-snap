@@ -1,14 +1,3 @@
 export type TPlanOverviewCardConfig = {
-  planName: string;
-  price: number;
-  billingPeriod: 'month' | 'year';
-  cancelAtPeriodEnd: boolean;
-  nextBillingDate?: Date;
-  schedulesLength: number;
-  storesLength: number;
-  maxStores: number;
-  storeMembersLength: number;
-  maxUsers: number;
   onCancelReactivateClick: () => void;
-  delay?: number;
 };

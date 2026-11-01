@@ -1,16 +1,25 @@
 'use client';
 import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mutations/use-notifications-mutations.hook';
 import { useNotificationsQuery } from '@/hooks/use-query/use-notifications-query/use-notifications-query.hook';
-import { usePartnerStore } from '@/store';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useStoreAvailability } from '../notifications-module.hook';
+import {
+  formatTimestamp,
+  getStatusBadgeConfig,
+} from '../notifications-module.utils';
+import type { TNotificationHistoryRow } from './notifications-history.types';
+
+const ALL_FILTER = 'all';
+const PAGE_SIZE = 5;
 
 export const useNotificationsHistory = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterType, setFilterType] = useState<string>(ALL_FILTER);
+  const [filterStatus, setFilterStatus] = useState<string>(ALL_FILTER);
   const [page, setPage] = useState(1);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
-  const { activeStore } = usePartnerStore();
+  const { storeId, storeAvailability, retryStore } = useStoreAvailability();
 
   useEffect(() => {
     setPage(1);
@@ -19,7 +28,7 @@ export const useNotificationsHistory = () => {
   const notificationHistoryParams = useMemo(
     () => ({
       page,
-      limit: 5,
+      limit: PAGE_SIZE,
       type: filterType,
       status: filterStatus,
       search: searchQuery,
@@ -31,8 +40,11 @@ export const useNotificationsHistory = () => {
     notificationsHistory,
     notificationsMeta,
     isNotificationsHistoryLoading,
+    isNotificationsHistoryError,
+    isNotificationsHistoryFetching,
+    refetchNotificationsHistory,
   } = useNotificationsQuery({
-    storeId: activeStore.id,
+    storeId,
     includeNotificationsHistory: true,
     notificationHistoryParams,
   });
@@ -42,9 +54,30 @@ export const useNotificationsHistory = () => {
     deleteNotificationsHistoryMutation,
     markAllAsReadNotificationsHistoryMutation,
   } = useNotificationsMutations({
-    storeId: activeStore.id,
+    storeId,
     notificationHistoryParams,
   });
+
+  const isLoading =
+    storeAvailability === 'loading' || isNotificationsHistoryLoading;
+  const isError = storeAvailability === 'error' || isNotificationsHistoryError;
+  const hasNoStore = storeAvailability === 'no-store';
+  const hasActiveFilters =
+    searchQuery.trim() !== '' ||
+    filterType !== ALL_FILTER ||
+    filterStatus !== ALL_FILTER;
+
+  // Excluir a última linha de uma página não pode parecer um histórico vazio.
+  useEffect(() => {
+    if (
+      !isLoading &&
+      !isError &&
+      notificationsHistory.length === 0 &&
+      page > 1
+    ) {
+      setPage((currentPage) => currentPage - 1);
+    }
+  }, [isLoading, isError, notificationsHistory.length, page]);
 
   const markAsRead = useCallback(
     (notificationId: string) => {
@@ -60,11 +93,44 @@ export const useNotificationsHistory = () => {
     markAllAsReadNotificationsHistoryMutation.mutate();
   }, [markAllAsReadNotificationsHistoryMutation]);
 
-  const deleteNotification = useCallback(
-    (notificationId: string) => {
-      deleteNotificationsHistoryMutation.mutate(notificationId);
-    },
-    [deleteNotificationsHistoryMutation],
+  const requestDelete = useCallback((notificationId: string) => {
+    setPendingDeleteId(notificationId);
+  }, []);
+
+  const cancelDelete = useCallback(() => {
+    setPendingDeleteId(null);
+  }, []);
+
+  const confirmDelete = useCallback(() => {
+    if (!pendingDeleteId) return;
+
+    deleteNotificationsHistoryMutation.mutate(pendingDeleteId, {
+      onSettled: () => setPendingDeleteId(null),
+    });
+  }, [deleteNotificationsHistoryMutation, pendingDeleteId]);
+
+  const clearFilters = useCallback(() => {
+    setSearchQuery('');
+    setFilterType(ALL_FILTER);
+    setFilterStatus(ALL_FILTER);
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    if (storeAvailability !== 'ready') {
+      retryStore();
+      return;
+    }
+    void refetchNotificationsHistory();
+  }, [storeAvailability, retryStore, refetchNotificationsHistory]);
+
+  const notifications = useMemo<TNotificationHistoryRow[]>(
+    () =>
+      notificationsHistory.map((notification) => ({
+        ...notification,
+        statusBadge: getStatusBadgeConfig(notification.status),
+        timeLabel: formatTimestamp(new Date(notification.timestamp)),
+      })),
+    [notificationsHistory],
   );
 
   const unreadCount = useMemo(
@@ -72,21 +138,35 @@ export const useNotificationsHistory = () => {
     [notificationsHistory],
   );
 
+  const totalPages = notificationsMeta?.totalPages || 1;
+
   return {
-    notifications: notificationsHistory,
+    notifications,
     unreadCount,
     searchQuery,
     filterType,
     filterStatus,
+    hasActiveFilters,
     setSearchQuery,
     setFilterType,
     setFilterStatus,
+    clearFilters,
     markAsRead,
     markAllAsRead,
-    deleteNotification,
+    isMarkingAllAsRead: markAllAsReadNotificationsHistoryMutation.isPending,
+    pendingDeleteId,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+    isDeleting: deleteNotificationsHistoryMutation.isPending,
     page,
-    setPage,
-    totalPages: notificationsMeta?.totalPages || 1,
-    isLoading: isNotificationsHistoryLoading,
+    totalPages,
+    goToPreviousPage: () => setPage((current) => Math.max(1, current - 1)),
+    goToNextPage: () => setPage((current) => Math.min(totalPages, current + 1)),
+    isLoading,
+    isError,
+    hasNoStore,
+    handleRetry,
+    isRetrying: isNotificationsHistoryFetching,
   };
 };

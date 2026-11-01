@@ -16,6 +16,7 @@ export const useSmsRemindersSection = () => {
   const [previewModal, setPreviewModal] = useState({ isOpen: false });
 
   const form = useFormContext<TSmsSettingsFormData>();
+  const customMessage = form.watch('smsReminderCustomMessage') || '';
 
   const openPreview = useCallback(() => {
     setPreviewModal({ isOpen: true });
@@ -27,6 +28,7 @@ export const useSmsRemindersSection = () => {
 
   return {
     form,
+    customMessage,
     timingOptions: TIMING_OPTIONS,
     previewModal,
     openPreview,

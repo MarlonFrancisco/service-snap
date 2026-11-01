@@ -1,4 +1,1 @@
-export type TCancellationWarningAlertConfig = {
-  planName: string;
-  nextBillingDate?: Date;
-};
+export type TCancellationWarningAlertConfig = Record<string, never>;

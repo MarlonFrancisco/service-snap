@@ -7,10 +7,16 @@ import { useQuery } from '@tanstack/react-query';
 export const usePlansQuery = () => {
   const { currency } = useLocaleStore();
 
-  const { data, isPending: isPendingPlans } = useQuery({
+  const {
+    data,
+    isPending: isPendingPlans,
+    isError: isErrorPlans,
+    isFetching: isFetchingPlans,
+    refetch: refetchPlans,
+  } = useQuery({
     queryKey: CACHE_QUERY_KEYS.plans(currency),
     queryFn: () => PlansService.getPlans(currency),
   });
 
-  return { data, isPendingPlans };
+  return { data, isPendingPlans, isErrorPlans, isFetchingPlans, refetchPlans };
 };

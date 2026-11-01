@@ -1,44 +1,41 @@
 import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mutations/use-notifications-mutations.hook';
-import { useNotificationsQuery } from '@/hooks/use-query/use-notifications-query/use-notifications-query.hook';
 import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query/use-whatsapp-query.hook';
-import { usePartnerStore } from '@/store';
+import { isNotFoundError } from '@/service/api';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useReminderSettingsLoad } from '../notifications-module.hook';
+import type { TNotificationsSettingsData } from '../notifications-module.types';
 import {
   TWhatsappSettingsFormData,
   whatsappSettingsSchema,
 } from './whatsapp-settings.schema';
 
-export const useWhatsappSettings = () => {
-  const storeId = usePartnerStore((state) => state.activeStore?.id);
-  const { notificationsSettings } = useNotificationsQuery({ storeId });
-  const { whatsappConfig } = useWhatsappQuery(storeId);
+const getWhatsappFormValues = (
+  settings: TNotificationsSettingsData,
+): TWhatsappSettingsFormData => ({
+  whatsappReminderEnabled: settings?.whatsappReminderEnabled ?? false,
+  whatsappReminderAdvanceHours: settings?.whatsappReminderAdvanceHours ?? '24h',
+  whatsappReminderCustomMessage: settings?.whatsappReminderCustomMessage ?? '',
+});
 
+export const useWhatsappSettings = () => {
   const form = useForm<TWhatsappSettingsFormData>({
     resolver: zodResolver(whatsappSettingsSchema),
-    defaultValues: {
-      whatsappReminderEnabled: false,
-      whatsappReminderAdvanceHours: '24h',
-      whatsappReminderCustomMessage: '',
-    },
+    defaultValues: getWhatsappFormValues(null),
   });
 
-  useEffect(() => {
-    if (notificationsSettings?.id) {
-      form.reset({
-        whatsappReminderEnabled:
-          notificationsSettings.whatsappReminderEnabled ?? false,
-        whatsappReminderAdvanceHours:
-          notificationsSettings.whatsappReminderAdvanceHours ?? '24h',
-        whatsappReminderCustomMessage:
-          notificationsSettings.whatsappReminderCustomMessage ?? '',
-      });
-    }
-  }, [notificationsSettings, form]);
+  const { storeId, notificationsSettings, loadState, handleRetry, isRetrying } =
+    useReminderSettingsLoad({
+      reset: form.reset,
+      getFormValues: getWhatsappFormValues,
+    });
+
+  const { whatsappConfig, isWhatsappPending, isWhatsappError, whatsappError } =
+    useWhatsappQuery(storeId);
 
   const { updateNotificationsSettingsMutation } = useNotificationsMutations({
     storeId,
+    notificationHistoryParams: {},
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
@@ -48,11 +45,18 @@ export const useWhatsappSettings = () => {
     });
   });
 
+  // Não afirma que falta ativar enquanto carrega ou quando a leitura falhou.
+  const isConfigUnknown =
+    isWhatsappPending || (isWhatsappError && !isNotFoundError(whatsappError));
+
   return {
     form,
     isUpdatingNotificationsSettings:
       updateNotificationsSettingsMutation.isPending,
-    whatsappConfig,
+    showActivationNotice: !isConfigUnknown && !whatsappConfig?.isActive,
     handleSubmit,
+    loadState,
+    handleRetry,
+    isRetrying,
   };
 };

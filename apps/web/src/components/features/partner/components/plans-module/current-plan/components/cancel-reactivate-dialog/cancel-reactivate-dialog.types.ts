@@ -1,9 +1,6 @@
 export type TCancelReactivateDialogConfig = {
   isOpen: boolean;
-  planName: string;
-  cancelAtPeriodEnd: boolean;
-  nextBillingDate?: Date;
-  isCanceling: boolean;
+  isFetching: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 };

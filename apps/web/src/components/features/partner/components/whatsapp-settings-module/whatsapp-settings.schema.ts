@@ -5,7 +5,8 @@ export const whatsappSettingsSchema = z.object({
   phoneNumberId: z.string().min(1, 'Campo obrigatório'),
   businessAccountId: z.string().min(1, 'Campo obrigatório'),
   accessToken: z.string().min(1, 'Campo obrigatório'),
-  webhookVerifyToken: z.string().min(1, 'Campo obrigatório'),
+  /** Somente leitura: a API sobrescreve o valor ao salvar. */
+  webhookVerifyToken: z.string(),
 });
 
 export type IWhatsappSettingsSchema = z.infer<typeof whatsappSettingsSchema>;

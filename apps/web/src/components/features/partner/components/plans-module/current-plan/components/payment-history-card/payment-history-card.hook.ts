@@ -1,38 +1,62 @@
 'use client';
 
+import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { useCallback, useMemo } from 'react';
-import type { TInvoiceStatus } from './payment-history-card.types';
+import {
+  MODULE_BADGE_TONE_CLASS,
+  type TModuleBadgeTone,
+} from '../../../../notifications-module/notifications-module.styles';
+import { formatPlanPrice } from '../../../plans-module.utils';
+import type {
+  TInvoiceStatus,
+  TPaymentHistoryRow,
+} from './payment-history-card.types';
+
+const INVOICE_STATUS: Record<
+  TInvoiceStatus,
+  { label: string; tone: TModuleBadgeTone }
+> = {
+  paid: { label: 'Pago', tone: 'success' },
+  pending: { label: 'Pendente', tone: 'warning' },
+  failed: { label: 'Falhou', tone: 'danger' },
+  uncollectible: { label: 'Não coletável', tone: 'neutral' },
+  open: { label: 'Aberto', tone: 'warning' },
+  draft: { label: 'Rascunho', tone: 'neutral' },
+};
+
+const formatInvoiceDate = (date: Date) =>
+  new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
 
 export const usePaymentHistoryCard = () => {
-  const getStatusBadge = useCallback((status: TInvoiceStatus) => {
-    const config = {
-      paid: {
-        label: 'Pago',
-        className: 'bg-green-50 text-green-700 border-green-200',
-      },
-      pending: {
-        label: 'Pendente',
-        className: 'bg-orange-50 text-orange-700 border-orange-200',
-      },
-      failed: {
-        label: 'Falhou',
-        className: 'bg-red-50 text-red-700 border-red-200',
-      },
-      uncollectible: {
-        label: 'Não coletável',
-        className: 'bg-gray-50 text-gray-700 border-gray-200',
-      },
-      open: {
-        label: 'Aberto',
-        className: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-      },
-      draft: {
-        label: 'Rascunho',
-        className: 'bg-gray-50 text-gray-700 border-gray-200',
-      },
-    };
-    return config[status];
-  }, []);
+  const { currentPlan } = useSubscriptionQuery();
+  const currency = currentPlan?.currency;
+  const invoices = currentPlan?.invoices;
+
+  const paymentHistory = useMemo<TPaymentHistoryRow[]>(
+    () =>
+      (invoices ?? [])
+        // Draft Stripe invoices are noisy in partner UX — keep paid/open/failed/etc.
+        .filter((invoice) => invoice.status !== 'draft')
+        .map((invoice) => {
+          const status = INVOICE_STATUS[invoice.status];
+
+          return {
+            id: invoice.id,
+            invoiceLabel: invoice.invoiceNumber || 'Fatura sem número',
+            dateLabel: formatInvoiceDate(invoice.date),
+            amountLabel: formatPlanPrice(Number(invoice.amount) || 0, currency),
+            statusLabel: status?.label ?? invoice.status,
+            statusClassName: MODULE_BADGE_TONE_CLASS[status?.tone ?? 'neutral'],
+            pdfUrl: invoice.pdfUrl,
+            fileName: invoice.invoiceNumber || invoice.id,
+          };
+        }),
+    [invoices, currency],
+  );
 
   const downloadPDF = useCallback((pdfUrl: string, invoiceNumber: string) => {
     if (!pdfUrl) return;
@@ -46,20 +70,5 @@ export const usePaymentHistoryCard = () => {
     document.body.removeChild(link);
   }, []);
 
-  const formatDate = useCallback((date: Date) => {
-    return new Date(date).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-    });
-  }, []);
-
-  return useMemo(
-    () => ({
-      getStatusBadge,
-      downloadPDF,
-      formatDate,
-    }),
-    [getStatusBadge, downloadPDF, formatDate],
-  );
+  return { paymentHistory, downloadPDF };
 };

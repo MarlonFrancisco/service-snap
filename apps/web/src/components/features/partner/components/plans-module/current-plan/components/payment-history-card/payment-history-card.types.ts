@@ -6,16 +6,13 @@ export type TInvoiceStatus =
   | 'open'
   | 'draft';
 
-export type TPaymentHistoryItem = {
+export type TPaymentHistoryRow = {
   id: string;
-  invoiceNumber: string;
-  date: Date;
-  amount: number;
-  status: TInvoiceStatus;
+  invoiceLabel: string;
+  dateLabel: string;
+  amountLabel: string;
+  statusLabel: string;
+  statusClassName: string;
   pdfUrl: string;
-};
-
-export type TPaymentHistoryCardConfig = {
-  paymentHistory: TPaymentHistoryItem[];
-  delay?: number;
+  fileName: string;
 };

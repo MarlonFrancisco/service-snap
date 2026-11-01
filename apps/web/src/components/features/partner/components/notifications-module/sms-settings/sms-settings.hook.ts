@@ -1,38 +1,33 @@
 import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mutations/use-notifications-mutations.hook';
-import { useNotificationsQuery } from '@/hooks/use-query/use-notifications-query/use-notifications-query.hook';
-import { usePartnerStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useReminderSettingsLoad } from '../notifications-module.hook';
+import type { TNotificationsSettingsData } from '../notifications-module.types';
 import { smsSettingsSchema, TSmsSettingsFormData } from './sms-settings.schema';
 
-export const useSmsSettings = () => {
-  const storeId = usePartnerStore((state) => state.activeStore?.id);
-  const { notificationsSettings } = useNotificationsQuery({ storeId });
+const getSmsFormValues = (
+  settings: TNotificationsSettingsData,
+): TSmsSettingsFormData => ({
+  smsReminderEnabled: settings?.smsReminderEnabled ?? false,
+  smsReminderAdvanceHours: settings?.smsReminderAdvanceHours ?? '24h',
+  smsReminderCustomMessage: settings?.smsReminderCustomMessage ?? '',
+});
 
+export const useSmsSettings = () => {
   const form = useForm<TSmsSettingsFormData>({
     resolver: zodResolver(smsSettingsSchema),
-    defaultValues: {
-      smsReminderEnabled: false,
-      smsReminderAdvanceHours: '24h',
-      smsReminderCustomMessage: '',
-    },
+    defaultValues: getSmsFormValues(null),
   });
 
-  useEffect(() => {
-    if (notificationsSettings?.id) {
-      form.reset({
-        smsReminderEnabled: notificationsSettings.smsReminderEnabled ?? false,
-        smsReminderAdvanceHours:
-          notificationsSettings.smsReminderAdvanceHours ?? '24h',
-        smsReminderCustomMessage:
-          notificationsSettings.smsReminderCustomMessage ?? '',
-      });
-    }
-  }, [notificationsSettings, form]);
+  const { storeId, notificationsSettings, loadState, handleRetry, isRetrying } =
+    useReminderSettingsLoad({
+      reset: form.reset,
+      getFormValues: getSmsFormValues,
+    });
 
   const { updateNotificationsSettingsMutation } = useNotificationsMutations({
     storeId,
+    notificationHistoryParams: {},
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
@@ -47,5 +42,8 @@ export const useSmsSettings = () => {
     isUpdatingNotificationsSettings:
       updateNotificationsSettingsMutation.isPending,
     handleSubmit,
+    loadState,
+    handleRetry,
+    isRetrying,
   };
 };

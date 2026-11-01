@@ -5,6 +5,7 @@ import { ITimingOption } from './whatsapp-reminders-section.types';
 
 export const useWhatsappRemindersSection = () => {
   const form = useFormContext<TWhatsappSettingsFormData>();
+  const customMessage = form.watch('whatsappReminderCustomMessage') || '';
 
   const [previewModal, setPreviewModal] = useState({
     isOpen: false,
@@ -29,6 +30,7 @@ export const useWhatsappRemindersSection = () => {
 
   return {
     form,
+    customMessage,
     timingOptions,
     previewModal,
     openPreview,

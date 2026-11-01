@@ -1,4 +1,9 @@
-import type { INotificationsHistory } from '@/types/api/stores.types';
+import type { INotificationsHistory } from '@/types/api/notifications.types';
+
+export type TNotificationHistoryRow = INotificationsHistory & {
+  statusBadge: { label: string; className: string } | null;
+  timeLabel: string;
+};
 
 export type TNotificationsHistoryProps = {
   notifications: INotificationsHistory[];

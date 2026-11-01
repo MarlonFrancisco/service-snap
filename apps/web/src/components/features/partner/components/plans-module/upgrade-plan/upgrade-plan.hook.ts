@@ -2,42 +2,12 @@ import { useSubscriptionMutations } from '@/hooks';
 import { usePlansQuery } from '@/hooks/use-query/use-plans-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-
-const benefits = [
-  {
-    title: 'Aumente sua eficiência',
-    description:
-      'Automatize agendamentos e reduza no-shows em até 80% com lembretes inteligentes.',
-  },
-  {
-    title: 'Cresça mais rápido',
-    description:
-      'Empresas que usam ServiceSnap crescem 3x mais rápido com agendamentos online 24/7.',
-  },
-  {
-    title: 'Fidelize clientes',
-    description:
-      'Experiência premium de agendamento que seus clientes vão amar e recomendar.',
-  },
-  {
-    title: 'Segurança garantida',
-    description:
-      'Seus dados e dos seus clientes protegidos com criptografia de ponta a ponta.',
-  },
-  {
-    title: 'Economize tempo',
-    description:
-      'Reduza em até 15 horas semanais gastas com gestão de agendamentos manuais.',
-  },
-  {
-    title: 'Insights poderosos',
-    description:
-      'Tome decisões baseadas em dados com analytics detalhados e relatórios em tempo real.',
-  },
-];
+import { toast } from 'sonner';
+import type { TUpgradePlanItem } from './upgrade-plan.types';
 
 export function useUpgradePlan() {
-  const { data, isPendingPlans } = usePlansQuery();
+  const { data, isPendingPlans, isErrorPlans, isFetchingPlans, refetchPlans } =
+    usePlansQuery();
   const { currentPlan } = useSubscriptionQuery();
   const { createSubscriptionMutation } = useSubscriptionMutations();
 
@@ -47,7 +17,10 @@ export function useUpgradePlan() {
   // Default toggle to the subscription's billing period so rank/ROI stay coherent.
   useEffect(() => {
     if (hasUserPickedInterval) return;
-    if (currentPlan?.billingPeriod === 'year' || currentPlan?.billingPeriod === 'month') {
+    if (
+      currentPlan?.billingPeriod === 'year' ||
+      currentPlan?.billingPeriod === 'month'
+    ) {
       setType(currentPlan.billingPeriod);
     }
   }, [currentPlan?.billingPeriod, hasUserPickedInterval]);
@@ -75,6 +48,43 @@ export function useUpgradePlan() {
 
   const isCancellationScheduled = Boolean(currentPlan?.cancelAtPeriodEnd);
 
+  const planItems = useMemo<TUpgradePlanItem[]>(
+    () =>
+      filteredPlans.map((plan, index) => {
+        const isCurrentPlan =
+          plan.id === currentPlan?.planId &&
+          plan.interval === currentPlan?.billingPeriod;
+        const isSameTierDifferentInterval =
+          plan.id === currentPlan?.planId &&
+          plan.interval !== currentPlan?.billingPeriod;
+        const isUpgrade =
+          currentPlanIndex >= 0 ? index > currentPlanIndex : true;
+        const isDowngrade =
+          currentPlanIndex >= 0 ? index < currentPlanIndex : false;
+
+        const actionLabel = isCurrentPlan
+          ? 'Seu plano atual'
+          : isCancellationScheduled
+            ? 'Reative o plano atual primeiro'
+            : isSameTierDifferentInterval
+              ? `Mudar para ${plan.interval === 'month' ? 'mensal' : 'anual'}`
+              : isUpgrade
+                ? 'Fazer upgrade'
+                : isDowngrade
+                  ? 'Mudar para este plano'
+                  : 'Assinar plano';
+
+        return { plan, isCurrentPlan, actionLabel };
+      }),
+    [
+      filteredPlans,
+      currentPlan?.planId,
+      currentPlan?.billingPeriod,
+      currentPlanIndex,
+      isCancellationScheduled,
+    ],
+  );
+
   const handleSelectPlan = useCallback(
     (planId: string) => {
       if (isCancellationScheduled) return;
@@ -82,19 +92,23 @@ export function useUpgradePlan() {
         onSuccess: ({ url }) => {
           window.location.href = url;
         },
+        onError: () => {
+          toast.error('Não foi possível abrir o checkout. Tente novamente.');
+        },
       });
     },
     [createSubscriptionMutation, isCancellationScheduled],
   );
 
   return {
-    plans: filteredPlans,
-    benefits,
+    planItems,
     currentPlan,
-    currentPlanIndex,
     isOnHighestPlan,
     isCancellationScheduled,
     isPendingPlans,
+    isErrorPlans,
+    isFetchingPlans,
+    refetchPlans,
     isCreatingSubscription: createSubscriptionMutation.isPending,
     handleSelectPlan,
     type,

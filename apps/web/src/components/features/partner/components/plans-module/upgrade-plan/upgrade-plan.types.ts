@@ -1,17 +1,5 @@
-import { Plan } from '../plans-module.types';
+import type { TPricingPlanItem } from '@/components/features/pricing/pricing.types';
 
-export interface UpgradePlanState {
-  plans: Plan[];
-  selectedPlan: string | null;
-  showCheckout: boolean;
-  billingPeriod: 'monthly' | 'yearly';
-  monthlyBookings: number;
-  avgBookingValue: number;
-  noShowRate: number;
-}
-
-export interface Benefit {
-  icon: any;
-  title: string;
-  description: string;
-}
+export type TUpgradePlanItem = TPricingPlanItem & {
+  actionLabel: string;
+};

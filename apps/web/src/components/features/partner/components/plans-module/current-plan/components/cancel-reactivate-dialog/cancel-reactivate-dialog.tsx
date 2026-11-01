@@ -11,127 +11,84 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@repo/ui';
-import { AlertTriangle, RefreshCw, Shield } from 'lucide-react';
-
-interface CancelReactivateDialogProps {
-  isOpen: boolean;
-  isFetching: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
+import {
+  MODULE_DIALOG_CANCEL_CLASS,
+  MODULE_DIALOG_CLASS,
+  MODULE_DIALOG_DANGER_CLASS,
+  MODULE_DIALOG_PRIMARY_CLASS,
+  MODULE_DIALOG_TEXT_CLASS,
+  MODULE_DIALOG_TITLE_CLASS,
+} from '../../../../notifications-module/notifications-module.styles';
+import { formatPlanDate } from '../../../plans-module.utils';
+import type { TCancelReactivateDialogConfig } from './cancel-reactivate-dialog.types';
 
 export function CancelReactivateDialog({
   isOpen,
   isFetching,
   onConfirm,
   onCancel,
-}: CancelReactivateDialogProps) {
+}: TCancelReactivateDialogConfig) {
   const { currentPlan } = useSubscriptionQuery();
 
   if (!currentPlan) return null;
 
-  const formattedNextBillingDate = currentPlan.nextBillingDate
-    ? new Date(currentPlan.nextBillingDate).toLocaleDateString('pt-BR')
-    : 'data indefinida';
+  const isReactivating = currentPlan.cancelAtPeriodEnd;
+  const billingDate = formatPlanDate(currentPlan.nextBillingDate);
+
+  const content = isReactivating
+    ? {
+        title: `Reativar o plano ${currentPlan.planName}?`,
+        description: billingDate
+          ? `A renovação automática volta a valer e a próxima cobrança será em ${billingDate}.`
+          : 'A renovação automática volta a valer na próxima data de cobrança.',
+        cancelLabel: 'Voltar',
+        confirmLabel: 'Reativar plano',
+        pendingLabel: 'Reativando...',
+        confirmClassName: MODULE_DIALOG_PRIMARY_CLASS,
+      }
+    : {
+        title: `Cancelar o plano ${currentPlan.planName}?`,
+        description: billingDate
+          ? `Seu acesso continua até ${billingDate}. Depois dessa data, o plano é encerrado e não há novas cobranças.`
+          : 'Seu acesso continua até o fim do ciclo atual. Depois disso, o plano é encerrado e não há novas cobranças.',
+        cancelLabel: 'Manter plano',
+        confirmLabel: 'Cancelar plano',
+        pendingLabel: 'Cancelando...',
+        confirmClassName: MODULE_DIALOG_DANGER_CLASS,
+      };
 
   return (
-    <AlertDialog open={isOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div
-              className={`p-3 rounded-full ${
-                currentPlan.cancelAtPeriodEnd ? 'bg-green-50' : 'bg-red-50'
-              }`}
-            >
-              {currentPlan.cancelAtPeriodEnd ? (
-                <RefreshCw className="h-6 w-6 text-green-600" />
-              ) : (
-                <AlertTriangle className="h-6 w-6 text-red-600" />
-              )}
-            </div>
-            <AlertDialogTitle className="text-xl">
-              {currentPlan.cancelAtPeriodEnd
-                ? 'Reativar Plano'
-                : 'Cancelar Plano'}
-            </AlertDialogTitle>
-          </div>
-          <AlertDialogDescription className="space-y-3 pt-2">
-            {currentPlan.cancelAtPeriodEnd ? (
-              <>
-                <p className="text-gray-700">
-                  Deseja reativar seu plano{' '}
-                  <strong>{currentPlan.planName}</strong>?
-                </p>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex gap-3">
-                    <Shield className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-green-900">
-                        Renovação automática será reativada
-                      </p>
-                      <p className="text-sm text-green-700">
-                        Seu plano será renovado automaticamente em{' '}
-                        <strong>{formattedNextBillingDate}</strong> e você
-                        continuará tendo acesso a todos os recursos premium.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  A cobrança automática será retomada na próxima data de
-                  renovação.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-gray-700">
-                  Tem certeza que deseja cancelar seu plano{' '}
-                  <strong>{currentPlan.planName}</strong>?
-                </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex gap-3">
-                    <Shield className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-blue-900">
-                        Seu acesso permanecerá ativo
-                      </p>
-                      <p className="text-sm text-blue-700">
-                        Você continuará tendo acesso à plataforma até o final do
-                        ciclo atual em{' '}
-                        <strong>{formattedNextBillingDate}</strong>.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Após o cancelamento, você não será mais cobrado e perderá o
-                  acesso a plataforma.
-                </p>
-              </>
-            )}
+    <AlertDialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open && !isFetching) onCancel();
+      }}
+    >
+      <AlertDialogContent className={MODULE_DIALOG_CLASS}>
+        <AlertDialogHeader className="text-left">
+          <AlertDialogTitle className={MODULE_DIALOG_TITLE_CLASS}>
+            {content.title}
+          </AlertDialogTitle>
+          <AlertDialogDescription className={MODULE_DIALOG_TEXT_CLASS}>
+            {content.description}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isFetching} onClick={onCancel}>
-            {currentPlan.cancelAtPeriodEnd ? 'Voltar' : 'Manter Plano'}
+        <AlertDialogFooter className="pt-2.5">
+          <AlertDialogCancel
+            disabled={isFetching}
+            className={MODULE_DIALOG_CANCEL_CLASS}
+          >
+            {content.cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
-            onClick={onConfirm}
             disabled={isFetching}
-            className={
-              currentPlan.cancelAtPeriodEnd
-                ? 'bg-green-600 hover:bg-green-700'
-                : 'bg-red-600 hover:bg-red-700'
-            }
+            onClick={(event) => {
+              event.preventDefault();
+              onConfirm();
+            }}
+            className={content.confirmClassName}
           >
-            {isFetching
-              ? currentPlan.cancelAtPeriodEnd
-                ? 'Reativando...'
-                : 'Cancelando...'
-              : currentPlan.cancelAtPeriodEnd
-                ? 'Sim, Reativar Plano'
-                : 'Sim, Cancelar Plano'}
+            {isFetching ? content.pendingLabel : content.confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

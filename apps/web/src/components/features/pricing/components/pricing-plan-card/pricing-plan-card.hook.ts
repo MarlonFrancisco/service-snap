@@ -9,6 +9,10 @@ const DEFAULT_PLAN_CURRENCY = 'BRL';
 export const usePricingPlanCard = ({
   plan,
   isCurrentPlan,
+  actionLabel,
+  isActionDisabled = false,
+  onSelectPlan,
+  hideTrial = false,
 }: TPricingPlanCardConfig) => {
   const { handleCreateSubscription } = usePlanCard({ priceId: plan.priceId });
 
@@ -20,12 +24,22 @@ export const usePricingPlanCard = ({
 
   const price = plan.price / 100;
   const hasDiscount = plan.discount > 0;
-  const hasTrial = plan.trialPeriodDays > 0 && !isCurrentPlan;
+  const hasTrial = plan.trialPeriodDays > 0 && !isCurrentPlan && !hideTrial;
   const intervalLabel = plan.interval === 'month' ? 'mês' : 'ano';
   const priceLabel = formatPlanPrice(price);
 
+  const handleSubscribe = () => {
+    if (onSelectPlan) {
+      onSelectPlan(plan.priceId);
+      return;
+    }
+
+    void handleCreateSubscription();
+  };
+
   return {
-    handleSubscribe: handleCreateSubscription,
+    handleSubscribe,
+    isDisabled: isCurrentPlan || isActionDisabled,
     priceLabel,
     intervalLabel,
     originalPriceLabel: hasDiscount
@@ -40,6 +54,7 @@ export const usePricingPlanCard = ({
       : plan.popular
         ? 'Mais popular'
         : null,
-    actionLabel: isCurrentPlan ? 'Seu plano atual' : 'Assinar plano',
+    actionLabel:
+      actionLabel ?? (isCurrentPlan ? 'Seu plano atual' : 'Assinar plano'),
   };
 };

@@ -1,43 +1,37 @@
 import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mutations';
-import { useNotificationsQuery } from '@/hooks/use-query/use-notifications-query/use-notifications-query.hook';
-import { usePartnerStore } from '@/store';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { useReminderSettingsLoad } from '../notifications-module.hook';
+import type { TNotificationsSettingsData } from '../notifications-module.types';
 import {
   emailSettingsSchema,
   TEmailSettingsFormData,
 } from './email-settings.schema';
 
+const getEmailFormValues = (
+  settings: TNotificationsSettingsData,
+): TEmailSettingsFormData => ({
+  emailReminderEnabled: settings?.emailReminderEnabled ?? false,
+  emailReminderAdvanceHours: settings?.emailReminderAdvanceHours ?? '24h',
+  emailReminderCustomMessage: settings?.emailReminderCustomMessage ?? '',
+});
+
 export const useSettings = () => {
-  const storeId = usePartnerStore((state) => state.activeStore?.id);
-  const { notificationsSettings } = useNotificationsQuery({ storeId });
+  const form = useForm<TEmailSettingsFormData>({
+    resolver: zodResolver(emailSettingsSchema),
+    defaultValues: getEmailFormValues(null),
+  });
+
+  const { storeId, notificationsSettings, loadState, handleRetry, isRetrying } =
+    useReminderSettingsLoad({
+      reset: form.reset,
+      getFormValues: getEmailFormValues,
+    });
 
   const { updateNotificationsSettingsMutation } = useNotificationsMutations({
     storeId,
+    notificationHistoryParams: {},
   });
-
-  const form = useForm<TEmailSettingsFormData>({
-    resolver: zodResolver(emailSettingsSchema),
-    defaultValues: {
-      emailReminderEnabled: false,
-      emailReminderAdvanceHours: '24h',
-      emailReminderCustomMessage: '',
-    },
-  });
-
-  useEffect(() => {
-    if (notificationsSettings?.id) {
-      form.reset({
-        emailReminderEnabled:
-          notificationsSettings.emailReminderEnabled ?? false,
-        emailReminderAdvanceHours:
-          notificationsSettings.emailReminderAdvanceHours ?? '24h',
-        emailReminderCustomMessage:
-          notificationsSettings.emailReminderCustomMessage ?? '',
-      });
-    }
-  }, [notificationsSettings, form]);
 
   const handleSubmit = form.handleSubmit(async (data) => {
     updateNotificationsSettingsMutation.mutate({
@@ -51,5 +45,8 @@ export const useSettings = () => {
     isUpdatingNotificationsSettings:
       updateNotificationsSettingsMutation.isPending,
     handleSubmit,
+    loadState,
+    handleRetry,
+    isRetrying,
   };
 };

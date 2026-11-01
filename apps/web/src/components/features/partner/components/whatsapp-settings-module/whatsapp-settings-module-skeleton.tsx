@@ -1,74 +1,38 @@
 'use client';
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Skeleton,
-} from '@repo/ui';
+import { Skeleton } from '@repo/ui';
+import { MODULE_CARD_CLASS } from '../notifications-module/notifications-module.styles';
+
+const FIELD_SKELETON_COUNT = 3;
 
 export const WhatsappSettingsModuleSkeleton = () => {
   return (
-    <div className="space-y-6 pb-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-7 w-64" />
-          <Skeleton className="h-4 w-96" />
-        </div>
+    <div
+      role="status"
+      aria-label="Carregando configurações do WhatsApp"
+      className="grid max-w-[960px] gap-4"
+    >
+      <div className="grid gap-2">
+        <Skeleton className="h-7 w-40 rounded-[14px]" />
+        <Skeleton className="h-4 w-full max-w-[620px] rounded-[14px]" />
       </div>
 
-      {/* Content */}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <Skeleton className="h-6 w-48" />
-          </CardTitle>
-          <CardDescription>
-            <Skeleton className="h-4 w-full max-w-md" />
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="grid gap-6">
-              {/* Phone Number ID Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-3 w-72" />
-              </div>
+      <div className={MODULE_CARD_CLASS}>
+        <Skeleton className="h-5 w-44 rounded-[14px]" />
+        <Skeleton className="h-11 w-full rounded-[14px]" />
+      </div>
 
-              {/* Business Account ID Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-40" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-3 w-64" />
-              </div>
+      <div className={MODULE_CARD_CLASS}>
+        <Skeleton className="h-5 w-36 rounded-[14px]" />
+        <Skeleton className="h-[50px] w-full rounded-[14px]" />
+      </div>
 
-              {/* Access Token Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-3 w-80" />
-              </div>
-
-              {/* Webhook Verify Token Field Skeleton */}
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-44" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-3 w-72" />
-              </div>
-            </div>
-
-            {/* Button Skeleton */}
-            <div className="flex justify-end">
-              <Skeleton className="h-10 w-40" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className={MODULE_CARD_CLASS}>
+        <Skeleton className="h-5 w-52 rounded-[14px]" />
+        {Array.from({ length: FIELD_SKELETON_COUNT }).map((_, index) => (
+          <Skeleton key={index} className="h-[50px] w-full rounded-[14px]" />
+        ))}
+      </div>
     </div>
   );
 };

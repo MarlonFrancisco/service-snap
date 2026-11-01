@@ -1,3 +1,12 @@
+import type { INotificationsSettings } from '@/types/api/notifications.types';
+
+/** A API responde sem corpo enquanto a loja nunca salvou configurações. */
+export type TNotificationsSettingsData = INotificationsSettings | null;
+
+export type TStoreAvailability = 'loading' | 'ready' | 'no-store' | 'error';
+
+export type TReminderLoadState = TStoreAvailability;
+
 export type TStore = {
   id: string;
   name: string;

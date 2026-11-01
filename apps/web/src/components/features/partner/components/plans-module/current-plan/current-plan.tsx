@@ -1,6 +1,6 @@
 'use client';
 
-import { ReferralShareCard } from '@/components/features/referral/referral-share-card';
+import { ReferralClientPanel } from '@/components/features/referral/referral-share-card/components/referral-client-panel';
 import { CancelReactivateDialog } from './components/cancel-reactivate-dialog';
 import { CancellationWarningAlert } from './components/cancellation-warning-alert';
 import { PaymentHistoryCard } from './components/payment-history-card';
@@ -10,6 +10,7 @@ import { useCurrentPlan } from './current-plan.hook';
 
 export function CurrentPlan() {
   const {
+    referralShare,
     isCancelDialogOpen,
     setIsCancelDialogOpen,
     handleCancelSubscription,
@@ -18,18 +19,18 @@ export function CurrentPlan() {
   } = useCurrentPlan();
 
   return (
-    <div className="space-y-8">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(360px,100%),1fr))] items-start gap-4">
       <CancellationWarningAlert />
 
       <PlanOverviewCard
         onCancelReactivateClick={() => setIsCancelDialogOpen(true)}
       />
 
-      <ReferralShareCard variant="partner" delay={0.08} />
+      <ReferralClientPanel {...referralShare} />
 
-      <PlanFeaturesCard delay={0.12} />
+      <PlanFeaturesCard />
 
-      <PaymentHistoryCard delay={0.2} />
+      <PaymentHistoryCard />
 
       <CancelReactivateDialog
         isOpen={isCancelDialogOpen}

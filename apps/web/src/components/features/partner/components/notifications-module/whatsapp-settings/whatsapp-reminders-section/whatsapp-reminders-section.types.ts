@@ -1,6 +1,6 @@
-export interface IWhatsappRemindersSectionProps {
-  // Add props if needed in the future
-}
+import type { TReminderSectionConfig } from '../../components/reminder-channel-card';
+
+export type TWhatsappRemindersSectionConfig = TReminderSectionConfig;
 
 export interface ITimingOption {
   value: string;

@@ -1,35 +1,63 @@
 'use client';
 
 import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  cn,
   Input,
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@repo/ui';
-import { Check, Trash2 } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+import { Bell, Search } from 'lucide-react';
+import { PARTNER_PORTAL_CLASS } from '../../../partner.styles';
 import {
-  formatTimestamp,
-  getNotificationColor,
-  getNotificationIcon,
-  getStatusBadgeConfig,
-  Icons,
-} from '../notifications-module.utils';
+  ModuleErrorState,
+  ModuleStatePanel,
+  NoStoreState,
+} from '../components/module-state';
+import {
+  MODULE_ACTION_CLASS,
+  MODULE_BADGE_CLASS,
+  MODULE_DANGER_ACTION_CLASS,
+  MODULE_DIALOG_CANCEL_CLASS,
+  MODULE_DIALOG_CLASS,
+  MODULE_DIALOG_DANGER_CLASS,
+  MODULE_DIALOG_TEXT_CLASS,
+  MODULE_DIALOG_TITLE_CLASS,
+  MODULE_LEAD_CLASS,
+  MODULE_TITLE_CLASS,
+} from '../notifications-module.styles';
 import { useNotificationsHistory } from './notifications-history.hook';
 import { NotificationsHistorySkeleton } from './notifications-history.skeleton';
+
+const FILTER_TRIGGER_CLASS =
+  'min-h-11 w-full cursor-pointer rounded-full border-[#E3E1EA] bg-white px-4 text-[13px] font-semibold text-[#0B0B0F] shadow-none data-[size=default]:h-11 sm:w-auto';
+
+const TYPE_OPTIONS = [
+  { value: 'all', label: 'Todos os tipos' },
+  { value: 'booking', label: 'Agendamentos' },
+  { value: 'cancellation', label: 'Cancelamentos' },
+  { value: 'reminder', label: 'Lembretes' },
+  { value: 'system', label: 'Sistema' },
+  { value: 'marketing', label: 'Marketing' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'Todos os status' },
+  { value: 'sent', label: 'Enviada' },
+  { value: 'delivered', label: 'Entregue' },
+  { value: 'failed', label: 'Falhou' },
+  { value: 'pending', label: 'Pendente' },
+];
 
 export function NotificationsHistory() {
   const {
@@ -38,277 +66,271 @@ export function NotificationsHistory() {
     searchQuery,
     filterType,
     filterStatus,
+    hasActiveFilters,
     setSearchQuery,
     setFilterType,
     setFilterStatus,
+    clearFilters,
     markAsRead,
     markAllAsRead,
-    deleteNotification,
+    isMarkingAllAsRead,
+    pendingDeleteId,
+    requestDelete,
+    cancelDelete,
+    confirmDelete,
+    isDeleting,
     page,
-    setPage,
     totalPages,
+    goToPreviousPage,
+    goToNextPage,
     isLoading,
+    isError,
+    hasNoStore,
+    handleRetry,
+    isRetrying,
   } = useNotificationsHistory();
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-gray-900">Histórico de Notificações</h2>
-        <p className="text-gray-600 text-sm">
-          Visualize e gerencie todas as notificações enviadas aos seus clientes
-        </p>
-      </div>
 
-      {/* Action Button */}
-      {unreadCount > 0 && (
-        <div className="flex items-center justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={markAllAsRead}
-            className="border-gray-300"
+  const renderContent = () => {
+    if (hasNoStore) return <NoStoreState headingLevel="h3" />;
+    if (isLoading) return <NotificationsHistorySkeleton />;
+    if (isError) {
+      return (
+        <ModuleErrorState
+          headingLevel="h3"
+          onRetry={handleRetry}
+          isRetrying={isRetrying}
+        />
+      );
+    }
+    if (notifications.length === 0) {
+      return hasActiveFilters ? (
+        <ModuleStatePanel
+          icon={Search}
+          headingLevel="h3"
+          title="Nenhuma notificação encontrada"
+          description="Tente ajustar os filtros de busca."
+        >
+          <button
+            type="button"
+            onClick={clearFilters}
+            className={MODULE_ACTION_CLASS}
           >
-            <Icons.CheckCircle className="h-4 w-4 mr-2" />
-            Marcar todas como lidas
-          </Button>
-        </div>
-      )}
+            Limpar filtros
+          </button>
+        </ModuleStatePanel>
+      ) : (
+        <ModuleStatePanel
+          icon={Bell}
+          headingLevel="h3"
+          title="Nenhuma notificação ainda"
+          description="As notificações enviadas aos seus clientes aparecem aqui."
+        />
+      );
+    }
 
-      {/* History Card */}
-      <Card className="border-gray-200">
-        <CardHeader className="border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search Input */}
-            <div className="relative flex-1">
-              <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Buscar notificações..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
-            {/* Type Filter */}
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <Icons.Filter className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os tipos</SelectItem>
-                <SelectItem value="booking">Agendamentos</SelectItem>
-                <SelectItem value="cancellation">Cancelamentos</SelectItem>
-                <SelectItem value="reminder">Lembretes</SelectItem>
-                <SelectItem value="system">Sistema</SelectItem>
-                <SelectItem value="marketing">Marketing</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Status Filter */}
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os status</SelectItem>
-                <SelectItem value="sent">Enviada</SelectItem>
-                <SelectItem value="delivered">Entregue</SelectItem>
-                <SelectItem value="failed">Falhou</SelectItem>
-                <SelectItem value="pending">Pendente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-0">
-          {isLoading ? (
-            <NotificationsHistorySkeleton />
-          ) : notifications.length === 0 ? (
-            <div className="p-12 text-center">
-              <Icons.Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-gray-900 mb-2">
-                Nenhuma notificação encontrada
+    return (
+      <section
+        aria-label="Notificações"
+        className="overflow-hidden rounded-[22px] border border-[#EBE9F0]"
+      >
+        {notifications.map((notification) => (
+          <article
+            key={notification.id}
+            className="flex flex-wrap justify-between gap-3 border-b border-[#F0EEF4] px-5 py-4 last:border-0"
+          >
+            <div className="min-w-0 flex-1 basis-64">
+              <h3 className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
+                {notification.read ? null : (
+                  <span
+                    aria-hidden="true"
+                    className="size-2 shrink-0 rounded-full bg-[#9810FA]"
+                  />
+                )}
+                <span className="min-w-0 break-words">
+                  {notification.title}
+                </span>
+                {notification.read ? null : (
+                  <span className="sr-only">(não lida)</span>
+                )}
+                {notification.statusBadge ? (
+                  <span
+                    className={cn(
+                      MODULE_BADGE_CLASS,
+                      'px-[9px] py-[3px]',
+                      notification.statusBadge.className,
+                    )}
+                  >
+                    {notification.statusBadge.label}
+                  </span>
+                ) : null}
               </h3>
-              <p className="text-gray-600 text-sm">
-                Tente ajustar os filtros de busca
+              <p className="mt-0.5 text-[13px] leading-normal break-words text-[#5F5C6E]">
+                {notification.message}
+              </p>
+              <p className="mt-0.5 text-[13px] leading-normal break-all text-[#5F5C6E]">
+                {notification.recipient
+                  ? `Para ${notification.recipient} · ${notification.timeLabel}`
+                  : notification.timeLabel}
               </p>
             </div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              <AnimatePresence mode="popLayout">
-                {notifications.map((notification) => (
-                  <motion.div
-                    key={notification.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className={`p-4 hover:bg-gray-50 transition-colors ${
-                      !notification.read ? 'bg-blue-50/30' : ''
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Icon */}
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${getNotificationColor(
-                          notification.type,
-                        )}`}
-                      >
-                        {getNotificationIcon(notification.type)}
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        {/* Header */}
-                        <div className="flex items-start justify-between gap-3 mb-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-gray-900">
-                              {notification.title}
-                            </h4>
-                            {!notification.read && (
-                              <div className="w-2 h-2 bg-blue-600 rounded-full" />
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {notification.status &&
-                              (() => {
-                                const config = getStatusBadgeConfig(
-                                  notification.status,
-                                );
-                                return config ? (
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-xs ${config.className}`}
-                                  >
-                                    {config.label}
-                                  </Badge>
-                                ) : null;
-                              })()}
-                            <span className="text-xs text-gray-500 whitespace-nowrap">
-                              {formatTimestamp(
-                                new Date(notification.timestamp),
-                              )}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Message */}
-                        <p className="text-sm text-gray-600 mb-2">
-                          {notification.message}
-                        </p>
-
-                        {/* Recipient */}
-                        {notification.recipient && (
-                          <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
-                            <Icons.User className="h-3 w-3 shrink-0" />
-                            <span className="truncate break-all">
-                              {notification.recipient}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 mt-3">
-                          {!notification.read && (
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => markAsRead(notification.id)}
-                              className="h-7 text-xs"
-                            >
-                              <Check className="h-3 w-3 mr-1" />
-                              Marcar como lida
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => deleteNotification(notification.id)}
-                            className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Excluir
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+            <div className="flex flex-wrap items-start gap-1.5">
+              {notification.read ? null : (
+                <button
+                  type="button"
+                  onClick={() => markAsRead(notification.id)}
+                  className={MODULE_ACTION_CLASS}
+                >
+                  Marcar como lida
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => requestDelete(notification.id)}
+                className={MODULE_DANGER_ACTION_CLASS}
+              >
+                Excluir
+              </button>
             </div>
-          )}
-        </CardContent>
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-100">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    aria-disabled={page === 1}
-                    className={
-                      page === 1
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
+          </article>
+        ))}
+      </section>
+    );
+  };
 
-                {(() => {
-                  const maxPagesToShow = 5;
-                  const pages: number[] = [];
+  const canPaginate =
+    !hasNoStore &&
+    !isLoading &&
+    !isError &&
+    notifications.length > 0 &&
+    totalPages > 1;
 
-                  if (totalPages <= maxPagesToShow) {
-                    // Show all pages
-                    for (let i = 1; i <= totalPages; i++) {
-                      pages.push(i);
-                    }
-                  } else {
-                    // Sliding window logic
-                    let startPage = Math.max(1, page - 5);
-                    const endPage = Math.min(
-                      totalPages,
-                      startPage + maxPagesToShow - 1,
-                    );
+  return (
+    <div className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className={MODULE_TITLE_CLASS}>Histórico de notificações</h2>
+          <p className={MODULE_LEAD_CLASS}>
+            Visualize e gerencie todas as notificações enviadas aos seus
+            clientes
+          </p>
+        </div>
+        {unreadCount > 0 ? (
+          <button
+            type="button"
+            onClick={markAllAsRead}
+            disabled={isMarkingAllAsRead}
+            className={MODULE_ACTION_CLASS}
+          >
+            Marcar todas como lidas
+          </button>
+        ) : null}
+      </div>
 
-                    // Adjust if we're near the end
-                    if (endPage - startPage < maxPagesToShow - 1) {
-                      startPage = Math.max(1, endPage - maxPagesToShow + 1);
-                    }
+      <div className="flex flex-wrap gap-2">
+        <Input
+          type="search"
+          aria-label="Buscar notificações"
+          placeholder="Buscar notificações..."
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          className="h-11 min-w-0 flex-[1_1_260px] rounded-full border-[#E3E1EA] bg-white px-[18px] text-base font-medium shadow-none placeholder:text-[#6F6C7E] md:text-sm"
+        />
 
-                    for (let i = startPage; i <= endPage; i++) {
-                      pages.push(i);
-                    }
-                  }
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger
+            aria-label="Filtrar por tipo"
+            className={FILTER_TRIGGER_CLASS}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className={PARTNER_PORTAL_CLASS}>
+            {TYPE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-                  return pages.map((p) => (
-                    <PaginationItem key={p}>
-                      <PaginationLink
-                        isActive={page === p}
-                        onClick={() => setPage(p)}
-                        className="cursor-pointer"
-                      >
-                        {p}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ));
-                })()}
+        <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <SelectTrigger
+            aria-label="Filtrar por status"
+            className={FILTER_TRIGGER_CLASS}
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className={PARTNER_PORTAL_CLASS}>
+            {STATUS_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    aria-disabled={page === totalPages}
-                    className={
-                      page === totalPages
-                        ? 'pointer-events-none opacity-50'
-                        : 'cursor-pointer'
-                    }
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
-      </Card>
+      {renderContent()}
+
+      {canPaginate ? (
+        <nav
+          aria-label="Paginação"
+          className="flex items-center justify-center gap-2 text-[13px] text-[#5F5C6E]"
+        >
+          <button
+            type="button"
+            onClick={goToPreviousPage}
+            disabled={page === 1}
+            className={MODULE_ACTION_CLASS}
+          >
+            Anterior
+          </button>
+          Página {page} de {totalPages}
+          <button
+            type="button"
+            onClick={goToNextPage}
+            disabled={page === totalPages}
+            className={MODULE_ACTION_CLASS}
+          >
+            Próxima
+          </button>
+        </nav>
+      ) : null}
+
+      <AlertDialog
+        open={Boolean(pendingDeleteId)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen && !isDeleting) cancelDelete();
+        }}
+      >
+        <AlertDialogContent className={MODULE_DIALOG_CLASS}>
+          <AlertDialogHeader className="text-left">
+            <AlertDialogTitle className={MODULE_DIALOG_TITLE_CLASS}>
+              Excluir esta notificação?
+            </AlertDialogTitle>
+            <AlertDialogDescription className={MODULE_DIALOG_TEXT_CLASS}>
+              Ela sai do histórico da loja.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="pt-2.5">
+            <AlertDialogCancel
+              disabled={isDeleting}
+              className={MODULE_DIALOG_CANCEL_CLASS}
+            >
+              Voltar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isDeleting}
+              onClick={(event) => {
+                event.preventDefault();
+                confirmDelete();
+              }}
+              className={MODULE_DIALOG_DANGER_CLASS}
+            >
+              {isDeleting ? 'Excluindo...' : 'Excluir'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

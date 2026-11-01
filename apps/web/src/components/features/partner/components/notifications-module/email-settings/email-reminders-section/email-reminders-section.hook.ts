@@ -16,6 +16,7 @@ export const useEmailRemindersSection = () => {
   const [previewModal, setPreviewModal] = useState({ isOpen: false });
 
   const form = useFormContext<TEmailSettingsFormData>();
+  const customMessage = form.watch('emailReminderCustomMessage') || '';
 
   const openPreview = useCallback(() => {
     setPreviewModal({ isOpen: true });
@@ -27,6 +28,7 @@ export const useEmailRemindersSection = () => {
 
   return {
     form,
+    customMessage,
     timingOptions: TIMING_OPTIONS,
     previewModal,
     openPreview,

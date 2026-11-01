@@ -1,46 +1,24 @@
-import { Alert, AlertDescription, AlertTitle } from '@repo/ui';
+'use client';
+
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
-import { AlertTriangle } from 'lucide-react';
-import { motion } from 'motion/react';
+import { formatPlanDate } from '../../../plans-module.utils';
 
 export function CancellationWarningAlert() {
   const { currentPlan } = useSubscriptionQuery();
 
   if (!currentPlan?.cancelAtPeriodEnd) return null;
 
+  const accessUntil = formatPlanDate(currentPlan.nextBillingDate);
+
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <Alert className="border-orange-200 bg-orange-50 text-orange-900">
-        <AlertTriangle className="text-orange-600" />
-        <AlertTitle className="text-orange-900">
-          Cancelamento Agendado
-        </AlertTitle>
-        <AlertDescription className="text-orange-700">
-          <p className="">
-            Seu plano <strong>{currentPlan.planName}</strong> está programado
-            para ser cancelado. Você continuará tendo acesso a todos os
-            recursos até{' '}
-            <strong>
-              {currentPlan.nextBillingDate
-                ? new Date(currentPlan.nextBillingDate).toLocaleDateString(
-                    'pt-BR',
-                    {
-                      day: '2-digit',
-                      month: 'long',
-                      year: 'numeric',
-                    },
-                  )
-                : 'o final do ciclo atual'}
-            </strong>
-            .
-          </p>
-          <p className="text-sm text-orange-600">
-            Após essa data, você perderá o acesso à plataforma e não será mais
-            cobrado. Para mudar de plano antes disso, reative a assinatura em
-            “Meu plano” e só então use “Upgrade”.
-          </p>
-        </AlertDescription>
-      </Alert>
-    </motion.div>
+    <div
+      role="status"
+      className="col-[1/-1] rounded-[14px] bg-[#FFF1E0] px-[18px] py-3.5 text-sm leading-normal text-[#6E3B00]"
+    >
+      <strong className="block">Cancelamento agendado</strong>
+      {accessUntil
+        ? `Seu acesso continua até ${accessUntil}. Depois dessa data, o plano é encerrado e não há novas cobranças.`
+        : 'Seu acesso continua até o fim do ciclo atual. Depois disso, o plano é encerrado e não há novas cobranças.'}
+    </div>
   );
 }
