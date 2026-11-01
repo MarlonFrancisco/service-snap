@@ -100,9 +100,9 @@ export const useAddAppointment = () => {
       const service = services.find((item) => item.id === serviceId);
 
       if (service) {
-        form.setValue('service', service, {
-          shouldValidate: form.formState.isSubmitted,
-        });
+        // `formState.isSubmitted` não é lido na renderização, então fica
+        // desatualizado aqui e o erro do envio anterior nunca saía.
+        form.setValue('service', service, { shouldValidate: true });
       }
     },
     [services, form],

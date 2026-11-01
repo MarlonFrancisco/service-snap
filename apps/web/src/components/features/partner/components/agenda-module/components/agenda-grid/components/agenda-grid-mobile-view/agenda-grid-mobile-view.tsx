@@ -5,7 +5,10 @@ import { Plus } from 'lucide-react';
 import { memo } from 'react';
 import { AGENDA_BUTTON_CLASS } from '../../../../agenda-module.styles';
 import { STATUS_CONFIG } from '../../agenda-grid.constants';
-import { getAppointmentAriaLabel } from '../../agenda-grid.helpers';
+import {
+  getAppointmentAriaLabel,
+  getClientName,
+} from '../../agenda-grid.helpers';
 import { AgendaDayStrip } from '../agenda-day-strip';
 import { AgendaSlotButton } from '../agenda-slot-button';
 import { useAgendaGridMobileView } from './agenda-grid-mobile-view.hook';
@@ -73,8 +76,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                       <b className="block truncate">
                         {item.appointment.startTime} -{' '}
                         {item.appointment.endTime} ·{' '}
-                        {item.appointment.user.firstName}{' '}
-                        {item.appointment.user.lastName}
+                        {getClientName(item.appointment.user)}
                       </b>
                       <span className="block truncate text-xs">
                         {item.appointment.service.name} ·{' '}
@@ -133,7 +135,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                   </time>
                   <span className="min-w-0">
                     <b className="block truncate text-[15px]">
-                      {appointment.user.firstName} {appointment.user.lastName}
+                      {getClientName(appointment.user)}
                     </b>
                     <span className="mt-0.5 block truncate text-[13px] text-[#5F5C6E]">
                       {appointment.service.name} ·{' '}

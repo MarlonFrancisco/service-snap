@@ -3,6 +3,7 @@ import { cn } from '@repo/ui';
 import { STATUS_CONFIG } from '../../agenda-grid.constants';
 import {
   getAppointmentAriaLabel,
+  getClientName,
   getProfessionalInitials,
 } from '../../agenda-grid.helpers';
 import type { TAgendaAppointmentBlockConfig } from './agenda-appointment-block.types';
@@ -44,7 +45,7 @@ export const AgendaAppointmentBlock = ({
           </span>
         )}
         <span className="min-w-0 truncate">
-          {appointment.user.firstName} {appointment.user.lastName}
+          {getClientName(appointment.user)}
         </span>
       </span>
       {!isCompact && (

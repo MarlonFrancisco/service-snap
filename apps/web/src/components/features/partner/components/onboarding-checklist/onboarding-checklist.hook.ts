@@ -18,7 +18,7 @@ export const useOnboardingChecklist = () => {
   const { stores, isPendingStores } = useStoresQuery();
   const activeStore = usePartnerStore((state) => state.activeStore);
   const storeId = activeStore?.id || stores[0]?.id || '';
-  const { store } = useStoreQuery({ storeId });
+  const { store, isPendingStore } = useStoreQuery({ storeId });
 
   const [ready, setReady] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -62,7 +62,11 @@ export const useOnboardingChecklist = () => {
 
   const completedCount = steps.filter((step) => step.done).length;
   const isComplete = completedCount === steps.length;
-  const isVisible = ready && !isPendingStores && !dismissed && !isComplete;
+  // Serviços e profissionais vêm do detalhe da loja: sem esperar por ele, os
+  // passos aparecem como pendentes por instantes mesmo com tudo configurado.
+  const isStoreSettled = !hasStore || !isPendingStore;
+  const isVisible =
+    ready && !isPendingStores && isStoreSettled && !dismissed && !isComplete;
 
   const handleDismiss = useCallback(() => {
     try {

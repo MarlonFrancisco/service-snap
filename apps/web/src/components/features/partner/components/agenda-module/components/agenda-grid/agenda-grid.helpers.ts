@@ -174,9 +174,14 @@ export const getBlockStyle = (
   };
 };
 
+/** Cliente criado só com e-mail chega sem nome: a API devolve `null`. */
+export const getClientName = (user: IAppointment['user']): string =>
+  [user.firstName, user.lastName].filter(Boolean).join(' ') ||
+  'Cliente sem nome';
+
 export const getAppointmentAriaLabel = (appointment: IAppointment): string => {
   const { user, service, storeMember, startTime, endTime } = appointment;
-  return `${user.firstName} ${user.lastName}, ${service.name}, ${startTime} a ${endTime}, ${getProfessionalFullName(storeMember)}`;
+  return `${getClientName(user)}, ${service.name}, ${startTime} a ${endTime}, ${getProfessionalFullName(storeMember)}`;
 };
 
 export const getBulkActionLabel = (slots: TSelectedSlot[]): string => {
