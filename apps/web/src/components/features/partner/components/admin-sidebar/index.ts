@@ -1,2 +1,8 @@
 export { AdminSidebar } from './admin-sidebar';
-export type { IMenuItem, IMenuSection, IMenuSubItem } from './admin-sidebar.types';
+export type {
+  TAdminSidebarConfig,
+  TNavGroupItem,
+  TNavItem,
+  TNavLinkItem,
+  TNavSubItem,
+} from './admin-sidebar.types';

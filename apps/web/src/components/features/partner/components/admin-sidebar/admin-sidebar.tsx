@@ -1,71 +1,74 @@
 'use client';
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarRail,
-  useSidebar,
-} from '@repo/ui';
-import { menuSections } from './admin-sidebar.config';
-import { useActiveModule } from './admin-sidebar.hook';
+import { cn } from '@repo/ui';
+import { useAdminSidebar } from './admin-sidebar.hook';
+import type { TAdminSidebarConfig } from './admin-sidebar.types';
 import { AdminSidebarFooter } from './components/admin-sidebar-footer';
 import { AdminSidebarHeader } from './components/admin-sidebar-header';
 import { AdminSidebarMenuItem } from './components/admin-sidebar-menu-item';
 import { AdminSidebarMenuItemWithSubmenu } from './components/admin-sidebar-menu-item-with-submenu';
 
-export function AdminSidebar() {
-  const { state } = useSidebar();
-  const isCollapsed = state === 'collapsed';
-  const activeModule = useActiveModule();
+export const AdminSidebar = ({
+  isCollapsed = false,
+  className,
+  onNavigate,
+  onClose,
+}: TAdminSidebarConfig) => {
+  const {
+    items,
+    activeHref,
+    activeGroupId,
+    openGroupId,
+    flyoutGroupId,
+    handleToggleGroup,
+    handleFlyoutOpenChange,
+    handleNavigate,
+  } = useAdminSidebar({ onNavigate });
 
   return (
-    <Sidebar collapsible="icon">
-      <AdminSidebarHeader isCollapsed={isCollapsed} />
+    <aside
+      className={cn(
+        'flex h-full flex-none flex-col gap-3 overflow-x-hidden overflow-y-auto border-r border-[#EBE9F0] bg-white px-3.5 py-5 motion-safe:transition-[width] motion-safe:duration-200',
+        isCollapsed ? 'w-[73px]' : 'w-[264px]',
+        className,
+      )}
+    >
+      <AdminSidebarHeader
+        isCollapsed={isCollapsed}
+        onClose={onClose}
+        onNavigate={handleNavigate}
+      />
 
-      <SidebarContent>
-        {menuSections
-          .filter((section) => section.isActive)
-          .map((section) => (
-            <SidebarGroup key={section.title}>
-              <SidebarGroupLabel className="text-xs text-gray-400 uppercase tracking-wider">
-                {section.title}
-              </SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {section.items.map((item) => {
-                    if (item.hasSubmenu && item.submenu) {
-                      return (
-                        <AdminSidebarMenuItemWithSubmenu
-                          key={item.id}
-                          item={item}
-                          activeModule={activeModule}
-                          isCollapsed={isCollapsed}
-                        />
-                      );
-                    }
-
-                    return (
-                      <AdminSidebarMenuItem
-                        key={item.id}
-                        item={item}
-                        activeModule={activeModule}
-                        isCollapsed={isCollapsed}
-                      />
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ))}
-      </SidebarContent>
+      <nav aria-label="Navegação do painel">
+        <ul className="grid gap-0.5">
+          {items.map((item) =>
+            item.kind === 'group' ? (
+              <AdminSidebarMenuItemWithSubmenu
+                key={item.id}
+                item={item}
+                activeHref={activeHref}
+                isActive={activeGroupId === item.id}
+                isOpen={openGroupId === item.id}
+                isFlyoutOpen={flyoutGroupId === item.id}
+                isCollapsed={isCollapsed}
+                onToggle={handleToggleGroup}
+                onFlyoutOpenChange={handleFlyoutOpenChange}
+                onNavigate={handleNavigate}
+              />
+            ) : (
+              <AdminSidebarMenuItem
+                key={item.id}
+                item={item}
+                isActive={activeHref === item.href}
+                isCollapsed={isCollapsed}
+                onNavigate={handleNavigate}
+              />
+            ),
+          )}
+        </ul>
+      </nav>
 
       <AdminSidebarFooter isCollapsed={isCollapsed} />
-
-      <SidebarRail />
-    </Sidebar>
+    </aside>
   );
-}
+};

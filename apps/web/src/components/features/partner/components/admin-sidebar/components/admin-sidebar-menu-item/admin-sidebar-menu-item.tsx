@@ -1,45 +1,47 @@
 'use client';
 
-import { SidebarMenuButton, SidebarMenuItem } from '@repo/ui';
-import { ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useIsMenuItemActive } from '../../admin-sidebar.hook';
-import { IMenuItem } from '../../admin-sidebar.types';
+import { cn } from '@repo/ui';
+import Link from 'next/link';
+import {
+  PARTNER_NAV_ICON_CLASS,
+  PARTNER_NAV_ITEM_ACTIVE_CLASS,
+  PARTNER_NAV_ITEM_CLASS,
+  PARTNER_NAV_ITEM_IDLE_CLASS,
+} from '../../../../partner.styles';
+import type { TNavLinkItem } from '../../admin-sidebar.types';
 
-interface AdminSidebarMenuItemProps {
-  item: IMenuItem;
-  activeModule: string;
-  isCollapsed?: boolean;
-}
+type TAdminSidebarMenuItemConfig = {
+  item: TNavLinkItem;
+  isActive: boolean;
+  isCollapsed: boolean;
+  onNavigate: () => void;
+};
 
-export function AdminSidebarMenuItem({
+export const AdminSidebarMenuItem = ({
   item,
-  activeModule,
-  isCollapsed = false,
-}: AdminSidebarMenuItemProps) {
-  const router = useRouter();
+  isActive,
+  isCollapsed,
+  onNavigate,
+}: TAdminSidebarMenuItemConfig) => {
   const Icon = item.icon;
-  const isActive = useIsMenuItemActive(item.id, activeModule);
-
-  const handleClick = () => {
-    if (item.url) {
-      router.push(item.url);
-    }
-  };
-
-  if (!item.isActive) {
-    return null;
-  }
 
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton isActive={isActive} onClick={handleClick}>
-        <Icon />
-        <span className="text-sm">{item.label}</span>
-        {isActive && !isCollapsed && (
-          <ChevronRight className="h-3.5 w-3.5 ml-auto" />
+    <li>
+      <Link
+        href={item.href}
+        aria-current={isActive ? 'page' : undefined}
+        aria-label={isCollapsed ? item.label : undefined}
+        title={isCollapsed ? item.label : undefined}
+        onClick={onNavigate}
+        className={cn(
+          PARTNER_NAV_ITEM_CLASS,
+          isActive ? PARTNER_NAV_ITEM_ACTIVE_CLASS : PARTNER_NAV_ITEM_IDLE_CLASS,
+          isCollapsed && 'justify-center px-0',
         )}
-      </SidebarMenuButton>
-    </SidebarMenuItem>
+      >
+        <Icon className={PARTNER_NAV_ICON_CLASS} aria-hidden="true" />
+        {!isCollapsed && item.label}
+      </Link>
+    </li>
   );
-}
+};

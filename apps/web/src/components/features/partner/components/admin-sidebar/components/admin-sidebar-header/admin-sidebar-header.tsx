@@ -1,50 +1,87 @@
 'use client';
 
-import { Button, SidebarHeader } from '@repo/ui';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { HeaderLogo } from '@/components/layout/header/components/header-logo';
+import { cn } from '@repo/ui';
+import { ArrowLeft, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import {
+  PARTNER_FOCUS_CLASS,
+  PARTNER_ICON_BUTTON_CLASS,
+  PARTNER_NAV_ICON_CLASS,
+  PARTNER_NAV_ITEM_CLASS,
+  PARTNER_NAV_ITEM_IDLE_CLASS,
+} from '../../../../partner.styles';
 
-interface AdminSidebarHeaderProps {
+type TAdminSidebarHeaderConfig = {
   isCollapsed: boolean;
-}
+  onClose?: () => void;
+  onNavigate: () => void;
+};
 
-export function AdminSidebarHeader({ isCollapsed }: AdminSidebarHeaderProps) {
-  const router = useRouter();
-
-  return (
-    <SidebarHeader className="border-b border-gray-100 py-4">
-      <div className="px-2 space-y-4">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-gray-500 hover:text-gray-900 hover:bg-gray-50 h-9"
-          title={isCollapsed ? 'Voltar' : undefined}
-          onClick={() => router.push('/')}
+export const AdminSidebarHeader = ({
+  isCollapsed,
+  onClose,
+  onNavigate,
+}: TAdminSidebarHeaderConfig) => (
+  <div className="grid gap-0.5">
+    <div className="flex items-center gap-2">
+      <Link
+        href="/"
+        aria-label={isCollapsed ? 'Voltar' : undefined}
+        title={isCollapsed ? 'Voltar' : undefined}
+        onClick={onNavigate}
+        className={cn(
+          PARTNER_NAV_ITEM_CLASS,
+          PARTNER_NAV_ITEM_IDLE_CLASS,
+          isCollapsed && 'justify-center px-0',
+        )}
+      >
+        <ArrowLeft className={PARTNER_NAV_ICON_CLASS} aria-hidden="true" />
+        {!isCollapsed && 'Voltar'}
+      </Link>
+      {onClose && (
+        <button
+          type="button"
+          aria-label="Fechar menu"
+          onClick={onClose}
+          className={PARTNER_ICON_BUTTON_CLASS}
         >
-          <ArrowLeft className="h-4 w-4" />
-          {!isCollapsed && <span className="ml-2 text-sm">Voltar</span>}
-        </Button>
+          <X className="size-[18px]" aria-hidden="true" />
+        </button>
+      )}
+    </div>
 
-        {/* Logo/Brand */}
-        <div
-          className={`flex items-center gap-3 px-1 ${isCollapsed ? 'justify-center' : ''}`}
-        >
-          <img
-            src="/app-icon.svg"
-            alt=""
-            width={36}
-            height={36}
-            className="w-9 h-9 rounded-xl shrink-0"
-          />
-          {!isCollapsed && (
-            <div className="min-w-0">
-              <h2 className="text-gray-900 text-sm truncate">ServiceSnap</h2>
-              <p className="text-gray-500 text-xs truncate">Admin</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </SidebarHeader>
-  );
-}
+    {isCollapsed ? (
+      <Link
+        href="/"
+        aria-label="Página inicial"
+        onClick={onNavigate}
+        className={cn(
+          'grid min-h-11 place-items-center rounded-[14px]',
+          PARTNER_FOCUS_CLASS,
+        )}
+      >
+        <Image
+          src="/app-icon.svg"
+          alt=""
+          width={32}
+          height={32}
+          className="size-8 rounded-lg"
+          unoptimized
+        />
+      </Link>
+    ) : (
+      <HeaderLogo
+        width={148}
+        height={37}
+        aria-label="Página inicial"
+        onClick={onNavigate}
+        className={cn(
+          'inline-flex min-h-11 items-center justify-self-start px-3 leading-none',
+          PARTNER_FOCUS_CLASS,
+        )}
+      />
+    )}
+  </div>
+);

@@ -1,67 +1,71 @@
 'use client';
 
-import { Button } from '@repo/ui';
-import { CheckCircle2, Circle, Rocket, X } from 'lucide-react';
+import { cn } from '@repo/ui';
+import { ArrowRight, Check, X } from 'lucide-react';
 import Link from 'next/link';
+import {
+  PARTNER_FOCUS_CLASS,
+  PARTNER_MUTED_TEXT_CLASS,
+} from '../../partner.styles';
 import { useOnboardingChecklist } from './onboarding-checklist.hook';
 
-export function OnboardingChecklist() {
+export const OnboardingChecklist = () => {
   const { steps, completedCount, totalCount, isVisible, handleDismiss } =
     useOnboardingChecklist();
 
   if (!isVisible) return null;
 
   return (
-    <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 sm:p-5">
-      <div className="flex items-start justify-between gap-3 mb-4">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gray-900 text-white">
-            <Rocket className="h-4 w-4" />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-sm text-gray-900">Comece a usar o painel</h2>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {completedCount} de {totalCount} passos concluídos
-            </p>
-          </div>
+    <section
+      aria-label="Primeiros passos"
+      className="mb-5 grid gap-3 rounded-3xl bg-white p-6 shadow-[0_12px_40px_rgba(15,12,30,0.1)]"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-xl font-extrabold">Comece a usar o painel</h2>
+          <p className={cn('mt-0.5 text-sm', PARTNER_MUTED_TEXT_CLASS)}>
+            {completedCount} de {totalCount} passos concluídos
+          </p>
         </div>
-        <Button
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 text-gray-500"
-          onClick={handleDismiss}
           aria-label="Dispensar checklist"
+          onClick={handleDismiss}
+          className={cn(
+            'grid size-11 shrink-0 place-items-center rounded-full transition-colors hover:bg-[#F7F6FA]',
+            PARTNER_MUTED_TEXT_CLASS,
+            PARTNER_FOCUS_CLASS,
+          )}
         >
-          <X className="h-4 w-4" />
-        </Button>
+          <X className="size-4" aria-hidden="true" />
+        </button>
       </div>
 
-      <ul className="space-y-2">
+      <ol className="mt-1.5 grid gap-2">
         {steps.map((step) => (
           <li key={step.id}>
             <Link
               href={step.href}
-              className="flex items-center gap-3 rounded-lg border border-gray-100 px-3 py-2.5 hover:bg-gray-50"
-            >
-              {step.done ? (
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
-              ) : (
-                <Circle className="h-4 w-4 shrink-0 text-gray-300" />
+              className={cn(
+                'flex min-h-[52px] items-center justify-between gap-3 rounded-[14px] bg-[#F7F6FA] px-4 text-sm font-semibold transition-colors hover:bg-[#F4F3F7]',
+                PARTNER_FOCUS_CLASS,
               )}
-              <span
-                className={
-                  step.done
-                    ? 'text-sm text-gray-500 line-through'
-                    : 'text-sm text-gray-900'
-                }
-              >
+            >
+              <span className="flex min-w-0 items-center gap-2">
+                {step.done && (
+                  <Check className="size-4 shrink-0" aria-hidden="true" />
+                )}
                 {step.label}
               </span>
+              {step.done ? (
+                <span className="shrink-0">Concluído</span>
+              ) : (
+                <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+              )}
             </Link>
           </li>
         ))}
-      </ul>
-    </div>
+      </ol>
+    </section>
   );
-}
+};

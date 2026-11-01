@@ -1,78 +1,82 @@
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
-import { useRouter } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
+import { useMemo } from 'react';
+
+const PLAN_ROUTE = '/partner/plans';
+
+const getUsage = (current: number, limit: number) => {
+  const isUnlimited = limit === 0;
+
+  return {
+    current,
+    limit,
+    percentage: isUnlimited ? 0 : Math.round((current / limit) * 100),
+    isUnlimited,
+  };
+};
 
 export const useAdminSidebarFooter = () => {
   const { currentPlan } = useSubscriptionQuery();
-  const router = useRouter();
+  const pathname = usePathname();
 
-  const handleUpgradeClick = useCallback(() => {
-    router.push('/partner/plans/upgrade');
-  }, [router]);
+  const isHidden =
+    pathname === PLAN_ROUTE || pathname.startsWith(`${PLAN_ROUTE}/`);
 
-  const storesUsage = useMemo(() => {
-    if (!currentPlan) return null;
+  const storesUsage = useMemo(
+    () =>
+      currentPlan
+        ? getUsage(currentPlan.storesLength, currentPlan.features.UNIT_LIMIT)
+        : null,
+    [currentPlan],
+  );
 
-    const isUnlimited = currentPlan.features.UNIT_LIMIT === 0;
+  const professionalsUsage = useMemo(
+    () =>
+      currentPlan
+        ? getUsage(
+            currentPlan.storeMembersLength,
+            currentPlan.features.PRO_LIMIT,
+          )
+        : null,
+    [currentPlan],
+  );
 
-    return {
-      current: currentPlan.storesLength,
-      limit: currentPlan.features.UNIT_LIMIT,
-      percentage: isUnlimited
-        ? 0
-        : Math.round(
-            (currentPlan.storesLength / currentPlan.features.UNIT_LIMIT) * 100,
-          ),
-      isUnlimited,
-    };
-  }, [currentPlan]);
+  const usageRows = useMemo(
+    () =>
+      storesUsage && professionalsUsage
+        ? [
+            { id: 'stores', label: 'Lojas', usage: storesUsage },
+            {
+              id: 'professionals',
+              label: 'Profissionais',
+              usage: professionalsUsage,
+            },
+          ]
+        : [],
+    [storesUsage, professionalsUsage],
+  );
 
-  const professionalsUsage = useMemo(() => {
-    if (!currentPlan) return null;
+  const isNearLimit = usageRows.some(
+    ({ usage }) =>
+      !usage.isUnlimited && usage.percentage >= 80 && usage.percentage < 100,
+  );
 
-    const isUnlimited = currentPlan.features.PRO_LIMIT === 0;
+  const isAtLimit = usageRows.some(
+    ({ usage }) => !usage.isUnlimited && usage.percentage >= 100,
+  );
 
-    return {
-      current: currentPlan.storeMembersLength,
-      limit: currentPlan.features.PRO_LIMIT,
-      percentage: isUnlimited
-        ? 0
-        : Math.round(
-            (currentPlan.storeMembersLength / currentPlan.features.PRO_LIMIT) *
-              100,
-          ),
-      isUnlimited,
-    };
-  }, [currentPlan]);
-
-  const isNearLimit = useMemo(() => {
-    if (!storesUsage || !professionalsUsage) return false;
-    if (storesUsage.isUnlimited && professionalsUsage.isUnlimited) return false;
-    return (
-      (!storesUsage.isUnlimited &&
-        storesUsage.percentage >= 80 &&
-        storesUsage.percentage < 100) ||
-      (!professionalsUsage.isUnlimited &&
-        professionalsUsage.percentage >= 80 &&
-        professionalsUsage.percentage < 100)
-    );
-  }, [storesUsage, professionalsUsage]);
-
-  const isAtLimit = useMemo(() => {
-    if (!storesUsage || !professionalsUsage) return false;
-    if (storesUsage.isUnlimited && professionalsUsage.isUnlimited) return false;
-    return (
-      (!storesUsage.isUnlimited && storesUsage.percentage >= 100) ||
-      (!professionalsUsage.isUnlimited && professionalsUsage.percentage >= 100)
-    );
-  }, [storesUsage, professionalsUsage]);
+  // Com alerta na tela, a ação precisa levar à saída que ele pede.
+  const planAction =
+    isAtLimit || isNearLimit
+      ? { href: `${PLAN_ROUTE}/upgrade`, label: 'Fazer upgrade' }
+      : { href: `${PLAN_ROUTE}/me`, label: 'Ver plano' };
 
   return {
     currentPlan,
-    storesUsage,
-    professionalsUsage,
+    isHidden,
+    usageRows,
     isNearLimit,
     isAtLimit,
-    handleUpgradeClick,
+    planAction,
   };
 };
