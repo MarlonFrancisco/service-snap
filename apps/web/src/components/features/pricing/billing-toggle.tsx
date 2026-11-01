@@ -15,20 +15,19 @@ export const BillingToggle = ({ value, onChange }: IBillingToggleProps) => {
         onValueChange={(newValue) => {
           if (newValue) onChange(newValue as 'month' | 'year');
         }}
-        variant="outline"
-        className="bg-gray-50 p-1 rounded-lg"
+        className="rounded-2xl bg-[#F4F4F5] p-1"
       >
         <ToggleGroupItem
           value="month"
           aria-label="Planos mensais"
-          className="px-8 py-2.5 data-[state=on]:bg-black data-[state=on]:text-white"
+          className="rounded-xl px-8 py-2.5 text-sm font-semibold text-[#2B2B2B] data-[state=on]:bg-[#0A0A0A] data-[state=on]:text-white data-[state=on]:shadow-sm"
         >
           Mensal
         </ToggleGroupItem>
         <ToggleGroupItem
           value="year"
           aria-label="Planos anuais"
-          className="px-8 py-2.5 data-[state=on]:bg-black data-[state=on]:text-white"
+          className="rounded-xl px-8 py-2.5 text-sm font-semibold text-[#2B2B2B] data-[state=on]:bg-[#0A0A0A] data-[state=on]:text-white data-[state=on]:shadow-sm"
         >
           Anual
         </ToggleGroupItem>

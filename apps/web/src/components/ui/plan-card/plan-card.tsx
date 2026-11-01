@@ -1,6 +1,5 @@
 import { formatPriceByCountry } from '@/utils/helpers/price.helper';
 import { formatPriceByCurrency } from '@repo/shared/formatters';
-import { Badge, Button, Card } from '@repo/ui';
 import { Check } from 'lucide-react';
 import { motion } from 'motion/react';
 import { usePlanCard } from './plan-card.hook';
@@ -38,58 +37,56 @@ export const PlanCard = ({
   return (
     <motion.div
       key={plan.name}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+      transition={{ duration: 0.4, delay: 0.08 + index * 0.08 }}
       className="relative h-full select-none"
     >
-      <Card
-        className={`relative h-full p-8 ${
+      <div
+        className={`relative flex h-full flex-col rounded-2xl bg-white p-6 shadow-sm sm:p-8 ${
           plan.popular
-            ? 'border-2 border-black shadow-xl'
-            : 'border border-gray-200'
-        } ${isCurrentPlan ? 'opacity-75' : ''}`}
+            ? 'border-2 border-[#0A0A0A] shadow-xl'
+            : 'border border-[#E4E4E7]'
+        } ${isCurrentPlan ? 'opacity-80' : ''}`}
       >
-        {/* Never show "Mais popular" together with "Plano Atual" — confusing in partner upgrade. */}
         {isCurrentPlan ? (
-          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-white">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#71717A] px-3 py-1 text-xs font-semibold text-white">
             Plano Atual
-          </Badge>
+          </span>
         ) : plan.popular ? (
-          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#0A0A0A] px-3 py-1 text-xs font-semibold text-white">
             Mais popular
-          </Badge>
+          </span>
         ) : null}
 
-        <div className="mb-8">
-          <h3 className="text-xl text-gray-900 mb-2">{plan.name}</h3>
-          <p className="text-sm text-gray-600">{plan.description}</p>
+        <div className="mb-6 sm:mb-8">
+          <h3 className="mb-2 text-xl font-semibold tracking-tight text-[#0A0A0A]">
+            {plan.name}
+          </h3>
+          <p className="text-sm text-[#71717A]">{plan.description}</p>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           {hasDiscount && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm text-gray-500 line-through">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-sm text-[#A1A1AA] line-through">
                 {formatPriceByCountry(originalPrice)}
               </span>
-              <Badge
-                variant="outline"
-                className="border-green-600 text-green-600 text-xs"
-              >
+              <span className="rounded-full border border-[#047857]/30 px-2 py-0.5 text-xs font-semibold text-[#047857]">
                 -{plan.discount}%
-              </Badge>
+              </span>
             </div>
           )}
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl text-gray-900">
+            <span className="text-4xl font-semibold tracking-tight text-[#0A0A0A]">
               {formatPriceByCurrency(priceInReais, plan.currency)}
             </span>
-            <span className="text-gray-600">
+            <span className="text-[#71717A]">
               /{plan.interval === 'month' ? 'mês' : 'ano'}
             </span>
           </div>
           {hasTrial && !isCurrentPlan && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="mt-2 text-sm text-[#71717A]">
               {trialPeriodDays} dias grátis, depois{' '}
               {formatPriceByCountry(priceInReais)}/
               {plan.interval === 'month' ? 'mês' : 'ano'}
@@ -97,29 +94,30 @@ export const PlanCard = ({
           )}
         </div>
 
-        <Button
-          className={`w-full mb-8 ${
+        <button
+          type="button"
+          className={`mb-6 w-full rounded-2xl px-5 py-3.5 text-sm font-semibold transition-all active:scale-[0.98] sm:mb-8 sm:text-base ${
             isCurrentPlan
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              ? 'cursor-not-allowed bg-[#F4F4F5] text-[#A1A1AA]'
               : plan.popular
-                ? 'bg-black hover:bg-gray-800 text-white'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
+                ? 'bg-[#0A0A0A] text-white shadow-lg shadow-black/20 hover:bg-[#2B2B2B]'
+                : 'bg-[#F4F4F5] text-[#0A0A0A] hover:bg-[#E4E4E7]'
           }`}
           onClick={handleClick}
           disabled={isDisabled}
         >
           {customButtonText || 'Assinar plano'}
-        </Button>
+        </button>
 
-        <ul className="space-y-4">
+        <ul className="mt-auto space-y-3 sm:space-y-4">
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-black flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700">{feature}</span>
+              <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#0A0A0A]" />
+              <span className="text-sm text-[#2B2B2B]">{feature}</span>
             </li>
           ))}
         </ul>
-      </Card>
+      </div>
     </motion.div>
   );
 };
