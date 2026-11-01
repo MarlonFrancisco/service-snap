@@ -5,6 +5,7 @@ import { QueryProvider } from '@/providers';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { SOCIAL_PROFILE_URLS } from '@/utils/constants/social-profiles.constants';
 import { SITE_URL, THEME_COLOR } from '@/utils/constants/site.constants';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import type { Metadata, Viewport } from 'next';
@@ -229,6 +230,7 @@ export default async function RootLayout({
                 '@type': 'Organization',
                 name: 'ServiceSnap',
                 url: 'https://ssnap.io',
+                sameAs: SOCIAL_PROFILE_URLS,
               },
               inLanguage: 'pt-BR',
               potentialAction: {

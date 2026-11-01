@@ -1,7 +1,10 @@
 'use client';
 
 import { Footer, Header } from '@/components/layout';
-import { PUBLIC_CONTACT_EMAIL } from '@/utils/constants/contact.constants';
+import {
+  PUBLIC_CONTACT_EMAIL,
+  SOCIAL_LINKS,
+} from '@/utils/constants/contact.constants';
 import { Button, Input, Textarea } from '@repo/ui';
 import { Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -182,6 +185,32 @@ export default function ContactPage() {
                   Enviar e-mail direto
                 </a>
               </div>
+
+              {SOCIAL_LINKS.length > 0 ? (
+                <div>
+                  <h3 className="text-lg font-medium text-[#1a2b4c] mb-3">
+                    Redes sociais
+                  </h3>
+                  <ul className="space-y-2">
+                    {SOCIAL_LINKS.map((link) => {
+                      const Icon = link.icon;
+                      return (
+                        <li key={link.href}>
+                          <a
+                            href={link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-gray-700 hover:text-[#1a2b4c]"
+                          >
+                            <Icon className="h-4 w-4" />
+                            {link.label}
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ) : null}
 
               <div>
                 <h3 className="text-lg font-medium text-[#1a2b4c] mb-2">
