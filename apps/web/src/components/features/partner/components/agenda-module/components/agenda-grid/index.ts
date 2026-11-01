@@ -1,27 +1,29 @@
 export { AgendaGrid } from './agenda-grid';
 export {
   BREAKPOINTS,
-  CONTAINER_HEIGHTS,
   GRID_CONSTANTS,
+  GRID_SCROLL_CLASS,
   STATUS_CONFIG,
+  STATUS_LEGEND,
 } from './agenda-grid.constants';
 export {
   dateToISOString,
   formatDateBR,
   getProfessionalFullName,
+  getProfessionalInitials,
   isToday,
 } from './agenda-grid.helpers';
 export { useAgendaGrid } from './agenda-grid.hook';
 export type {
-  TAgendaGridConfig,
-  TAgendaGridHookConfig,
+  TAgendaColumn,
+  TAgendaColumnBlock,
+  TAgendaColumnRow,
+  TAgendaSlot,
+  TAgendaSlotHandlers,
+  TAgendaSlotState,
   TDayViewData,
-  TDesktopViewConfig,
-  TMobileViewConfig,
+  TPositionedAppointment,
   TSelectedProfessionalData,
-  TSlotClickHandler,
-  TSlotContext,
-  TSlotRenderContext,
 } from './agenda-grid.types';
 
 // Bulk block exports

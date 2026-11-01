@@ -1,33 +1,6 @@
 import type { IAppointment } from '@/types/api/schedule.types';
 import type { IProfessional } from '@/types/api/users.types';
-
-/**
- * Configuração principal do AgendaGrid
- */
-export type TAgendaGridConfig = {
-  onSlotClick?: TSlotClickHandler;
-  viewMode?: 'mobile' | 'desktop';
-};
-
-/**
- * Handler para clique em slot
- */
-export type TSlotClickHandler = (
-  professional: IProfessional,
-  dayIndex: number,
-  time: string,
-  context: TSlotContext,
-) => void;
-
-/**
- * Contexto de um slot
- */
-export type TSlotContext = {
-  appointment: IAppointment | null;
-  isBlockMode: boolean;
-  date: Date;
-  dateStr: string;
-};
+import type { MouseEvent } from 'react';
 
 /**
  * Dados computados de um dia
@@ -42,30 +15,6 @@ export type TDayViewData = {
 };
 
 /**
- * Configuração do hook useAgendaGrid
- */
-export type TAgendaGridHookConfig = {
-  professionals: IProfessional[];
-  onSlotClick?: TSlotClickHandler;
-};
-
-/**
- * Configuração para Mobile View
- */
-export type TMobileViewConfig = {
-  professionals: IProfessional[];
-  onSlotClick: TSlotClickHandler;
-};
-
-/**
- * Configuração para Desktop View
- */
-export type TDesktopViewConfig = {
-  professionals: IProfessional[];
-  onSlotClick: TSlotClickHandler;
-};
-
-/**
  * Dados de um professional selecionado
  */
 export type TSelectedProfessionalData = {
@@ -73,11 +22,51 @@ export type TSelectedProfessionalData = {
   professional: IProfessional | null;
 };
 
-/**
- * Contexto de renderização de slot
- */
-export type TSlotRenderContext = {
-  appointment: IAppointment | null;
-  isBlocked: boolean;
-  isWorkingDay: boolean;
+export type TPositionedAppointment = {
+  appointment: IAppointment;
+  rowStart: number;
+  rowEnd: number;
+  rowSpan: number;
+  lane: number;
+  laneCount: number;
+  clusterStart: number;
+  clusterEnd: number;
+};
+
+export type TAgendaSlotState =
+  | 'free'
+  | 'blocked'
+  | 'selected-to-block'
+  | 'selected-to-unblock';
+
+export type TAgendaSlotHandlers = {
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
+  onMouseDown?: (event: MouseEvent<HTMLButtonElement>) => void;
+  onMouseEnter?: () => void;
+  onMouseUp?: () => void;
+};
+
+export type TAgendaSlot = {
+  state: TAgendaSlotState;
+  text: string;
+  ariaLabel: string;
+  isInteractive: boolean;
+  isPressed?: boolean;
+  isGutter?: boolean;
+  handlers: TAgendaSlotHandlers;
+};
+
+export type TAgendaColumnRow = {
+  time: string;
+  slot: TAgendaSlot | null;
+};
+
+export type TAgendaColumnBlock = TPositionedAppointment & {
+  hasGutter: boolean;
+  isCompact: boolean;
+};
+
+export type TAgendaColumn = {
+  rows: TAgendaColumnRow[];
+  blocks: TAgendaColumnBlock[];
 };

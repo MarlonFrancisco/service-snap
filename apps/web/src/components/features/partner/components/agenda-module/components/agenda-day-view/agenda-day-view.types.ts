@@ -5,4 +5,3 @@ export type TDayViewHook = ReturnType<typeof useAgendaDayView>;
 export interface IDayViewConfig {
   dayViewHook: TDayViewHook;
 }
-

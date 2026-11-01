@@ -1,19 +1,25 @@
-import { ScheduleService } from '@/service/partner/schedule';
-import { useAgendaStore } from '@/store/admin/agenda';
+import { getTodayDayIndex, useAgendaStore } from '@/store/admin/agenda';
 import { usePartnerStore } from '@/store/partner';
-import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
-import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import {
+  useAgendaDataState,
+  useAgendaSchedulesQuery,
+} from './components/agenda-data-state/agenda-data-state.hook';
 
 export const useAgendaModule = () => {
   const isFocusMode = useAgendaStore((state) => state.isFocusMode);
-  const activeStore = usePartnerStore((state) => state.activeStore);
+  const selectedProfessional = useAgendaStore(
+    (state) => state.selectedProfessional,
+  );
+  const setSelectedProfessional = useAgendaStore(
+    (state) => state.setSelectedProfessional,
+  );
+  const storeMembers = usePartnerStore(
+    (state) => state.activeStore.storeMembers,
+  );
 
-  const { data: appointments } = useQuery({
-    queryKey: CACHE_QUERY_KEYS.schedules(activeStore.id),
-    queryFn: () => ScheduleService.getAll(activeStore.id),
-    enabled: !!activeStore?.id,
-  });
+  const { data: appointments } = useAgendaSchedulesQuery();
+  const { status } = useAgendaDataState();
 
   useEffect(() => {
     if (appointments) {
@@ -23,7 +29,28 @@ export const useAgendaModule = () => {
     }
   }, [appointments]);
 
+  // A store é global: ao voltar para a tela, a semana atual reabre no dia de hoje.
+  useEffect(() => {
+    const { currentWeek, setSelectedDayIndex } = useAgendaStore.getState();
+
+    if (currentWeek === 0) {
+      setSelectedDayIndex(getTodayDayIndex());
+    }
+  }, []);
+
+  // O filtro pode apontar para um profissional de outra loja depois da troca.
+  useEffect(() => {
+    if (
+      storeMembers?.length &&
+      selectedProfessional !== 'all' &&
+      !storeMembers.some((member) => member.id === selectedProfessional)
+    ) {
+      setSelectedProfessional('all');
+    }
+  }, [storeMembers, selectedProfessional, setSelectedProfessional]);
+
   return {
     isFocusMode,
+    hasNoStore: status === 'no-store',
   };
 };

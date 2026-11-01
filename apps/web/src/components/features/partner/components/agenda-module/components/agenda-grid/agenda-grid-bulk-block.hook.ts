@@ -6,10 +6,18 @@ import type {
   TUseBulkBlockConfig,
   TUseBulkBlockReturn,
 } from './agenda-grid-bulk-block.types';
+import { getBulkActionLabel } from './agenda-grid.helpers';
+
+/**
+ * Gesto do ponteiro em andamento:
+ * - `single`: pressionou sem seleção pendente; se soltar no mesmo slot, é clique.
+ * - `selection`: arrastou ou mexeu em uma seleção; o clique não aplica nada.
+ */
+type TPointerGesture = 'none' | 'single' | 'selection';
 
 /**
  * Hook-Driven Architecture: Bulk Block Selection Logic
- * Handles drag selection, shift+click range selection, and bulk blocking
+ * Clique aplica na hora; arrasto monta uma seleção aplicada pela barra flutuante.
  *
  * @param config - Configuration object with isBlockMode and onBulkBlock callback
  * @returns Object with selection state and handlers
@@ -19,18 +27,15 @@ export const useAgendaGridBulkBlock = (
 ): TUseBulkBlockReturn => {
   const { isBlockMode, onBulkBlock } = config;
 
-  // Selection state
   const [selectedSlots, setSelectedSlots] = useState<Set<TSlotId>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
 
-  // Refs for drag and shift selection
-  const dragStartSlotRef = useRef<TSlotId | null>(null);
-  const lastClickedSlotRef = useRef<TSlotId | null>(null);
   const selectedSlotsDataRef = useRef<Map<TSlotId, TSelectedSlot>>(new Map());
+  const pointerGestureRef = useRef<TPointerGesture>('none');
+  const dragOriginRef = useRef<{ slotId: TSlotId; slot: TSelectedSlot } | null>(
+    null,
+  );
 
-  /**
-   * Generate unique slot identifier
-   */
   const getSlotId = useCallback(
     (professionalId: string, dayIndex: number, time: string): TSlotId => {
       return `${professionalId}-${dayIndex}-${time}`;
@@ -38,51 +43,18 @@ export const useAgendaGridBulkBlock = (
     [],
   );
 
-  /**
-   * Check if a slot is selected
-   */
   const isSlotSelected = useCallback(
     (professionalId: string, dayIndex: number, time: string): boolean => {
-      const slotId = getSlotId(professionalId, dayIndex, time);
-      return selectedSlots.has(slotId);
+      return selectedSlots.has(getSlotId(professionalId, dayIndex, time));
     },
     [selectedSlots, getSlotId],
   );
 
-  /**
-   * Add slot to selection
-   */
-  const addSlotToSelection = useCallback(
-    (
-      blockedTime: IBlockedTime | undefined,
-      professionalId: string,
-      dayIndex: number,
-      time: string,
-      date: string,
-    ) => {
-      const slotId = getSlotId(professionalId, dayIndex, time);
+  const addToSelection = useCallback((slotId: TSlotId, slot: TSelectedSlot) => {
+    setSelectedSlots((prev) => new Set(prev).add(slotId));
+    selectedSlotsDataRef.current.set(slotId, slot);
+  }, []);
 
-      setSelectedSlots((prev) => {
-        const next = new Set(prev);
-        next.add(slotId);
-        return next;
-      });
-
-      selectedSlotsDataRef.current.set(slotId, {
-        id: blockedTime?.id,
-        professionalId,
-        dayIndex,
-        time,
-        date,
-        isBlocked: blockedTime ? true : false,
-      });
-    },
-    [getSlotId],
-  );
-
-  /**
-   * Remove slot from selection
-   */
   const removeSlotFromSelection = useCallback(
     (professionalId: string, dayIndex: number, time: string) => {
       const slotId = getSlotId(professionalId, dayIndex, time);
@@ -98,9 +70,6 @@ export const useAgendaGridBulkBlock = (
     [getSlotId],
   );
 
-  /**
-   * Handle mouse down - Start drag selection
-   */
   const handleSlotMouseDown = useCallback(
     (
       blockedTime: IBlockedTime | undefined,
@@ -112,30 +81,40 @@ export const useAgendaGridBulkBlock = (
       if (!isBlockMode) return;
 
       const slotId = getSlotId(professionalId, dayIndex, time);
+      const slot: TSelectedSlot = {
+        id: blockedTime?.id,
+        professionalId,
+        dayIndex,
+        time,
+        date,
+        isBlocked: !!blockedTime,
+      };
 
       setIsDragging(true);
-      dragStartSlotRef.current = slotId;
-      lastClickedSlotRef.current = slotId;
+      dragOriginRef.current = { slotId, slot };
 
-      // Toggle selection on mouse down
+      if (selectedSlots.size === 0) {
+        pointerGestureRef.current = 'single';
+        return;
+      }
+
+      pointerGestureRef.current = 'selection';
+
       if (selectedSlots.has(slotId)) {
         removeSlotFromSelection(professionalId, dayIndex, time);
       } else {
-        addSlotToSelection(blockedTime, professionalId, dayIndex, time, date);
+        addToSelection(slotId, slot);
       }
     },
     [
       isBlockMode,
       selectedSlots,
       getSlotId,
-      addSlotToSelection,
+      addToSelection,
       removeSlotFromSelection,
     ],
   );
 
-  /**
-   * Handle mouse enter - Continue drag selection
-   */
   const handleSlotMouseEnter = useCallback(
     (
       blockedTime: IBlockedTime | undefined,
@@ -147,36 +126,51 @@ export const useAgendaGridBulkBlock = (
       if (!isBlockMode || !isDragging) return;
 
       const slotId = getSlotId(professionalId, dayIndex, time);
+      const origin = dragOriginRef.current;
 
-      // Add to selection during drag
+      if (pointerGestureRef.current === 'single' && origin) {
+        if (origin.slotId === slotId) return;
+        addToSelection(origin.slotId, origin.slot);
+      }
+
+      pointerGestureRef.current = 'selection';
+
       if (!selectedSlots.has(slotId)) {
-        addSlotToSelection(blockedTime, professionalId, dayIndex, time, date);
+        addToSelection(slotId, {
+          id: blockedTime?.id,
+          professionalId,
+          dayIndex,
+          time,
+          date,
+          isBlocked: !!blockedTime,
+        });
       }
     },
-    [isBlockMode, isDragging, selectedSlots, getSlotId, addSlotToSelection],
+    [isBlockMode, isDragging, selectedSlots, getSlotId, addToSelection],
   );
 
-  /**
-   * Handle mouse up - End drag selection
-   */
   const handleSlotMouseUp = useCallback(() => {
     setIsDragging(false);
-    dragStartSlotRef.current = null;
+    dragOriginRef.current = null;
   }, []);
 
   /**
-   * Clear all selections
+   * Teclado gera clique com `detail` 0 e nunca passa pelo ponteiro: sempre aplica.
+   * Com o ponteiro, o clique só aplica quando o gesto foi um clique simples.
    */
+  const shouldIgnoreSlotClick = useCallback((clickDetail: number) => {
+    const gesture = pointerGestureRef.current;
+    pointerGestureRef.current = 'none';
+    return clickDetail !== 0 && gesture === 'selection';
+  }, []);
+
   const clearSelection = useCallback(() => {
     setSelectedSlots(new Set());
     selectedSlotsDataRef.current.clear();
-    lastClickedSlotRef.current = null;
-    dragStartSlotRef.current = null;
+    dragOriginRef.current = null;
+    pointerGestureRef.current = 'none';
   }, []);
 
-  /**
-   * Execute bulk block action
-   */
   const executeBlockAction = useCallback(() => {
     const slotsArray = Array.from(selectedSlotsDataRef.current.values());
 
@@ -186,34 +180,29 @@ export const useAgendaGridBulkBlock = (
     }
   }, [onBulkBlock, clearSelection]);
 
-  /**
-   * Convert selected slots to array for display
-   */
+  // `selectedSlots` é o gatilho: os dados ficam no ref para não duplicar estado.
   const selectedSlotsArray = useMemo(() => {
-    return Array.from(selectedSlotsDataRef.current.values());
-  }, [selectedSlots]); // Re-compute when selectedSlots changes
+    return selectedSlots.size > 0
+      ? Array.from(selectedSlotsDataRef.current.values())
+      : [];
+  }, [selectedSlots]);
 
-  /**
-   * Clear selection when block mode is disabled
-   */
+  const bulkActionLabel = useMemo(
+    () => getBulkActionLabel(selectedSlotsArray),
+    [selectedSlotsArray],
+  );
+
   useEffect(() => {
     if (!isBlockMode) {
       clearSelection();
     }
   }, [isBlockMode, clearSelection]);
 
-  /**
-   * Add global mouse up listener to handle drag end outside grid
-   */
   useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      if (isDragging) {
-        handleSlotMouseUp();
-      }
-    };
+    if (!isDragging) return;
 
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('mouseup', handleSlotMouseUp);
+    return () => window.removeEventListener('mouseup', handleSlotMouseUp);
   }, [isDragging, handleSlotMouseUp]);
 
   return {
@@ -226,6 +215,8 @@ export const useAgendaGridBulkBlock = (
     clearSelection,
     executeBlockAction,
     selectedSlotsArray,
+    bulkActionLabel,
     removeSlotFromSelection,
+    shouldIgnoreSlotClick,
   };
 };

@@ -22,3 +22,12 @@ export const addAppointmentSchema = z.object({
 });
 
 export type TAddAppointmentSchema = z.infer<typeof addAppointmentSchema>;
+
+export const ADD_APPOINTMENT_EMPTY_VALUES: TAddAppointmentSchema = {
+  date: '',
+  startTime: '',
+  notes: '',
+  user: { email: '' },
+  service: { id: '', duration: 0 },
+  storeMember: { id: '' },
+};

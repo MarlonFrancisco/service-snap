@@ -3,6 +3,7 @@
  */
 export type TBulkActionToolbarConfig = {
   selectedCount: number;
+  actionLabel: string;
   onBlock: () => void;
   onClear: () => void;
 };

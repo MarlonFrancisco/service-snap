@@ -1,7 +1,6 @@
 import { formatPriceByCountry } from '@repo/shared/formatters';
 import {
-  Badge,
-  Button,
+  cn,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -13,17 +12,19 @@ import {
   useIsMobile,
 } from '@repo/ui';
 import {
-  AlertCircle,
-  Ban,
-  Calendar,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Mail,
-  Phone,
-  User,
-} from 'lucide-react';
+  AGENDA_DIALOG_CLASS,
+  AGENDA_DRAWER_CLASS,
+  AGENDA_MODAL_BUTTON_CLASS,
+  AGENDA_MODAL_DANGER_BUTTON_CLASS,
+  AGENDA_MODAL_PRIMARY_BUTTON_CLASS,
+  AGENDA_MODAL_TITLE_CLASS,
+} from '../../agenda-module.styles';
 import { useAppointmentDetails } from './appointment-details.hook';
+
+const DETAIL_ROW_CLASS =
+  'flex justify-between gap-5 border-b border-[#F0EEF4] py-[11px] text-sm';
+const DETAIL_TERM_CLASS = 'text-[#5F5C6E]';
+const DETAIL_VALUE_CLASS = 'min-w-0 text-right font-semibold break-words';
 
 export function AppointmentDetailsResponsive() {
   const isMobile = useIsMobile();
@@ -32,249 +33,169 @@ export function AppointmentDetailsResponsive() {
     isOpen,
     statusBadge,
     duration,
+    formattedDate,
     isUpdatingStatus,
+    isConfirmingCancel,
+    cancelTriggerRef,
     handleClose,
     handleStatusChange,
+    handleRequestCancel,
+    handleDismissCancel,
   } = useAppointmentDetails();
 
+  const { user, service, storeMember, notes, status, id } = detailsAppointment;
+
   const content = (
-    <div className={isMobile ? 'space-y-5' : 'space-y-4'}>
-      <div className={isMobile ? 'space-y-4' : 'space-y-3'}>
-        <div className="flex items-center gap-3">
-          <div
-            className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-          >
-            <User
-              className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-            >
-              Cliente
-            </p>
-            <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-              {detailsAppointment.user.firstName}{' '}
-              {detailsAppointment.user.lastName}
-            </p>
-          </div>
-        </div>
-
-        {detailsAppointment.user.telephone ? (
-          <div className="flex items-center gap-3">
-            <div
-              className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-            >
-              <Phone
-                className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p
-                className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-              >
-                Telefone
-              </p>
-              <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-                {detailsAppointment.user.telephone}
-              </p>
-            </div>
-          </div>
-        ) : null}
-
-        {detailsAppointment.user.email ? (
-          <div className="flex items-center gap-3">
-            <div
-              className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-            >
-              <Mail
-                className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p
-                className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-              >
-                E-mail
-              </p>
-              <p
-                className={`text-gray-900 truncate ${isMobile ? 'text-base' : ''}`}
-              >
-                {detailsAppointment.user.email}
-              </p>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      <div
-        className={`border-t border-gray-200 pt-4 ${isMobile ? 'space-y-4' : 'space-y-3'}`}
+    <div className="flex flex-col gap-3.5">
+      <span
+        className={cn(
+          'self-start rounded-full px-[11px] py-[5px] text-xs font-bold',
+          statusBadge.className,
+        )}
       >
-        <div className="flex items-center gap-3">
-          <div
-            className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-          >
-            <Calendar
-              className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-            >
-              Serviço
-            </p>
-            <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-              {detailsAppointment.service.name}
-            </p>
-          </div>
-        </div>
+        {statusBadge.label}
+      </span>
 
-        <div className="flex items-center gap-3">
-          <div
-            className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-          >
-            <User
-              className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-            >
-              Profissional
-            </p>
-            <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-              {detailsAppointment.storeMember.user.firstName}{' '}
-              {detailsAppointment.storeMember.user.lastName}
-            </p>
-          </div>
+      <dl>
+        <div className={DETAIL_ROW_CLASS}>
+          <dt className={DETAIL_TERM_CLASS}>Cliente</dt>
+          <dd className={DETAIL_VALUE_CLASS}>
+            {[user.firstName, user.lastName].filter(Boolean).join(' ') ||
+              'Não informado'}
+          </dd>
         </div>
-
-        <div className="flex items-center gap-3">
-          <div
-            className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-          >
-            <Clock
-              className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-            />
+        {user.email ? (
+          <div className={DETAIL_ROW_CLASS}>
+            <dt className={DETAIL_TERM_CLASS}>E-mail</dt>
+            <dd className={DETAIL_VALUE_CLASS}>{user.email}</dd>
           </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-            >
-              Horário e Duração
-            </p>
-            <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-              {new Date(detailsAppointment.date).toLocaleDateString('pt-BR')} às{' '}
-              {detailsAppointment.startTime}
-            </p>
-            <p
-              className={`text-gray-600 ${isMobile ? 'text-sm mt-1' : 'text-sm'}`}
-            >
-              Duração: {duration}
-            </p>
+        ) : null}
+        {user.telephone ? (
+          <div className={DETAIL_ROW_CLASS}>
+            <dt className={DETAIL_TERM_CLASS}>Telefone</dt>
+            <dd className={DETAIL_VALUE_CLASS}>{user.telephone}</dd>
           </div>
+        ) : null}
+        <div className={DETAIL_ROW_CLASS}>
+          <dt className={DETAIL_TERM_CLASS}>Serviço</dt>
+          <dd className={DETAIL_VALUE_CLASS}>{service.name}</dd>
         </div>
-
-        <div className="flex items-center gap-3">
-          <div
-            className={`bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 ${isMobile ? 'w-12 h-12' : 'w-10 h-10'}`}
-          >
-            <DollarSign
-              className={`text-gray-600 ${isMobile ? 'h-6 w-6' : 'h-5 w-5'}`}
-            />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p
-              className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
-            >
-              Preço
-            </p>
-            <p className={`text-gray-900 ${isMobile ? 'text-base' : ''}`}>
-              {formatPriceByCountry(detailsAppointment.service.price)}
-            </p>
-          </div>
+        <div className={DETAIL_ROW_CLASS}>
+          <dt className={DETAIL_TERM_CLASS}>Profissional</dt>
+          <dd className={DETAIL_VALUE_CLASS}>
+            {storeMember.user.firstName} {storeMember.user.lastName}
+          </dd>
         </div>
-      </div>
+        <div className={DETAIL_ROW_CLASS}>
+          <dt className={DETAIL_TERM_CLASS}>Data</dt>
+          <dd className={DETAIL_VALUE_CLASS}>{formattedDate}</dd>
+        </div>
+        <div className={DETAIL_ROW_CLASS}>
+          <dt className={DETAIL_TERM_CLASS}>Horário</dt>
+          <dd className={DETAIL_VALUE_CLASS}>
+            {detailsAppointment.startTime} - {detailsAppointment.endTime} ·{' '}
+            {duration}
+          </dd>
+        </div>
+        <div className={DETAIL_ROW_CLASS}>
+          <dt className={DETAIL_TERM_CLASS}>Preço</dt>
+          <dd className={DETAIL_VALUE_CLASS}>
+            {formatPriceByCountry(service.price)}
+          </dd>
+        </div>
+        {notes ? (
+          <div className={DETAIL_ROW_CLASS}>
+            <dt className={DETAIL_TERM_CLASS}>Observações</dt>
+            <dd className={DETAIL_VALUE_CLASS}>{notes}</dd>
+          </div>
+        ) : null}
+      </dl>
 
-      {detailsAppointment.notes ? (
-        <div className="space-y-2 border-t border-gray-200 pt-4">
-          <p
-            className={`text-gray-600 ${isMobile ? 'text-sm mb-1' : 'text-sm'}`}
+      {status === 'scheduled' ? (
+        <div className="flex flex-col gap-2.5 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => handleStatusChange(id, 'completed')}
+            disabled={isUpdatingStatus}
+            className={cn(
+              AGENDA_MODAL_BUTTON_CLASS,
+              AGENDA_MODAL_PRIMARY_BUTTON_CLASS,
+            )}
           >
-            Observações
-          </p>
-          <p
-            className={`text-gray-900 bg-gray-50 p-3 rounded-lg ${isMobile ? 'text-base' : 'text-sm'}`}
+            Marcar como concluído
+          </button>
+          <button
+            type="button"
+            onClick={() => handleStatusChange(id, 'no-show')}
+            disabled={isUpdatingStatus}
+            className={AGENDA_MODAL_BUTTON_CLASS}
           >
-            {detailsAppointment.notes}
-          </p>
+            Cliente não compareceu
+          </button>
         </div>
       ) : null}
 
-      <div
-        className={`border-t border-gray-200 pt-4 ${isMobile ? 'space-y-3' : 'space-y-2'}`}
-      >
-        {detailsAppointment.status === 'scheduled' ? (
-          <>
-            <Button
-              onClick={() =>
-                handleStatusChange(detailsAppointment.id, 'completed')
-              }
-              disabled={isUpdatingStatus}
-              className={`w-full bg-green-600 hover:bg-green-700 text-white ${isMobile ? 'h-11' : ''}`}
-            >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              Marcar como Concluído
-            </Button>
-            <Button
-              onClick={() =>
-                handleStatusChange(detailsAppointment.id, 'no-show')
-              }
-              disabled={isUpdatingStatus}
-              variant="outline"
-              className={`w-full border-orange-200 text-orange-700 hover:bg-orange-50 ${isMobile ? 'h-11' : ''}`}
-            >
-              <AlertCircle className="h-4 w-4 mr-2" />
-              Cliente Não Compareceu
-            </Button>
-          </>
-        ) : null}
+      {status !== 'cancelled' && !isConfirmingCancel ? (
+        <button
+          ref={cancelTriggerRef}
+          type="button"
+          onClick={handleRequestCancel}
+          disabled={isUpdatingStatus}
+          className={cn(
+            AGENDA_MODAL_BUTTON_CLASS,
+            AGENDA_MODAL_DANGER_BUTTON_CLASS,
+            'flex-none',
+          )}
+        >
+          Cancelar agendamento
+        </button>
+      ) : null}
 
-        {detailsAppointment.status !== 'cancelled' ? (
-          <Button
-            onClick={() =>
-              handleStatusChange(detailsAppointment.id, 'cancelled')
-            }
-            disabled={isUpdatingStatus}
-            variant="outline"
-            className={`w-full border-red-200 text-red-700 hover:bg-red-50 ${isMobile ? 'h-11' : ''}`}
-          >
-            <Ban className="h-4 w-4 mr-2" />
-            Cancelar Agendamento
-          </Button>
-        ) : null}
-      </div>
+      {status !== 'cancelled' && isConfirmingCancel ? (
+        <div
+          role="alertdialog"
+          aria-label="Confirmar cancelamento"
+          className="rounded-[14px] bg-[#F7F6FA] px-4 py-3.5 text-sm leading-normal"
+        >
+          <b className="block">Cancelar este agendamento?</b>O cliente deixa de
+          ter este horário reservado.
+          <div className="mt-2.5 flex gap-2.5">
+            <button
+              type="button"
+              autoFocus
+              onClick={handleDismissCancel}
+              disabled={isUpdatingStatus}
+              className={AGENDA_MODAL_BUTTON_CLASS}
+            >
+              Voltar
+            </button>
+            <button
+              type="button"
+              onClick={() => handleStatusChange(id, 'cancelled')}
+              disabled={isUpdatingStatus}
+              className={cn(
+                AGENDA_MODAL_BUTTON_CLASS,
+                AGENDA_MODAL_DANGER_BUTTON_CLASS,
+              )}
+            >
+              Cancelar agendamento
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={handleClose}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <DrawerTitle className="text-lg">
-                Detalhes do Agendamento
-              </DrawerTitle>
-              <Badge variant="outline" className={statusBadge.className}>
-                {statusBadge.label}
-              </Badge>
-            </div>
+        <DrawerContent className={AGENDA_DRAWER_CLASS}>
+          <DrawerHeader className="border-b border-[#EBE9F0]">
+            <DrawerTitle className={AGENDA_MODAL_TITLE_CLASS}>
+              Detalhes do agendamento
+            </DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 py-6 overflow-y-auto">{content}</div>
+          <div className="overflow-y-auto px-5 py-5">{content}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -282,13 +203,10 @@ export function AppointmentDetailsResponsive() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={AGENDA_DIALOG_CLASS}>
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span>Detalhes do Agendamento</span>
-            <Badge variant="outline" className={statusBadge.className}>
-              {statusBadge.label}
-            </Badge>
+          <DialogTitle className={AGENDA_MODAL_TITLE_CLASS}>
+            Detalhes do agendamento
           </DialogTitle>
         </DialogHeader>
         {content}

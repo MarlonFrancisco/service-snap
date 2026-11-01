@@ -1,21 +1,23 @@
 import { useAgendaStore } from '@/store/admin/agenda';
-import { Alert, AlertDescription } from '@repo/ui';
-import { Lock } from 'lucide-react';
+import { useIsMobile } from '@repo/ui';
 
 export function BlockModeAlert() {
   const isBlockMode = useAgendaStore((state) => state.isBlockMode);
+  const isMobile = useIsMobile();
 
   if (!isBlockMode) {
     return null;
   }
 
   return (
-    <Alert className="border-orange-200 bg-orange-50">
-      <Lock className="h-4 w-4 text-orange-600" />
-      <AlertDescription className="text-orange-800">
-        <strong>Modo de bloqueio ativado.</strong> Clique nos horários vazios ou
-        arraste para bloquear ou desbloquear.
-      </AlertDescription>
-    </Alert>
+    <p
+      role="status"
+      className="rounded-[14px] bg-[#FFF1E0] px-[18px] py-3.5 text-sm font-semibold text-[#6E3B00]"
+    >
+      Modo de bloqueio ativado.{' '}
+      {isMobile
+        ? 'Toque nos horários para bloquear ou desbloquear.'
+        : 'Clique nos horários vazios ou arraste para bloquear ou desbloquear.'}
+    </p>
   );
 }

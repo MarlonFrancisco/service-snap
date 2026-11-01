@@ -1,8 +1,7 @@
+import { PARTNER_PORTAL_CLASS } from '@/components/features/partner/partner.styles';
 import { formatPriceByCountry } from '@repo/shared/formatters';
-import { usePartnerStore } from '@/store';
-import { selectTimeSlots } from '@/store/admin/agenda';
 import {
-  Button,
+  cn,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -27,6 +26,17 @@ import {
   useIsMobile,
 } from '@repo/ui';
 import { FormProvider } from 'react-hook-form';
+import {
+  AGENDA_DIALOG_CLASS,
+  AGENDA_DRAWER_CLASS,
+  AGENDA_FIELD_CLASS,
+  AGENDA_FIELD_LABEL_CLASS,
+  AGENDA_MODAL_BUTTON_CLASS,
+  AGENDA_MODAL_PRIMARY_BUTTON_CLASS,
+  AGENDA_MODAL_TITLE_CLASS,
+  AGENDA_SELECT_FIELD_CLASS,
+  AGENDA_TEXTAREA_CLASS,
+} from '../../agenda-module.styles';
 import { useAddAppointment } from './add-appointment.hook';
 
 export function AddAppointmentResponsive() {
@@ -35,150 +45,111 @@ export function AddAppointmentResponsive() {
     form,
     professionals,
     services,
+    timeSlots,
     isOpen,
     isCreatingAppointment,
     handleClose,
     handleSubmit,
+    handleServiceChange,
   } = useAddAppointment();
-
-  const timeSlots = usePartnerStore(selectTimeSlots);
 
   const content = (
     <FormProvider {...form}>
-      <div className={isMobile ? 'space-y-5' : 'space-y-4'}>
-        <div className="space-y-2">
-          <FormField
-            control={form.control}
-            name="user.email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-mail</FormLabel>
-                <FormControl>
-                  <Input placeholder="email@exemplo.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="space-y-2">
-          <FormField
-            control={form.control}
-            name="service.id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Serviço *</FormLabel>
-                <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) =>
-                      form.setValue(
-                        'service',
-                        services.find((service) => service.id === value)!,
-                      )
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o serviço" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {services.map((service) => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name} - {service.duration}min - R${' '}
-                          {formatPriceByCountry(service.price)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <FormField
-            control={form.control}
-            name="storeMember.id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Profissional *</FormLabel>
-                <FormControl>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o profissional" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {professionals.map((professional) => (
-                        <SelectItem
-                          key={professional.id}
-                          value={professional.id}
-                        >
-                          {professional.user.firstName}{' '}
-                          {professional.user.lastName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div
-          className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}
-        >
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
+      <form
+        noValidate
+        onSubmit={handleSubmit}
+        aria-label="Novo agendamento"
+        className="flex flex-col gap-3.5"
+      >
+        <FormField
+          control={form.control}
+          name="user.email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={AGENDA_FIELD_LABEL_CLASS}>
+                E-mail do cliente *
+              </FormLabel>
+              <FormControl>
                 <Input
-                  type="date"
+                  type="email"
+                  placeholder="email@exemplo.com"
+                  className={AGENDA_FIELD_CLASS}
                   {...field}
-                  className={isMobile ? 'h-11 text-base' : ''}
                 />
-              )}
-            />
-          </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="space-y-2">
-            <FormField
-              control={form.control}
-              name="startTime"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Horário" />
+        <FormField
+          control={form.control}
+          name="service.id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={AGENDA_FIELD_LABEL_CLASS}>
+                Serviço *
+              </FormLabel>
+              <Select value={field.value} onValueChange={handleServiceChange}>
+                <FormControl>
+                  <SelectTrigger className={AGENDA_SELECT_FIELD_CLASS}>
+                    <SelectValue placeholder="Selecione o serviço" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {timeSlots.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        {time}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-        </div>
+                </FormControl>
+                <SelectContent className={PARTNER_PORTAL_CLASS}>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name} - {service.duration}min -{' '}
+                      {formatPriceByCountry(service.price)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="space-y-2">
+        <FormField
+          control={form.control}
+          name="storeMember.id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={AGENDA_FIELD_LABEL_CLASS}>
+                Profissional *
+              </FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger className={AGENDA_SELECT_FIELD_CLASS}>
+                    <SelectValue placeholder="Selecione o profissional" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className={PARTNER_PORTAL_CLASS}>
+                  {professionals.map((professional) => (
+                    <SelectItem key={professional.id} value={professional.id}>
+                      {professional.user.firstName} {professional.user.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <FormField
             control={form.control}
-            name="notes"
+            name="date"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Observações</FormLabel>
+                <FormLabel className={AGENDA_FIELD_LABEL_CLASS}>
+                  Data *
+                </FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="Adicione informações importantes sobre o agendamento..."
-                    rows={3}
-                    className={isMobile ? 'text-base min-h-[100px]' : ''}
+                  <Input
+                    type="date"
+                    className={AGENDA_FIELD_CLASS}
                     {...field}
                   />
                 </FormControl>
@@ -186,43 +157,96 @@ export function AddAppointmentResponsive() {
               </FormItem>
             )}
           />
+
+          <FormField
+            control={form.control}
+            name="startTime"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={AGENDA_FIELD_LABEL_CLASS}>
+                  Horário *
+                </FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className={AGENDA_SELECT_FIELD_CLASS}>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className={PARTNER_PORTAL_CLASS}>
+                    {timeSlots.map((time) => (
+                      <SelectItem key={time} value={time}>
+                        {time}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <div className={`flex gap-3 pt-4 ${isMobile ? 'gap-3' : 'gap-2'}`}>
-          <Button
-            variant="outline"
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={AGENDA_FIELD_LABEL_CLASS}>
+                Observações
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Adicione informações importantes sobre o agendamento..."
+                  rows={3}
+                  className={AGENDA_TEXTAREA_CLASS}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="mt-1 flex gap-2.5">
+          <button
+            type="button"
             onClick={handleClose}
-            className={`flex-1 ${isMobile ? 'h-11' : ''}`}
+            className={AGENDA_MODAL_BUTTON_CLASS}
           >
             Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmit}
+          </button>
+          <button
+            type="submit"
             disabled={isCreatingAppointment}
-            className={`flex-1 bg-black hover:bg-gray-800 text-white ${isMobile ? 'h-11' : ''}`}
+            className={cn(
+              AGENDA_MODAL_BUTTON_CLASS,
+              AGENDA_MODAL_PRIMARY_BUTTON_CLASS,
+            )}
           >
             {isCreatingAppointment ? (
               <>
                 <Spinner />
-                Criando Agendamento...
+                Criando agendamento...
               </>
             ) : (
-              'Criar Agendamento'
+              'Criar agendamento'
             )}
-          </Button>
+          </button>
         </div>
-      </div>
+      </form>
     </FormProvider>
   );
 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={handleClose}>
-        <DrawerContent className="max-h-[90vh]">
-          <DrawerHeader className="border-b border-gray-200">
-            <DrawerTitle className="text-lg">Novo Agendamento</DrawerTitle>
+        <DrawerContent className={AGENDA_DRAWER_CLASS}>
+          <DrawerHeader className="border-b border-[#EBE9F0]">
+            <DrawerTitle className={AGENDA_MODAL_TITLE_CLASS}>
+              Novo agendamento
+            </DrawerTitle>
           </DrawerHeader>
-          <div className="px-4 py-6 overflow-y-auto">{content}</div>
+          <div className="overflow-y-auto px-5 py-5">{content}</div>
         </DrawerContent>
       </Drawer>
     );
@@ -230,9 +254,11 @@ export function AddAppointmentResponsive() {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className={AGENDA_DIALOG_CLASS}>
         <DialogHeader>
-          <DialogTitle>Novo Agendamento</DialogTitle>
+          <DialogTitle className={AGENDA_MODAL_TITLE_CLASS}>
+            Novo agendamento
+          </DialogTitle>
         </DialogHeader>
         {content}
       </DialogContent>

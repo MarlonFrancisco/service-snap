@@ -51,6 +51,10 @@ export const getWeekDates = (currentWeek: number): Date[] => {
   });
 };
 
+/** Índice do dia na grade: segunda é 0, domingo é 6. */
+export const getTodayDayIndex = (today: Date = new Date()): number =>
+  (today.getDay() + 6) % 7;
+
 export const calculateDurationInMinutes = (
   startTime: string,
   endTime: string,

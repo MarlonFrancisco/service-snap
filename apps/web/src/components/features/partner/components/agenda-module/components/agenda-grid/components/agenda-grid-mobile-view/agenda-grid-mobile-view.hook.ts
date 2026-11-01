@@ -1,57 +1,82 @@
 import { useMemo } from 'react';
-import { formatDateBR, isToday } from '../../agenda-grid.helpers';
+import { capitalizeFirst } from '../../agenda-grid.helpers';
 import type { useAgendaGrid } from '../../agenda-grid.hook';
-import type { TDayViewData } from '../../agenda-grid.types';
+import type { TMobileBlockItem } from './agenda-grid-mobile-view.types';
 
 /**
- * Hook para Mobile View
- * Computa dados dos dias para evitar recálculos no render
+ * Hook para a agenda no mobile: lista do dia ou, em modo de bloqueio, os
+ * horários de cada profissional no dia escolhido.
  */
 export const useAgendaGridMobileView = (
   gridHook: ReturnType<typeof useAgendaGrid>,
 ) => {
-  const { weekDates, workingDayKeys, workingDays, days } = gridHook;
+  const {
+    filteredProfessionals,
+    getProfessionalColumn,
+    getSelectedDayAppointments,
+    isBlockMode,
+    selectedDayData,
+  } = gridHook;
 
-  // ✅ Performance: Computar dayViewData uma vez com useMemo
-  const dayViewData = useMemo((): (TDayViewData | null)[] => {
-    return weekDates.map((date, dayIndex) => {
-      if (!date) return null;
+  const dayTitle = useMemo(
+    () =>
+      selectedDayData
+        ? capitalizeFirst(
+            selectedDayData.date.toLocaleDateString('pt-BR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            }),
+          )
+        : '',
+    [selectedDayData],
+  );
 
-      const dayKey = workingDayKeys[dayIndex];
-      if (!dayKey) return null;
+  const blockSections =
+    isBlockMode && selectedDayData?.isWorkingDay
+      ? filteredProfessionals.flatMap((professional) => {
+          const column = getProfessionalColumn(
+            professional,
+            selectedDayData.dayIndex,
+          );
 
-      return {
-        date,
-        dayIndex,
-        isToday: isToday(date),
-        isWorkingDay: workingDays[dayKey],
-        dayKey,
-        label: days[dayIndex],
-      };
-    });
-  }, [weekDates, workingDayKeys, workingDays, days]);
+          if (!column) return [];
 
-  // ✅ Performance: Computar selectedDayData uma vez
-  const selectedDayData = useMemo((): TDayViewData | null => {
-    const date = weekDates[gridHook.selectedDayIndex];
-    if (!date) return null;
+          // O arrasto e a barra de seleção não existem aqui: toque aplica na hora.
+          const items = column.rows.flatMap<TMobileBlockItem>(
+            ({ time, slot }, rowIndex) => {
+              const blocks = column.blocks.filter(
+                ({ rowStart }) => rowStart === rowIndex,
+              );
 
-    const dayKey = workingDayKeys[gridHook.selectedDayIndex];
-    if (!dayKey) return null;
+              if (blocks.length > 0) {
+                return blocks.map(({ appointment }) => ({
+                  key: appointment.id,
+                  appointment,
+                }));
+              }
 
-    return {
-      date,
-      dayIndex: gridHook.selectedDayIndex,
-      isToday: isToday(date),
-      isWorkingDay: workingDays[dayKey],
-      dayKey,
-      label: days[gridHook.selectedDayIndex],
-    };
-  }, [weekDates, workingDayKeys, workingDays, days, gridHook.selectedDayIndex]);
+              return slot
+                ? [
+                    {
+                      key: time,
+                      slot: {
+                        ...slot,
+                        handlers: { onClick: slot.handlers.onClick },
+                      },
+                    },
+                  ]
+                : [];
+            },
+          );
+
+          return [{ professional, items }];
+        })
+      : [];
 
   return {
-    dayViewData,
-    selectedDayData,
-    formatDateBR,
+    dayTitle,
+    blockSections,
+    dayAppointments: isBlockMode ? [] : getSelectedDayAppointments(),
   };
 };

@@ -1,41 +1,46 @@
-import {
-  AlertCircle,
-  Ban,
-  CheckCircle,
-  Clock,
-} from 'lucide-react';
-
 /**
  * Configuração de status de agendamentos
  */
 export const STATUS_CONFIG = {
   scheduled: {
     label: 'Agendado',
-    className: 'border-blue-200 bg-blue-50/50 text-blue-700',
-    icon: Clock,
+    className: 'bg-[#E4ECF6] text-[#143C66]',
   },
   completed: {
     label: 'Concluído',
-    className: 'border-green-200 bg-green-50/50 text-green-700',
-    icon: CheckCircle,
+    className: 'bg-[#DFF2E7] text-[#0A5536]',
   },
   cancelled: {
     label: 'Cancelado',
-    className: 'border-red-200 bg-red-50/50 text-red-700',
-    icon: Ban,
+    className: 'bg-[#FBE4E2] text-[#A4231A]',
   },
   'no-show': {
-    label: 'Não Compareceu',
-    className: 'border-orange-200 bg-orange-50/50 text-orange-700',
-    icon: AlertCircle,
+    label: 'Não compareceu',
+    className: 'bg-[#FBE8D9] text-[#7A3B00]',
   },
 } as const;
+
+export const STATUS_LEGEND = [
+  STATUS_CONFIG.scheduled,
+  STATUS_CONFIG.completed,
+  STATUS_CONFIG['no-show'],
+] as const;
 
 /**
  * Constantes de configuração do grid
  */
 export const GRID_CONSTANTS = {
-  SLOT_HEIGHT: 64,
+  WEEK_SLOT_HEIGHT: 56,
+  WEEK_HEADER_HEIGHT: 64,
+  DAY_SLOT_HEIGHT: 60,
+  DAY_HEADER_HEIGHT: 58,
+  TIME_COLUMN_WIDTH: 64,
+  WEEK_MIN_COLUMN_WIDTH: 150,
+  DAY_MIN_COLUMN_WIDTH: 220,
+  /** Largura mínima por profissional na semana em modo de bloqueio. */
+  BLOCK_LANE_MIN_WIDTH: 44,
+  /** Faixa do "+" quando outro profissional segue livre ao lado de um agendamento. */
+  FREE_GUTTER_WIDTH: 28,
 } as const;
 
 /**
@@ -46,10 +51,10 @@ export const BREAKPOINTS = {
 } as const;
 
 /**
- * Alturas de container
+ * A rolagem interna mantém o cabeçalho dos dias visível. O desconto cobre a barra
+ * e os respiros do casco; se a barra quebrar em duas linhas, o `main` rola o resto.
  */
-export const CONTAINER_HEIGHTS = {
-  MOBILE_BLOCK_MODE: 'calc(100vh - 200px)',
-  MOBILE_NORMAL_MODE: 'calc(100vh - 200px)',
-  DESKTOP: 'auto',
+export const GRID_SCROLL_CLASS = {
+  DEFAULT: 'max-h-[max(28rem,calc(100dvh-14rem))]',
+  FOCUS: 'max-h-[max(28rem,calc(100dvh-9rem))]',
 } as const;

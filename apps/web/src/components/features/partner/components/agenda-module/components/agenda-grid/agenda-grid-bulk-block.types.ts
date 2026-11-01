@@ -55,11 +55,13 @@ export type TUseBulkBlockReturn = {
   clearSelection: () => void;
   executeBlockAction: () => void;
   selectedSlotsArray: TSelectedSlot[];
+  bulkActionLabel: string;
   removeSlotFromSelection: (
     professionalId: string,
     dayIndex: number,
     time: string,
   ) => void;
+  shouldIgnoreSlotClick: (clickDetail: number) => boolean;
 };
 
 /**
@@ -67,6 +69,7 @@ export type TUseBulkBlockReturn = {
  */
 export type TBulkActionToolbarConfig = {
   selectedCount: number;
+  actionLabel: string;
   onBlock: () => void;
   onClear: () => void;
 };

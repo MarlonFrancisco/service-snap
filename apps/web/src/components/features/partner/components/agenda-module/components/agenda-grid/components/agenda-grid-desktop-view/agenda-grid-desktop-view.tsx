@@ -1,316 +1,118 @@
-import { Card, CardContent } from '@repo/ui';
-import { Lock } from 'lucide-react';
+import { cn } from '@repo/ui';
 import { memo } from 'react';
-import { GRID_CONSTANTS } from '../../agenda-grid.constants';
-import {
-  getSlotSelectionClassName,
-  isBlockedTime,
-} from '../../agenda-grid.helpers';
+import { GRID_CONSTANTS, STATUS_LEGEND } from '../../agenda-grid.constants';
+import { AgendaColumn } from '../agenda-column';
+import { AgendaTimeColumn } from '../agenda-time-column';
 import { BulkActionToolbar } from '../bulk-action-toolbar';
 import { CurrentTimeLine } from '../current-time-line';
 import { useAgendaGridDesktopView } from './agenda-grid-desktop-view.hook';
 import type { TDesktopViewConfig } from './agenda-grid-desktop-view.types';
 
-/**
- * Componente Desktop View da Agenda
- * Otimizado com React.memo e useMemo para melhor performance
- */
+const SLOT_HEIGHT = GRID_CONSTANTS.WEEK_SLOT_HEIGHT;
+const HEADER_HEIGHT = GRID_CONSTANTS.WEEK_HEADER_HEIGHT;
+
 export const AgendaGridDesktopView = memo(
   ({ gridHook }: TDesktopViewConfig) => {
     const {
       timeSlots,
-      filteredProfessionals,
-      getAppointmentForSlot,
-      isSlotOccupied,
-      handleSlotClick,
-      getSlotClassName,
-      getSlotsSpan,
+      hasTodayInWeek,
       isBlockMode,
+      isFocusMode,
+      scrollClassName,
+      handleAppointmentClick,
       bulkBlockHook,
     } = gridHook;
-
-    const { desktopDayData } = useAgendaGridDesktopView(gridHook);
-
-    // Bulk block selection handlers
-    const {
-      isSlotSelected,
-      handleSlotMouseDown,
-      handleSlotMouseEnter,
-      handleSlotMouseUp,
-      clearSelection,
-      executeBlockAction,
-      selectedSlotsArray,
-    } = bulkBlockHook;
-
-    const slotHeight = GRID_CONSTANTS.SLOT_HEIGHT;
-    const shouldShowFullDetails = filteredProfessionals.length === 1;
-
-    const NonWorkingOverlay = () => (
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-gray-100/60 h-full">
-        <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs text-gray-600">
-          Dia não útil
-        </div>
-      </div>
-    );
+    const { dayColumns, gridStyle } = useAgendaGridDesktopView(gridHook);
 
     return (
       <>
-        <Card className="p-0">
-          <CardContent className="p-0">
-            <div className="relative grid grid-cols-8 min-w-[900px]">
-              {/* Current Time Line */}
-              <CurrentTimeLine timeSlots={timeSlots} />
-              {/* Time Column */}
-              <div className="border-r border-gray-200 bg-gray-50">
+        <div
+          className={cn(
+            'overflow-auto rounded-[22px] border border-[#EBE9F0]',
+            scrollClassName,
+          )}
+        >
+          <div className="relative grid" style={gridStyle}>
+            {hasTodayInWeek && (
+              <CurrentTimeLine
+                timeSlots={timeSlots}
+                slotHeight={SLOT_HEIGHT}
+                headerHeight={HEADER_HEIGHT}
+              />
+            )}
+
+            <AgendaTimeColumn
+              timeSlots={timeSlots}
+              slotHeight={SLOT_HEIGHT}
+              headerHeight={HEADER_HEIGHT}
+            />
+
+            {dayColumns.map((day) => (
+              <div key={day.dayIndex} className="min-w-0">
                 <div
-                  className="sticky top-0 z-10 flex items-center justify-center border-b border-gray-200 bg-gray-50"
-                  style={{ height: slotHeight }}
-                  aria-label="Coluna de horários"
+                  className={cn(
+                    'sticky top-0 z-30 flex flex-col items-center justify-center border-b border-[#EBE9F0] text-center text-[13px] font-bold',
+                    day.isToday
+                      ? 'bg-[#0B0B0F] text-white'
+                      : 'bg-[#F7F6FA] text-[#0B0B0F]',
+                    !day.isWorkingDay && !day.isToday && 'text-[#5F5C6E]',
+                  )}
+                  style={{ height: HEADER_HEIGHT }}
+                  aria-label={`${day.label}, ${day.date.getDate()}${day.isToday ? ', hoje' : ''}`}
                 >
-                  <span aria-hidden className="text-gray-400">
-                    &#128337;
+                  {day.shortLabel}
+                  <span className="block text-lg leading-tight">
+                    {day.date.getDate()}
                   </span>
                 </div>
-                {timeSlots.map((time, index) => (
-                  <div
-                    key={time}
-                    className={`flex items-center justify-end px-3 text-xs text-gray-500 ${index < timeSlots.length - 1 ? 'border-b border-gray-200' : ''}`}
-                    style={{ height: slotHeight }}
-                    aria-label={`Horário ${time}`}
-                  >
-                    {time}
+
+                {day.isWorkingDay ? (
+                  <div className="flex">
+                    {day.columns.map(({ id, column }) => (
+                      <AgendaColumn
+                        key={id}
+                        column={column}
+                        slotHeight={SLOT_HEIGHT}
+                        showInitials
+                        onAppointmentClick={handleAppointmentClick}
+                      />
+                    ))}
                   </div>
-                ))}
+                ) : (
+                  <div
+                    className="border-l border-[#F0EEF4] bg-[#F7F6FA] p-2 text-center text-xs font-medium text-[#5F5C6E]"
+                    style={{ height: SLOT_HEIGHT * timeSlots.length }}
+                  >
+                    Dia não útil
+                  </div>
+                )}
               </div>
+            ))}
+          </div>
+        </div>
 
-              {/* Day Columns */}
-              {desktopDayData.map((dayData) => {
-                if (!dayData) return null;
+        {!isFocusMode && (
+          <div
+            aria-label="Legenda de status"
+            className="flex flex-wrap gap-2 text-xs font-semibold"
+          >
+            {STATUS_LEGEND.map((status) => (
+              <span
+                key={status.label}
+                className={cn('rounded-full px-2.5 py-[5px]', status.className)}
+              >
+                {status.label}
+              </span>
+            ))}
+          </div>
+        )}
 
-                const { label, dayIndex, date, isToday, isWorkingDay } =
-                  dayData;
-
-                return (
-                  <div
-                    key={`${label}-${dayIndex}`}
-                    className={`border-r border-gray-200 ${!isWorkingDay ? 'bg-gray-50 opacity-60' : ''}`}
-                  >
-                    {/* Day Header */}
-                    <div
-                      className={`sticky top-0 z-10 flex h-12 flex-col items-center justify-center border-b border-gray-200 px-2 ${isToday ? 'bg-black text-white' : 'bg-gray-50'}`}
-                      style={{ height: slotHeight }}
-                      role="columnheader"
-                      aria-label={`${label}, ${date.getDate()} ${isToday ? '(Hoje)' : ''}`}
-                    >
-                      <span
-                        className={`text-xs ${isToday ? 'text-white' : 'text-gray-500'}`}
-                      >
-                        {label.substring(0, 3)}
-                      </span>
-                      <span
-                        className={`${isToday ? 'text-white' : 'text-gray-900'} mt-0.5 text-sm`}
-                      >
-                        {date.getDate()}
-                      </span>
-                    </div>
-
-                    {/* Time Slots */}
-                    <div
-                      className="relative overflow-hidden"
-                      style={{ height: slotHeight * timeSlots.length }}
-                    >
-                      {isWorkingDay ? (
-                        filteredProfessionals.map((professional, profIndex) => (
-                          <div
-                            key={professional.id}
-                            className={
-                              profIndex > 0
-                                ? 'pointer-events-none absolute inset-0 opacity-30'
-                                : undefined
-                            }
-                          >
-                            {timeSlots.map((time, timeIndex) => {
-                              if (
-                                isSlotOccupied(professional.id, dayIndex, time)
-                              ) {
-                                return null;
-                              }
-
-                              const appointment = getAppointmentForSlot(
-                                professional.id,
-                                dayIndex,
-                                time,
-                              );
-
-                              const blockedTime = isBlockedTime(
-                                professional.blockedTimes,
-                                date.toISOString().split('T')[0] ?? '',
-                                time,
-                              );
-                              const isBlocked = !!blockedTime;
-
-                              const slotsSpan = appointment
-                                ? getSlotsSpan(appointment)
-                                : 1;
-                              const isLastSlot =
-                                timeIndex === timeSlots.length - 1;
-
-                              const classNameForSlot = getSlotClassName({
-                                appointment,
-                                isBlocked,
-                                isWorkingDay,
-                              });
-
-                              const dateStr =
-                                date.toISOString().split('T')[0] ?? '';
-                              const isSelected = isSlotSelected(
-                                professional.id,
-                                dayIndex,
-                                time,
-                              );
-
-                              // Selection styling
-                              const selectionClasses =
-                                getSlotSelectionClassName(
-                                  isBlocked,
-                                  isSelected,
-                                  isBlockMode,
-                                  appointment,
-                                );
-
-                              return (
-                                <div
-                                  key={`${professional.id}-${time}`}
-                                  onClick={() => {
-                                    if (!isWorkingDay) {
-                                      return;
-                                    }
-                                    // Default single-click behavior
-                                    handleSlotClick(
-                                      professional,
-                                      dayIndex,
-                                      time,
-                                      blockedTime,
-                                    );
-                                  }}
-                                  onMouseDown={(e) => {
-                                    if (
-                                      !isWorkingDay ||
-                                      !isBlockMode ||
-                                      appointment
-                                    )
-                                      return;
-                                    e.preventDefault();
-                                    handleSlotMouseDown(
-                                      blockedTime,
-                                      professional.id,
-                                      dayIndex,
-                                      time,
-                                      dateStr,
-                                    );
-                                  }}
-                                  onMouseEnter={() => {
-                                    if (
-                                      !isWorkingDay ||
-                                      !isBlockMode ||
-                                      appointment
-                                    )
-                                      return;
-                                    handleSlotMouseEnter(
-                                      blockedTime,
-                                      professional.id,
-                                      dayIndex,
-                                      time,
-                                      dateStr,
-                                    );
-                                  }}
-                                  onMouseUp={handleSlotMouseUp}
-                                  onKeyDown={(e) => {
-                                    if (!isWorkingDay) return;
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                      e.preventDefault();
-                                      handleSlotClick(
-                                        professional,
-                                        dayIndex,
-                                        time,
-                                        blockedTime,
-                                      );
-                                    }
-                                  }}
-                                  role={
-                                    !appointment && isWorkingDay
-                                      ? 'button'
-                                      : undefined
-                                  }
-                                  tabIndex={
-                                    !appointment && isWorkingDay ? 0 : undefined
-                                  }
-                                  aria-label={
-                                    appointment
-                                      ? `Agendamento ${appointment.user.firstName} às ${time}`
-                                      : isBlocked
-                                        ? `Horário bloqueado ${time} - ${professional.user.firstName}`
-                                        : `Agendar às ${time} com ${professional.user.firstName}`
-                                  }
-                                  aria-pressed={isBlocked}
-                                  aria-selected={isSelected}
-                                  className={`${!isLastSlot ? 'border-b border-gray-200' : ''} ${classNameForSlot} ${selectionClasses} select-none transition-all`}
-                                  style={{ height: slotHeight * slotsSpan }}
-                                >
-                                  {isBlocked ? (
-                                    <div className="flex h-full items-center justify-center">
-                                      <Lock
-                                        className="h-3.5 w-3.5 text-gray-400"
-                                        aria-hidden="true"
-                                      />
-                                    </div>
-                                  ) : appointment ? (
-                                    <div className="flex h-full flex-col justify-center overflow-hidden">
-                                      <span className="truncate text-xs font-medium">
-                                        {appointment.user.firstName}{' '}
-                                        {appointment.user.lastName}
-                                      </span>
-                                      {shouldShowFullDetails ? (
-                                        <>
-                                          <span className="truncate text-xs text-gray-600">
-                                            {appointment.service.name}
-                                          </span>
-                                          {slotsSpan > 1 ? (
-                                            <span className="mt-0.5 text-[11px] text-gray-500">
-                                              {appointment.startTime} -{' '}
-                                              {appointment.endTime}
-                                            </span>
-                                          ) : null}
-                                        </>
-                                      ) : null}
-                                    </div>
-                                  ) : (
-                                    <span className="text-xs font-medium text-gray-600 flex items-center justify-center h-full">
-                                      {time}
-                                    </span>
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ))
-                      ) : (
-                        <NonWorkingOverlay />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bulk Action Toolbar - Shows when slots are selected */}
         {isBlockMode && (
           <BulkActionToolbar
-            selectedCount={selectedSlotsArray.length}
-            onBlock={executeBlockAction}
-            onClear={clearSelection}
+            selectedCount={bulkBlockHook.selectedSlotsArray.length}
+            actionLabel={bulkBlockHook.bulkActionLabel}
+            onBlock={bulkBlockHook.executeBlockAction}
+            onClear={bulkBlockHook.clearSelection}
           />
         )}
       </>

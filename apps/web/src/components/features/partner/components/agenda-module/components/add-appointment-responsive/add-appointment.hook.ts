@@ -1,19 +1,26 @@
 import { isApiHttpError } from '@/service/api';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
-import { useAgendaStore } from '@/store/admin/agenda';
+import { selectTimeSlots, useAgendaStore } from '@/store/admin/agenda';
 import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
+import type { IService } from '@/types/api/service.types';
+import type { IProfessional } from '@/types/api/users.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import type { FormEvent } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { addMinutesToTime } from './add-appointment.helpers';
 import {
+  ADD_APPOINTMENT_EMPTY_VALUES,
   addAppointmentSchema,
   TAddAppointmentSchema,
 } from './add-appointment.schema';
+
+const EMPTY_PROFESSIONALS: IProfessional[] = [];
+const EMPTY_SERVICES: IService[] = [];
 
 export const useAddAppointmentMutations = () => {
   const setIsAddAppointmentOpen = useAgendaStore(
@@ -30,7 +37,7 @@ export const useAddAppointmentMutations = () => {
       onSuccess: (data: IAppointment[]) => {
         queryClient.setQueryData(
           CACHE_QUERY_KEYS.schedules(storeId),
-          (old: IAppointment[]) => [...old, ...data],
+          (old: IAppointment[] | undefined) => [...(old ?? []), ...data],
         );
         toast.success('Agendamento criado com sucesso');
         setIsAddAppointmentOpen({ isAddAppointmentOpen: false });
@@ -53,6 +60,7 @@ export const useAddAppointmentMutations = () => {
 export const useAddAppointment = () => {
   const form = useForm<TAddAppointmentSchema>({
     resolver: zodResolver(addAppointmentSchema),
+    defaultValues: ADD_APPOINTMENT_EMPTY_VALUES,
   });
 
   const isAddAppointmentOpen = useAgendaStore(
@@ -66,25 +74,41 @@ export const useAddAppointment = () => {
   );
 
   const professionals = usePartnerStore(
-    (state) => state.activeStore.storeMembers || [],
+    (state) => state.activeStore.storeMembers ?? EMPTY_PROFESSIONALS,
   );
-  const services = usePartnerStore((state) => state.activeStore.services || []);
+  const services = usePartnerStore(
+    (state) => state.activeStore.services ?? EMPTY_SERVICES,
+  );
+  const timeSlots = usePartnerStore(selectTimeSlots);
 
   const { createAppointment, isCreatingAppointment } =
     useAddAppointmentMutations();
 
+  // Cada abertura parte do slot clicado ou de um formulário vazio.
   useEffect(() => {
-    if (selectedAppointment) {
-      form.reset(selectedAppointment);
+    if (isAddAppointmentOpen) {
+      form.reset(selectedAppointment ?? ADD_APPOINTMENT_EMPTY_VALUES);
     }
-  }, [selectedAppointment, form]);
+  }, [isAddAppointmentOpen, selectedAppointment, form]);
 
   const handleClose = () => {
     setIsAddAppointmentOpen({ isAddAppointmentOpen: false });
-    form.reset();
   };
 
-  const handleSubmit = () => {
+  const handleServiceChange = useCallback(
+    (serviceId: string) => {
+      const service = services.find((item) => item.id === serviceId);
+
+      if (service) {
+        form.setValue('service', service, {
+          shouldValidate: form.formState.isSubmitted,
+        });
+      }
+    },
+    [services, form],
+  );
+
+  const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
     form.handleSubmit(
       (data) => {
         createAppointment({
@@ -101,16 +125,18 @@ export const useAddAppointment = () => {
           toast.error(firstError);
         }
       },
-    )();
+    )(event);
   };
 
   return {
     form,
     professionals,
     services,
+    timeSlots,
     isOpen: isAddAppointmentOpen,
     isCreatingAppointment,
     handleSubmit,
     handleClose,
+    handleServiceChange,
   };
 };

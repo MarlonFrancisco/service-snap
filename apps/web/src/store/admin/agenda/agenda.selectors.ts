@@ -27,16 +27,18 @@ export const selectTimeSlots = (state: IPartnerStore) => {
   return slots;
 };
 
-const weekDatesCache = new Map<number, Date[]>();
+const weekDatesCache = new Map<string, Date[]>();
 
 export const selectWeekDates = (state: IAgendaStore) => {
   const { currentWeek } = state;
+  // A semana é relativa a hoje: o cache não pode atravessar a meia-noite.
+  const cacheKey = `${new Date().toDateString()}|${currentWeek}`;
 
-  if (weekDatesCache.has(currentWeek)) {
-    return weekDatesCache.get(currentWeek)!;
+  if (weekDatesCache.has(cacheKey)) {
+    return weekDatesCache.get(cacheKey)!;
   }
 
   const weekDates = getWeekDates(currentWeek);
-  weekDatesCache.set(currentWeek, weekDates);
+  weekDatesCache.set(cacheKey, weekDates);
   return weekDates;
 };

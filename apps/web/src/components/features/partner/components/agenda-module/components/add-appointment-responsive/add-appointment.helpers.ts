@@ -1,7 +1,8 @@
 export function addMinutesToTime(time: string, minutesToAdd: number): string {
   const [hourStr, minuteStr] = time.split(':');
   const baseMinutes =
-    Number.parseInt(hourStr, 10) * 60 + Number.parseInt(minuteStr, 10);
+    Number.parseInt(hourStr ?? '0', 10) * 60 +
+    Number.parseInt(minuteStr ?? '0', 10);
   const totalMinutes = baseMinutes + minutesToAdd;
 
   const hours = Math.floor(totalMinutes / 60) % 24;

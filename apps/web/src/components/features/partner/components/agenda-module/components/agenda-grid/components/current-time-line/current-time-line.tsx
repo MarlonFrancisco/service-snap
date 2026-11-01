@@ -1,18 +1,12 @@
 import { memo } from 'react';
 import { useCurrentTimeLine } from './current-time-line.hook';
-
-interface CurrentTimeLineProps {
-  timeSlots: string[];
-}
+import type { TCurrentTimeLineConfig } from './current-time-line.types';
 
 /**
- * Componente que renderiza uma linha vermelha indicando o horário atual na agenda
- * Atualiza automaticamente a cada minuto
+ * Linha que indica o horário atual na agenda.
  */
-export const CurrentTimeLine = memo(({ timeSlots }: CurrentTimeLineProps) => {
-  const { topPosition, isVisible, currentTime } = useCurrentTimeLine({
-    timeSlots,
-  });
+export const CurrentTimeLine = memo((config: TCurrentTimeLineConfig) => {
+  const { topPosition, isVisible, currentTime } = useCurrentTimeLine(config);
 
   if (!isVisible) {
     return null;
@@ -20,22 +14,14 @@ export const CurrentTimeLine = memo(({ timeSlots }: CurrentTimeLineProps) => {
 
   return (
     <div
-      className="pointer-events-none absolute left-0 right-0 z-20 flex items-center"
-      style={{
-        top: `${topPosition}px`,
-      }}
+      role="img"
+      className="pointer-events-none absolute inset-x-0 z-20 border-t-2 border-[#B42318]"
+      style={{ top: topPosition }}
       aria-label={`Horário atual: ${currentTime}`}
     >
-      {/* Círculo indicador no início da linha */}
-      <div className="absolute -left-1 h-3 w-3 rounded-full bg-red-500 ring-2 ring-red-400" />
-
-      {/* Linha horizontal */}
-      <div className="h-0.5 w-full bg-red-500 shadow-sm" />
-
-      {/* Label com o horário */}
-      <div className="absolute -right-1 flex items-center justify-center rounded-md bg-red-500 px-2 py-0.5 text-xs font-medium text-white shadow-sm">
+      <span className="absolute top-[-11px] right-1.5 rounded-full bg-[#B42318] px-[7px] py-px text-[11px] font-bold text-white">
         {currentTime}
-      </div>
+      </span>
     </div>
   );
 });

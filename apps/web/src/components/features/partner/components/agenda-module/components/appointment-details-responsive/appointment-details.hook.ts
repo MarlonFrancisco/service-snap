@@ -4,38 +4,22 @@ import { useAgendaStore } from '@/store/admin/agenda';
 import { IAppointment, TAppointmentStatus } from '@/types/api/schedule.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useMutation } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-
-// Helper functions
-const getStatusBadge = (status: IAppointment['status']) => {
-  const statusConfig = {
-    scheduled: {
-      label: 'Agendado',
-      className: 'bg-blue-50 text-blue-700 border-blue-200',
-    },
-    completed: {
-      label: 'Concluído',
-      className: 'bg-green-50 text-green-700 border-green-200',
-    },
-    cancelled: {
-      label: 'Cancelado',
-      className: 'bg-red-50 text-red-700 border-red-200',
-    },
-    'no-show': {
-      label: 'Não Compareceu',
-      className: 'bg-orange-50 text-orange-700 border-orange-200',
-    },
-  };
-
-  return statusConfig[status];
-};
+import { STATUS_CONFIG } from '../agenda-grid/agenda-grid.constants';
 
 const calculateDuration = (startTime: string, endTime: string): string => {
   const [startHour, startMin] = startTime.split(':').map(Number);
   const [endHour, endMin] = endTime.split(':').map(Number);
 
-  if (!startHour || !startMin || !endHour || !endMin) {
+  // Minuto 0 é válido: `!startMin` tratava todo horário `:00` como ausente.
+  if (
+    startHour === undefined ||
+    startMin === undefined ||
+    endHour === undefined ||
+    endMin === undefined ||
+    [startHour, startMin, endHour, endMin].some(Number.isNaN)
+  ) {
     return 'erro ao calcular duração';
   }
 
@@ -50,6 +34,15 @@ const calculateDuration = (startTime: string, endTime: string): string => {
   }
 
   return `${duration}min`;
+};
+
+/**
+ * Formata a data textualmente: `new Date('YYYY-MM-DD')` é meia-noite em UTC e
+ * exibiria o dia anterior no fuso do Brasil.
+ */
+const formatAppointmentDate = (date: string): string => {
+  const [year, month, day] = date.split('T')[0]?.split('-') ?? [];
+  return year && month && day ? `${day}/${month}/${year}` : '';
 };
 
 // Mutations hook
@@ -122,15 +115,17 @@ export const useAppointmentDetails = () => {
   const { updateAppointmentStatus, isUpdatingStatus } =
     useAppointmentDetailsMutations();
 
-  const isOpen = useMemo(
-    () => !!detailsAppointment?.id,
-    [detailsAppointment?.id],
-  );
+  const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const cancelTriggerRef = useRef<HTMLButtonElement>(null);
 
-  const statusBadge = useMemo(
-    () => getStatusBadge(detailsAppointment?.status),
-    [detailsAppointment?.status],
-  );
+  const isOpen = !!detailsAppointment?.id;
+
+  // Reabrir outro agendamento não pode herdar a confirmação do anterior.
+  useEffect(() => {
+    setIsConfirmingCancel(false);
+  }, [detailsAppointment?.id]);
+
+  const statusBadge = STATUS_CONFIG[detailsAppointment.status];
 
   const duration = useMemo(
     () =>
@@ -141,6 +136,11 @@ export const useAppointmentDetails = () => {
           )
         : '',
     [detailsAppointment?.startTime, detailsAppointment?.endTime],
+  );
+
+  const formattedDate = useMemo(
+    () => formatAppointmentDate(detailsAppointment.date),
+    [detailsAppointment.date],
   );
 
   const handleClose = useCallback(() => {
@@ -154,13 +154,28 @@ export const useAppointmentDetails = () => {
     [updateAppointmentStatus],
   );
 
+  const handleRequestCancel = useCallback(() => {
+    setIsConfirmingCancel(true);
+  }, []);
+
+  const handleDismissCancel = useCallback(() => {
+    setIsConfirmingCancel(false);
+    // O botão só volta ao DOM no próximo render; o foco não pode se perder no Dialog.
+    requestAnimationFrame(() => cancelTriggerRef.current?.focus());
+  }, []);
+
   return {
     detailsAppointment,
     isOpen,
     statusBadge,
     duration,
+    formattedDate,
     isUpdatingStatus,
+    isConfirmingCancel,
+    cancelTriggerRef,
     handleClose,
     handleStatusChange,
+    handleRequestCancel,
+    handleDismissCancel,
   };
 };
