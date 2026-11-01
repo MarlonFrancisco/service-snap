@@ -10,15 +10,20 @@ import { ProfileTabs } from './components/profile-tabs';
 import { SettingsSection } from './components/settings-section';
 import { useProfile } from './profile.hook';
 import { ProfileSkeleton } from './profile.skeleton';
+import type { TProfileTab } from './profile.types';
 
-export const Profile = () => {
+type TProfilePageConfig = {
+  initialTab?: TProfileTab;
+};
+
+export const Profile = ({ initialTab }: TProfilePageConfig) => {
   const {
     activeTab,
     isPendingUser,
     setActiveTab,
     upcomingCount,
     favoritesCount,
-  } = useProfile();
+  } = useProfile(initialTab);
 
   if (isPendingUser) {
     return <ProfileSkeleton />;

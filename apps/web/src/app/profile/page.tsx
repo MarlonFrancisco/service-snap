@@ -1,11 +1,20 @@
 import { Profile } from '@/components/features/profile';
+import type { TProfileTab } from '@/components/features/profile/profile.types';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export default async function ProfilePage() {
+const PROFILE_TABS: TProfileTab[] = ['bookings', 'favorites', 'settings'];
+
+type TProfilePageParams = {
+  searchParams: Promise<{ tab?: string }>;
+};
+
+export default async function ProfilePage({ searchParams }: TProfilePageParams) {
+  const { tab } = await searchParams;
+  const initialTab = PROFILE_TABS.find((profileTab) => profileTab === tab);
   const cookieStore = await cookies();
   const queryClient = getQueryClient();
   const accessToken = cookieStore.get('access_token')?.value;
@@ -34,7 +43,7 @@ export default async function ProfilePage() {
 
   return (
     <HydrationBoundary state={dehydratedState}>
-      <Profile />
+      <Profile initialTab={initialTab} />
     </HydrationBoundary>
   );
 }
