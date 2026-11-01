@@ -1,37 +1,40 @@
 'use client';
-import { ToggleGroup, ToggleGroupItem } from '@repo/ui';
+import { cn } from '@repo/ui';
+import type { TBillingPeriod } from './pricing.types';
 
-interface IBillingToggleProps {
-  value: 'month' | 'year';
-  onChange: (value: 'month' | 'year') => void;
-}
+type TBillingToggleConfig = {
+  value: TBillingPeriod;
+  onChange: (value: TBillingPeriod) => void;
+};
 
-export const BillingToggle = ({ value, onChange }: IBillingToggleProps) => {
+const BILLING_OPTIONS: { value: TBillingPeriod; label: string }[] = [
+  { value: 'month', label: 'Mensal' },
+  { value: 'year', label: 'Anual' },
+];
+
+export const BillingToggle = ({ value, onChange }: TBillingToggleConfig) => {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <ToggleGroup
-        type="single"
-        value={value}
-        onValueChange={(newValue) => {
-          if (newValue) onChange(newValue as 'month' | 'year');
-        }}
-        className="rounded-2xl bg-[#F4F4F5] p-1"
-      >
-        <ToggleGroupItem
-          value="month"
-          aria-label="Planos mensais"
-          className="rounded-xl px-8 py-2.5 text-sm font-semibold text-[#2B2B2B] data-[state=on]:bg-[#0A0A0A] data-[state=on]:text-white data-[state=on]:shadow-sm"
+    <div
+      role="group"
+      aria-label="Período de cobrança"
+      className="inline-flex gap-1 rounded-full border border-[#E3E1EA] p-1"
+    >
+      {BILLING_OPTIONS.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={value === option.value}
+          onClick={() => onChange(option.value)}
+          className={cn(
+            'h-11 cursor-pointer rounded-full px-[1.375rem] text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]',
+            value === option.value
+              ? 'bg-[#0B0B0F] text-white'
+              : 'bg-transparent text-[#0B0B0F]',
+          )}
         >
-          Mensal
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="year"
-          aria-label="Planos anuais"
-          className="rounded-xl px-8 py-2.5 text-sm font-semibold text-[#2B2B2B] data-[state=on]:bg-[#0A0A0A] data-[state=on]:text-white data-[state=on]:shadow-sm"
-        >
-          Anual
-        </ToggleGroupItem>
-      </ToggleGroup>
+          {option.label}
+        </button>
+      ))}
     </div>
   );
 };
