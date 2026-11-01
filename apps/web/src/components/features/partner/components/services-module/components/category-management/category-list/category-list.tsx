@@ -1,79 +1,97 @@
-import { Badge, Button, TabsContent } from '@repo/ui';
-import { Edit, Folder, Tags, Trash2 } from 'lucide-react';
-import { motion } from 'motion/react';
-import { getColorClass } from '../../../utils/colors';
+import { ICategory } from '@/types/api/service.types';
+import { cn } from '@repo/ui';
+import { PARTNER_MUTED_TEXT_CLASS } from '../../../../../partner.styles';
+import {
+  SERVICES_BUTTON_CLASS,
+  SERVICES_DANGER_OUTLINE_BUTTON_CLASS,
+} from '../../../services-module.styles';
+import { getCategoryColor } from '../../../utils/colors';
+import { formatServiceCount } from '../../../utils/services-sections';
+import { ServicesConfirmDialog } from '../../services-confirm-dialog';
 import { useCategoryList } from './category-list.hook';
 
-export function CategoryList() {
-  const { categories, handleEdit, handleDelete } = useCategoryList();
+type TCategoryListConfig = {
+  onEdit: (category: ICategory) => void;
+};
+
+export const CategoryList = ({ onEdit }: TCategoryListConfig) => {
+  const {
+    categories,
+    deleteDialog,
+    isDeleteDialogOpen,
+    isDeletingCategory,
+    setIsDeleteDialogOpen,
+    handleRequestDelete,
+    handleConfirmDelete,
+  } = useCategoryList();
 
   return (
-    <TabsContent value="list" className="p-6 space-y-4 mt-0">
-      <div className="space-y-3">
-        {categories.map((category) => {
-          const serviceCount = category.services.length;
-
-          return (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-start justify-between p-3.5 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
-            >
-              <div className="flex items-start gap-3 flex-1">
-                <div
-                  className={`w-9 h-9 rounded-lg ${getColorClass(category.color || 'blue')} flex items-center justify-center flex-shrink-0`}
-                >
-                  <Folder className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <h4 className="text-gray-900">{category.name}</h4>
-                    <Badge variant="outline" className="text-xs">
-                      {serviceCount}
-                    </Badge>
-                  </div>
-                  {category.description && (
-                    <p className="text-sm text-gray-600">
-                      {category.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex gap-1">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleEdit(category)}
-                  className="text-gray-600 hover:text-gray-900 hover:bg-gray-100 h-8 w-8 p-0"
-                >
-                  <Edit className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => handleDelete(category)}
-                  disabled={serviceCount > 0}
-                  className="text-gray-600 hover:text-red-600 hover:bg-red-50 disabled:opacity-50 h-8 w-8 p-0"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {categories.length === 0 && (
-        <div className="text-center py-12">
-          <Tags className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-gray-900 mb-2">Nenhuma categoria criada</h3>
-          <p className="text-gray-600 text-sm">
-            Adicione sua primeira categoria na aba ao lado
+    <>
+      {categories.length === 0 ? (
+        <div className="py-8 text-center">
+          <h3 className="text-base font-extrabold">Nenhuma categoria criada</h3>
+          <p className={cn('mt-1 text-sm', PARTNER_MUTED_TEXT_CLASS)}>
+            Adicione a primeira na aba ao lado.
           </p>
         </div>
+      ) : (
+        <ul className="grid gap-2">
+          {categories.map((category) => (
+            <li
+              key={category.id}
+              className="flex flex-wrap items-center justify-between gap-2.5 rounded-[14px] border border-[#EBE9F0] px-3.5 py-3 text-sm"
+            >
+              <div className="min-w-0">
+                <p className="flex items-center gap-2 font-bold">
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'size-2.5 shrink-0 rounded-full',
+                      getCategoryColor(category.color).swatchClass,
+                    )}
+                  />
+                  <span className="min-w-0 break-words">{category.name}</span>
+                </p>
+                <p className={cn('text-[13px]', PARTNER_MUTED_TEXT_CLASS)}>
+                  {formatServiceCount(category.services.length)}
+                </p>
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  aria-label={`Editar ${category.name}`}
+                  onClick={() => onEdit(category)}
+                  className={cn(SERVICES_BUTTON_CLASS, 'px-3.5')}
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Excluir ${category.name}`}
+                  onClick={() => handleRequestDelete(category)}
+                  className={cn(
+                    SERVICES_DANGER_OUTLINE_BUTTON_CLASS,
+                    'px-3.5',
+                  )}
+                >
+                  Excluir
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
       )}
-    </TabsContent>
+
+      <ServicesConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title={deleteDialog.title}
+        description={deleteDialog.description}
+        cancelLabel={deleteDialog.cancelLabel}
+        confirmLabel={deleteDialog.confirmLabel}
+        isPending={isDeletingCategory}
+        onConfirm={handleConfirmDelete}
+        onOpenChange={setIsDeleteDialogOpen}
+      />
+    </>
   );
-}
+};

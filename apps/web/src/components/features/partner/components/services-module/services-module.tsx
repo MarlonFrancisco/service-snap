@@ -1,120 +1,90 @@
 'use client';
-import { usePartnerStore } from '@/store';
-import { Button } from '@repo/ui';
-import { Package, Plus } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
+
+import { cn } from '@repo/ui';
+import { PARTNER_MUTED_TEXT_CLASS } from '../../partner.styles';
 import { CategoryManagementModal } from './components/category-management';
 import { CategorySection } from './components/category-section';
 import { EmptyServicesList } from './components/empty-services-list';
-import { ServiceCard } from './components/service-card';
 import { ServiceFormModal } from './components/service-form';
 import { ServicesFilters } from './components/services-filters';
+import { ServicesLoadError } from './components/services-load-error';
+import { ServicesSkeleton } from './components/services-skeleton';
 import { ServicesStats } from './components/services-stats';
 import { useServicesModule } from './services-module.hook';
 
-export function ServicesModule() {
+export const ServicesModule = () => {
   const {
-    categories,
-    filteredServices,
-    searchQuery,
-    filterCategory,
-    setServiceModalParams,
+    view,
+    storeName,
+    sections,
+    totalServices,
+    activeServices,
+    resultsLabel,
+    isRetrying,
+    handleAddService,
+    handleClearFilters,
+    handleRetry,
   } = useServicesModule();
 
-  const activeStore = usePartnerStore((state) => state.activeStore);
+  const hasContent =
+    view === 'empty' || view === 'no-results' || view === 'list';
 
   return (
-    <div className="space-y-6 pb-6 sm:pb-6 mb-20 sm:mb-0">
-      {/* Header */}
+    <div className="grid gap-[18px]">
       <div>
-        <h2 className="text-gray-900 mb-1">Gestão de Serviços</h2>
-        <p className="text-gray-600 text-sm">
-          Configure e gerencie os serviços oferecidos em{' '}
-          <span className="text-gray-900">{activeStore.name}</span>
+        <h2 className="text-2xl font-extrabold tracking-[-0.025em]">
+          Gestão de serviços
+        </h2>
+        <p className={cn('mt-0.5 text-[15px]', PARTNER_MUTED_TEXT_CLASS)}>
+          {storeName
+            ? `Configure e gerencie os serviços oferecidos em ${storeName}`
+            : 'Configure e gerencie os serviços oferecidos na sua loja'}
         </p>
       </div>
 
-      {/* Stats */}
-      <ServicesStats />
+      {view === 'loading' && <ServicesSkeleton />}
 
-      {/* Filters */}
-      <ServicesFilters />
+      {view === 'error' && (
+        <ServicesLoadError isRetrying={isRetrying} onRetry={handleRetry} />
+      )}
 
-      {/* Results Counter */}
-      {filteredServices.length > 0 &&
-        (searchQuery || filterCategory !== 'all') && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Package className="h-4 w-4" />
-            <span>
-              {filteredServices.length}{' '}
-              {filteredServices.length === 1
-                ? 'serviço encontrado'
-                : 'serviços encontrados'}
-            </span>
-          </div>
-        )}
+      {view === 'no-store' && <EmptyServicesList variant="no-store" />}
 
-      {/* Services by Category */}
-      <AnimatePresence mode="wait">
-        {filterCategory === 'all' ? (
-          // Show all categories
-          <div className="space-y-3">
-            {categories
-              .slice()
-              .sort((a, b) => {
-                const aCount = filteredServices.filter(
-                  (s) => s.category?.name === a.name,
-                ).length;
-                const bCount = filteredServices.filter(
-                  (s) => s.category?.name === b.name,
-                ).length;
-                if (bCount !== aCount) return bCount - aCount;
-                return a.name.localeCompare(b.name);
-              })
-              .map((category) => (
-                <CategorySection key={category.id} category={category} />
-              ))}
-          </div>
-        ) : (
-          // Show filtered category only
-          <motion.div
-            key={filterCategory}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+      {hasContent && (
+        <>
+          <ServicesStats total={totalServices} active={activeServices} />
+          <ServicesFilters />
+          <p
+            role="status"
+            className={cn(
+              'text-[13px] font-semibold empty:hidden',
+              PARTNER_MUTED_TEXT_CLASS,
+              view === 'no-results' && 'sr-only',
+            )}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {filteredServices.map((service) => (
-                <ServiceCard key={service.id} service={service} />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {resultsLabel}
+          </p>
+        </>
+      )}
 
-      {/* Empty State */}
-      {filteredServices.length === 0 && (
+      {view === 'empty' && (
+        <EmptyServicesList variant="empty" onAddService={handleAddService} />
+      )}
+
+      {view === 'no-results' && (
         <EmptyServicesList
-          searchQuery={searchQuery}
-          filterCategory={filterCategory}
-          onAddService={() => setServiceModalParams({ isOpen: true })}
+          variant="no-results"
+          onClearFilters={handleClearFilters}
         />
       )}
 
-      {/* FAB - Mobile Only */}
-      <Button
-        onClick={() => setServiceModalParams({ isOpen: true })}
-        className="sm:hidden fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-black hover:bg-gray-800 text-white z-40"
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {view === 'list' &&
+        sections.map((section) => (
+          <CategorySection key={section.category.id} section={section} />
+        ))}
 
-      {/* Service Form Modal */}
       <ServiceFormModal />
-
-      {/* Category Management Modal */}
       <CategoryManagementModal />
     </div>
   );
-}
+};

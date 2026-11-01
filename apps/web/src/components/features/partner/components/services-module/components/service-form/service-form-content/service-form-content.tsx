@@ -1,13 +1,10 @@
 import {
-  Button,
+  cn,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
-  Label,
-  ScrollArea,
   Select,
   SelectContent,
   SelectItem,
@@ -15,200 +12,265 @@ import {
   SelectValue,
   Spinner,
   Switch,
-  Textarea,
 } from '@repo/ui';
-import { CheckCircle2, Filter } from 'lucide-react';
-import { getColorClass } from '../../../utils/colors';
+import {
+  PARTNER_MUTED_TEXT_CLASS,
+  PARTNER_PORTAL_CLASS,
+  PARTNER_SOFT_SURFACE_CLASS,
+} from '../../../../../partner.styles';
+import {
+  SERVICES_BUTTON_CLASS,
+  SERVICES_FIELD_LABEL_CLASS,
+  SERVICES_INPUT_CLASS,
+  SERVICES_MODAL_ACTION_CLASS,
+  SERVICES_PRIMARY_BUTTON_CLASS,
+  SERVICES_SELECT_TRIGGER_CLASS,
+} from '../../../services-module.styles';
+import { getCategoryColor } from '../../../utils/colors';
+import {
+  SERVICE_MIN_DURATION_MINUTES,
+  SERVICE_MIN_PRICE,
+} from '../service-form.schema';
 import { useServiceFormContent } from './service-form-content.hook';
 
-export function ServiceFormContent() {
+export const ServiceFormContent = () => {
   const {
     form,
     isEditing,
     categories,
-    isCreatingService,
-    isUpdatingService,
+    isSaving,
+    currencySymbol,
     handleClose,
+    handleManageCategories,
     handleSubmit,
   } = useServiceFormContent();
 
-  const isActive = form.watch('isActive');
-
-  const isLoading = isCreatingService || isUpdatingService;
-
   return (
-    <>
-      <ScrollArea className="flex-1 overflow-y-auto">
-        <div className="px-4 sm:px-6 py-6 space-y-4">
-          <FormField
-            name="name"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome do Serviço</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Ex: Corte Feminino"
-                    className="h-11"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            name="description"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Descrição do Serviço</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Descreva os detalhes do serviço..."
-                    rows={3}
-                    className="resize-none"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            name="category.id"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Categoria do Serviço</FormLabel>
-                <FormControl>
-                  <Select
-                    value={field.value}
-                    onValueChange={(value) => field.onChange(value)}
-                  >
-                    <SelectTrigger className="h-11">
-                      <Filter className="h-4 w-4 mr-2 text-gray-500" />
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          <div className="flex items-center gap-2">
-                            <div
-                              className={`w-2 h-2 rounded-full ${getColorClass(category.color || 'blue')}`}
-                            />
-                            {category.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              name="duration"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Duração do Serviço</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="60"
-                      min="5"
-                      step="5"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      value={field.value}
-                      className="h-11"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              name="price"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preço do Serviço</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="65.00"
-                      min="0"
-                      step="0.01"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      value={field.value}
-                      className="h-11"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {!isEditing && (
-            <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex-1">
-                <Label htmlFor="serviceActive" className="cursor-pointer">
-                  Serviço ativo
-                </Label>
-                <p className="text-xs text-gray-600 mt-0.5">
-                  Disponível para agendamento
-                </p>
-              </div>
-              <Switch
-                id="serviceActive"
-                checked={isActive}
-                onCheckedChange={(checked) =>
-                  form.setValue('isActive', checked)
-                }
-              />
-            </div>
+    <form
+      noValidate
+      onSubmit={handleSubmit}
+      className="flex min-h-0 flex-1 flex-col"
+    >
+      <div className="grid min-h-0 flex-1 gap-3.5 overflow-y-auto px-5 py-1 sm:px-7">
+        <FormField
+          name="name"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={SERVICES_FIELD_LABEL_CLASS}>
+                Nome do serviço *
+              </FormLabel>
+              <FormControl>
+                <input
+                  placeholder="Ex: Corte feminino"
+                  aria-required="true"
+                  className={SERVICES_INPUT_CLASS}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
           )}
-        </div>
-      </ScrollArea>
+        />
 
-      {/* Fixed Footer with Actions */}
-      <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gray-50 shrink-0">
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 sm:flex sm:justify-end">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            className="min-h-[48px] sm:min-h-[44px] sm:w-auto border-gray-300"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            className="bg-gray-900 hover:bg-gray-800 text-white min-h-[48px] sm:min-h-[44px] sm:w-auto"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Spinner /> <span>Salvando...</span>
-              </>
-            ) : (
-              <>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                {isEditing ? 'Salvar' : 'Criar'}
-              </>
+        <FormField
+          name="description"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={SERVICES_FIELD_LABEL_CLASS}>
+                Descrição *
+              </FormLabel>
+              <FormControl>
+                <textarea
+                  placeholder="Descreva os detalhes do serviço..."
+                  aria-required="true"
+                  className={cn(
+                    SERVICES_INPUT_CLASS,
+                    'h-20 resize-none py-3',
+                  )}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          name="category.id"
+          control={form.control}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={SERVICES_FIELD_LABEL_CLASS}>
+                Categoria *
+              </FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger
+                    aria-required="true"
+                    className={SERVICES_SELECT_TRIGGER_CLASS}
+                  >
+                    <SelectValue placeholder="Selecione uma categoria" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className={PARTNER_PORTAL_CLASS}>
+                  {categories.map((category) => (
+                    <SelectItem
+                      key={category.id}
+                      value={category.id}
+                      className="min-h-11"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'size-2.5 shrink-0 rounded-full',
+                          getCategoryColor(category.color).swatchClass,
+                        )}
+                      />
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {categories.length === 0 && (
+                <p className={cn('text-[13px]', PARTNER_MUTED_TEXT_CLASS)}>
+                  Você ainda não tem categorias.{' '}
+                  <button
+                    type="button"
+                    onClick={handleManageCategories}
+                    className="min-h-6 font-semibold text-[#0B0B0F] underline"
+                  >
+                    Criar categoria
+                  </button>
+                </p>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-2 items-start gap-3">
+          <FormField
+            name="duration"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={SERVICES_FIELD_LABEL_CLASS}>
+                  Duração (minutos) *
+                </FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      placeholder="30"
+                      aria-required="true"
+                      min={SERVICE_MIN_DURATION_MINUTES}
+                      step={SERVICE_MIN_DURATION_MINUTES}
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value || ''}
+                      className={cn(SERVICES_INPUT_CLASS, 'pr-11')}
+                    />
+                  </FormControl>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-sm font-medium',
+                      PARTNER_MUTED_TEXT_CLASS,
+                    )}
+                  >
+                    min
+                  </span>
+                </div>
+                <FormMessage />
+              </FormItem>
             )}
-          </Button>
+          />
+
+          <FormField
+            name="price"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={SERVICES_FIELD_LABEL_CLASS}>
+                  Preço ({currencySymbol}) *
+                </FormLabel>
+                <FormControl>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    aria-required="true"
+                    min={SERVICE_MIN_PRICE}
+                    step="0.01"
+                    {...field}
+                    onChange={(e) => field.onChange(Number(e.target.value))}
+                    value={field.value || ''}
+                    className={SERVICES_INPUT_CLASS}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
+
+        {!isEditing && (
+          <FormField
+            name="isActive"
+            control={form.control}
+            render={({ field }) => (
+              <label
+                className={cn(
+                  PARTNER_SOFT_SURFACE_CLASS,
+                  'flex items-center justify-between gap-2.5 rounded-[14px] px-3.5 py-3 text-sm font-semibold',
+                )}
+              >
+                <span>
+                  Serviço ativo
+                  <span
+                    className={cn(
+                      'block text-[13px] font-medium',
+                      PARTNER_MUTED_TEXT_CLASS,
+                    )}
+                  >
+                    Disponível para agendamento
+                  </span>
+                </span>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="data-[state=checked]:bg-[#0B0B0F]"
+                />
+              </label>
+            )}
+          />
+        )}
       </div>
-    </>
+
+      <div className="flex shrink-0 gap-2.5 px-5 pt-3.5 pb-5 sm:px-7 sm:pb-7">
+        <button
+          type="button"
+          onClick={handleClose}
+          className={cn(SERVICES_BUTTON_CLASS, SERVICES_MODAL_ACTION_CLASS)}
+        >
+          Cancelar
+        </button>
+        <button
+          type="submit"
+          disabled={isSaving}
+          className={cn(
+            SERVICES_PRIMARY_BUTTON_CLASS,
+            SERVICES_MODAL_ACTION_CLASS,
+          )}
+        >
+          {isSaving && <Spinner />}
+          {isSaving && 'Salvando...'}
+          {!isSaving && (isEditing ? 'Salvar serviço' : 'Criar serviço')}
+        </button>
+      </div>
+    </form>
   );
-}
+};

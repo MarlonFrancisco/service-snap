@@ -1,27 +1,36 @@
-export const getColorClass = (color: string): string => {
-  const colors: Record<string, string> = {
-    purple: 'bg-purple-100 text-purple-700',
-    blue: 'bg-blue-100 text-blue-700',
-    pink: 'bg-pink-100 text-pink-700',
-    red: 'bg-red-100 text-red-700',
-    green: 'bg-green-100 text-green-700',
-    orange: 'bg-orange-100 text-orange-700',
-    yellow: 'bg-yellow-100 text-yellow-700',
-    gray: 'bg-gray-100 text-gray-600',
-  };
-  return colors[color] || colors.blue;
+export const AVAILABLE_COLORS = [
+  'blue',
+  'purple',
+  'pink',
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'gray',
+] as const;
+
+export type TCategoryColor = (typeof AVAILABLE_COLORS)[number];
+
+type TCategoryColorOption = {
+  label: string;
+  swatchClass: string;
 };
 
-export const getColorBgClass = (color: string): string => {
-  const colors: Record<string, string> = {
-    purple: 'bg-purple-50/50',
-    blue: 'bg-blue-50/50',
-    pink: 'bg-pink-50/50',
-    red: 'bg-red-50/50',
-    green: 'bg-green-50/50',
-    orange: 'bg-orange-50/50',
-    yellow: 'bg-yellow-50/50',
-    gray: 'bg-gray-50',
-  };
-  return colors[color] || colors.blue;
+const CATEGORY_COLORS: Record<TCategoryColor, TCategoryColorOption> = {
+  blue: { label: 'Azul', swatchClass: 'bg-[#2563EB]' },
+  purple: { label: 'Roxo', swatchClass: 'bg-[#7C3AED]' },
+  pink: { label: 'Rosa', swatchClass: 'bg-[#DB2777]' },
+  red: { label: 'Vermelho', swatchClass: 'bg-[#DC2626]' },
+  orange: { label: 'Laranja', swatchClass: 'bg-[#C2410C]' },
+  yellow: { label: 'Amarelo', swatchClass: 'bg-[#A16207]' },
+  green: { label: 'Verde', swatchClass: 'bg-[#047857]' },
+  gray: { label: 'Cinza', swatchClass: 'bg-[#6B7280]' },
 };
+
+export const DEFAULT_CATEGORY_COLOR: TCategoryColor = 'blue';
+
+export const isCategoryColor = (color?: string): color is TCategoryColor =>
+  AVAILABLE_COLORS.some((availableColor) => availableColor === color);
+
+export const getCategoryColor = (color?: string): TCategoryColorOption =>
+  CATEGORY_COLORS[isCategoryColor(color) ? color : DEFAULT_CATEGORY_COLOR];

@@ -1,152 +1,107 @@
-import { useServicesStore } from '@/store';
 import {
-  Button,
-  Input,
+  cn,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-  useIsMobile,
 } from '@repo/ui';
-import { Filter, Plus, Search, Tags, X } from 'lucide-react';
-import { getColorClass } from '../../utils/colors';
+import {
+  PARTNER_FOCUS_CLASS,
+  PARTNER_PORTAL_CLASS,
+} from '../../../../partner.styles';
+import {
+  SERVICES_BUTTON_CLASS,
+  SERVICES_PRIMARY_BUTTON_CLASS,
+} from '../../services-module.styles';
+import { getCategoryColor } from '../../utils/colors';
+import { ALL_CATEGORIES_FILTER } from '../../utils/services-sections';
+import { useServicesFilters } from './services-filters.hook';
 
-export function ServicesFilters() {
-  const isMobile = useIsMobile();
+const TOOLBAR_BUTTON_CLASS = 'min-h-12 grow sm:grow-0';
+
+export const ServicesFilters = () => {
   const {
     searchQuery,
     categories,
     filterCategory,
-    setSearchQuery,
+    hasActiveFilters,
     setFilterCategory,
-    setCategoryModalParams,
-    setServiceModalParams,
-  } = useServicesStore();
-
-  if (isMobile) {
-    return (
-      <div className="flex flex-col gap-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Buscar serviços..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-11 border-gray-300"
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-full h-10 border-gray-300">
-              <Filter className="h-4 w-4 mr-2 text-gray-500" />
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as categorias</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.name}>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-2 h-2 rounded-full ${getColorClass(category.color || 'blue')}`}
-                    />
-                    {category.name}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Button
-            variant="outline"
-            onClick={() => setCategoryModalParams({ isOpen: true })}
-            className="border-gray-300 h-10 text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-          >
-            <Tags className="h-4 w-4 mr-2" />
-            Gerenciar Categorias
-          </Button>
-
-          {(searchQuery || filterCategory !== 'all') && (
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setSearchQuery('');
-                setFilterCategory('all');
-              }}
-              className="h-10 text-gray-600 hover:text-gray-900"
-            >
-              <X className="h-4 w-4 mr-2" />
-              Limpar filtros
-            </Button>
-          )}
-        </div>
-      </div>
-    );
-  }
+    handleSearchChange,
+    handleClearFilters,
+    handleManageCategories,
+    handleAddService,
+  } = useServicesFilters();
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="relative flex-1 max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <Input
-          placeholder="Buscar serviços por nome ou descrição..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9 h-10 border-gray-300"
-        />
-      </div>
+    <div className="flex flex-wrap gap-2">
+      <input
+        type="search"
+        aria-label="Buscar serviços"
+        placeholder="Buscar serviços por nome ou descrição..."
+        value={searchQuery}
+        onChange={handleSearchChange}
+        className={cn(
+          'h-12 min-w-0 flex-[1_1_260px] rounded-full border border-[#E3E1EA] bg-white px-[18px] text-sm font-medium text-[#0B0B0F] placeholder:text-[#6F6C7E]',
+          PARTNER_FOCUS_CLASS,
+        )}
+      />
 
       <Select value={filterCategory} onValueChange={setFilterCategory}>
-        <SelectTrigger className="w-[220px] h-10 border-gray-300">
-          <Filter className="h-4 w-4 mr-2 text-gray-500" />
+        <SelectTrigger
+          aria-label="Filtrar por categoria"
+          className="grow rounded-full border-[#E3E1EA] bg-white px-[18px] text-[13px] font-semibold text-[#0B0B0F] shadow-none hover:bg-[#F7F6FA] focus-visible:ring-2 focus-visible:ring-[#0B0B0F] data-[size=default]:h-12 sm:grow-0"
+        >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">Todas as categorias</SelectItem>
+        <SelectContent className={PARTNER_PORTAL_CLASS}>
+          <SelectItem value={ALL_CATEGORIES_FILTER} className="min-h-11">
+            Todas as categorias
+          </SelectItem>
           {categories.map((category) => (
-            <SelectItem key={category.id} value={category.name}>
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${getColorClass(category.color || 'blue')}`}
-                />
-                {category.name}
-              </div>
+            <SelectItem
+              key={category.id}
+              value={category.id}
+              className="min-h-11"
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  'size-2.5 shrink-0 rounded-full',
+                  getCategoryColor(category.color).swatchClass,
+                )}
+              />
+              {category.name}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <Button
-        variant="outline"
-        onClick={() => setCategoryModalParams({ isOpen: true })}
-        className="border-gray-300 h-10 text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-      >
-        <Tags className="h-4 w-4 mr-2" />
-        Gerenciar Categorias
-      </Button>
-
-      {(searchQuery || filterCategory !== 'all') && (
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setSearchQuery('');
-            setFilterCategory('all');
-          }}
-          className="h-10 text-gray-600 hover:text-gray-900"
+      {hasActiveFilters && (
+        <button
+          type="button"
+          onClick={handleClearFilters}
+          className={cn(SERVICES_BUTTON_CLASS, TOOLBAR_BUTTON_CLASS)}
         >
-          <X className="h-4 w-4 mr-2" />
           Limpar filtros
-        </Button>
+        </button>
       )}
 
-      <Button
-        onClick={() => setServiceModalParams({ isOpen: true })}
-        className="ml-auto bg-gray-900 hover:bg-gray-800 text-white h-10"
+      <button
+        type="button"
+        onClick={handleManageCategories}
+        className={cn(SERVICES_BUTTON_CLASS, TOOLBAR_BUTTON_CLASS)}
       >
-        <Plus className="h-4 w-4 mr-2" />
-        Adicionar Serviço
-      </Button>
+        Gerenciar categorias
+      </button>
+
+      <button
+        type="button"
+        onClick={handleAddService}
+        className={cn(SERVICES_PRIMARY_BUTTON_CLASS, TOOLBAR_BUTTON_CLASS, 'px-[18px]')}
+      >
+        Adicionar serviço
+      </button>
     </div>
   );
-}
+};

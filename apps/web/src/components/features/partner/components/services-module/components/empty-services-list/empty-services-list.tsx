@@ -1,47 +1,68 @@
-'use client';
+import { cn } from '@repo/ui';
+import { BriefcaseBusiness, Search, Store } from 'lucide-react';
+import Link from 'next/link';
+import {
+  SERVICES_BUTTON_CLASS,
+  SERVICES_PRIMARY_BUTTON_CLASS,
+} from '../../services-module.styles';
+import { ServicesStatePanel } from '../services-state-panel';
 
-import { Button, Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@repo/ui';
-import { Package, Plus } from 'lucide-react';
+type TEmptyServicesListConfig =
+  | { variant: 'empty'; onAddService: () => void }
+  | { variant: 'no-results'; onClearFilters: () => void }
+  | { variant: 'no-store' };
 
-interface EmptyServicesListProps {
-  searchQuery?: string;
-  filterCategory?: string;
-  onAddService: () => void;
-}
+const ACTION_CLASS = 'mt-1.5 px-[18px]';
 
-export function EmptyServicesList({
-  searchQuery = '',
-  filterCategory = 'all',
-  onAddService,
-}: EmptyServicesListProps) {
-  const isFiltered = searchQuery || filterCategory !== 'all';
+export const EmptyServicesList = (config: TEmptyServicesListConfig) => {
+  if (config.variant === 'no-store') {
+    return (
+      <ServicesStatePanel
+        icon={Store}
+        title="Nenhuma loja cadastrada"
+        description="Você ainda não cadastrou nenhuma loja. Adicione a primeira para começar a receber agendamentos."
+      >
+        <Link
+          href="/partner/stores"
+          className={cn(SERVICES_PRIMARY_BUTTON_CLASS, ACTION_CLASS)}
+        >
+          Adicionar nova loja
+        </Link>
+      </ServicesStatePanel>
+    );
+  }
+
+  if (config.variant === 'no-results') {
+    return (
+      <ServicesStatePanel
+        icon={Search}
+        title="Nenhum serviço encontrado"
+        description="Tente ajustar os filtros ou fazer uma nova busca."
+      >
+        <button
+          type="button"
+          onClick={config.onClearFilters}
+          className={cn(SERVICES_BUTTON_CLASS, ACTION_CLASS, 'font-bold')}
+        >
+          Limpar filtros
+        </button>
+      </ServicesStatePanel>
+    );
+  }
 
   return (
-    <Empty className="min-h-[400px] flex items-center justify-center">
-      <EmptyHeader>
-        <EmptyMedia variant="default">
-          <Package size={60} className="text-gray-500" />
-        </EmptyMedia>
-        <EmptyTitle className="text-xl">
-          {isFiltered ? 'Nenhum serviço encontrado' : 'Nenhum serviço cadastrado'}
-        </EmptyTitle>
-      </EmptyHeader>
-      <EmptyContent>
-        <EmptyDescription className="text-lg">
-          {isFiltered
-            ? 'Tente ajustar os filtros ou fazer uma nova busca'
-            : 'Comece adicionando seu primeiro serviço'}
-        </EmptyDescription>
-        {!isFiltered && (
-          <Button
-            onClick={onAddService}
-            className="mt-6 bg-gray-900 hover:bg-gray-800 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Adicionar Primeiro Serviço
-          </Button>
-        )}
-      </EmptyContent>
-    </Empty>
+    <ServicesStatePanel
+      icon={BriefcaseBusiness}
+      title="Nenhum serviço cadastrado"
+      description="Comece adicionando seu primeiro serviço."
+    >
+      <button
+        type="button"
+        onClick={config.onAddService}
+        className={cn(SERVICES_PRIMARY_BUTTON_CLASS, ACTION_CLASS)}
+      >
+        Adicionar primeiro serviço
+      </button>
+    </ServicesStatePanel>
   );
-}
+};

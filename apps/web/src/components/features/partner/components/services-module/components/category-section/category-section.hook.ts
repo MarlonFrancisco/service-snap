@@ -1,22 +1,21 @@
 import { useServicesStore } from '@/store';
 import { INITIAL_SERVICE } from '@/store/admin/services/services.constants';
-import { ICategory } from '@/types/api/service.types';
-import { useState } from 'react';
+import type { TServiceSection } from '../../services-module.types';
+import { formatServiceCount } from '../../utils/services-sections';
 
-export const useCategorySection = ({ category }: { category: ICategory }) => {
+export const useCategorySection = ({ section }: { section: TServiceSection }) => {
   const setServiceModalParams = useServicesStore(
     (state) => state.setServiceModalParams,
   );
 
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { category, services, activeCount } = section;
+  const isEmpty = services.length === 0;
 
-  const onToggleExpanded = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  const activeCount = category.services.filter((s) => s.isActive).length;
-  const inactiveCount = category.services.length - activeCount;
-  const isEmpty = category.services.length === 0;
+  const summaryLabel = isEmpty
+    ? 'Nenhum serviço'
+    : `${formatServiceCount(services.length)} · ${activeCount} ${
+        activeCount === 1 ? 'ativo' : 'ativos'
+      }`;
 
   const handleQuickAdd = () => {
     setServiceModalParams({
@@ -26,11 +25,8 @@ export const useCategorySection = ({ category }: { category: ICategory }) => {
   };
 
   return {
-    activeCount,
-    inactiveCount,
     isEmpty,
-    isExpanded,
-    onToggleExpanded,
+    summaryLabel,
     handleQuickAdd,
   };
 };

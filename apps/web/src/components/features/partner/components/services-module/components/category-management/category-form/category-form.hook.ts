@@ -1,12 +1,14 @@
-import { useServicesStore } from '@/store';
 import { useFormContext } from 'react-hook-form';
+import { AVAILABLE_COLORS, getCategoryColor } from '../../../utils/colors';
 import { TCategoryFormData } from '../category.schema';
 
+const COLOR_OPTIONS = AVAILABLE_COLORS.map((value) => ({
+  value,
+  ...getCategoryColor(value),
+}));
+
 export const useCategoryForm = () => {
-  const category = useServicesStore((state) => state.category);
   const form = useFormContext<TCategoryFormData>();
 
-  const isEditing = !!category.id;
-
-  return { form, category, isEditing };
+  return { form, colorOptions: COLOR_OPTIONS };
 };

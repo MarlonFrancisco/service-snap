@@ -1,19 +1,39 @@
 import { useCategoryMutations } from '@/hooks/partner/use-category-mutations/use-category-mutations.hook';
 import { usePartnerStore, useServicesStore } from '@/store';
+import { INITIAL_CATEGORY } from '@/store/admin/services/services.constants';
+import { ICategory } from '@/types/api/service.types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import type { FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { DEFAULT_CATEGORY_COLOR, isCategoryColor } from '../../utils/colors';
 import { categoryFormSchema, TCategoryFormData } from './category.schema';
+
+export type TCategoryTab = 'list' | 'form';
+
+const toCategoryFormValues = (category: ICategory): TCategoryFormData => ({
+  id: category.id,
+  name: category.name ?? '',
+  description: category.description ?? '',
+  color: isCategoryColor(category.color)
+    ? category.color
+    : DEFAULT_CATEGORY_COLOR,
+});
+
 export const useCategoryManagement = () => {
   const isCategoryModalOpen = useServicesStore(
     (state) => state.isCategoryModalOpen,
   );
   const category = useServicesStore((state) => state.category);
+  const hasCategories = useServicesStore(
+    (state) => state.categories.length > 0,
+  );
   const setCategoryModalParams = useServicesStore(
     (state) => state.setCategoryModalParams,
   );
   const activeStore = usePartnerStore((state) => state.activeStore);
+  const [tab, setTab] = useState<TCategoryTab>('list');
 
   const { updateCategoryMutation, createCategoryMutation } =
     useCategoryMutations({
@@ -22,45 +42,58 @@ export const useCategoryManagement = () => {
 
   const form = useForm<TCategoryFormData>({
     resolver: zodResolver(categoryFormSchema),
-    defaultValues: {
-      tabValue: 'list',
-    },
+    defaultValues: toCategoryFormValues(INITIAL_CATEGORY),
   });
 
   useEffect(() => {
-    if (category) {
-      form.reset({
-        ...category,
-        tabValue: form.getValues('tabValue'),
-      });
+    if (isCategoryModalOpen) {
+      form.reset(toCategoryFormValues(category));
     }
-  }, [category, form]);
+  }, [category, isCategoryModalOpen, form]);
+
+  useEffect(() => {
+    if (isCategoryModalOpen) {
+      setTab(hasCategories ? 'list' : 'form');
+    }
+  }, [isCategoryModalOpen, hasCategories]);
+
+  const isEditing = !!category.id;
 
   const handleClose = () => {
-    setCategoryModalParams({ isOpen: false, category: undefined });
+    setCategoryModalParams({ isOpen: false });
   };
 
-  const handleSubmit = () => {
-    const tabValue = form.getValues('tabValue');
+  const handleBackToList = () => {
+    setCategoryModalParams({ isOpen: true });
+    form.reset(toCategoryFormValues(INITIAL_CATEGORY));
+    setTab('list');
+  };
 
-    if (tabValue === 'list') {
-      form.setValue('tabValue', 'add');
+  const handleEdit = (categoryToEdit: ICategory) => {
+    setCategoryModalParams({ isOpen: true, category: categoryToEdit });
+    setTab('form');
+  };
 
+  const handleTabChange = (value: string) => {
+    if (value === 'list') {
+      handleBackToList();
       return;
     }
 
-    form.handleSubmit(
-      (data) => {
-        const onSettled = () => {
-          form.reset();
-        };
+    setTab('form');
+  };
 
-        if (category.id) {
-          updateCategoryMutation.mutate(data, { onSettled });
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    void form.handleSubmit(
+      (data) => {
+        if (isEditing) {
+          updateCategoryMutation.mutate(data, {
+            onSuccess: handleBackToList,
+          });
         } else {
           createCategoryMutation.mutate(
             { ...data, id: undefined },
-            { onSettled },
+            { onSuccess: handleBackToList },
           );
         }
       },
@@ -70,16 +103,20 @@ export const useCategoryManagement = () => {
           toast.error(firstError);
         }
       },
-    )();
+    )(event);
   };
 
   return {
     isCategoryModalOpen,
-    category,
+    isEditing,
     form,
-    isCreatingCategory: createCategoryMutation.isPending,
-    isUpdatingCategory: updateCategoryMutation.isPending,
+    tab,
+    isSaving:
+      createCategoryMutation.isPending || updateCategoryMutation.isPending,
     handleClose,
+    handleBackToList,
+    handleEdit,
+    handleTabChange,
     handleSubmit,
   };
 };
