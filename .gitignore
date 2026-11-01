@@ -17,6 +17,7 @@ coverage
 test-results/
 playwright/.cache/
 playwright-report/
+.lighthouse/
 
 
 # Turbo
