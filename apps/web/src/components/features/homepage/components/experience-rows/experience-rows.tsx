@@ -14,12 +14,13 @@ export const ExperienceRows = async () => {
 
   return (
     <>
-      {rows.map((row) => (
+      {rows.map((row, rowIndex) => (
         <ExperienceCarousel
           key={row.id}
           title={row.title}
           seeAllHref={getSeeAllHref(row.query, row.category)}
           items={row.items}
+          priorityFirstImage={rowIndex === 0}
         />
       ))}
     </>

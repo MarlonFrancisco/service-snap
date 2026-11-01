@@ -27,12 +27,14 @@ type TExperienceCarouselConfig = {
   title: string;
   seeAllHref: string;
   items: TExperienceCard[];
+  priorityFirstImage?: boolean;
 };
 
 export const ExperienceCarousel = ({
   title,
   seeAllHref,
   items,
+  priorityFirstImage = false,
 }: TExperienceCarouselConfig) => {
   return (
     <section className="mx-auto w-full max-w-[90rem] px-4 py-4 sm:px-6 sm:py-6 lg:px-12">
@@ -59,13 +61,16 @@ export const ExperienceCarousel = ({
           </div>
         </div>
         <CarouselContent className="-ml-3 items-stretch py-3 sm:-ml-4 lg:-ml-5">
-          {items.map((experience) => (
+          {items.map((experience, index) => (
             <CarouselItem
               key={experience.id}
               className={cn(SLIDE_BASIS, 'flex pl-3 sm:pl-4 lg:pl-5')}
             >
               <div className="h-full min-h-0 w-full min-w-0">
-                <ExperienceCard experience={experience} />
+                <ExperienceCard
+                  experience={experience}
+                  priority={priorityFirstImage && index === 0}
+                />
               </div>
             </CarouselItem>
           ))}

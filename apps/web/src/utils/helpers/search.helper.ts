@@ -3,22 +3,25 @@ import { ISearchFilters } from '@/types/layout/search.types';
 import { formatStorePrice } from './price.helper';
 
 export const buildSearchUrl = (searchFilters: ISearchFilters) => {
-  const params = new URLSearchParams();
+  const query =
+    searchFilters.query?.trim() || searchFilters.location?.trim() || '';
 
-  if (searchFilters.location) {
-    params.append('location', searchFilters.location);
+  if (!query) {
+    return null;
   }
 
-  if (searchFilters.query) {
-    params.append('query', searchFilters.query);
+  const params = new URLSearchParams({ query });
+
+  if (searchFilters.location?.trim()) {
+    params.set('location', searchFilters.location.trim());
   }
 
   if (searchFilters.categories?.length) {
-    params.append('category', searchFilters.categories[0]!);
+    params.set('category', searchFilters.categories[0]!);
   }
 
   if (searchFilters.date) {
-    params.append('date', searchFilters.date.toISOString());
+    params.set('date', searchFilters.date.toISOString());
   }
 
   return `/booking?${params.toString()}`;

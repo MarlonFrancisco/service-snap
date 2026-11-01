@@ -13,9 +13,13 @@ const badgeClassName: Record<TExperienceBadgeTone, string> = {
 
 type TExperienceCardConfig = {
   experience: TExperienceCard;
+  priority?: boolean;
 };
 
-export const ExperienceCard = ({ experience }: TExperienceCardConfig) => {
+export const ExperienceCard = ({
+  experience,
+  priority = false,
+}: TExperienceCardConfig) => {
   const BadgeIcon = experience.badgeTone === 'success' ? Zap : BadgeCheck;
   const bookingHref = `/booking/${experience.id}`;
 
@@ -31,6 +35,7 @@ export const ExperienceCard = ({ experience }: TExperienceCardConfig) => {
           src={experience.image}
           alt={experience.imageAlt}
           fill
+          priority={priority}
           sizes="(min-width: 1024px) 14vw, (min-width: 640px) 33vw, 80vw"
           className="object-cover transition-transform duration-500 md:group-hover:scale-105"
         />

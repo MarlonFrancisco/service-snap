@@ -1,5 +1,3 @@
-import useSearchStore from '@/store/search/search.store';
-import { useIsMobile } from '@repo/ui';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -12,10 +10,6 @@ const PLACEHOLDERS = [
 
 export const useDiscoverySearch = () => {
   const router = useRouter();
-  const isMobile = useIsMobile();
-  const setIsMobileSearchOpen = useSearchStore(
-    (state) => state.setIsMobileSearchOpen,
-  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -30,9 +24,10 @@ export const useDiscoverySearch = () => {
   }, []);
 
   const explore = useCallback(() => {
-    if (!searchQuery.trim()) return;
+    const query = searchQuery.trim();
+    if (!query) return;
 
-    const params = new URLSearchParams({ query: searchQuery.trim() });
+    const params = new URLSearchParams({ query });
     router.push(`/booking?${params.toString()}`);
   }, [router, searchQuery]);
 
@@ -47,12 +42,6 @@ export const useDiscoverySearch = () => {
   const handleBlur = useCallback(() => {
     setIsFocused(false);
   }, []);
-
-  const handleInputClick = useCallback(() => {
-    if (isMobile) {
-      setIsMobileSearchOpen(true);
-    }
-  }, [isMobile, setIsMobileSearchOpen]);
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -70,7 +59,6 @@ export const useDiscoverySearch = () => {
     handleInputChange,
     handleFocus,
     handleBlur,
-    handleInputClick,
     handleKeyDown,
     explore,
   };

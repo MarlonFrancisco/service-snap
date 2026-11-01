@@ -38,4 +38,4 @@ export const EXPERIENCE_ROW_CONFIGS: TExperienceRowConfig[] = [
 ];
 
 export const PARTNER_IMAGE =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuDnLMhfq8g8I4yekRj35IanA1UPKmFNoEswf70wslB0Dddei9wTkYPBWmBC65aRPQDJib2nm8XS3VMUH_KctexnPuPMGzH-ugeCSeacwnZ5fKuLEFnuC0b9_g0viuKjj3jbLNcAfTdGeW5Yt90dTZzR_ttWzKfQ_hmCgtMUrKGOSXiIdu7IbpC2aJAu4vZ9YXjOSqkQuvNhvbU4yk6wpGztiaFeZLcYRP108wbCilKj';
+  'https://images.unsplash.com/photo-1585747860715-2ba37e789b80?auto=format&fit=crop&w=1600&q=80';

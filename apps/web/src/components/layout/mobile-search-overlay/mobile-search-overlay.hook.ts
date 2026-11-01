@@ -160,11 +160,13 @@ export const useMobileSearchOverlay = (
   );
 
   const handleSearch = useCallback(() => {
+    const url = buildSearchUrl(searchFilters);
+    if (!url) return;
+
     setIsMobileSearchOpen(false);
     setActiveField(null);
-    router.push(buildSearchUrl(searchFilters));
+    router.push(url);
   }, [searchFilters, router, setIsMobileSearchOpen]);
-
   const clearAllFilters = useCallback(() => {
     setSearchFilters({
       location: '',

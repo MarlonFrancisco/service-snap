@@ -5,7 +5,7 @@ import { PARTNER_IMAGE } from '../../homepage.mock';
 
 const STATS = [
   { value: '+42%', label: 'Novos clientes', valueClassName: 'text-[#0A0A0A]' },
-  { value: '-85%', label: 'Faltas e atrasos', valueClassName: 'text-[#10B981]' },
+  { value: '-85%', label: 'Faltas e atrasos', valueClassName: 'text-[#047857]' },
   { value: '30 dias', label: 'Teste gratuito', valueClassName: 'text-[#0A0A0A]' },
 ];
 
@@ -56,11 +56,12 @@ export const PartnerBanner = () => {
             </Link>
           </div>
         </div>
-        <div className="relative min-h-[220px] sm:min-h-[280px] lg:col-span-5 lg:min-h-full lg:h-full">
+        <div className="relative aspect-[4/3] bg-[#e8e7f1] lg:col-span-5 lg:aspect-auto lg:min-h-full lg:h-full">
           <Image
             src={PARTNER_IMAGE}
             alt="Dono de barbearia em frente ao salão, com luz natural."
             fill
+            quality={90}
             sizes="(min-width: 1024px) 40vw, 100vw"
             className="object-cover"
           />
