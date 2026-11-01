@@ -1,44 +1,36 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/ui';
 import { StarRating } from '../star-rating';
+import { useReviewCard } from './review-card.hook';
 import type { TReviewCardConfig } from './review-card.types';
 
 export const ReviewCard = ({ review }: TReviewCardConfig) => {
+  const { fullName, initials, avatarSrc, formattedDate } = useReviewCard({
+    review,
+  });
+
   return (
-    <div className="py-5 first:pt-0">
-      <div className="flex items-start gap-4">
-        <Avatar className="w-10 h-10 flex-shrink-0">
-          <AvatarImage
-            src={`${process.env.NEXT_PUBLIC_CDN_URL}${review.user.avatar}`}
-          />
-          <AvatarFallback className="bg-gradient-to-br from-gray-100 to-gray-200 text-gray-700">
-            {review.user.firstName.charAt(0)}
-            {review.user.lastName.charAt(0)}
-          </AvatarFallback>
-        </Avatar>
+    <article className="grid grid-cols-[44px_1fr] gap-3 rounded-[14px] bg-[#F7F6FA] p-3.5">
+      <Avatar aria-hidden="true" className="size-11">
+        <AvatarImage src={avatarSrc} />
+        <AvatarFallback className="bg-white text-sm font-bold text-[#0B0B0F]">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2 mb-1.5">
-            <h4 className="text-gray-900">
-              {review.user.firstName} {review.user.lastName}
-            </h4>
-            <span className="text-xs text-gray-500 flex-shrink-0">
-              {new Date(review.createdAt).toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              })}
-            </span>
-          </div>
-
-          <div className="mb-2.5">
-            <StarRating rating={review.rating} size="small" />
-          </div>
-
-          <p className="text-sm text-gray-700 leading-relaxed">
-            {review.comment}
-          </p>
+      <div className="min-w-0">
+        <div className="flex justify-between gap-3 text-sm font-bold">
+          <span className="min-w-0 break-words">{fullName}</span>
+          <span className="shrink-0 text-[13px] font-medium text-[#5F5C6E]">
+            {formattedDate}
+          </span>
         </div>
+
+        <div className="my-[3px]">
+          <StarRating rating={review.rating} size="small" />
+        </div>
+
+        <p className="text-sm leading-[1.5] break-words">{review.comment}</p>
       </div>
-    </div>
+    </article>
   );
 };

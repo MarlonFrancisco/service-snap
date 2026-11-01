@@ -1,32 +1,16 @@
 'use client';
-import { useAuthStore } from '@/store/auth/auth.store';
-import { useCallback, useEffect } from 'react';
+import { useGoogleAuth } from './google-auth.hook';
 
 export const GoogleAuth = () => {
-  const googleLoginAction = useAuthStore((state) => state.googleLoginAction);
-  const onAuth = useAuthStore((state) => state.onAuth);
+  const { containerRef } = useGoogleAuth();
 
-  const handleAuth = useCallback(
-    async (response: { credential: string }) => {
-      await googleLoginAction(response.credential);
-      onAuth?.();
-    },
-    [googleLoginAction, onAuth],
+  return (
+    <div className="flex min-h-[54px] w-full items-center justify-center">
+      <div
+        ref={containerRef}
+        id="google-sign-in-button"
+        className="flex w-full justify-center"
+      />
+    </div>
   );
-
-  useEffect(() => {
-    window.google.accounts.id.initialize({
-      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-      callback: handleAuth,
-    });
-
-    window.google.accounts.id.renderButton(
-      document.getElementById('google-sign-in-button')!,
-      { theme: 'outline', size: 'large', shape: 'circle' },
-    );
-
-    window.google.accounts.id.prompt();
-  }, [handleAuth]);
-
-  return <div id="google-sign-in-button" />;
 };

@@ -1,7 +1,7 @@
 import { useReviewsQuery } from '@/hooks/use-query/use-reviews-query';
 import { useReviewsStore } from '@/store';
 import { useIsMobile } from '@repo/ui';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 export const useReviewsModal = () => {
   const {
@@ -26,11 +26,16 @@ export const useReviewsModal = () => {
     [toggleReviewsModalAction],
   );
 
+  const handleClose = useCallback(() => {
+    toggleReviewsModalAction(false);
+  }, [toggleReviewsModalAction]);
+
   return {
     isOpen,
     isMobile,
     isPendingReviews,
     businessName,
     handleOpenChange,
+    handleClose,
   };
 };

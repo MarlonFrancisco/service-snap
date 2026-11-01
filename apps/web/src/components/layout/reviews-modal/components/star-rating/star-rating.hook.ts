@@ -1,25 +1,25 @@
-import type { TStarRatingConfig } from './star-rating.types';
+import type {
+  TStarRatingConfig,
+  TStarRatingSize,
+} from './star-rating.types';
 
-export const useStarRating = ({ rating, size = 'default' }: TStarRatingConfig) => {
-  const sizeClasses = {
-    small: 'h-3.5 w-3.5',
-    default: 'h-4 w-4',
-    large: 'h-5 w-5',
-  };
+const MAX_STARS = 5;
 
-  const stars = [1, 2, 3, 4, 5];
+const SIZE_CLASSES: Record<TStarRatingSize, string> = {
+  small: 'text-xs',
+  default: 'text-sm',
+  large: 'text-base',
+};
 
-  const getStarClassName = (star: number) => {
-    const baseSize = sizeClasses[size];
-    const fillColor = star <= rating
-      ? 'fill-yellow-400 text-yellow-400'
-      : 'fill-gray-200 text-gray-200';
-
-    return `${baseSize} ${fillColor}`;
-  };
+export const useStarRating = ({
+  rating,
+  size = 'default',
+}: TStarRatingConfig) => {
+  const filledStars = Math.max(0, Math.min(MAX_STARS, Math.floor(rating)));
 
   return {
-    stars,
-    getStarClassName,
+    stars: '★'.repeat(filledStars) + '☆'.repeat(MAX_STARS - filledStars),
+    label: `${rating} de ${MAX_STARS} estrelas`,
+    sizeClassName: SIZE_CLASSES[size],
   };
 };

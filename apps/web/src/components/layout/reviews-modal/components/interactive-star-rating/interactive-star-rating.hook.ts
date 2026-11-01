@@ -27,8 +27,8 @@ export const useInteractiveStarRating = ({
   const getStarClassName = (star: number) => {
     const isActive = star <= (hoverRating || rating);
     const fillColor = isActive
-      ? 'fill-yellow-400 text-yellow-400'
-      : 'fill-gray-200 text-gray-200 hover:fill-yellow-200 hover:text-yellow-200';
+      ? 'fill-[#B45309] text-[#B45309]'
+      : 'fill-[#E3E1EA] text-[#E3E1EA]';
 
     return `h-8 w-8 transition-colors ${fillColor}`;
   };

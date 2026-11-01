@@ -1,37 +1,29 @@
-import { Separator, Skeleton } from '@repo/ui';
+import { Skeleton } from '@repo/ui';
+import { REVIEWS_SCROLL_AREA_CLASS } from '../../reviews-modal.styles';
 import { useReviewsModalSkeleton } from './reviews-modal-skeleton.hook';
 
 export function SkeletonRatingBar() {
   return (
-    <div className="flex items-center gap-3">
+    <div className="mb-2 grid grid-cols-[16px_1fr_38px] items-center gap-2.5">
       <Skeleton className="h-4 w-4" />
-      <Skeleton className="h-3.5 w-3.5" />
-      <Skeleton className="flex-1 h-2 rounded-full" />
-      <Skeleton className="h-4 w-10" />
+      <Skeleton className="h-2 rounded-full" />
+      <Skeleton className="h-4 w-[38px]" />
     </div>
   );
 }
 
 export function SkeletonReviewCard() {
   return (
-    <div className="py-5 first:pt-0">
-      <div className="flex items-start gap-4">
-        <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+    <div className="grid grid-cols-[44px_1fr] gap-3 rounded-[14px] bg-[#F7F6FA] p-3.5">
+      <Skeleton className="size-11 rounded-full" />
 
-        <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex items-start justify-between gap-2">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-16" />
-          </div>
-
-          <Skeleton className="h-4 w-24" />
-
-          <div className="space-y-1.5">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-4/5" />
-            <Skeleton className="h-4 w-3/5" />
-          </div>
+      <div className="min-w-0 space-y-2">
+        <div className="flex justify-between gap-3">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-16" />
         </div>
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-4 w-4/5" />
       </div>
     </div>
   );
@@ -41,53 +33,31 @@ export function ReviewsModalSkeleton() {
   const { skeletonItems } = useReviewsModalSkeleton();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-200 flex-shrink-0">
+    <div aria-busy="true" className={REVIEWS_SCROLL_AREA_CLASS}>
+      <Skeleton className="h-8 w-64 max-w-[calc(100%-3rem)]" />
+      <Skeleton className="mt-2.5 h-4 w-48" />
+
+      <div className="mt-6 grid grid-cols-1 gap-6 border-b border-[#EBE9F0] pb-6 md:grid-cols-2 md:gap-8">
         <div>
-          <Skeleton className="h-7 w-56 mb-2" />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-4 w-40" />
-          </div>
+          <Skeleton className="mb-3 h-4 w-28" />
+          {skeletonItems.ratingBars.map((i) => (
+            <SkeletonRatingBar key={i} />
+          ))}
+        </div>
+
+        <div>
+          <Skeleton className="mb-3 h-4 w-48" />
+          <Skeleton className="mb-2 h-4 w-full" />
+          <Skeleton className="mb-3.5 h-4 w-3/4" />
+          <Skeleton className="h-12 w-full rounded-full md:w-56" />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-8">
-            {/* Left Column - Rating Distribution */}
-            <div>
-              <Skeleton className="h-4 w-48 mb-4" />
-              <div className="space-y-2.5">
-                {skeletonItems.ratingBars.map((i) => (
-                  <SkeletonRatingBar key={i} />
-                ))}
-              </div>
-            </div>
-
-            {/* Right Column - CTA */}
-            <div className="md:pl-4">
-              <Skeleton className="h-4 w-48 mb-3" />
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4 mb-4" />
-              <Skeleton className="h-10 w-full md:w-48 rounded-md" />
-            </div>
-          </div>
-
-          <Separator className="my-6" />
-
-          {/* Reviews List */}
-          <div>
-            <Skeleton className="h-4 w-40 mb-4" />
-            <div className="divide-y divide-gray-200">
-              {skeletonItems.reviewCards.map((i) => (
-                <SkeletonReviewCard key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
+      <Skeleton className="mt-6 mb-3 h-4 w-40" />
+      <div className="grid gap-2.5">
+        {skeletonItems.reviewCards.map((i) => (
+          <SkeletonReviewCard key={i} />
+        ))}
       </div>
     </div>
   );

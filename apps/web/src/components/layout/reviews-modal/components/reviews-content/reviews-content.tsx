@@ -1,7 +1,11 @@
-import { Button, Separator } from '@repo/ui';
+import { cn } from '@repo/ui';
+import {
+  REVIEWS_PRIMARY_BUTTON_CLASS,
+  REVIEWS_SCROLL_AREA_CLASS,
+  REVIEWS_SECTION_TITLE_CLASS,
+} from '../../reviews-modal.styles';
 import { RatingBar } from '../rating-bar';
 import { ReviewCard } from '../review-card';
-import { StarRating } from '../star-rating';
 import { WriteReviewForm } from '../write-review-form';
 import { useReviewsContent } from './reviews-content.hook';
 
@@ -9,95 +13,82 @@ export const ReviewsContent = () => {
   const {
     reviews,
     showWriteReview,
-    averageRating,
-    totalReviews,
-    ratingDistribution,
+    hasReviews,
+    formattedAverage,
+    totalLabel,
+    ratingBars,
     handleShowWriteReview,
   } = useReviewsContent();
 
   if (!reviews) return null;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-gray-200 flex-shrink-0">
-        <div>
-          <h2 className="text-xl md:text-2xl text-gray-900 mb-1">
-            Avaliações de Clientes
-          </h2>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <StarRating rating={averageRating} size="small" />
-            <span>
-              Baseado em <strong>{totalReviews} avaliações</strong>
-            </span>
+    <div className={REVIEWS_SCROLL_AREA_CLASS}>
+      <h2 className="pr-12 text-[28px] font-extrabold tracking-[-0.03em]">
+        Avaliações de clientes
+      </h2>
+      <p className="mt-1.5 text-[15px] text-[#5F5C6E]">
+        {hasReviews ? (
+          <>
+            <b className="text-[#0B0B0F]">★ {formattedAverage}</b> · Baseado em{' '}
+            {totalLabel}
+          </>
+        ) : (
+          'Ainda não há avaliações'
+        )}
+      </p>
+
+      {showWriteReview ? (
+        <WriteReviewForm />
+      ) : (
+        <>
+          <div className="mt-6 grid grid-cols-1 gap-6 border-b border-[#EBE9F0] pb-6 md:grid-cols-2 md:gap-8">
+            <div>
+              <h3 className={REVIEWS_SECTION_TITLE_CLASS}>Distribuição</h3>
+              {ratingBars.map(({ rating, percentage }) => (
+                <RatingBar
+                  key={rating}
+                  rating={rating}
+                  percentage={percentage}
+                />
+              ))}
+            </div>
+
+            <div>
+              <h3 className={REVIEWS_SECTION_TITLE_CLASS}>
+                Compartilhe sua opinião
+              </h3>
+              <p className="mb-3.5 text-sm leading-[1.55] text-[#5F5C6E]">
+                Se você usou este estabelecimento, conte como foi para outros
+                clientes.
+              </p>
+              <button
+                type="button"
+                onClick={handleShowWriteReview}
+                className={cn(
+                  REVIEWS_PRIMARY_BUTTON_CLASS,
+                  'w-full md:w-auto',
+                )}
+              >
+                Escrever uma avaliação
+              </button>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          {showWriteReview ? (
-            <WriteReviewForm />
-          ) : (
+          {hasReviews && (
             <>
-              <div className="grid md:grid-cols-2 gap-6 md:gap-8 mb-8">
-                {/* Left Column - Rating Distribution */}
-                <div>
-                  <h3 className="text-sm text-gray-600 mb-4">
-                    Distribuição de Avaliações
-                  </h3>
-                  <div className="space-y-2.5">
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                      <RatingBar
-                        key={rating}
-                        rating={rating}
-                        percentage={
-                          ratingDistribution[
-                            rating as keyof typeof ratingDistribution
-                          ] ?? 0
-                        }
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Right Column - CTA */}
-                <div className="md:pl-4">
-                  <h3 className="text-sm text-gray-600 mb-3">
-                    Compartilhe suas opiniões
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
-                    Se você usou este estabelecimento, compartilhe suas opiniões
-                    com outros clientes
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={handleShowWriteReview}
-                    className="w-full md:w-auto border-gray-300 hover:bg-gray-50"
-                  >
-                    Escrever uma avaliação
-                  </Button>
-                </div>
-              </div>
-
-              <Separator className="my-6" />
-
-              {/* Reviews List */}
-              <div>
-                <h3 className="text-sm text-gray-600 mb-4">
-                  Avaliações Recentes
-                </h3>
-                <div className="divide-y divide-gray-200">
-                  {reviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
-                  ))}
-                </div>
+              <h3 className={cn(REVIEWS_SECTION_TITLE_CLASS, 'mt-6')}>
+                Avaliações recentes
+              </h3>
+              <div className="grid gap-2.5">
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
               </div>
             </>
           )}
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 };

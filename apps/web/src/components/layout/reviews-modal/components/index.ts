@@ -10,5 +10,4 @@ export type { TStarRatingConfig, TStarRatingSize } from './star-rating';
 export type { TInteractiveStarRatingConfig } from './interactive-star-rating';
 export type { TRatingBarConfig } from './rating-bar';
 export type { TReviewCardConfig } from './review-card';
-export type { TWriteReviewFormConfig } from './write-review-form';
 export type { TReviewsContentConfig } from './reviews-content';

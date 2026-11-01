@@ -1,4 +1,6 @@
+import { cn } from '@repo/ui';
 import { Star } from 'lucide-react';
+import { REVIEWS_FOCUS_RING_CLASS } from '../../reviews-modal.styles';
 import { useInteractiveStarRating } from './interactive-star-rating.hook';
 import type { TInteractiveStarRatingConfig } from './interactive-star-rating.types';
 
@@ -20,12 +22,17 @@ export const InteractiveStarRating = ({
         <button
           key={star}
           type="button"
+          aria-label={`${star} de 5 estrelas`}
+          aria-pressed={star === rating}
           onClick={() => handleStarClick(star)}
           onMouseEnter={() => handleMouseEnter(star)}
           onMouseLeave={handleMouseLeave}
-          className="transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 rounded"
+          className={cn(
+            'grid size-11 cursor-pointer place-items-center rounded-full',
+            REVIEWS_FOCUS_RING_CLASS,
+          )}
         >
-          <Star className={getStarClassName(star)} />
+          <Star aria-hidden="true" className={getStarClassName(star)} />
         </button>
       ))}
     </div>

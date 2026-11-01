@@ -10,6 +10,7 @@ export const useWriteReviewForm = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const storeId = useReviewsStore((state) => state.storeId);
+  const businessName = useReviewsStore((state) => state.businessName);
   const setReviewsAttributesAction = useReviewsStore(
     (state) => state.setReviewsAttributesAction,
   );
@@ -96,6 +97,7 @@ export const useWriteReviewForm = () => {
   return {
     rating,
     comment,
+    businessName,
     isCreatingReview,
     isFormValid,
     commentLength: comment.length,

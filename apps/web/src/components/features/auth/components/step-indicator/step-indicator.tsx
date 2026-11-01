@@ -1,45 +1,20 @@
-import { useAuthStore } from '@/store/auth/auth.store';
-import { AuthStep } from '../../auth.types';
+import { cn } from '@repo/ui';
+import type { TStepIndicatorConfig } from './step-indicator.types';
 
-interface StepIndicatorProps {
-  currentStep: AuthStep;
-}
+const STEP_DOTS = [1, 2] as const;
 
-export function StepIndicator({ currentStep }: StepIndicatorProps) {
-  const isNewUser = useAuthStore((state) => state.isNewUser);
-
-  const steps = isNewUser
-    ? ['login', 'verification', 'signup', 'profile-selection']
-    : ['login', 'verification', 'profile-selection'];
-
-  const currentIndex = steps.indexOf(currentStep);
-
+export function StepIndicator({ activeCount }: TStepIndicatorConfig) {
   return (
-    <div className="flex justify-center mb-8">
-      <div className="flex items-center gap-2">
-        {steps.map((step, index) => (
-          <div key={step} className="flex items-center">
-            <div
-              className={`
-                w-2 h-2 rounded-full transition-all duration-300
-                ${
-                  index <= currentIndex
-                    ? 'bg-primary scale-125'
-                    : 'bg-border scale-100'
-                }
-              `}
-            />
-            {index < steps.length - 1 && (
-              <div
-                className={`
-                  w-8 h-0.5 mx-1 transition-all duration-300
-                  ${index < currentIndex ? 'bg-primary' : 'bg-border'}
-                `}
-              />
-            )}
-          </div>
-        ))}
-      </div>
+    <div aria-hidden="true" className="mb-5 flex justify-center gap-1.5">
+      {STEP_DOTS.map((dot) => (
+        <i
+          key={dot}
+          className={cn(
+            'h-1 w-6 rounded-full',
+            dot <= activeCount ? 'bg-[#0B0B0F]' : 'bg-[#EBE9F0]',
+          )}
+        />
+      ))}
     </div>
   );
 }

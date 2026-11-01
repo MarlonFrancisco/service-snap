@@ -1,6 +1,8 @@
 import { useReviewsStore } from '@/store';
 import { useCallback, useMemo } from 'react';
 
+const RATING_VALUES = [5, 4, 3, 2, 1];
+
 export const useReviewsContent = () => {
   const { reviews, showWriteReview, setReviewsAttributesAction } =
     useReviewsStore();
@@ -12,39 +14,41 @@ export const useReviewsContent = () => {
     );
   }, [reviews]);
 
-  const totalReviews = useMemo(() => reviews.length, [reviews]);
+  const totalReviews = reviews.length;
 
-  const ratingDistribution = useMemo(() => {
-    const distribution = reviews.reduce(
+  const ratingBars = useMemo(() => {
+    const distribution = reviews.reduce<Record<number, number>>(
       (acc, review) => {
         const rating = Math.floor(review.rating);
         acc[rating] = (acc[rating] || 0) + 1;
         return acc;
       },
-      {} as Record<number, number>,
+      {},
     );
 
-    // Calculate percentages
-    const distributionPercentage: Record<number, number> = {};
-    [5, 4, 3, 2, 1].forEach((rating) => {
-      const count = distribution[Math.floor(rating)] || 0;
-      distributionPercentage[rating] =
-        totalReviews > 0 ? Math.floor((count / totalReviews) * 100) : 0;
-    });
-
-    return distributionPercentage;
+    return RATING_VALUES.map((rating) => ({
+      rating,
+      percentage:
+        totalReviews > 0
+          ? Math.round(((distribution[rating] || 0) / totalReviews) * 100)
+          : 0,
+    }));
   }, [reviews, totalReviews]);
 
   const handleShowWriteReview = useCallback(() => {
     setReviewsAttributesAction({ showWriteReview: true });
-  }, []);
+  }, [setReviewsAttributesAction]);
 
   return {
     reviews,
     showWriteReview,
-    averageRating,
-    totalReviews,
-    ratingDistribution,
+    hasReviews: totalReviews > 0,
+    formattedAverage: averageRating.toLocaleString('pt-BR', {
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1,
+    }),
+    totalLabel: `${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`,
+    ratingBars,
     handleShowWriteReview,
   };
 };
