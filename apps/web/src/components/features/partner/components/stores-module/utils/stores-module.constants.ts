@@ -36,48 +36,6 @@ export const AMENITY_LABELS: Record<(typeof AMENITIES_LIST)[number], string> = {
   'Área de Espera': 'Área de espera',
 };
 
-export const INITIAL_STORE_FORM: {
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  description: string;
-  phone: string;
-  email: string;
-  website: string;
-  instagram: string;
-  facebook: string;
-  amenities: string[];
-} = {
-  name: '',
-  address: '',
-  city: '',
-  state: 'SP',
-  zipCode: '',
-  description: '',
-  phone: '',
-  email: '',
-  website: '',
-  instagram: '',
-  facebook: '',
-  amenities: [],
-};
-
-export const INITIAL_STAFF_FORM: {
-  name: string;
-  email: string;
-  phone: string;
-  role: 'professional';
-  specialty: string;
-} = {
-  name: '',
-  email: '',
-  phone: '',
-  role: 'professional',
-  specialty: '',
-};
-
 export const STAFF_ROLES = {
   owner: {
     label: 'Proprietário',

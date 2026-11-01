@@ -1,7 +1,11 @@
 import type { IStore } from '@/types/api/stores.types';
+
 import type { IProfessional, TProfessionalRole } from '@/types/api/users.types';
+
 import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
+
 import type { TPlanUsage } from '../stores-module.types';
+
 import {
   AMENITIES_LIST,
   STAFF_ROLES,
@@ -84,21 +88,4 @@ export const getProfessionalDisplay = (professional: IProfessional) => {
       : null,
     hasPendingData: !user.firstName || !user.lastName || !user.telephone,
   };
-};
-
-export const validateStoreForm = (form: {
-  name: string;
-  address: string;
-  city: string;
-  phone: string;
-}): boolean => {
-  return !!(form.name && form.address && form.city && form.phone);
-};
-
-export const validateStaffForm = (form: {
-  name: string;
-  email: string;
-  phone: string;
-}): boolean => {
-  return !!(form.name && form.email && form.phone);
 };

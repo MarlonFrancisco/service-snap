@@ -39,22 +39,7 @@ export type TMarketingNotificationSettings = {
   enabled: boolean;
 };
 
-export type TNotificationSettings = {
-  unitId: string;
-  unitName: string;
-  emailReminders: TEmailReminderSettings;
-  smsReminders: TSmsReminderSettings;
-  newBookingNotifications: TNewBookingNotificationSettings;
-  cancellationNotifications: TCancellationNotificationSettings;
-  marketingNotifications: TMarketingNotificationSettings;
-};
-
 export type TTimingOption = {
   value: string;
   label: string;
-};
-
-export type TPreviewModal = {
-  isOpen: boolean;
-  type: TNotificationPreviewType;
 };
