@@ -3,7 +3,6 @@ import {
   setCategoriesAction,
   setCategoryModalParamsAction,
   setFilterCategoryAction,
-  setFilteredServicesAction,
   setSearchQueryAction,
   setServiceModalParamsAction,
   setServicesAction,
@@ -17,7 +16,6 @@ export const useServicesStore = create<IServicesStore>((set, get) => ({
   category: INITIAL_CATEGORY,
   service: INITIAL_SERVICE,
   services: [],
-  filteredServices: [],
   categories: [],
   searchQuery: '',
   filterCategory: 'all',
@@ -29,6 +27,5 @@ export const useServicesStore = create<IServicesStore>((set, get) => ({
   setFilterCategory: setFilterCategoryAction(set, get),
   setServiceModalParams: setServiceModalParamsAction(set, get),
   setServices: setServicesAction(set, get),
-  setFilteredServices: setFilteredServicesAction(set, get),
   setCategories: setCategoriesAction(set, get),
 }));

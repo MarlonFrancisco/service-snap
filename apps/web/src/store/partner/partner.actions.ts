@@ -6,10 +6,3 @@ export const setActiveStoreAction: TStoreAction<IPartnerStore, IStore> =
   (set) => async (store) => {
     set({ activeStore: store });
   };
-
-export const setIsMobileSidebarOpenAction: TStoreAction<
-  IPartnerStore,
-  boolean
-> = (set) => async (isOpen) => {
-  set({ isMobileSidebarOpen: isOpen });
-};

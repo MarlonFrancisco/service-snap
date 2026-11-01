@@ -4,7 +4,6 @@ export interface IServicesStore {
   category: ICategory;
   service: IService;
   services: IService[];
-  filteredServices: IService[];
   categories: ICategory[];
   isCategoryModalOpen: boolean;
   isServiceModalOpen: boolean;
@@ -13,7 +12,6 @@ export interface IServicesStore {
 
   setServices: (services: IService[]) => void;
   setCategories: (categories: ICategory[]) => void;
-  setFilteredServices: (filteredServices: IService[]) => void;
   setSearchQuery: (searchQuery: string) => Promise<void>;
   setFilterCategory: (filterCategory: string) => Promise<void>;
   setCategoryModalParams: (params: {

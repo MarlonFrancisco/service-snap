@@ -13,9 +13,7 @@ export type TModuleId =
 
 export interface IPartnerStore {
   activeStore: IStore;
-  isMobileSidebarOpen: boolean;
 
   // Actions
   setActiveStore: (store: IStore) => Promise<void>;
-  setIsMobileSidebarOpen: (isOpen: boolean) => Promise<void>;
 }
