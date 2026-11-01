@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { StoreAccessGuard } from '../../guards';
 import { NotificationsSettingsDto } from './dto/settings.dto';
 import { NotificationsSettings } from './settings.entity';
 import { NotificationsSettingsService } from './settings.service';
 
 @Controller('partner/stores/:storeId/notifications/settings')
+@UseGuards(StoreAccessGuard)
 export class NotificationsSettingsController {
   constructor(
     private readonly notificationsSettingsService: NotificationsSettingsService,

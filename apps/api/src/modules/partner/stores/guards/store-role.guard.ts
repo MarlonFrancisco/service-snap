@@ -6,7 +6,10 @@ import {
   SetMetadata,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import type { JwtPayload } from '../../../auth/auth.service';
+import { Store } from '../store.entity';
 import { StoreMemberService } from '../store-member/store-member.service';
 
 export const REQUIRED_ROLES_KEY = 'requiredRoles';
@@ -34,6 +37,8 @@ export class StoreRoleGuard implements CanActivate {
   constructor(
     private readonly storeMemberService: StoreMemberService,
     private readonly reflector: Reflector,
+    @InjectRepository(Store)
+    private readonly storeRepository: Repository<Store>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -66,15 +71,29 @@ export class StoreRoleGuard implements CanActivate {
       user.sub,
     );
 
-    if (!storeMember) {
+    if (storeMember && requiredRoles.includes(storeMember.role)) {
+      // Injeta dados no request
+      request.storeMember = storeMember;
+      request.storeMemberRole = storeMember.role;
+
+      return true;
+    }
+
+    // O dono pode não ser membro, ou ser membro com outra role (ex.: professional)
+    const isOwner =
+      requiredRoles.includes('owner') &&
+      (await this.storeRepository.exists({
+        where: { id: storeId as string, owner: { id: user.sub } },
+      }));
+
+    if (!isOwner) {
       throw new ForbiddenException(
         `You must have one of these roles: ${requiredRoles.join(', ')}`,
       );
     }
 
-    // Injeta dados no request
-    request.storeMember = storeMember;
-    request.storeMemberRole = storeMember.role;
+    request.storeMember = storeMember ?? undefined;
+    request.storeMemberRole = 'owner';
 
     return true;
   }

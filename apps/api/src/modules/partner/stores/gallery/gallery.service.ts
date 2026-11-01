@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import sharp from 'sharp';
 import { Repository, UpdateResult } from 'typeorm';
@@ -17,7 +17,11 @@ export class GalleryService {
   ) {}
 
   async create(galleryDto: CreateGalleryDto): Promise<Gallery> {
-    let gallery = this.galleryRepository.create(galleryDto);
+    // Com `id` no corpo, o save sobrescreveria uma imagem existente
+    let gallery = this.galleryRepository.create({
+      ...galleryDto,
+      id: undefined,
+    });
 
     gallery = await this.galleryRepository.save(gallery);
 
@@ -43,14 +47,25 @@ export class GalleryService {
   }
 
   async update(gallery: UpdateGalleryDto): Promise<UpdateResult> {
-    return await this.galleryRepository.update(gallery.id, gallery);
+    return await this.galleryRepository.update(
+      { id: gallery.id, store: { id: gallery.store.id } },
+      gallery,
+    );
   }
 
   async delete(
     storeId: string,
     id: string,
   ): Promise<{ id: string; store: Store }> {
-    await this.galleryRepository.delete(id);
+    const result = await this.galleryRepository.delete({
+      id,
+      store: { id: storeId },
+    });
+
+    if (!result.affected) {
+      throw new NotFoundException('Gallery image not found');
+    }
+
     await this.storageService.deleteFile({
       bucket: 'stores',
       path: `${storeId}/gallery/${id}.webp`,
@@ -60,6 +75,15 @@ export class GalleryService {
   }
 
   async updateMainImage(gallery: UpdateGalleryDto): Promise<Gallery> {
+    // Confere antes de desmarcar a imagem principal atual
+    const exists = await this.galleryRepository.exists({
+      where: { id: gallery.id, store: { id: gallery.store.id } },
+    });
+
+    if (!exists) {
+      throw new NotFoundException('Gallery image not found');
+    }
+
     const image = await this.galleryRepository.findOne({
       where: { store: { id: gallery.store.id }, isMain: true },
     });

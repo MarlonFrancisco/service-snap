@@ -6,12 +6,15 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { StoreAccessGuard } from '../guards';
 import { CreateGalleryDto } from './dto/create-gallery.dto';
 import { UpdateGalleryDto } from './dto/update-gallery.dto';
 import { GalleryService } from './gallery.service';
 
 @Controller('partner/stores/:storeId/gallery')
+@UseGuards(StoreAccessGuard)
 export class GalleryController {
   constructor(private readonly galleryService: GalleryService) {}
 

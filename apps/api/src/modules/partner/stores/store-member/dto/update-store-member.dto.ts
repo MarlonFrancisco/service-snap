@@ -2,10 +2,12 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
 import type { Service } from '../../category/service/service.entity';
+import type { Store } from '../../store.entity';
 
 export class UpdateStoreMemberDto {
   @IsString()
@@ -22,4 +24,8 @@ export class UpdateStoreMemberDto {
   @IsArray()
   @IsOptional()
   services: Partial<Service>[];
+
+  @IsObject()
+  @IsOptional()
+  store: Partial<Store>;
 }

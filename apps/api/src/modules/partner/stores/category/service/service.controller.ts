@@ -6,12 +6,15 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { StoreAccessGuard } from '../../guards';
 import { ServiceDto } from './service.dto';
 import { ServiceService } from './service.service';
 
 @Controller('partner/stores/:storeId/categories/:categoryId/services')
+@UseGuards(StoreAccessGuard)
 export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
@@ -21,8 +24,8 @@ export class ServiceController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.serviceService.findOne(id);
+  async findOne(@Param('storeId') storeId: string, @Param('id') id: string) {
+    return this.serviceService.findOneInStore(storeId, id);
   }
 
   @Post()
@@ -42,6 +45,7 @@ export class ServiceController {
 
   @Put(':id')
   async update(
+    @Param('storeId') storeId: string,
     @Param('id') id: string,
     @Param('categoryId') categoryId: string,
     @Body() service: ServiceDto,
@@ -50,6 +54,7 @@ export class ServiceController {
       plainToInstance(ServiceDto, {
         ...service,
         id,
+        store: { id: storeId },
         category: { id: categoryId },
       }),
     );
@@ -57,10 +62,11 @@ export class ServiceController {
 
   @Delete(':id')
   async delete(
+    @Param('storeId') storeId: string,
     @Param('id') id: string,
     @Param('categoryId') categoryId: string,
   ) {
-    await this.serviceService.delete(id);
+    await this.serviceService.delete(storeId, id);
     return { id, category: { id: categoryId } };
   }
 }

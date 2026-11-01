@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ReviewDto } from './dto/review.dto';
@@ -12,7 +12,11 @@ export class ReviewService {
   ) {}
 
   async create(review: ReviewDto): Promise<Review> {
-    const createdReview = await this.reviewRepository.save(review);
+    // Com `id` no corpo, o save sobrescreveria uma avaliação existente
+    const createdReview = await this.reviewRepository.save({
+      ...review,
+      id: undefined,
+    });
     return this.findOne(createdReview.id);
   }
 
@@ -52,13 +56,50 @@ export class ReviewService {
     });
   }
 
-  async update(id: string, review: ReviewDto): Promise<Review> {
-    await this.reviewRepository.update(id, review);
+  async findOneInStore(storeId: string, id: string): Promise<Review> {
+    const review = await this.findOne(id);
+
+    if (review?.store?.id !== storeId) {
+      throw new NotFoundException('Review not found');
+    }
+
+    return review;
+  }
+
+  async update(
+    storeId: string,
+    id: string,
+    userId: string,
+    review: ReviewDto,
+  ): Promise<Review> {
+    // Só nota e comentário: o corpo não troca o autor nem a loja da avaliação
+    const result = await this.reviewRepository.update(
+      { id, store: { id: storeId }, user: { id: userId } },
+      { rating: review.rating, comment: review.comment },
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('Review not found');
+    }
+
     return this.findOne(id);
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    await this.reviewRepository.delete(id);
+  async delete(
+    storeId: string,
+    id: string,
+    userId: string,
+  ): Promise<{ id: string }> {
+    const result = await this.reviewRepository.delete({
+      id,
+      store: { id: storeId },
+      user: { id: userId },
+    });
+
+    if (!result.affected) {
+      throw new NotFoundException('Review not found');
+    }
+
     return { id };
   }
 }

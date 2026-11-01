@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateNotificationHistoryDto } from './dto/update-notifications-history.dto';
@@ -66,10 +66,20 @@ export class NotificationsHistoryService {
   }
 
   async update(
+    storeId: string,
     id: string,
     notificationsHistory: UpdateNotificationHistoryDto,
   ): Promise<UpdateNotificationHistoryDto> {
-    await this.notificationsHistoryRepository.update(id, notificationsHistory);
+    // O `id` e a loja vêm da URL: o corpo não troca nenhum dos dois
+    const result = await this.notificationsHistoryRepository.update(
+      { id, store: { id: storeId } },
+      { ...notificationsHistory, id, store: { id: storeId } },
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('Notification not found');
+    }
+
     return notificationsHistory;
   }
 
@@ -82,8 +92,16 @@ export class NotificationsHistoryService {
     return storeId;
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    await this.notificationsHistoryRepository.delete(id);
+  async delete(storeId: string, id: string): Promise<{ id: string }> {
+    const result = await this.notificationsHistoryRepository.delete({
+      id,
+      store: { id: storeId },
+    });
+
+    if (!result.affected) {
+      throw new NotFoundException('Notification not found');
+    }
+
     return { id };
   }
 }

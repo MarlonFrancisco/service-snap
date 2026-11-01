@@ -7,11 +7,14 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { StoreAccessGuard } from '../../guards';
 import { UpdateNotificationHistoryDto } from './dto/update-notifications-history.dto';
 import { NotificationsHistoryService } from './history.service';
 
 @Controller('partner/stores/:storeId/notifications/history')
+@UseGuards(StoreAccessGuard)
 export class NotificationsHistoryController {
   constructor(
     private readonly notificationsHistoryService: NotificationsHistoryService,
@@ -35,10 +38,15 @@ export class NotificationsHistoryController {
 
   @Patch(':id')
   async update(
+    @Param('storeId') storeId: string,
     @Param('id') id: string,
     @Body() notificationsHistory: UpdateNotificationHistoryDto,
   ) {
-    return this.notificationsHistoryService.update(id, notificationsHistory);
+    return this.notificationsHistoryService.update(
+      storeId,
+      id,
+      notificationsHistory,
+    );
   }
 
   @Post('mark-all-as-read')
@@ -47,7 +55,7 @@ export class NotificationsHistoryController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return this.notificationsHistoryService.delete(id);
+  async delete(@Param('storeId') storeId: string, @Param('id') id: string) {
+    return this.notificationsHistoryService.delete(storeId, id);
   }
 }

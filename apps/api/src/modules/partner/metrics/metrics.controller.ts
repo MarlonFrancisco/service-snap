@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { StoreAccessGuard } from '../stores/guards';
 import { DashboardCustomersService } from './dashboard-customers/dashboard-customers.service';
 import { DashboardOperationalService } from './dashboard-operational/dashboard-operational.service';
 import { DashboardOverviewService } from './dashboard-overview/dashboard-overview.service';
@@ -11,7 +12,7 @@ type OperationalPeriodType = 'week' | 'month' | 'quarter';
 type CustomersPeriodType = 'week' | 'month' | 'quarter';
 
 @Controller('partner/stores/:storeId/metrics')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, StoreAccessGuard)
 export class MetricsController {
   constructor(
     private readonly dashboardOverviewService: DashboardOverviewService,

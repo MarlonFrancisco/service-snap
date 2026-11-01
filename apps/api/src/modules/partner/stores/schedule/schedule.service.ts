@@ -148,6 +148,8 @@ export class ScheduleService {
 
       const nextSchedule = {
         ...scheduleDto,
+        // Com `id` no corpo, o save sobrescreveria um agendamento existente
+        id: undefined,
         startTime,
         endTime: scheduleEndTime,
         service: { id: service.id },
@@ -216,12 +218,28 @@ export class ScheduleService {
   }
 
   async update(schedule: ScheduleDto): Promise<Schedule> {
-    await this.scheduleRepository.update(schedule.id, schedule);
+    const result = await this.scheduleRepository.update(
+      { id: schedule.id, store: { id: schedule.store.id } },
+      schedule,
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('Schedule not found');
+    }
+
     return this.findOne(schedule.id);
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    await this.scheduleRepository.update(id, { status: 'cancelled' });
+  async delete(storeId: string, id: string): Promise<{ id: string }> {
+    const result = await this.scheduleRepository.update(
+      { id, store: { id: storeId } },
+      { status: 'cancelled' },
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('Schedule not found');
+    }
+
     return { id };
   }
 

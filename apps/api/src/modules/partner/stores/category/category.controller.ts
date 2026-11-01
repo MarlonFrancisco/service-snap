@@ -6,12 +6,15 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { StoreAccessGuard } from '../guards';
 import { CategoryDto } from './category.dto';
 import { CategoryService } from './category.service';
 
 @Controller('partner/stores/:storeId/categories')
+@UseGuards(StoreAccessGuard)
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
@@ -21,8 +24,8 @@ export class CategoryController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.categoryService.findOne(id);
+  async findOne(@Param('storeId') storeId: string, @Param('id') id: string) {
+    return this.categoryService.findOne(storeId, id);
   }
 
   @Post()
@@ -47,7 +50,7 @@ export class CategoryController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return this.categoryService.delete(id);
+  async delete(@Param('storeId') storeId: string, @Param('id') id: string) {
+    return this.categoryService.delete(storeId, id);
   }
 }

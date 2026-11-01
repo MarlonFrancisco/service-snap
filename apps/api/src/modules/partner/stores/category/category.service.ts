@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CategoryDto } from './category.dto';
@@ -12,7 +12,8 @@ export class CategoryService {
   ) {}
 
   async create(category: CategoryDto): Promise<Category> {
-    return this.categoryRepository.save(category);
+    // Com `id` no corpo, o save sobrescreveria uma categoria existente
+    return this.categoryRepository.save({ ...category, id: undefined });
   }
 
   async findAll(storeId: string): Promise<Category[]> {
@@ -23,24 +24,46 @@ export class CategoryService {
   }
 
   async findOne(
+    storeId: string,
     id: string,
     includeServices: boolean = false,
   ): Promise<Category> {
     const relations = includeServices ? ['services'] : [];
 
-    return this.categoryRepository.findOne({
-      where: { id },
+    const category = await this.categoryRepository.findOne({
+      where: { id, store: { id: storeId } },
       relations,
     });
-  }
 
-  async update(category: CategoryDto): Promise<CategoryDto> {
-    await this.categoryRepository.update(category.id, category);
+    if (!category) {
+      throw new NotFoundException('Category not found');
+    }
+
     return category;
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    await this.categoryRepository.delete(id);
+  async update(category: CategoryDto): Promise<CategoryDto> {
+    const result = await this.categoryRepository.update(
+      { id: category.id, store: { id: category.store.id } },
+      category,
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('Category not found');
+    }
+
+    return category;
+  }
+
+  async delete(storeId: string, id: string): Promise<{ id: string }> {
+    const result = await this.categoryRepository.delete({
+      id,
+      store: { id: storeId },
+    });
+
+    if (!result.affected) {
+      throw new NotFoundException('Category not found');
+    }
 
     return { id };
   }

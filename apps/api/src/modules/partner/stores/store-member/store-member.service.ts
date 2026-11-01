@@ -80,6 +80,8 @@ export class StoreMemberService {
 
     const storeMember = this.storeMemberRepository.create({
       ...storeMemberDto,
+      // Com `id` no corpo, o save sobrescreveria um membro existente
+      id: undefined,
       user: { id: user.id },
       services: [],
     });
@@ -133,10 +135,14 @@ export class StoreMemberService {
   }
 
   async update(storeMemberDto: UpdateStoreMemberDto): Promise<StoreMember> {
-    const storeMember = await this.storeMemberRepository.findOneOrFail({
-      where: { id: storeMemberDto.id },
+    const storeMember = await this.storeMemberRepository.findOne({
+      where: { id: storeMemberDto.id, store: { id: storeMemberDto.store.id } },
       relations: ['services', 'user', 'store', 'blockedTimes'],
     });
+
+    if (!storeMember) {
+      throw new NotFoundException('Store member not found');
+    }
 
     if (storeMemberDto.role) {
       storeMember.role = storeMemberDto.role;
@@ -157,10 +163,14 @@ export class StoreMemberService {
     storeId: string,
     id: string,
   ): Promise<{ id: string; store: Store }> {
-    await this.storeMemberRepository.delete({
+    const result = await this.storeMemberRepository.delete({
       id,
       store: { id: storeId },
     });
+
+    if (!result.affected) {
+      throw new NotFoundException('Store member not found');
+    }
 
     return { id, store: { id: storeId } as Store };
   }
