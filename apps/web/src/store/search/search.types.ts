@@ -16,6 +16,7 @@ export interface IStoreSearchListItem
   > {
   gallery: string[];
   price: string;
+  averagePrice: string | null;
   location: string;
   rating: number;
   reviewCount: number;

@@ -31,6 +31,12 @@ export const isSearchPage = (pathname: string) => {
   return pathname === '/booking';
 };
 
+export const formatRating = (rating: number) =>
+  rating.toLocaleString('pt-BR', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
+
 export const fromStoresToSearch = (stores?: ISearchResult[]) => {
   if (!stores) return [];
 
@@ -43,8 +49,16 @@ export const fromStoresToSearch = (stores?: ISearchResult[]) => {
       result.content.services.reduce((sum, service) => sum + service.price, 0) /
       result.content.services.length;
 
-    const price = averagePrice
-      ? `Média de ${formatStorePrice(averagePrice, result.metadata.currency, result.content.country)}`
+    const formattedAveragePrice = averagePrice
+      ? formatStorePrice(
+          averagePrice,
+          result.metadata.currency,
+          result.content.country,
+        )
+      : null;
+
+    const price = formattedAveragePrice
+      ? `Média de ${formattedAveragePrice}`
       : 'A consultar';
 
     return {
@@ -54,6 +68,7 @@ export const fromStoresToSearch = (stores?: ISearchResult[]) => {
       reviewCount: reviews.length,
       location: `${result.content.city}, ${result.content.state}`,
       price,
+      averagePrice: formattedAveragePrice,
       gallery: result.metadata.gallery.map((image) => image.url),
       description: result.content.description,
       phone: result.metadata.telephone,

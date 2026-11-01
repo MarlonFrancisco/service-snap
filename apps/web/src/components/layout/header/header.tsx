@@ -7,6 +7,7 @@ import type { THeaderConfig } from './header.types';
 
 export const Header = ({
   showSearchBar = false,
+  hideMobileSearchIcon = false,
   children,
   className,
   ...props
@@ -19,7 +20,10 @@ export const Header = ({
       )}
       {...props}
     >
-      <MarketplaceHeader showSearchBar={showSearchBar} />
+      <MarketplaceHeader
+        showSearchBar={showSearchBar}
+        hideMobileSearchIcon={hideMobileSearchIcon}
+      />
 
       <div className={cn('min-h-screen', HEADER_OFFSET_CLASS)}>{children}</div>
     </div>

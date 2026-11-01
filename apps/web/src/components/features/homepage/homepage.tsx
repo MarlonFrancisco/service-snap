@@ -2,6 +2,7 @@
   Footer,
   HEADER_OFFSET_BARE_CLASS,
   MarketplaceHeader,
+  MobileTabBar,
 } from '@/components/layout';
 import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui';
@@ -10,7 +11,6 @@ import { CategoryTabs } from './components/category-tabs';
 import { DiscoverySearch } from './components/discovery-search';
 import { ExperienceRows } from './components/experience-rows';
 import { ExperienceRowsSkeleton } from './components/experience-rows/experience-rows-skeleton';
-import { HomeTabBar } from './components/home-tab-bar';
 import { PartnerBanner } from './components/partner-banner';
 
 export const Homepage = () => {
@@ -31,7 +31,7 @@ export const Homepage = () => {
         <PartnerBanner />
       </main>
       <Footer />
-      <HomeTabBar />
+      <MobileTabBar />
     </div>
   );
 };

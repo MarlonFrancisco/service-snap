@@ -1,3 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
-
-export type TFooterConfig = ButtonHTMLAttributes<HTMLElement>;
+export type TFooterConfig = {
+  /** Só a linha final, sem as colunas de links; oculto no mobile. */
+  compact?: boolean;
+};

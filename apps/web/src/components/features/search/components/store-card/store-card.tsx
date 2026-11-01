@@ -40,7 +40,7 @@ export function StoreCard({
         location: store.location,
         rating: store.rating,
         reviewCount: store.reviewCount,
-        price: store.price,
+        averagePrice: store.averagePrice,
         gallery: store.gallery,
         services: store.services,
       }}
@@ -48,6 +48,7 @@ export function StoreCard({
       onClick={handleClick}
       showAvailabilityBadge
       showServiceBadge
+      imageAspectRatio={isMobile ? 4 / 3 : 1}
     />
   );
 }

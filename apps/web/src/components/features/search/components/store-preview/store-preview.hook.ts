@@ -1,13 +1,27 @@
 import useSearchStore from '@/store/search/search.store';
 import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
+import { formatRating } from '@/utils/helpers/search.helper';
 import { generateStoreWhatsAppLink } from '@/utils/helpers/whatsapp.helper';
 import { useRouter } from 'next/navigation';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+/** Foto, resumo e botão são fixos; em telas baixas a foto cede espaço aos detalhes. */
+const SHORT_SCREEN_QUERY = '(max-height: 800px)';
 
 export function useStorePreview() {
   const selectedStore = useSearchStore((state) => state.selectedStore);
   const router = useRouter();
+  const [isShortScreen, setIsShortScreen] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia(SHORT_SCREEN_QUERY);
+    const handleChange = () => setIsShortScreen(media.matches);
+
+    handleChange();
+    media.addEventListener('change', handleChange);
+    return () => media.removeEventListener('change', handleChange);
+  }, []);
 
   const handleBookingClick = useCallback(() => {
     if (!selectedStore) return;
@@ -44,10 +58,21 @@ export function useStorePreview() {
 
   const displayReviews = selectedStore ? selectedStore.reviews.slice(0, 3) : [];
 
+  const ratingSummary = selectedStore
+    ? [
+        selectedStore.reviewCount > 0
+          ? `${formatRating(selectedStore.rating)} · ${selectedStore.reviewCount} ${selectedStore.reviewCount === 1 ? 'avaliação' : 'avaliações'}`
+          : 'Novo',
+        selectedStore.location,
+      ].join(' · ')
+    : '';
+
   return {
     selectedStore,
     formattedPrice,
     formattedHours,
+    ratingSummary,
+    imageAspectRatio: isShortScreen ? 21 / 9 : 16 / 10,
     whatsAppLink,
     showCarouselControls,
     hasReviews,

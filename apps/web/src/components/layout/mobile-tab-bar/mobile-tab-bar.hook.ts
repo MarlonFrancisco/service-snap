@@ -1,9 +1,11 @@
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useAuthStore } from '@/store/auth/auth.store';
+import { usePathname } from 'next/navigation';
 import type { MouseEvent } from 'react';
 import { useCallback } from 'react';
 
-export const useHomeTabBar = () => {
+export const useMobileTabBar = () => {
+  const pathname = usePathname();
   const openAuthAction = useAuthStore((state) => state.openAuthAction);
   const { isLoggedIn } = useUserQuery();
 
@@ -18,5 +20,5 @@ export const useHomeTabBar = () => {
     [isLoggedIn, openAuthAction],
   );
 
-  return { handleProtectedClick };
+  return { isHome: pathname === '/', handleProtectedClick };
 };

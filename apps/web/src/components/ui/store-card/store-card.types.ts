@@ -4,7 +4,8 @@ export interface IStoreCardData {
   location: string;
   rating: number;
   reviewCount: number;
-  price: string;
+  /** Preço médio formatado; `null` quando a loja não tem serviços com preço. */
+  averagePrice: string | null;
   gallery: string[];
   services?: Array<{ id: string; name: string }>;
 }
@@ -20,4 +21,6 @@ export interface StoreCardProps {
   showAvailabilityBadge?: boolean;
   /** Mostra o badge do serviço principal */
   showServiceBadge?: boolean;
+  /** Proporção da imagem (largura / altura) */
+  imageAspectRatio?: number;
 }

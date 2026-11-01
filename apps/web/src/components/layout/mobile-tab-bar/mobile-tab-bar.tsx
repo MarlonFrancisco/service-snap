@@ -2,7 +2,7 @@
 
 import { CalendarDays, Heart, Search, UserRound } from 'lucide-react';
 import Link from 'next/link';
-import { useHomeTabBar } from './home-tab-bar.hook';
+import { useMobileTabBar } from './mobile-tab-bar.hook';
 
 const TAB_CLASS =
   'flex min-h-11 min-w-16 flex-col items-center gap-1 py-1.5 text-[11px] font-semibold';
@@ -14,8 +14,8 @@ const PROTECTED_TABS = [
   { label: 'Perfil', href: '/profile?tab=settings', icon: UserRound },
 ];
 
-export const HomeTabBar = () => {
-  const { handleProtectedClick } = useHomeTabBar();
+export const MobileTabBar = () => {
+  const { isHome, handleProtectedClick } = useMobileTabBar();
 
   return (
     <nav
@@ -24,7 +24,7 @@ export const HomeTabBar = () => {
     >
       <Link
         href="/"
-        aria-current="page"
+        aria-current={isHome ? 'page' : undefined}
         className={`${TAB_CLASS} text-[#9810FA]`}
       >
         <Search className={ICON_CLASS} strokeWidth={1.7} aria-hidden />

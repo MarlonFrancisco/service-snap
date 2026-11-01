@@ -1,7 +1,13 @@
 'use client';
-import { Footer, Header, HEADER_STICKY_TOP_CLASS } from '@/components/layout';
+import {
+  Footer,
+  Header,
+  HEADER_STICKY_TOP_CLASS,
+  MobileTabBar,
+} from '@/components/layout';
 import { NotFound } from '@/components/ui';
 import { useSearchQuery } from '@/hooks/use-query/use-search-query';
+import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui/index';
 import { Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -11,6 +17,7 @@ import {
   StoreDetailsDrawer,
   StorePreview,
 } from './components';
+import { MobileSearchPill } from './components/mobile-search-pill';
 
 export function SearchResults() {
   const router = useRouter();
@@ -26,15 +33,15 @@ export function SearchResults() {
   const showResults = !isPending && hasResults;
 
   return (
-    <Header showSearchBar>
-      <div className="mx-auto h-full w-full max-w-[82.5rem] px-5 md:px-10">
-        {isPending && (
-          <div className="grid min-h-[calc(100vh-180px)] grid-cols-12 gap-0 lg:gap-10">
-            <div className="col-span-12 py-6 lg:col-span-7 xl:col-span-7">
-              <ResultsListSkeleton />
-            </div>
-          </div>
-        )}
+    <Header
+      showSearchBar
+      hideMobileSearchIcon
+      className={cn(plusJakartaSans.className, 'bg-white')}
+    >
+      <MobileSearchPill />
+
+      <div className="mx-auto h-full w-full max-w-[82.5rem] px-5 md:px-10 lg:pt-4">
+        {isPending && <ResultsListSkeleton />}
 
         {isError && (
           <NotFound
@@ -64,15 +71,13 @@ export function SearchResults() {
 
         <div
           className={cn(
-            'grid min-h-[calc(100vh-180px)] grid-cols-12 gap-0 lg:gap-10',
+            'grid-cols-1 gap-10 lg:grid-cols-[1fr_420px]',
             showResults ? 'grid' : 'hidden',
           )}
         >
-          <div className="col-span-12 lg:col-span-7 xl:col-span-7">
-            <ResultsList />
-          </div>
+          <ResultsList />
 
-          <div className="col-span-5 hidden lg:block xl:col-span-5">
+          <div className="hidden lg:block">
             <div className={cn('sticky', HEADER_STICKY_TOP_CLASS)}>
               <div className="slide-up">
                 <StorePreview />
@@ -82,7 +87,8 @@ export function SearchResults() {
         </div>
       </div>
 
-      <Footer />
+      <Footer compact />
+      <MobileTabBar />
       <StoreDetailsDrawer />
     </Header>
   );

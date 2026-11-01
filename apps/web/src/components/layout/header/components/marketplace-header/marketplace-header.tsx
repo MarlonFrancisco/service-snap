@@ -21,12 +21,15 @@ import {
 
 type TMarketplaceHeaderConfig = {
   showSearchBar?: boolean;
+  /** Para páginas com busca própria no mobile. */
+  hideMobileSearchIcon?: boolean;
   /** Atalho para a busca da própria página, visível quando ela sai da tela. */
   compactSearch?: boolean;
 };
 
 export const MarketplaceHeader = ({
   showSearchBar = false,
+  hideMobileSearchIcon = false,
   compactSearch = false,
 }: TMarketplaceHeaderConfig = {}) => {
   const [isLocaleOpen, setIsLocaleOpen] = useState(false);
@@ -103,7 +106,7 @@ export const MarketplaceHeader = ({
             >
               {partnerLabel}
             </Link>
-            {showSearchBar ? (
+            {showSearchBar && !hideMobileSearchIcon ? (
               <button
                 type="button"
                 aria-label="Abrir busca"
