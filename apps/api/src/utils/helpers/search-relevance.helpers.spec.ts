@@ -112,4 +112,23 @@ describe('filterAndRankSearchHits', () => {
     const ranked = filterAndRankSearchHits(hits, parseSearchIntent('Barbearia'));
     expect(ranked).toEqual([]);
   });
+
+  it('breaks rank ties by id regardless of input order', () => {
+    const intent = parseSearchIntent('camisa');
+    const hits = [hit({ id: 'b' }), hit({ id: 'c' }), hit({ id: 'a' })];
+
+    const ranked = filterAndRankSearchHits(hits, intent);
+    const reversed = filterAndRankSearchHits([...hits].reverse(), intent);
+
+    expect(ranked.map((item) => item.id)).toEqual(['a', 'b', 'c']);
+    expect(reversed.map((item) => item.id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('keeps higher relevance ahead of the id tie-break', () => {
+    const hits = [hit({ id: 'a', score: 1 }), hit({ id: 'z', score: 2 })];
+
+    const ranked = filterAndRankSearchHits(hits, parseSearchIntent('camisa'));
+
+    expect(ranked.map((item) => item.id)).toEqual(['z', 'a']);
+  });
 });

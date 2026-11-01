@@ -119,6 +119,9 @@ export class UpstashSearchService {
         query: query || '*',
         limit: options?.limit ?? 100,
         filter: options?.filter,
+        // Enrichment rewrites the query on every call, which changes scores and
+        // order between identical requests and breaks SSR hydration.
+        inputEnrichment: false,
       });
 
       return Array.isArray(results) ? results : [];

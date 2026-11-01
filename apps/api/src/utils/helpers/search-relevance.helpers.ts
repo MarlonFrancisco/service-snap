@@ -261,7 +261,7 @@ export function filterAndRankSearchHits(
       hit,
       rank: (hit.score ?? 0) + relevanceBoost(hit, intent),
     }))
-    .sort((a, b) => b.rank - a.rank)
+    .sort((a, b) => b.rank - a.rank || a.hit.id.localeCompare(b.hit.id))
     .map(({ hit, rank }) => ({
       ...hit,
       score: rank,
