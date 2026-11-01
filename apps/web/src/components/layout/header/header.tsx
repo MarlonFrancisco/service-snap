@@ -3,6 +3,7 @@
 import { cn } from '@repo/ui/index';
 import { MarketplaceHeader } from './components/marketplace-header';
 import {
+  HEADER_OFFSET_BARE_CLASS,
   HEADER_OFFSET_CLASS,
   HEADER_OFFSET_WITH_SEARCH_CLASS,
 } from './header.constants';
@@ -15,6 +16,12 @@ export const Header = ({
   className,
   ...props
 }: THeaderConfig) => {
+  const contentOffset = showSearchBar
+    ? HEADER_OFFSET_WITH_SEARCH_CLASS
+    : showCategories
+      ? HEADER_OFFSET_CLASS
+      : HEADER_OFFSET_BARE_CLASS;
+
   return (
     <div
       className={cn(
@@ -28,16 +35,7 @@ export const Header = ({
         showSearchBar={showSearchBar}
       />
 
-      <div
-        className={cn(
-          'min-h-screen',
-          showSearchBar
-            ? HEADER_OFFSET_WITH_SEARCH_CLASS
-            : HEADER_OFFSET_CLASS,
-        )}
-      >
-        {children}
-      </div>
+      <div className={cn('min-h-screen', contentOffset)}>{children}</div>
     </div>
   );
 };

@@ -156,27 +156,30 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="border-gray-200 w-full">
-        <CardHeader className="border-b border-gray-200 pb-6">
-          <div className="flex items-start justify-between">
+      <Card className="w-full overflow-hidden rounded-2xl border-[#E4E4E7] shadow-sm">
+        <CardHeader className="border-b border-[#E4E4E7] pb-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-gray-900 rounded-lg">
+              <div className="shrink-0 rounded-xl bg-[#0A0A0A] p-3">
                 <Calculator className="h-5 w-5 text-white" />
               </div>
               <div>
-                <CardTitle className="text-gray-900 mb-1">
+                <CardTitle className="mb-1 font-semibold tracking-tight text-[#0A0A0A]">
                   Calculadora de ROI
                 </CardTitle>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[#2B2B2B]">
                   Informe os números do seu negócio para simular o retorno
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="border-gray-900 text-gray-900">
+            <Badge
+              variant="outline"
+              className="w-fit shrink-0 border-[#0A0A0A] text-[#0A0A0A]"
+            >
               Resultado em tempo real
             </Badge>
           </div>
-          <p className="mt-4 text-xs text-gray-500">{ROI_DISCLAIMER}</p>
+          <p className="mt-4 text-xs text-[#71717A]">{ROI_DISCLAIMER}</p>
         </CardHeader>
 
         <CardContent className="p-6">
@@ -184,8 +187,8 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
             {/* Left: Inputs */}
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">
+                <h3 className="text-sm text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center text-xs">
                     1
                   </div>
                   Configure seus dados
@@ -195,15 +198,15 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                   {/* Agendamentos slider */}
                   <div className="group">
                     <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm text-gray-700 flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-400" />
+                      <Label className="text-sm text-[#2B2B2B] flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-[#A1A1AA]" />
                         Agendamentos/mês
                       </Label>
                       <div className="text-right">
-                        <div className="text-lg text-gray-900 tabular-nums">
+                        <div className="text-lg text-[#0A0A0A] tabular-nums">
                           {monthlyAppointments[0]}
                         </div>
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-[#71717A]">
                           agendamentos
                         </div>
                       </div>
@@ -216,7 +219,7 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                       step={10}
                       className="cursor-pointer"
                     />
-                    <div className="flex justify-between mt-1.5 text-xs text-gray-400">
+                    <div className="flex justify-between mt-1.5 text-xs text-[#A1A1AA]">
                       <span>0</span>
                       <span>500</span>
                     </div>
@@ -226,13 +229,13 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                   <div className="group">
                     <Label
                       htmlFor="avgPrice"
-                      className="text-sm text-gray-700 mb-2 flex items-center gap-2"
+                      className="text-sm text-[#2B2B2B] mb-2 flex items-center gap-2"
                     >
-                      <DollarSign className="h-4 w-4 text-gray-400" />
+                      <DollarSign className="h-4 w-4 text-[#A1A1AA]" />
                       Preço médio por serviço
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]">
                         R$
                       </span>
                       <Input
@@ -254,15 +257,15 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                   {/* Taxa de faltas */}
                   <div className="group">
                     <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm text-gray-700 flex items-center gap-2">
-                        <Percent className="h-4 w-4 text-gray-400" />
+                      <Label className="text-sm text-[#2B2B2B] flex items-center gap-2">
+                        <Percent className="h-4 w-4 text-[#A1A1AA]" />
                         Taxa de no-show
                       </Label>
                       <div className="text-right">
-                        <div className="text-lg text-gray-900 tabular-nums">
+                        <div className="text-lg text-[#0A0A0A] tabular-nums">
                           {noShowRate[0]}%
                         </div>
-                        <div className="text-xs text-gray-500">atual</div>
+                        <div className="text-xs text-[#71717A]">atual</div>
                       </div>
                     </div>
                     <Slider
@@ -273,7 +276,7 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                       step={1}
                       className="cursor-pointer"
                     />
-                    <div className="flex justify-between mt-1.5 text-xs text-gray-400">
+                    <div className="flex justify-between mt-1.5 text-xs text-[#A1A1AA]">
                       <span>0%</span>
                       <span>30%</span>
                     </div>
@@ -283,12 +286,12 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                   <div className="group">
                     <Label
                       htmlFor="planPrice"
-                      className="text-sm text-gray-700 mb-2 block"
+                      className="text-sm text-[#2B2B2B] mb-2 block"
                     >
                       Valor do plano mensal
                     </Label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]">
                         R$
                       </span>
                       <Input
@@ -314,8 +317,8 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
             {/* Right: Results Preview */}
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm text-gray-900 mb-4 flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">
+                <h3 className="text-sm text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center text-xs">
                     2
                   </div>
                   Seu retorno estimado
@@ -325,33 +328,33 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                   {/* Monthly gain */}
                   <motion.div
                     layout
-                    className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    className="p-4 bg-[#F4F4F5] rounded-xl border border-[#E4E4E7]"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-[#2B2B2B]">
                         Ganho mensal
                       </span>
-                      <TrendingUp className="h-4 w-4 text-gray-400" />
+                      <TrendingUp className="h-4 w-4 text-[#A1A1AA]" />
                     </div>
-                    <div className="text-2xl text-gray-900 tabular-nums">
+                    <div className="text-2xl text-[#0A0A0A] tabular-nums">
                       R$ <AnimatedNumber value={monthlyGain} />
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">por mês</div>
+                    <div className="text-xs text-[#71717A] mt-1">por mês</div>
                   </motion.div>
 
                   {/* Annual ROI */}
                   <motion.div
                     layout
-                    className="p-4 bg-gray-50 rounded-lg border border-gray-200"
+                    className="p-4 bg-[#F4F4F5] rounded-xl border border-[#E4E4E7]"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">ROI anual</span>
-                      <Target className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-[#2B2B2B]">ROI anual</span>
+                      <Target className="h-4 w-4 text-[#A1A1AA]" />
                     </div>
-                    <div className="text-2xl text-gray-900 tabular-nums">
+                    <div className="text-2xl text-[#0A0A0A] tabular-nums">
                       R$ <AnimatedNumber value={netAnnualROI} />
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-[#71717A] mt-1">
                       <AnimatedNumber value={roiPercentage} suffix="%" /> de
                       retorno
                     </div>
@@ -360,16 +363,16 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                   {/* Payback */}
                   <motion.div
                     layout
-                    className="p-4 bg-gray-900 text-white rounded-lg"
+                    className="p-4 bg-[#0A0A0A] text-white rounded-xl"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-300">Payback</span>
-                      <Check className="h-4 w-4 text-gray-400" />
+                      <span className="text-sm text-[#D4D4D8]">Payback</span>
+                      <Check className="h-4 w-4 text-[#A1A1AA]" />
                     </div>
                     <div className="text-2xl tabular-nums">
                       <AnimatedNumber value={paybackMonths} /> meses
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-[#A1A1AA] mt-1">
                       para recuperar investimento
                     </div>
                   </motion.div>
@@ -379,9 +382,9 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
           </div>
 
           {/* Detailed comparison */}
-          <div className="pt-6 border-t border-gray-200">
-            <h3 className="text-sm text-gray-900 mb-4 flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gray-900 text-white flex items-center justify-center text-xs">
+          <div className="pt-6 border-t border-[#E4E4E7]">
+            <h3 className="text-sm text-[#0A0A0A] mb-4 flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-[#0A0A0A] text-white flex items-center justify-center text-xs">
                 3
               </div>
               Comparação detalhada
@@ -406,32 +409,32 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="p-4 bg-white rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+                    className="p-4 bg-white rounded-xl border border-[#E4E4E7] hover:border-[#D4D4D8] transition-colors"
                   >
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="p-1.5 bg-gray-100 rounded">
-                        <Icon className="h-3.5 w-3.5 text-gray-900" />
+                      <div className="p-1.5 bg-[#F4F4F5] rounded">
+                        <Icon className="h-3.5 w-3.5 text-[#0A0A0A]" />
                       </div>
-                      <h4 className="text-sm text-gray-900">{benefit.title}</h4>
+                      <h4 className="text-sm text-[#0A0A0A]">{benefit.title}</h4>
                     </div>
 
                     <div className="space-y-3">
                       {/* Current state */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs text-gray-500">Atual</span>
-                          <span className="text-sm text-gray-900 tabular-nums">
+                          <span className="text-xs text-[#71717A]">Atual</span>
+                          <span className="text-sm text-[#0A0A0A] tabular-nums">
                             {benefit.current}
                           </span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-[#F4F4F5] rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{
                               width: `${Math.min(100, currentPercent)}%`,
                             }}
                             transition={{ duration: 0.8, ease: 'easeOut' }}
-                            className="h-full bg-gray-300 rounded-full"
+                            className="h-full bg-[#D4D4D8] rounded-full"
                           />
                         </div>
                       </div>
@@ -439,14 +442,14 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                       {/* Improved state */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-[#71717A]">
                             Com ServiceSnap
                           </span>
-                          <span className="text-sm text-gray-900 tabular-nums">
+                          <span className="text-sm text-[#0A0A0A] tabular-nums">
                             {benefit.improved}
                           </span>
                         </div>
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-[#F4F4F5] rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{
@@ -457,14 +460,14 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
                               delay: 0.2,
                               ease: 'easeOut',
                             }}
-                            className="h-full bg-gray-900 rounded-full"
+                            className="h-full bg-[#0A0A0A] rounded-full"
                           />
                         </div>
                       </div>
 
                       {/* Impact */}
-                      <div className="pt-3 border-t border-gray-100">
-                        <div className="text-xs text-gray-900 text-center py-1 px-2 bg-gray-50 rounded">
+                      <div className="pt-3 border-t border-[#F4F4F5]">
+                        <div className="text-xs text-[#0A0A0A] text-center py-1 px-2 bg-[#F4F4F5] rounded">
                           {benefit.impact}
                         </div>
                       </div>
@@ -486,44 +489,44 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className="border-gray-200 overflow-hidden">
+            <Card className="border-[#E4E4E7] overflow-hidden">
               <CardContent className="p-6">
-                <h4 className="text-sm text-gray-900 mb-4 flex items-center gap-2">
-                  <Calculator className="h-4 w-4 text-gray-400" />
+                <h4 className="text-sm text-[#0A0A0A] mb-4 flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-[#A1A1AA]" />
                   Detalhamento do cálculo
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                  <div className="flex justify-between p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Receita mensal atual</span>
-                    <span className="text-gray-900 tabular-nums">
+                  <div className="flex justify-between p-3 bg-[#F4F4F5] rounded">
+                    <span className="text-[#2B2B2B]">Receita mensal atual</span>
+                    <span className="text-[#0A0A0A] tabular-nums">
                       R$ {Math.max(0, currentRevenue).toFixed(0)}
                     </span>
                   </div>
-                  <div className="flex justify-between p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Perda por no-show</span>
-                    <span className="text-gray-900 tabular-nums">
+                  <div className="flex justify-between p-3 bg-[#F4F4F5] rounded">
+                    <span className="text-[#2B2B2B]">Perda por no-show</span>
+                    <span className="text-[#0A0A0A] tabular-nums">
                       -R$ {Math.max(0, lostRevenueNoShow).toFixed(0)}
                     </span>
                   </div>
-                  <div className="flex justify-between p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Nova receita mensal</span>
-                    <span className="text-gray-900 tabular-nums">
+                  <div className="flex justify-between p-3 bg-[#F4F4F5] rounded">
+                    <span className="text-[#2B2B2B]">Nova receita mensal</span>
+                    <span className="text-[#0A0A0A] tabular-nums">
                       R$ {Math.max(0, newRevenue).toFixed(0)}
                     </span>
                   </div>
-                  <div className="flex justify-between p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Nova perda (reduzida)</span>
-                    <span className="text-gray-900 tabular-nums">
+                  <div className="flex justify-between p-3 bg-[#F4F4F5] rounded">
+                    <span className="text-[#2B2B2B]">Nova perda (reduzida)</span>
+                    <span className="text-[#0A0A0A] tabular-nums">
                       -R$ {Math.max(0, newLostRevenue).toFixed(0)}
                     </span>
                   </div>
-                  <div className="flex justify-between p-3 bg-gray-50 rounded">
-                    <span className="text-gray-600">Custo do plano</span>
-                    <span className="text-gray-900 tabular-nums">
+                  <div className="flex justify-between p-3 bg-[#F4F4F5] rounded">
+                    <span className="text-[#2B2B2B]">Custo do plano</span>
+                    <span className="text-[#0A0A0A] tabular-nums">
                       -R$ {Math.max(0, selectedPlan).toFixed(0)}
                     </span>
                   </div>
-                  <div className="flex justify-between p-3 bg-gray-900 text-white rounded">
+                  <div className="flex justify-between p-3 bg-[#0A0A0A] text-white rounded">
                     <span>Ganho líquido mensal</span>
                     <span className="tabular-nums">
                       +R$ {Math.max(0, monthlyGain).toFixed(0)}
@@ -540,7 +543,7 @@ export function ROICalculator({ monthlyPlanPrice }: ROICalculatorProps) {
         <Button
           variant="outline"
           onClick={() => setShowDetails(!showDetails)}
-          className="border-gray-300"
+          className="border-[#D4D4D8]"
         >
           {showDetails ? 'Ocultar' : 'Ver'} detalhes do cálculo
           <ChevronDown
