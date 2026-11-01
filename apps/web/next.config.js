@@ -54,6 +54,15 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@repo/ui', 'lucide-react'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/v2',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

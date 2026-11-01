@@ -1,40 +1,25 @@
-'use client';
-
-import { Footer, Header } from '@/components/layout';
-import { motion } from 'motion/react';
-import { lazy, Suspense } from 'react';
-import { HeroSection } from './components';
-import { FeaturesSkeleton } from './components/features-skeleton';
-import { RecommendationsSkeleton } from './components/recomendations/components/recommendations-skeleton';
-
-const Recomendations = lazy(() =>
-  import('./components/recomendations').then((module) => ({
-    default: module.Recomendations,
-  })),
-);
-
-const Features = lazy(() =>
-  import('./components/features').then((module) => ({
-    default: module.Features,
-  })),
-);
+﻿import { Footer } from '@/components/layout';
+import { Suspense } from 'react';
+import { CategoryRail } from './components/category-rail';
+import { DiscoverySearch } from './components/discovery-search';
+import { ExperienceRows } from './components/experience-rows';
+import { ExperienceRowsSkeleton } from './components/experience-rows/experience-rows-skeleton';
+import { MarketplaceHeader } from './components/marketplace-header';
+import { PartnerBanner } from './components/partner-banner';
 
 export const Homepage = () => {
   return (
-    <Header>
-      <motion.div className="pt-12">
-        <HeroSection />
-
-        <Suspense fallback={<RecommendationsSkeleton />}>
-          <Recomendations />
+    <div className="min-h-screen bg-[#FAFAFA] font-[family-name:var(--font-mona-sans)] text-[#0A0A0A] antialiased">
+      <MarketplaceHeader />
+      <main className="min-h-[calc(100vh-80px)] bg-[#FAFAFA] pt-20">
+        <CategoryRail />
+        <DiscoverySearch />
+        <Suspense fallback={<ExperienceRowsSkeleton />}>
+          <ExperienceRows />
         </Suspense>
-
-        <Suspense fallback={<FeaturesSkeleton />}>
-          <Features />
-        </Suspense>
-
-        <Footer />
-      </motion.div>
-    </Header>
+        <PartnerBanner />
+      </main>
+      <Footer />
+    </div>
   );
 };

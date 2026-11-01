@@ -1,60 +1,102 @@
-import { PUBLIC_CATEGORY_NAMES } from '@/utils/constants/public-categories.constants';
-import { Calendar, MapPin, Star, Users } from 'lucide-react';
+﻿import {
+  Brush,
+  Dumbbell,
+  Flower2,
+  HeartPulse,
+  PawPrint,
+  Scissors,
+  Smile,
+  Sparkles,
+  SprayCan,
+} from 'lucide-react';
+import type {
+  TExperienceRowConfig,
+  TMarketplaceCategory,
+} from './homepage.types';
 
-const categoryMeta: Record<
-  (typeof PUBLIC_CATEGORY_NAMES)[number],
-  { count: string; icon: string }
-> = {
-  'Salão de Beleza': { count: '1.2K+', icon: '💄' },
-  Barbearia: { count: '890', icon: '✂️' },
-  'Spa & Massagem': { count: '450', icon: '🧘‍♀️' },
-  Odontologia: { count: '320', icon: '🦷' },
-  'Personal Trainer': { count: '760', icon: '💪' },
-  Estética: { count: '540', icon: '✨' },
-  Manicure: { count: '680', icon: '💅' },
-  Psicologia: { count: '420', icon: '🧠' },
-  Nutrição: { count: '380', icon: '🥗' },
-  Fisioterapia: { count: '510', icon: '🏥' },
-  Pilates: { count: '290', icon: '🤸‍♀️' },
-  Tatuagem: { count: '340', icon: '🎨' },
-  'Pet Shop': { count: '620', icon: '🐶' },
-  Fotografia: { count: '280', icon: '📸' },
-  Mecânica: { count: '450', icon: '🔧' },
-  Limpeza: { count: '590', icon: '🧹' },
-  Advocacia: { count: '310', icon: '⚖️' },
-  Contabilidade: { count: '270', icon: '📊' },
-  Academia: { count: '720', icon: '🏋️' },
-  Yoga: { count: '330', icon: '🧘' },
-  Veterinário: { count: '410', icon: '🩺' },
-  Dermatologia: { count: '390', icon: '💆' },
-  Consultoria: { count: '260', icon: '💼' },
-  Design: { count: '350', icon: '🎨' },
-  Marketing: { count: '300', icon: '📱' },
-  Carpintaria: { count: '240', icon: '🪵' },
-  Jardinagem: { count: '370', icon: '🌱' },
-  Eletricista: { count: '490', icon: '⚡' },
-  Encanador: { count: '460', icon: '🔩' },
-  Pintura: { count: '380', icon: '🎨' },
-};
-
-export const featuredCategories = PUBLIC_CATEGORY_NAMES.map((name) => ({
-  name,
-  ...categoryMeta[name],
-}));
-
-export const stats = [
+export const MARKETPLACE_CATEGORIES: TMarketplaceCategory[] = [
+  { id: 'barbearias', label: 'Barbearias', query: 'Barbearia', icon: Scissors },
   {
-    label: 'Agendamentos hoje',
-    value: '2.4K',
-    icon: Calendar,
-    color: 'text-blue-600',
+    id: 'saloes',
+    label: 'Salões de Beleza',
+    query: 'Salão de Beleza',
+    icon: Sparkles,
   },
   {
-    label: 'Profissionais ativos',
-    value: '3.2K',
-    icon: Users,
-    color: 'text-green-600',
+    id: 'spas',
+    label: 'Spas & Massagens',
+    query: 'Spa & Massagem',
+    icon: Flower2,
   },
-  { label: 'Cidades', value: '150+', icon: MapPin, color: 'text-purple-600' },
-  { label: 'Avaliação', value: '4.9', icon: Star, color: 'text-yellow-600' },
+  {
+    id: 'bem-estar',
+    label: 'Bem-estar & Terapias',
+    query: 'Bem-estar',
+    icon: HeartPulse,
+  },
+  {
+    id: 'faciais',
+    label: 'Cuidados Faciais',
+    query: 'Estética',
+    icon: SprayCan,
+  },
+  {
+    id: 'personal',
+    label: 'Personal Trainers',
+    query: 'Personal Trainer',
+    icon: Dumbbell,
+  },
+  {
+    id: 'manicure',
+    label: 'Manicure & Pedicure',
+    query: 'Manicure',
+    icon: Brush,
+  },
+  {
+    id: 'odonto',
+    label: 'Odonto Estética',
+    query: 'Odontologia',
+    icon: Smile,
+  },
+  { id: 'pet', label: 'Pet Care & Banho', query: 'Pet Shop', icon: PawPrint },
 ];
+
+export const EXPERIENCE_ROW_CONFIGS: TExperienceRowConfig[] = [
+  {
+    id: 'populares',
+    title: 'Experiências e cuidados populares',
+    query: 'serviços',
+    source: 'popular',
+  },
+  {
+    id: 'hoje',
+    title: 'Com vaga ainda hoje',
+    query: 'Barbearia',
+    category: 'Barbearia',
+    source: 'search',
+  },
+  {
+    id: 'spas',
+    title: 'Spas e massagens perto de você',
+    query: 'Spa & Massagem',
+    category: 'Spa & Massagem',
+    source: 'search',
+  },
+  {
+    id: 'saloes',
+    title: 'Salões em alta nesta semana',
+    query: 'Salão de Beleza',
+    category: 'Salão de Beleza',
+    source: 'search',
+  },
+  {
+    id: 'bem-estar',
+    title: 'Bem-estar para a semana',
+    query: 'Bem-estar',
+    category: 'Bem-estar',
+    source: 'search',
+  },
+];
+
+export const PARTNER_IMAGE =
+  'https://lh3.googleusercontent.com/aida-public/AB6AXuDnLMhfq8g8I4yekRj35IanA1UPKmFNoEswf70wslB0Dddei9wTkYPBWmBC65aRPQDJib2nm8XS3VMUH_KctexnPuPMGzH-ugeCSeacwnZ5fKuLEFnuC0b9_g0viuKjj3jbLNcAfTdGeW5Yt90dTZzR_ttWzKfQ_hmCgtMUrKGOSXiIdu7IbpC2aJAu4vZ9YXjOSqkQuvNhvbU4yk6wpGztiaFeZLcYRP108wbCilKj';
