@@ -1,0 +1,26 @@
+# O plano Hobby da Vercel recusa crons com mais de uma execução por dia, o que não
+# atende antecedências curtas. Fica inerte até a variável abaixo ser definida.
+# Configuração: variável REMINDERS_CRON_URL e segredo CRON_SECRET no repositório.
+name: Lembretes de agendamento
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  send:
+    if: ${{ vars.REMINDERS_CRON_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Chamar o endpoint da API
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          REMINDERS_CRON_URL: ${{ vars.REMINDERS_CRON_URL }}
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 280 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$REMINDERS_CRON_URL"
