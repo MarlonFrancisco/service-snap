@@ -97,7 +97,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('Usuário não encontrado');
     }
 
     const authCode = await this.userService.findAuthCode(user.id);

@@ -80,7 +80,7 @@ export class StoreMemberService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException('Usuário não encontrado');
     }
 
     const storeMember = this.storeMemberRepository.create({
