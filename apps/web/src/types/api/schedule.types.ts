@@ -21,6 +21,12 @@ export interface IAppointment {
   store: IStore;
 }
 
+export interface IAvailabilitySlot {
+  time: string;
+  available: boolean;
+  storeMemberId: string | null;
+}
+
 export interface ICreateAppointment {
   id: string;
   startTime: string;

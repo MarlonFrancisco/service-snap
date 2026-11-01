@@ -3,15 +3,15 @@
 import { useScheduleMutations } from '@/hooks';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useAuthStore } from '@/store/auth/auth.store';
-import { IAppointment } from '@/types/api/schedule.types';
-import { IProfessional, IUser } from '@/types/api/users.types';
+import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
+import { IUser } from '@/types/api/users.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
-import { getInitials } from '../../booking.helpers';
+import { buildSchedulePayload, getInitials } from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
 
@@ -38,18 +38,31 @@ export function CheckoutStep() {
   const handleSchedule = () => {
     form.handleSubmit(
       (data) => {
+        const startTime = data.selectedTime!;
+        const date = data.selectedDate!;
+
+        // Em "Qualquer profissional", quem atende vem do horário escolhido
+        const professionalId = data.isAnyProfessional
+          ? data.assignedProfessionalId
+          : data.selectedProfessional?.id;
+
+        if (!professionalId) {
+          toast.error(
+            'Nenhum profissional está disponível neste horário. Volte e escolha outro horário.',
+          );
+          return;
+        }
+
         createSchedule(
           {
             user,
-            startTime: data.selectedTime!,
-            endTime: data.selectedTime!,
-            date: data.selectedDate!.toISOString().split('T')[0],
-            services: data.selectedServices.map((service) => ({
-              id: service.id,
-              duration: service.duration,
-            })),
-            storeMember: { id: data.selectedProfessional!.id } as IProfessional,
-          },
+            ...buildSchedulePayload({
+              services: data.selectedServices,
+              date,
+              startTime,
+              professionalId,
+            }),
+          } as Partial<ICreateAppointment>,
           {
             onSuccess: (data: IAppointment[]) => {
               const queryClient = getQueryClient();

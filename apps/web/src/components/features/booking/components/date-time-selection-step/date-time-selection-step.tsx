@@ -1,14 +1,18 @@
 'use client';
-import { generateTimeSlots } from '@/store/admin/agenda/agenda.helpers';
+import { useAvailabilityQuery } from '@/hooks/use-query/use-availability-query';
+import { IAvailabilitySlot } from '@/types/api/schedule.types';
 import { TWorkingDays } from '@/types/api/stores.types';
 import { cn } from '@repo/ui';
 import { motion } from 'motion/react';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { groupSlotsByPeriod } from '../../booking.helpers';
+import {
+  getLocalDateKey,
+  getServiceIdsByQuantity,
+  groupSlotsByPeriod,
+} from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
-import { ITimeSlot } from '../../booking.types';
 import { BookingCalendar } from './booking-calendar';
 import { DatePickerHorizontal } from './date-picker-horizontal';
 import { SkeletonTimeSlots } from './skeleton-time-slots';
@@ -23,69 +27,37 @@ export function DateTimeSelectionStep() {
   const selectedDate = watch('selectedDate');
   const selectedTime = watch('selectedTime');
   const selectedProfessional = watch('selectedProfessional');
-  const [availableSlots, setAvailableSlots] = useState<ITimeSlot[]>([]);
-  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const isAnyProfessional = watch('isAnyProfessional');
 
-  const generateMockSlots = (): ITimeSlot[] => {
-    const selectedDateToIso = selectedDate?.toISOString().split('T')[0];
+  const { slots, isLoadingSlots, isSlotsError } = useAvailabilityQuery({
+    storeId: store?.id,
+    date: selectedDate ? getLocalDateKey(selectedDate) : undefined,
+    serviceIds: getServiceIdsByQuantity(selectedServices),
+    memberId: isAnyProfessional ? undefined : selectedProfessional?.id,
+  });
+  const availableSlots = slots ?? [];
 
-    const slots: ITimeSlot[] = [];
-
-    const hours = generateTimeSlots({
-      openTime: store?.openTime || '',
-      closeTime: store?.closeTime || '',
-      lunchStartTime: store?.lunchStartTime || '',
-      lunchEndTime: store?.lunchEndTime || '',
-    });
-
-    hours.forEach((time) => {
-      const isBlockedTime = selectedProfessional?.blockedTimes?.some(
-        (blockedTime) =>
-          blockedTime.date === selectedDateToIso && blockedTime.time === time,
-      );
-
-      const isScheduledTime = selectedProfessional?.schedules?.some(
-        (schedule) => {
-          const startTimeNormalized = schedule.startTime.replace(':', '');
-          const endTimeNormalized = schedule.endTime.replace(':', '');
-          const timeNormalized = time.replace(':', '');
-
-          return (
-            schedule.date === selectedDateToIso &&
-            startTimeNormalized <= timeNormalized &&
-            endTimeNormalized > timeNormalized
-          );
-        },
-      );
-
-      slots.push({
-        time,
-        available: !isBlockedTime && !isScheduledTime,
-      });
-    });
-
-    return slots;
-  };
-
+  // Ao voltar para a etapa, o horário escolhido pode ter deixado de valer
   useEffect(() => {
-    if (!selectedDate) return;
+    if (!slots || !selectedTime) return;
 
-    setIsLoadingSlots(true);
-
-    setTimeout(() => {
-      const slots = generateMockSlots();
-      setAvailableSlots(slots);
-      setIsLoadingSlots(false);
-    }, 500);
-  }, [selectedDate]);
+    const slot = slots.find(({ time }) => time === selectedTime);
+    setValue('selectedTime', slot?.available ? selectedTime : null);
+    setValue(
+      'assignedProfessionalId',
+      slot?.available ? slot.storeMemberId : null,
+    );
+  }, [slots]);
 
   const handleDateSelect = (date: Date | undefined) => {
     setValue('selectedDate', date);
     setValue('selectedTime', null);
+    setValue('assignedProfessionalId', null);
   };
 
-  const handleTimeSelect = (time: string) => {
-    setValue('selectedTime', time);
+  const handleTimeSelect = (slot: IAvailabilitySlot) => {
+    setValue('selectedTime', slot.time);
+    setValue('assignedProfessionalId', slot.storeMemberId);
   };
 
   const formatDate = (date: Date) => {
@@ -177,7 +149,11 @@ export function DateTimeSelectionStep() {
                 {formatDate(selectedDate)}
               </p>
 
-              {availableSlots.length === 0 ? (
+              {isSlotsError ? (
+                <p role="alert" className={EMPTY_NOTICE_CLASS}>
+                  Não foi possível carregar os horários. Tente novamente.
+                </p>
+              ) : availableSlots.length === 0 ? (
                 <p className={EMPTY_NOTICE_CLASS}>
                   Nenhum horário disponível nesta data
                 </p>
@@ -198,7 +174,7 @@ export function DateTimeSelectionStep() {
                             disabled={!slot.available}
                             aria-pressed={isSelected}
                             aria-label={`Selecionar horário ${slot.time}`}
-                            onClick={() => handleTimeSelect(slot.time)}
+                            onClick={() => handleTimeSelect(slot)}
                             className={cn(
                               'h-12 rounded-full border text-sm font-semibold transition-colors disabled:cursor-default disabled:border-[#F0EEF4] disabled:bg-[#F7F6FA] disabled:text-[#8D8A9B] disabled:line-through',
                               isSelected

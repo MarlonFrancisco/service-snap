@@ -61,6 +61,7 @@ export const BookingFormSchema = z.object({
     })
     .nullish(),
   isAnyProfessional: z.boolean(),
+  assignedProfessionalId: z.string().nullish(),
   selectedDate: z.date().nullish(),
   selectedTime: z.string().nullish(),
 });

@@ -83,13 +83,8 @@ export function ProfessionalSelectionStep() {
       hasIncompatibleCombination,
     });
 
-    // Configurar mensagens de validação
+    // Só bloqueia quando ninguém atende: com parciais, basta escolher um da lista
     if (hasIncompatibleCombination) {
-      form.setError('root', {
-        message:
-          'Esta combinação de serviços não pode ser realizada por nenhum profissional desta unidade. Por favor, volte ao Passo 1 e remova um serviço para prosseguir.',
-      });
-    } else if (!canUseAny && professionalsWhoCanDoSome.length > 0) {
       form.setError('root', {
         message:
           'Esta combinação de serviços não pode ser realizada por nenhum profissional desta unidade. Por favor, volte ao Passo 1 e remova um serviço para prosseguir.',

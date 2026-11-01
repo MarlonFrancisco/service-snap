@@ -1,3 +1,4 @@
+import { isApiHttpError } from '@/service/api';
 import { ScheduleService } from '@/service/partner/schedule/schedule.service';
 import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
 import { useMutation } from '@tanstack/react-query';
@@ -11,8 +12,12 @@ export const useScheduleMutations = ({ storeId }: { storeId: string }) => {
       onSuccess: () => {
         toast.success('Agendamento criado com sucesso');
       },
-      onError: () => {
-        toast.error('Erro ao criar agendamento');
+      onError: (error) => {
+        toast.error(
+          isApiHttpError(error) && error.status === 409
+            ? 'Este horário acabou de ser ocupado. Volte e escolha outro horário.'
+            : 'Erro ao criar agendamento',
+        );
       },
     },
   );

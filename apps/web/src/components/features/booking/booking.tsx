@@ -8,7 +8,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { STEPS } from './booking.constants';
+import {
+  getBookingTotals,
+  splitServicesByProfessional,
+} from './booking.helpers';
 import { BookingFormSchema, TBookingFormData } from './booking.schema';
 import { TBookingStep } from './booking.types';
 import { BookingNotFound } from './components/booking-not-found';
@@ -36,6 +41,7 @@ export function BookingFlow() {
       selectedServices: [],
       selectedProfessional: null,
       isAnyProfessional: false,
+      assignedProfessionalId: null,
       selectedDate: undefined,
       selectedTime: null,
     },
@@ -87,7 +93,26 @@ export function BookingFlow() {
     }
   })();
 
+  // A reserva tem um único profissional: o pedido fica só com o que ele realiza.
+  const removeServicesUnavailableForProfessional = () => {
+    if (currentStep !== 'professional' || !selectedProfessional) return;
+
+    const { performable, unavailable } = splitServicesByProfessional(
+      selectedServices,
+      selectedProfessional,
+    );
+
+    if (unavailable.length > 0) {
+      form.setValue('selectedServices', performable);
+      toast.info(
+        `Removido do pedido: ${unavailable.map((s) => s.name).join(', ')}. O profissional escolhido não realiza.`,
+      );
+    }
+  };
+
   const handleNextStep = () => {
+    removeServicesUnavailableForProfessional();
+
     const stepIndex = steps.findIndex((step) => step.id === currentStep);
     if (stepIndex < steps.length - 1) {
       setCurrentStep(steps[stepIndex + 1]!.id);
@@ -104,15 +129,7 @@ export function BookingFlow() {
     }
   };
 
-  const totalPrice = selectedServices.reduce(
-    (acc, service) => acc + service.price,
-    0,
-  );
-
-  const totalDuration = selectedServices.reduce(
-    (acc, service) => acc + service.duration,
-    0,
-  );
+  const { totalPrice, totalDuration } = getBookingTotals(selectedServices);
 
   const renderStepContent = () => {
     switch (currentStep) {

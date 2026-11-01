@@ -65,8 +65,9 @@ export function ServiceSelectionStep() {
     } else {
       if (existingServiceIndex !== -1) {
         // Update existing service quantity
-        const newServices = [...selectedServices];
-        newServices[existingServiceIndex]!.quantity = newQuantity;
+        const newServices = selectedServices.map((s) =>
+          s.id === service.id ? { ...s, quantity: newQuantity } : s,
+        );
         setValue('selectedServices', newServices);
 
         if (newQuantity > oldQuantity) {

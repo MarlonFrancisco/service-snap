@@ -1,3 +1,4 @@
+import { isApiHttpError } from '@/service/api';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
 import { useAgendaStore } from '@/store/admin/agenda';
@@ -34,8 +35,12 @@ export const useAddAppointmentMutations = () => {
         toast.success('Agendamento criado com sucesso');
         setIsAddAppointmentOpen({ isAddAppointmentOpen: false });
       },
-      onError: () => {
-        toast.error('Erro ao criar agendamento');
+      onError: (error) => {
+        toast.error(
+          isApiHttpError(error) && error.status === 409
+            ? 'Este profissional já tem um agendamento neste horário'
+            : 'Erro ao criar agendamento',
+        );
       },
     });
 
