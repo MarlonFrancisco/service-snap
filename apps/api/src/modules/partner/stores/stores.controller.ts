@@ -30,15 +30,14 @@ export class StoresController {
   @Public()
   @Get(':id')
   async getStore(@Param('id') id: string) {
-    // Public booking only needs member-scoped schedules/blockedTimes.
-    // Top-level `schedules` duplicated the full history and inflated payload.
+    // Agendamentos ficam de fora: trazem dados de clientes, e a disponibilidade
+    // pública vem de `schedules/availability`.
     return this.storesService.findOnePublic(id, [
       'gallery',
       'storeMembers',
       'storeMembers.user',
       'storeMembers.services',
       'storeMembers.blockedTimes',
-      'storeMembers.schedules',
       'services',
       'services.category',
       'reviews',

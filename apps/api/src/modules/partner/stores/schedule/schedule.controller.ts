@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { Public } from '../../../auth/decorators/public.decorator';
 import { StoreAccessGuard } from '../guards';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
@@ -40,9 +41,13 @@ export class ScheduleController {
   @Post()
   async create(
     @Param('storeId') storeId: string,
+    @CurrentUser('sub') requesterId: string,
     @Body() schedule: CreateSchedulesDto,
   ) {
-    return this.scheduleService.create({ ...schedule, store: { id: storeId } });
+    return this.scheduleService.createForRequester(
+      { ...schedule, store: { id: storeId } },
+      requesterId,
+    );
   }
 
   @Put(':id')

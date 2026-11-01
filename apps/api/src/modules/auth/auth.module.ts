@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport';
 import { NotificationModule } from '../notification';
 import { UsersModule } from '../users';
 import { AuthController } from './auth.controller';
+import { getJwtSecret } from './auth.helpers';
 import { AuthService } from './auth.service';
 import { GoogleSSOService } from './google-sso.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -17,7 +18,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'secret-key',
+        secret: getJwtSecret(configService),
         signOptions: {
           expiresIn: '1d',
         },

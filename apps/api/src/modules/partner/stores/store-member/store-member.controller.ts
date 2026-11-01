@@ -9,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { RequireStoreRoles, StoreAccessGuard, StoreRoleGuard } from '../guards';
 import { CreateStoreMemberDto } from './dto/create-store-member.dto';
 import { UpdateStoreMemberDto } from './dto/update-store-member.dto';
@@ -30,7 +29,6 @@ export class StoreMemberController {
   @UseGuards(StoreRoleGuard)
   async create(
     @Param('storeId') storeId: string,
-    @CurrentUser('sub') ownerUserId: string,
     @Body() storeMemberDto: CreateStoreMemberDto,
   ) {
     return this.storeMemberService.create(
@@ -38,7 +36,6 @@ export class StoreMemberController {
         ...storeMemberDto,
         store: { id: storeId },
       }),
-      ownerUserId,
     );
   }
 

@@ -15,6 +15,7 @@ import {
   toDateKey,
 } from '../../../../utils/helpers/schedule.helpers';
 import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
+import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
 import { isStoreDraft } from '../../onboarding/onboarding.helpers';
 import { Service } from '../category/service/service.entity';
@@ -25,6 +26,29 @@ import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { CreateSchedulesDto } from './dto/create-schedule.dto';
 import { ScheduleDto } from './dto/schedule.dto';
 import { Schedule } from './schedule.entity';
+
+/**
+ * Lista do que sai nas respostas de agendamento, para coluna nova em `User` não
+ * vazar sozinha: ali está o código de login (`authCode`).
+ */
+const toScheduleResponse = (schedule: Schedule) =>
+  ({
+    ...schedule,
+    user: schedule.user && {
+      id: schedule.user.id,
+      firstName: schedule.user.firstName,
+      lastName: schedule.user.lastName,
+      email: schedule.user.email,
+      telephone: schedule.user.telephone,
+    },
+    storeMember: schedule.storeMember && {
+      ...schedule.storeMember,
+      user: schedule.storeMember.user && {
+        firstName: schedule.storeMember.user.firstName,
+        lastName: schedule.storeMember.user.lastName,
+      },
+    },
+  }) as Schedule;
 
 @Injectable()
 export class ScheduleService {
@@ -128,23 +152,113 @@ export class ScheduleService {
     });
   }
 
+  /** Para quem não tem login, como o bot de WhatsApp: o contato vem da conversa. */
   async create(scheduleDto: CreateSchedulesDto): Promise<Schedule[]> {
-    if (scheduleDto.store?.id) {
-      const store = await this.storeRepository.findOne({
-        where: { id: scheduleDto.store.id },
-        relations: ['onboarding'],
-      });
+    return this.createSchedules(scheduleDto, () =>
+      this.upsertCustomer(scheduleDto.user),
+    );
+  }
 
-      if (store && isStoreDraft(store)) {
-        throw new NotFoundException('Store not found');
-      }
+  /** Cliente agenda para si; só quem opera a loja agenda para o contato enviado. */
+  async createForRequester(
+    scheduleDto: CreateSchedulesDto,
+    requesterId: string,
+  ): Promise<Schedule[]> {
+    const isStaff = await this.isStoreStaff(scheduleDto.store?.id, requesterId);
+
+    return this.createSchedules(scheduleDto, () =>
+      isStaff
+        ? this.upsertCustomer(scheduleDto.user)
+        : this.usersService.findById(requesterId),
+    );
+  }
+
+  private async isStoreStaff(
+    storeId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const isMember = await this.storeMemberRepository.exists({
+      where: {
+        store: { id: storeId },
+        user: { id: userId },
+        isActive: true,
+        isDeleted: false,
+      },
+    });
+
+    return (
+      isMember ||
+      this.storeRepository.exists({
+        where: { id: storeId, owner: { id: userId } },
+      })
+    );
+  }
+
+  private async upsertCustomer(contact?: Partial<User>): Promise<User> {
+    const telephone = normalizePhoneNumber(contact?.telephone);
+
+    // Sem contato, a busca do upsert fica sem filtro e devolve um usuário qualquer
+    if (!contact?.email && !telephone) {
+      throw new BadRequestException('Customer contact is required');
+    }
+
+    return this.usersService.upsert({
+      email: contact.email,
+      telephone,
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+    });
+  }
+
+  private async createSchedules(
+    scheduleDto: CreateSchedulesDto,
+    resolveCustomer: () => Promise<User>,
+  ): Promise<Schedule[]> {
+    const storeId = scheduleDto.store?.id;
+    const store =
+      storeId &&
+      (await this.storeRepository.findOne({
+        where: { id: storeId },
+        relations: ['onboarding'],
+      }));
+
+    if (!store || isStoreDraft(store)) {
+      throw new NotFoundException('Store not found');
+    }
+
+    const serviceIds = [...new Set(scheduleDto.services.map(({ id }) => id))];
+    const storeServices = await this.serviceRepository.find({
+      where: { id: In(serviceIds), store: { id: storeId } },
+    });
+
+    if (storeServices.length !== serviceIds.length) {
+      throw new BadRequestException('Service not found in this store');
+    }
+
+    const storeMemberId = scheduleDto.storeMember?.id;
+
+    // Fora da trava abaixo: filtrar por relação gera LEFT JOIN, e o Postgres
+    // recusa FOR UPDATE nesse caso.
+    if (
+      storeMemberId &&
+      !(await this.storeMemberRepository.exists({
+        where: {
+          id: storeMemberId,
+          store: { id: storeId },
+          isDeleted: false,
+        },
+      }))
+    ) {
+      throw new BadRequestException('Professional not found in this store');
     }
 
     let endTime = '';
 
     const schedules = scheduleDto.services.map((service) => {
       const startTime = !endTime ? scheduleDto.startTime : endTime;
-      const scheduleEndTime = calculateEndTime(startTime, service.duration);
+      // A duração vem da loja: a do corpo encurtaria a checagem de conflito
+      const { duration } = storeServices.find(({ id }) => id === service.id);
+      const scheduleEndTime = calculateEndTime(startTime, duration);
 
       const nextSchedule = {
         ...scheduleDto,
@@ -163,8 +277,6 @@ export class ScheduleService {
 
     const savedSchedules = await this.scheduleRepository.manager.transaction(
       async (manager) => {
-        const storeMemberId = scheduleDto.storeMember?.id;
-
         if (storeMemberId && scheduleDto.date) {
           // Trava o profissional para duas reservas simultâneas não passarem juntas
           await manager.findOne(StoreMember, {
@@ -186,12 +298,7 @@ export class ScheduleService {
           }
         }
 
-        const user = await this.usersService.upsert({
-          email: scheduleDto.user?.email,
-          telephone: normalizePhoneNumber(scheduleDto.user?.telephone),
-          firstName: scheduleDto.user?.firstName,
-          lastName: scheduleDto.user?.lastName,
-        });
+        const user = await resolveCustomer();
 
         return manager.save(
           Schedule,
@@ -200,17 +307,21 @@ export class ScheduleService {
       },
     );
 
-    return await this.scheduleRepository.find({
+    const created = await this.scheduleRepository.find({
       where: { id: In(savedSchedules.map((schedule) => schedule.id)) },
       relations: ['storeMember', 'storeMember.user', 'user', 'service'],
     });
+
+    return created.map(toScheduleResponse);
   }
 
   async findAll(storeId: string): Promise<Schedule[]> {
-    return this.scheduleRepository.find({
+    const schedules = await this.scheduleRepository.find({
       where: { store: { id: storeId } },
       relations: ['storeMember', 'storeMember.user', 'user', 'service'],
     });
+
+    return schedules.map(toScheduleResponse);
   }
 
   async findOne(id: string, relations: string[] = []): Promise<Schedule> {

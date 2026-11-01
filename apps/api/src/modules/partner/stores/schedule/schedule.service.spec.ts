@@ -26,6 +26,7 @@ const makeService = () => {
     find: vi.fn().mockResolvedValue([{ id: SERVICE_ID, duration: 30 }]),
   };
   const storeMemberRepository = {
+    exists: vi.fn().mockResolvedValue(true),
     find: vi.fn().mockResolvedValue([
       {
         id: 'partial',
@@ -61,8 +62,9 @@ const DTO = {
   date: '2026-11-10',
   startTime: '10:00',
   endTime: '10:30',
+  store: { id: STORE_ID },
   storeMember: { id: 'm1' },
-  services: [{ id: 'a', duration: 30 }],
+  services: [{ id: SERVICE_ID, duration: 30 }],
   user: { email: 'ana@example.com' },
 } as never;
 
@@ -135,8 +137,8 @@ describe('ScheduleService.create', () => {
     await ctx.service.create({
       ...(DTO as object),
       services: [
-        { id: 'a', duration: 30 },
-        { id: 'a', duration: 30 },
+        { id: SERVICE_ID, duration: 30 },
+        { id: SERVICE_ID, duration: 30 },
       ],
     } as never);
 

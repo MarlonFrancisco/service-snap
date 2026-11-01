@@ -14,7 +14,31 @@ import { SearchService } from '../../search/search.service';
 import { isStoreDraft } from '../onboarding/onboarding.helpers';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import type { StoreMember } from './store-member/store-member.entity';
 import { Store } from './store.entity';
+
+/**
+ * Lista do que sai na rota pública, para coluna nova em `User` não vazar sozinha:
+ * ali estão e-mail, telefone e o código de login (`authCode`).
+ */
+const toPublicStoreMember = ({
+  id,
+  role,
+  isActive,
+  services,
+  blockedTimes,
+  user,
+}: StoreMember) => ({
+  id,
+  role,
+  isActive,
+  services,
+  blockedTimes,
+  // O `BookingFormSchema` do web exige `schedules` e `user.id`: sem eles, confirmar
+  // a reserva falha sem aviso. A lista vai vazia porque agendamentos têm dados de clientes.
+  schedules: [],
+  user: { id: user?.id, firstName: user?.firstName, lastName: user?.lastName },
+});
 
 @Injectable()
 export class StoresService {
@@ -81,7 +105,10 @@ export class StoresService {
       throw new NotFoundException('Store not found');
     }
 
-    return store as Store;
+    return {
+      ...store,
+      storeMembers: store.storeMembers?.map(toPublicStoreMember),
+    } as Store;
   }
 
   async update(id: string, storeDto: UpdateStoreDto): Promise<UpdateStoreDto> {

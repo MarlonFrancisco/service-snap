@@ -123,7 +123,9 @@ describe('store-scoped services with an id from another store', () => {
       new ScheduleService(
         { ...repository, manager } as never,
         related as never,
-        {} as never,
+        {
+          find: vi.fn().mockResolvedValue([{ id: 'service-1', duration: 30 }]),
+        } as never,
         {} as never,
         {} as never,
         { upsert: vi.fn().mockResolvedValue({ id: 'user-1' }) } as never,
@@ -154,10 +156,13 @@ describe('store-scoped services with an id from another store', () => {
     });
 
     it('create ignores an id sent in the body', async () => {
+      related.findOne.mockResolvedValue({ id: STORE });
+
       await create().create({
         id: 'foreign-id',
         store: { id: STORE },
         startTime: '10:00',
+        user: { email: 'ana@example.com' },
         services: [{ id: 'service-1', duration: 30 }],
       } as never);
 

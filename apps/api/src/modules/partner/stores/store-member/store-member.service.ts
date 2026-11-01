@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -21,6 +22,10 @@ export class StoreMemberService {
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
     private readonly userService: UsersService,
+    @InjectRepository(Store)
+    private readonly storeRepository: Repository<Store>,
+    @InjectRepository(Service)
+    private readonly serviceRepository: Repository<Service>,
   ) {}
 
   async findStoreMember(storeId: string, userId: string): Promise<StoreMember> {
@@ -61,14 +66,14 @@ export class StoreMemberService {
     });
   }
 
-  async create(
-    storeMemberDto: CreateStoreMemberDto,
-    ownerUserId: string,
-  ): Promise<StoreMember> {
+  async create(storeMemberDto: CreateStoreMemberDto): Promise<StoreMember> {
+    const storeId = storeMemberDto.store?.id;
+
     await this.assertWithinProfessionalLimit(
-      ownerUserId,
-      storeMemberDto.store?.id,
+      await this.findStoreOwnerId(storeId),
+      storeId,
     );
+    await this.assertServicesBelongToStore(storeId, storeMemberDto.services);
 
     const user = await this.userService.findByOne({
       email: storeMemberDto.user?.email,
@@ -149,6 +154,11 @@ export class StoreMemberService {
     }
 
     if (storeMemberDto.services) {
+      await this.assertServicesBelongToStore(
+        storeMemberDto.store.id,
+        storeMemberDto.services,
+      );
+
       storeMember.services = storeMemberDto.services as Service[];
     }
 
@@ -204,6 +214,41 @@ export class StoreMemberService {
       .getCount();
 
     return { count, limit };
+  }
+
+  /** O limite é do plano do dono: quem adiciona pode ser um gerente sem assinatura. */
+  private async findStoreOwnerId(storeId: string): Promise<string> {
+    const store =
+      storeId &&
+      (await this.storeRepository.findOne({
+        where: { id: storeId },
+        relations: ['owner'],
+      }));
+
+    if (!store?.owner) {
+      throw new NotFoundException('Store not found');
+    }
+
+    return store.owner.id;
+  }
+
+  private async assertServicesBelongToStore(
+    storeId: string,
+    services: Partial<Service>[] = [],
+  ) {
+    const serviceIds = [...new Set(services.map(({ id }) => id))];
+
+    if (!serviceIds.length) {
+      return;
+    }
+
+    const count = await this.serviceRepository.count({
+      where: { id: In(serviceIds), store: { id: storeId } },
+    });
+
+    if (count !== serviceIds.length) {
+      throw new BadRequestException('Service not found in this store');
+    }
   }
 
   private async assertWithinProfessionalLimit(
