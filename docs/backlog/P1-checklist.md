@@ -11,9 +11,10 @@ Marque com `[x]` conforme for fechando.
 
 - [x] **Contato real** — placeholders removidos; só e-mail `general@ssnap.io` até haver telefone/endereço reais  
   → `apps/web/src/app/contact/page.tsx`
-- [x] **Redes sociais** — `href="#"` removidos; footer aponta para contato/planos (sem perfis inventados)  
-  → `apps/web/src/components/layout/footer/footer.tsx`, `contact/page.tsx`
-- [x] **JSON-LD `sameAs`** — removido até existirem URLs reais  
+- [x] **Redes sociais** — perfis reais (`@ssnapio` / LinkedIn company) no footer e em `/contact`  
+  → `contact.constants.ts`, `footer.tsx`, `contact/page.tsx`  
+  → ops: no Instagram ainda falta o link `https://ssnap.io` no perfil (só pelo app mobile)
+- [x] **JSON-LD `sameAs`** — Organization com Instagram, X, Facebook e LinkedIn  
   → `apps/web/src/app/layout.tsx`
 - [x] **Claims honestos** — “milhares…” removido na home/pricing  
   → `features/features.tsx`, `pricing/pricing.tsx`
