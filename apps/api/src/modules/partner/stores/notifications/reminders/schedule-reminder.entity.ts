@@ -1,0 +1,29 @@
+import { Column, Entity, ManyToOne, Unique } from 'typeorm';
+import { BaseEntity } from '../../../../database/base.entity';
+import { Schedule } from '../../schedule/schedule.entity';
+
+export const SCHEDULE_REMINDER_ATTEMPTS = 3;
+
+/**
+ * Trava de envio: a linha única por horário impede dois e-mails mesmo com o cron
+ * entregue em duplicidade. Não usa o histórico porque o parceiro pode apagá-lo.
+ */
+@Entity('schedule_reminders')
+@Unique('UQ_schedule_reminders_slot', ['schedule', 'channel', 'appointmentKey'])
+export class ScheduleReminder extends BaseEntity {
+  @Column({ type: 'varchar' })
+  channel: 'email';
+
+  // Data e hora do atendimento: remarcar gera um novo lembrete
+  @Column({ type: 'varchar' })
+  appointmentKey: string;
+
+  @Column({ type: 'varchar' })
+  status: 'sending' | 'sent' | 'failed';
+
+  @Column({ type: 'int', default: 1 })
+  attempts: number;
+
+  @ManyToOne(() => Schedule, { onDelete: 'CASCADE', nullable: false })
+  schedule: Schedule;
+}

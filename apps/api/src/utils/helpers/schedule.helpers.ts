@@ -185,6 +185,29 @@ function getStoreNow(timezone: string, now: Date) {
 }
 
 /**
+ * Instante real de uma data e hora digitadas no fuso da loja. A segunda passada
+ * corrige o deslocamento quando o horário de verão muda entre as duas datas.
+ */
+export function storeTimeToDate(
+  date: string,
+  time: string,
+  timezone: string,
+): Date {
+  const wallClock = Date.parse(`${date}T${time}:00Z`);
+  const offsetAt = (instant: number) => {
+    const storeNow = getStoreNow(timezone, new Date(instant));
+
+    return (
+      Date.parse(`${storeNow.date}T00:00:00Z`) +
+      storeNow.minutes * 60_000 -
+      instant
+    );
+  };
+
+  return new Date(wallClock - offsetAt(wallClock - offsetAt(wallClock)));
+}
+
+/**
  * Monta os horários de um dia. Cada slot livre traz o primeiro membro, na ordem
  * recebida, que está livre durante todo o atendimento.
  */

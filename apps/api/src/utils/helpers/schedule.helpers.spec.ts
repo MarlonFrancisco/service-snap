@@ -3,8 +3,36 @@ import {
   buildAvailabilitySlots,
   filterAvailableTimeSlots,
   hasScheduleConflict,
+  storeTimeToDate,
   toDateKey,
 } from './schedule.helpers';
+
+describe('storeTimeToDate', () => {
+  it('converts the store wall clock to the real instant', () => {
+    expect(
+      storeTimeToDate('2026-11-03', '09:30', 'America/Sao_Paulo').toISOString(),
+    ).toBe('2026-11-03T12:30:00.000Z');
+    expect(storeTimeToDate('2026-11-03', '09:30', 'UTC').toISOString()).toBe(
+      '2026-11-03T09:30:00.000Z',
+    );
+  });
+
+  it('uses the offset of the appointment date across a DST change', () => {
+    // Nova York sai do horário de verão em 01/11/2026, às 02:00
+    expect(
+      storeTimeToDate('2026-11-01', '00:30', 'America/New_York').toISOString(),
+    ).toBe('2026-11-01T04:30:00.000Z');
+    expect(
+      storeTimeToDate('2026-11-01', '09:00', 'America/New_York').toISOString(),
+    ).toBe('2026-11-01T14:00:00.000Z');
+  });
+
+  it('rejects an unknown timezone', () => {
+    expect(() => storeTimeToDate('2026-11-03', '09:30', 'Lua/Base')).toThrow(
+      RangeError,
+    );
+  });
+});
 
 const DATE = '2026-11-10'; // terça-feira
 const NOW = new Date('2026-11-01T12:00:00Z');

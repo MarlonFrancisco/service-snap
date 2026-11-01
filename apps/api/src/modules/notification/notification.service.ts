@@ -140,4 +140,33 @@ export class NotificationService {
 
     return this.sendEmail(to, 'Agendamento Confirmado', body);
   }
+
+  async scheduleReminder(
+    to: string,
+    data: {
+      storeName: string;
+      customerName: string;
+      serviceName: string;
+      professionalName: string;
+      scheduleDate: string;
+      storeAddress: string;
+      storePhone: string;
+      customMessage: string;
+      rescheduleLink: string;
+      currentYear: number;
+    },
+  ) {
+    const template = await fs.readFile(
+      path.join(__dirname, '../../templates', 'schedule-reminder.hbs'),
+      'utf8',
+    );
+
+    const body = handlebars.compile(template)(data);
+
+    return this.sendEmail(
+      to,
+      `Lembrete: atendimento em ${data.storeName}`,
+      body,
+    );
+  }
 }
