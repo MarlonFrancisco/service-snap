@@ -1,4 +1,4 @@
-import { IMySubscription } from '@/types/api/payment.types';
+import { IMySubscription, TCheckoutSessionStatus } from '@/types/api/payment.types';
 import { apiClient } from '../api';
 
 export class SubscriptionService {
@@ -14,6 +14,12 @@ export class SubscriptionService {
     return await this.apiClient.get<IMySubscription>(
       '/subscription/current-plan',
       { headers },
+    );
+  }
+
+  static async getCheckoutSessionStatus(sessionId: string) {
+    return await this.apiClient.get<{ status: TCheckoutSessionStatus }>(
+      `/subscription/checkout-session/${encodeURIComponent(sessionId)}`,
     );
   }
 

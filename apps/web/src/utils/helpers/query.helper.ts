@@ -38,6 +38,14 @@ export const CACHE_QUERY_KEYS = {
   referral: () => ['users/me/referral'],
   plans: (currency: TCurrencyCode) => ['plans', { currency }],
   currentPlan: () => ['subscription/current-plan'],
+  checkoutSession: (sessionId: string) => [
+    'subscription/checkout-session',
+    sessionId,
+  ],
+  onboarding: () => ['partner/onboarding'],
+  onboardingChecklist: (storeId: string) => [
+    `partner/onboarding/stores/${storeId}/checklist`,
+  ],
   stores: () => ['partner/stores'],
   storeMembers: (storeId: string) => [`partner/stores/${storeId}/members`],
   schedules: (storeId: string) => [`partner/schedules/${storeId}`],

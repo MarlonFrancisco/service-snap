@@ -1,4 +1,5 @@
 import { Partner } from '@/components/features/partner';
+import { OnboardingService } from '@/service/partner/onboarding';
 import { StoreService } from '@/service/store';
 import { SubscriptionService } from '@/service/subscription';
 import { IMySubscription } from '@/types/api';
@@ -43,6 +44,16 @@ export default async function PartnerLayout({ children }: PartnerLayoutProps) {
 
   if (!subscription?.isActive) {
     redirect('/pricing');
+  }
+
+  // Assinatura ativa sem espaço pronto volta para a etapa certa. Se esta leitura
+  // falhar, o painel abre normalmente: não vale prender quem já tem loja.
+  const onboarding = await OnboardingService.getState(sessionHeaders).catch(
+    () => null,
+  );
+
+  if (onboarding && onboarding.status !== 'not_needed') {
+    redirect('/onboarding');
   }
 
   const dehydratedState = dehydrate(queryClient);

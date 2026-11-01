@@ -61,3 +61,9 @@ export type IPlansResponse = {
   month: IPlan[];
   year: IPlan[];
 };
+
+export type TCheckoutSessionStatus =
+  | 'active'
+  | 'processing'
+  | 'pending'
+  | 'invalid';

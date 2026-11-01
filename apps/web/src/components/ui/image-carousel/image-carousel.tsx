@@ -53,10 +53,17 @@ export function ImageCarousel({
 
   if (!images || images.length === 0) {
     return (
-      <div
-        className={`bg-gray-200 flex items-center justify-center ${className}`}
-      >
-        <span className="text-gray-500 text-sm">Sem imagens</span>
+      // Fotos são opcionais: loja sem foto mostra o placeholder no mesmo tamanho.
+      <div className={cn('relative overflow-hidden', rounded && 'rounded-xl', className)}>
+        <AspectRatio ratio={aspectRatio}>
+          <ImageWithFallback
+            alt={alt}
+            useFallback
+            fill
+            sizes="(max-width: 768px) 100vw, 400px"
+            className="object-cover"
+          />
+        </AspectRatio>
       </div>
     );
   }

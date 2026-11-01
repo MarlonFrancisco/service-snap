@@ -9,10 +9,13 @@ export const generateTimeSlots = (workingHours: TWorkingHours): string[] => {
   const [endHour = 0, endMin = 0] = workingHours.closeTime
     .split(':')
     .map(Number);
-  const [lunchStartHour = 0, lunchStartMin = 0] = workingHours.lunchStartTime
+  // Sem pausa de almoço a API devolve `null`.
+  const [lunchStartHour = 0, lunchStartMin = 0] = (
+    workingHours.lunchStartTime ?? ''
+  )
     .split(':')
     .map(Number);
-  const [lunchEndHour = 0, lunchEndMin = 0] = workingHours.lunchEndTime
+  const [lunchEndHour = 0, lunchEndMin = 0] = (workingHours.lunchEndTime ?? '')
     .split(':')
     .map(Number);
 

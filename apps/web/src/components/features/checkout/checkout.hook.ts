@@ -1,34 +1,14 @@
+import { isApiHttpError } from '@/service/api';
+import { OnboardingService } from '@/service/partner/onboarding';
+import { SubscriptionService } from '@/service/subscription';
+import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import type {
-  TCheckoutLoadingStep,
-  TCheckoutNextStep,
-  TCheckoutStatus,
-} from './checkout.types';
+import type { TCheckoutStatus } from './checkout.types';
 
-const LOADING_STEPS: TCheckoutLoadingStep[] = [
-  { message: 'Verificando pagamento', duration: 1500 },
-  { message: 'Ativando sua conta', duration: 3000 },
-  { message: 'Preparando dashboard', duration: 3000 },
-];
-
-const NEXT_STEPS: TCheckoutNextStep[] = [
-  {
-    title: 'Configure suas filiais',
-    description: 'Adicione os endereços onde você atende',
-  },
-  {
-    title: 'Cadastre seus serviços',
-    description: 'Defina os serviços que você oferece',
-  },
-  {
-    title: 'Configure sua agenda',
-    description: 'Defina horários e disponibilidade',
-  },
-];
-
-const PROGRESS_INTERVAL = 50;
-const VALIDATION_TIMEOUT = 10000;
+const POLL_INTERVAL_MS = 2000;
+const MAX_WAIT_MS = 30000;
 
 const formatActivationDate = () =>
   new Intl.DateTimeFormat('pt-BR', {
@@ -39,82 +19,83 @@ const formatActivationDate = () =>
     minute: '2-digit',
   }).format(new Date());
 
-const getStatus = (
-  sessionId: string | null,
-  isValidating: boolean,
-): TCheckoutStatus => {
-  if (!sessionId) return 'invalid';
-  return isValidating ? 'validating' : 'success';
-};
-
 export const useCheckout = () => {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [isValidating, setIsValidating] = useState(Boolean(sessionId));
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [hasTimeout, setHasTimeout] = useState(false);
   const router = useRouter();
   const mainButtonRef = useRef<HTMLButtonElement>(null);
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+
+  // O Stripe confirma o pagamento antes de o webhook gravar a assinatura local.
+  // Enquanto isso, a resposta é `processing` e consultamos de novo.
+  const session = useQuery({
+    queryKey: CACHE_QUERY_KEYS.checkoutSession(sessionId ?? ''),
+    queryFn: () => SubscriptionService.getCheckoutSessionStatus(sessionId!),
+    enabled: Boolean(sessionId),
+    staleTime: 0,
+    retry: false,
+    refetchInterval: (query) =>
+      !hasTimedOut &&
+      ['processing', 'pending'].includes(query.state.data?.status ?? '')
+        ? POLL_INTERVAL_MS
+        : false,
+  });
+
+  const sessionStatus = session.data?.status;
+  const isActive = sessionStatus === 'active';
+
+  const onboarding = useQuery({
+    queryKey: CACHE_QUERY_KEYS.onboarding(),
+    queryFn: () => OnboardingService.getState(),
+    enabled: isActive,
+    staleTime: 0,
+    retry: false,
+  });
+
+  const needsOnboarding =
+    isActive &&
+    Boolean(onboarding.data) &&
+    onboarding.data?.status !== 'not_needed';
 
   useEffect(() => {
-    if (!sessionId) {
+    if (needsOnboarding) {
+      router.replace('/onboarding');
+    }
+  }, [needsOnboarding, router]);
+
+  const isWaiting = sessionStatus === 'processing' || sessionStatus === 'pending';
+
+  useEffect(() => {
+    if (!isWaiting) {
       return;
     }
 
-    // Simula validação do pagamento com steps
-    const progressState = { current: 0 };
-    const totalDuration = LOADING_STEPS.reduce(
-      (acc, step) => acc + step.duration,
-      0,
-    );
+    const timer = setTimeout(() => setHasTimedOut(true), MAX_WAIT_MS);
 
-    // Timeout de segurança - 10 segundos
-    const timeoutTimer = setTimeout(() => {
-      if (isValidating) {
-        setHasTimeout(true);
-        setIsValidating(false);
-      }
-    }, VALIDATION_TIMEOUT);
+    return () => clearTimeout(timer);
+  }, [isWaiting]);
 
-    const progressTimer = setInterval(() => {
-      progressState.current += (PROGRESS_INTERVAL / totalDuration) * 100;
+  const status = ((): TCheckoutStatus => {
+    if (!sessionId || sessionStatus === 'invalid') return 'invalid';
+    if (session.isError) {
+      // Sem sessão ativa não dá para saber de quem é o pagamento.
+      return isApiHttpError(session.error) && session.error.status === 401
+        ? 'invalid'
+        : 'error';
+    }
+    if (isWaiting) return hasTimedOut ? 'delayed' : 'validating';
+    // Com o pagamento confirmado, uma falha aqui não é motivo para bloquear.
+    if (isActive && (onboarding.isError || onboarding.data?.status === 'not_needed')) {
+      return 'success';
+    }
+    return 'validating';
+  })();
 
-      if (progressState.current >= 100) {
-        progressState.current = 100;
-        clearInterval(progressTimer);
-        setTimeout(() => {
-          setIsValidating(false);
-          // Foca no botão principal após carregar (acessibilidade)
-          setTimeout(() => {
-            mainButtonRef.current?.focus();
-          }, 100);
-        }, 200);
-      }
-
-      setProgress(progressState.current);
-    }, PROGRESS_INTERVAL);
-
-    // Change steps
-    const stepTimers = LOADING_STEPS.map((_, index) => {
-      const elapsed = LOADING_STEPS.slice(0, index + 1).reduce(
-        (acc, step) => acc + step.duration,
-        0,
-      );
-
-      return setTimeout(() => {
-        if (index < LOADING_STEPS.length - 1) {
-          setCurrentStepIndex(index + 1);
-        }
-      }, elapsed);
-    });
-
-    return () => {
-      clearTimeout(timeoutTimer);
-      clearInterval(progressTimer);
-      stepTimers.forEach((timer) => clearTimeout(timer));
-    };
-  }, [isValidating, sessionId]);
+  useEffect(() => {
+    if (status === 'success') {
+      mainButtonRef.current?.focus();
+    }
+  }, [status]);
 
   const handleGoToDashboard = () => {
     router.push('/partner/dashboard');
@@ -124,15 +105,17 @@ export const useCheckout = () => {
     router.push('/pricing');
   };
 
+  const handleRetry = () => {
+    setHasTimedOut(false);
+    void session.refetch();
+  };
+
   return {
-    status: getStatus(sessionId, isValidating),
-    loadingMessage: LOADING_STEPS[currentStepIndex]?.message,
-    progress: Math.round(progress),
-    hasTimeout,
+    status,
     activationDate: formatActivationDate(),
-    nextSteps: NEXT_STEPS,
     mainButtonRef,
     handleGoToDashboard,
     handleGoToPricing,
+    handleRetry,
   };
 };

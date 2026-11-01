@@ -19,7 +19,8 @@ export const useGoogleAuth = () => {
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    // Script bloqueado ou lento não pode derrubar o modal: o e-mail continua.
+    if (!container || !window.google?.accounts) return;
 
     window.google.accounts.id.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
