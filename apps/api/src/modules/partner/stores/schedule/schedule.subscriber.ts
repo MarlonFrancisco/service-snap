@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   DataSource,
@@ -13,6 +14,8 @@ import { Schedule } from './schedule.entity';
 
 @EventSubscriber()
 export class ScheduleSubscriber implements EntitySubscriberInterface<Schedule> {
+  private readonly logger = new Logger(ScheduleSubscriber.name);
+
   constructor(
     dataSource: DataSource,
     private readonly notificationsHistoryService: NotificationsHistoryService,
@@ -64,21 +67,33 @@ export class ScheduleSubscriber implements EntitySubscriberInterface<Schedule> {
 
       const frontendUrl = this.configService.get<string>('FRONTEND_URL');
 
-      await this.notificationService.scheduleConfirmation(schedule.user.email, {
-        storeName: schedule.store.name || 'Loja',
-        customerName: schedule.user.firstName || 'Cliente',
-        serviceName: schedule.service?.name || 'Serviço',
-        professionalName:
-          schedule.storeMember?.user?.firstName || 'Profissional',
-        scheduleDate: `${formattedDate} às ${schedule.startTime}`,
-        price,
-        storeLocation: schedule.store.city || '',
-        storeAddress: schedule.store.address || '',
-        calendarLink: ``,
-        rescheduleLink: `${frontendUrl}/profile`,
-        storePhone: schedule.store.telephone || '',
-        currentYear: new Date().getFullYear(),
-      });
+      // Roda dentro da transação do agendamento: uma falha no e-mail não pode desfazer a reserva
+      try {
+        await this.notificationService.scheduleConfirmation(
+          schedule.user.email,
+          {
+            storeName: schedule.store.name || 'Loja',
+            customerName: schedule.user.firstName || 'Cliente',
+            serviceName: schedule.service?.name || 'Serviço',
+            professionalName:
+              schedule.storeMember?.user?.firstName || 'Profissional',
+            scheduleDate: `${formattedDate} às ${schedule.startTime}`,
+            price,
+            storeLocation: schedule.store.city || '',
+            storeAddress: schedule.store.address || '',
+            calendarLink: ``,
+            rescheduleLink: `${frontendUrl}/profile`,
+            storePhone: schedule.store.telephone || '',
+            currentYear: new Date().getFullYear(),
+          },
+        );
+      } catch (error) {
+        history.status = 'failed';
+        this.logger.error(
+          `Agendamento ${schedule.id} salvo sem e-mail de confirmação`,
+          error instanceof Error ? error.stack : undefined,
+        );
+      }
     }
 
     await this.notificationsHistoryService.create(history);
