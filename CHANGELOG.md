@@ -1,3 +1,9 @@
+## 0.17.0 (2026-11-01)
+
+### Feat
+
+- **web**: exibir vídeo de demonstração no banner de parceiros
+
 ## 0.16.0 (2026-11-01)
 
 ### Feat
