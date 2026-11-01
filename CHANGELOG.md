@@ -1,3 +1,41 @@
+## 0.15.0 (2026-11-01)
+
+### Feat
+
+- **web**: add partner onboarding wizard and real checkout validation
+- **api**: add partner onboarding with draft stores
+- **web**: redesign de notificações, WhatsApp e plano
+- **web**: redesign de serviços
+- **web**: redesign de lojas e equipe
+- **web**: redesign da agenda do painel
+- **web**: redesign do início e das análises
+- **web**: redesign do casco do painel parceiro
+- **api**: add schedule availability endpoint
+- **web**: redesign institutional pages
+- **web**: redesign auth and checkout
+- **web**: redesign pricing page
+- **web**: redesign profile page
+- **web**: redesign booking flow
+- **web**: redesign search page
+- **web**: redesign homepage
+- **web**: add URL-driven profile tabs
+- **web**: unify header across views
+
+### Fix
+
+- **api**: aceitar atualização parcial de loja e notificações
+- **api**: manter o agendamento quando o e-mail de confirmação falha
+- **api**: permitir acesso do dono da loja no StoreAccessGuard
+- **web**: self-host Plus Jakarta Sans font
+- **web**: correct booking flow logic and use availability API
+- **web**: scope session per request
+- **web**: scope QueryClient per request
+- **api**: stabilize search result order
+
+### Refactor
+
+- **web**: move base styles to Header
+
 ## 0.14.0 (2026-11-01)
 
 ### Feat
