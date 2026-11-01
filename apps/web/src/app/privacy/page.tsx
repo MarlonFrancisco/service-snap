@@ -1,5 +1,4 @@
-import { Footer } from '@/components/layout';
-import { Header } from '@/components/layout/header/header';
+import { Footer, Header } from '@/components/layout';
 import { PLATFORM_DESCRIPTION } from '@/utils/constants/platform.constants';
 import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
 

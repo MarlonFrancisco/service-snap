@@ -1,18 +1,8 @@
 import type { HTMLAttributes, PropsWithChildren } from 'react';
 
 export type THeaderConfig = PropsWithChildren<
-  HTMLAttributes<HTMLElement> & {
+  HTMLAttributes<HTMLDivElement> & {
     showSearchBar?: boolean;
-    logoProps?: HTMLAttributes<HTMLAnchorElement>;
+    showCategories?: boolean;
   }
 >;
-
-export type TUseHeaderConfig = {
-  onMenuToggle?: (isOpen: boolean) => void;
-};
-
-export type TNavigationItem = {
-  href?: string;
-  onClick?: () => void;
-  label: string;
-};

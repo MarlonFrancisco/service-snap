@@ -1,12 +1,3 @@
-import type { LucideIcon } from 'lucide-react';
-
-export type TMarketplaceCategory = {
-  id: string;
-  label: string;
-  query: string;
-  icon: LucideIcon;
-};
-
 export type TExperienceBadgeTone = 'success' | 'primary' | 'verified';
 
 export type TExperienceCard = {

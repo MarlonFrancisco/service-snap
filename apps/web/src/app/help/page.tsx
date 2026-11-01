@@ -1,7 +1,6 @@
 'use client';
 
-import { Footer } from '@/components/layout';
-import { Header } from '@/components/layout/header/header';
+import { Footer, Header } from '@/components/layout';
 
 export default function HelpPage() {
   return (

@@ -19,11 +19,11 @@ export const Footer = () => {
 
   return (
     <footer>
-      <div className="max-w-7xl mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div className="grid grid-cols-3 gap-8">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-6">
+              <h3 className="mb-4 text-sm font-medium text-gray-900 sm:mb-6">
                 Empresa
               </h3>
               <ul className="space-y-4">
@@ -56,7 +56,7 @@ export const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-6">
+              <h3 className="mb-4 text-sm font-medium text-gray-900 sm:mb-6">
                 Suporte
               </h3>
               <ul className="space-y-4">
@@ -88,7 +88,7 @@ export const Footer = () => {
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-gray-900 mb-6">
+              <h3 className="mb-4 text-sm font-medium text-gray-900 sm:mb-6">
                 Parceiros
               </h3>
               <ul className="space-y-4">
@@ -121,14 +121,14 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="mt-10 flex flex-col items-center justify-between gap-6 border-t border-gray-200 pt-8 md:mt-16 md:flex-row">
           <Link href="/">
             <Image
               src="/d2-lockup-light.svg"
               alt="ServiceSnap"
-              width={176}
-              height={44}
-              className="h-11 w-auto"
+              width={148}
+              height={37}
+              className="h-9 w-auto sm:h-11"
               unoptimized
             />
           </Link>

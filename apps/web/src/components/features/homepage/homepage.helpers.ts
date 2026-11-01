@@ -1,33 +1,11 @@
-﻿import type { ISearchResult } from '@/types/api/search.types';
+﻿import { STORE_PLACEHOLDER_IMAGE } from '@/components/ui/image-with-fallback/image-with-fallback.constants';
+import { resolveStoreImageSrc } from '@/components/ui/image-with-fallback/image-with-fallback.helpers';
+import type { ISearchResult } from '@/types/api/search.types';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
 import type {
   TExperienceBadgeTone,
   TExperienceCard,
 } from './homepage.types';
-
-const PLACEHOLDER_IMAGE = '/d2-lockup-light.svg';
-
-const resolveStoreImageUrl = (src?: string | null) => {
-  if (!src || !src.trim()) {
-    return PLACEHOLDER_IMAGE;
-  }
-
-  if (
-    src.startsWith('https://') ||
-    src.startsWith('http://') ||
-    src.startsWith('data:') ||
-    src.startsWith('/')
-  ) {
-    return src;
-  }
-
-  const cdn = process.env.NEXT_PUBLIC_CDN_URL?.replace(/\/$/, '');
-  if (!cdn) {
-    return PLACEHOLDER_IMAGE;
-  }
-
-  return `${cdn}/stores/${src}`;
-};
 
 const getAverageRating = (store: ISearchResult) => {
   const reviews = store.metadata.reviews;
@@ -49,9 +27,11 @@ const getAveragePrice = (store: ISearchResult) => {
 };
 
 const getMainImage = (store: ISearchResult) => {
-  const gallery = store.metadata.gallery ?? [];
+  const gallery = (store.metadata.gallery ?? []).filter((image) =>
+    Boolean(image.url?.trim()),
+  );
   const main = gallery.find((image) => image.isMain) ?? gallery[0];
-  return resolveStoreImageUrl(main?.url);
+  return resolveStoreImageSrc(main?.url) || STORE_PLACEHOLDER_IMAGE;
 };
 
 const getBadge = (

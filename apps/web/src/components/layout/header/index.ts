@@ -1,8 +1,7 @@
 export { Header } from './header';
-export { NAVIGATION_ITEMS } from './header.constants';
-export { useHeader } from './header.hook';
-export type {
-  THeaderConfig,
-  TNavigationItem,
-  TUseHeaderConfig,
-} from './header.types';
+export { MarketplaceHeader } from './components/marketplace-header';
+export {
+  HEADER_OFFSET_CLASS,
+  HEADER_OFFSET_WITH_SEARCH_CLASS,
+} from './header.constants';
+export type { THeaderConfig } from './header.types';

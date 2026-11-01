@@ -1,5 +1,4 @@
-import { Footer } from '@/components/layout';
-import { Header } from '@/components/layout/header/header';
+import { Footer, Header } from '@/components/layout';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 
 export const metadata = createPageMetadata({

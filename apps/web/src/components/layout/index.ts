@@ -1,7 +1,12 @@
 export * from './config';
 export * from './footer';
 export type { TFooterConfig } from './footer';
-export * from './header';
+export {
+  Header,
+  HEADER_OFFSET_CLASS,
+  HEADER_OFFSET_WITH_SEARCH_CLASS,
+  MarketplaceHeader,
+} from './header';
 export type { THeaderConfig } from './header';
 export * from './locale-dialog';
 export * from './mobile-search-overlay';

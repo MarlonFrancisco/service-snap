@@ -1,8 +1,9 @@
 'use client';
 
+import { Footer, Header } from '@/components/layout';
 import { PUBLIC_CONTACT_EMAIL } from '@/utils/constants/contact.constants';
 import { Button, Input, Textarea } from '@repo/ui';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 
@@ -35,20 +36,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => window.history.back()}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </Button>
-        </div>
-      </div>
-
+    <Header>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           <div>
@@ -213,6 +201,7 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </Header>
   );
 }

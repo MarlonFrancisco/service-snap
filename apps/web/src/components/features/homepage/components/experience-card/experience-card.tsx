@@ -1,6 +1,6 @@
-﻿import { cn } from '@repo/ui';
+﻿import { ImageWithFallback } from '@/components/ui/image-with-fallback';
+import { cn } from '@repo/ui';
 import { BadgeCheck, Star, Zap } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
 import type { TExperienceBadgeTone, TExperienceCard } from '../../homepage.types';
 import { ExperienceFavoriteButton } from './experience-favorite-button';
@@ -17,36 +17,36 @@ type TExperienceCardConfig = {
 
 export const ExperienceCard = ({ experience }: TExperienceCardConfig) => {
   const BadgeIcon = experience.badgeTone === 'success' ? Zap : BadgeCheck;
-  const isPlaceholder = experience.image.endsWith('.svg');
+  const bookingHref = `/booking/${experience.id}`;
 
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative aspect-square w-full overflow-hidden bg-[#e8e7f1]">
-        <Image
+    <article className="group relative flex h-full w-full min-w-0 flex-col rounded-2xl bg-white shadow-sm transition-all duration-300 active:scale-[0.98] md:hover:-translate-y-1 md:hover:shadow-xl">
+      <Link
+        href={bookingHref}
+        className="absolute inset-0 z-10 rounded-2xl"
+        aria-label={`Ver ${experience.name}`}
+      />
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-t-2xl bg-[#e8e7f1]">
+        <ImageWithFallback
           src={experience.image}
           alt={experience.imageAlt}
           fill
-          sizes="(min-width: 1024px) 14vw, (min-width: 640px) 33vw, 50vw"
-          unoptimized={isPlaceholder}
-          className={
-            isPlaceholder
-              ? 'object-contain p-8 opacity-40'
-              : 'object-cover transition-transform duration-500 group-hover:scale-105'
-          }
+          sizes="(min-width: 1024px) 14vw, (min-width: 640px) 33vw, 80vw"
+          className="object-cover transition-transform duration-500 md:group-hover:scale-105"
         />
         <div
           className={cn(
-            'absolute top-3 left-3 flex max-w-[calc(100%-2.75rem)] items-center gap-1 rounded-full px-2 py-1 text-[10px] leading-none text-white shadow-md',
+            'absolute top-3 left-3 z-20 flex max-w-[calc(100%-2.75rem)] items-center gap-1 rounded-full px-2 py-1 text-[10px] leading-none text-white shadow-md',
             badgeClassName[experience.badgeTone],
           )}
         >
           <BadgeIcon className="h-3 w-3 shrink-0" />
           <span className="truncate">{experience.badgeLabel}</span>
         </div>
-        <ExperienceFavoriteButton />
+        <ExperienceFavoriteButton storeId={experience.id} />
       </div>
-      <div className="flex flex-1 flex-col gap-2 p-3">
-        <div>
+      <div className="relative z-0 flex min-h-0 flex-1 flex-col gap-2 rounded-b-2xl p-3">
+        <div className="min-h-0">
           <h3 className="line-clamp-1 text-sm font-semibold text-[#0A0A0A]">
             {experience.name}
           </h3>
@@ -60,7 +60,7 @@ export const ExperienceCard = ({ experience }: TExperienceCardConfig) => {
           <p className="mt-1 line-clamp-1 text-xs text-[#71717A]">
             {experience.location}
           </p>
-          <p className="mt-1 line-clamp-2 text-xs text-[#2B2B2B]">
+          <p className="mt-1 line-clamp-1 min-h-4 text-xs text-[#2B2B2B]">
             {experience.service}
           </p>
         </div>
@@ -71,12 +71,9 @@ export const ExperienceCard = ({ experience }: TExperienceCardConfig) => {
               {experience.price}
             </span>
           </div>
-          <Link
-            href={`/booking/${experience.id}`}
-            className="shrink-0 rounded-lg bg-[#F4F4F5] px-2 py-1 text-xs font-semibold text-[#0A0A0A] transition-colors hover:bg-[#0A0A0A] hover:text-white"
-          >
+          <span className="relative z-20 shrink-0 rounded-lg bg-[#0A0A0A] px-2.5 py-1.5 text-xs font-semibold text-white pointer-events-none">
             Agendar
-          </Link>
+          </span>
         </div>
       </div>
     </article>

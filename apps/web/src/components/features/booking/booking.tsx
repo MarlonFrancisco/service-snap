@@ -129,7 +129,7 @@ export function BookingFlow() {
 
   if (isPendingStore) {
     return (
-      <Header showSearchBar logoProps={{ className: 'hidden lg:block' }}>
+      <Header showSearchBar>
         <BookingSkeleton />
         <Footer />
       </Header>
@@ -138,7 +138,7 @@ export function BookingFlow() {
 
   if (isError) {
     return (
-      <Header showSearchBar logoProps={{ className: 'hidden lg:block' }}>
+      <Header showSearchBar>
         <BookingNotFound />
         <Footer />
       </Header>
@@ -147,7 +147,7 @@ export function BookingFlow() {
 
   return (
     <FormProvider {...form}>
-      <Header showSearchBar logoProps={{ className: 'hidden lg:block' }}>
+      <Header showSearchBar>
         {/* Business Showcase */}
         <BusinessShowcase />
 

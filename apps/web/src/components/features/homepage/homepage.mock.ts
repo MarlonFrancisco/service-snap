@@ -1,70 +1,9 @@
-﻿import {
-  Brush,
-  Dumbbell,
-  Flower2,
-  HeartPulse,
-  PawPrint,
-  Scissors,
-  Smile,
-  Sparkles,
-  SprayCan,
-} from 'lucide-react';
-import type {
-  TExperienceRowConfig,
-  TMarketplaceCategory,
-} from './homepage.types';
-
-export const MARKETPLACE_CATEGORIES: TMarketplaceCategory[] = [
-  { id: 'barbearias', label: 'Barbearias', query: 'Barbearia', icon: Scissors },
-  {
-    id: 'saloes',
-    label: 'Salões de Beleza',
-    query: 'Salão de Beleza',
-    icon: Sparkles,
-  },
-  {
-    id: 'spas',
-    label: 'Spas & Massagens',
-    query: 'Spa & Massagem',
-    icon: Flower2,
-  },
-  {
-    id: 'bem-estar',
-    label: 'Bem-estar & Terapias',
-    query: 'Bem-estar',
-    icon: HeartPulse,
-  },
-  {
-    id: 'faciais',
-    label: 'Cuidados Faciais',
-    query: 'Estética',
-    icon: SprayCan,
-  },
-  {
-    id: 'personal',
-    label: 'Personal Trainers',
-    query: 'Personal Trainer',
-    icon: Dumbbell,
-  },
-  {
-    id: 'manicure',
-    label: 'Manicure & Pedicure',
-    query: 'Manicure',
-    icon: Brush,
-  },
-  {
-    id: 'odonto',
-    label: 'Odonto Estética',
-    query: 'Odontologia',
-    icon: Smile,
-  },
-  { id: 'pet', label: 'Pet Care & Banho', query: 'Pet Shop', icon: PawPrint },
-];
+﻿import type { TExperienceRowConfig } from './homepage.types';
 
 export const EXPERIENCE_ROW_CONFIGS: TExperienceRowConfig[] = [
   {
     id: 'populares',
-    title: 'Experiências e cuidados populares',
+    title: 'Populares perto de você',
     query: 'serviços',
     source: 'popular',
   },
@@ -91,7 +30,7 @@ export const EXPERIENCE_ROW_CONFIGS: TExperienceRowConfig[] = [
   },
   {
     id: 'bem-estar',
-    title: 'Bem-estar para a semana',
+    title: 'Bem-estar perto de você',
     query: 'Bem-estar',
     category: 'Bem-estar',
     source: 'search',

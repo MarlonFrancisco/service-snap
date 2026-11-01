@@ -1,6 +1,5 @@
 'use client';
-import { Footer } from '@/components/layout';
-import { Header } from '@/components/layout/header/header';
+import { Footer, Header } from '@/components/layout';
 import { NotFound } from '@/components/ui';
 import { useSearchQuery } from '@/hooks/use-query/use-search-query';
 import { cn } from '@repo/ui/index';
@@ -27,7 +26,7 @@ export function SearchResults() {
   const showResults = !isPending && hasResults;
 
   return (
-    <Header showSearchBar logoProps={{ className: 'hidden lg:block' }}>
+    <Header showSearchBar>
       <div className="max-w-8xl h-full mx-auto px-4 sm:px-6 md:px-10 xl:px-12">
         {isPending && (
           <div className="grid grid-cols-12 gap-0 lg:gap-10 min-h-[calc(100vh-180px)]">
@@ -74,7 +73,7 @@ export function SearchResults() {
           </div>
 
           <div className="hidden lg:block col-span-5 xl:col-span-5">
-            <div className="sticky top-28">
+            <div className="sticky top-[12.5rem] md:top-[14.5rem]">
               <div className="slide-up">
                 <StorePreview />
               </div>

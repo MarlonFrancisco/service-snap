@@ -1,2 +1,2 @@
-export * from './globe-menu';
+export * from './marketplace-header';
 export * from './search-bar/filters-modal';
