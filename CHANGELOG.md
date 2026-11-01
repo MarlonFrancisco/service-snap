@@ -1,3 +1,9 @@
+## 0.17.1 (2026-11-01)
+
+### Fix
+
+- **web**: keep mobile tab bar at bottom on short search pages
+
 ## 0.17.0 (2026-11-01)
 
 ### Feat
