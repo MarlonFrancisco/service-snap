@@ -15,7 +15,7 @@ export const STEPS = [
   },
   {
     id: 'datetime',
-    title: 'Data & Hora',
+    title: 'Data e hora',
     description: 'Defina quando',
     number: 3,
   },

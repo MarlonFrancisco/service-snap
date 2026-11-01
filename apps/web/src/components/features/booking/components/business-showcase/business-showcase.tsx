@@ -3,26 +3,19 @@
 import { ImageGallery } from '@/components/layout/image-gallery';
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
 import { useReviewsStore } from '@/store';
-import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
-import {
-  Badge,
-  Button,
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@repo/ui';
-import {
-  Clock,
-  Heart,
-  Images,
-  Instagram,
-  MapPinIcon,
-  Share,
-  Star,
-} from 'lucide-react';
+import { formatRating } from '@/utils/helpers/search.helper';
+import { Carousel, CarouselContent, CarouselItem, cn } from '@repo/ui';
+import { Heart, Share, Star } from 'lucide-react';
 import { useBusinessShowcase } from './business-showcase.hook';
+
+const HEADER_ACTION_CLASS =
+  'flex h-11 items-center gap-2 rounded-full border border-[#E3E1EA] bg-white px-[18px] text-sm font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7]';
+const PHOTO_ACTION_CLASS =
+  'grid h-11 w-11 place-items-center rounded-full bg-white/92 text-[#0B0B0F]';
+const GALLERY_TILE_CLASS =
+  'group relative h-full w-full overflow-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white disabled:cursor-default';
+const GALLERY_IMAGE_CLASS =
+  'object-cover transition-transform duration-300 group-enabled:group-hover:scale-105';
 
 export function BusinessShowcase() {
   const { setReviewsAttributesAction } = useReviewsStore();
@@ -31,12 +24,14 @@ export function BusinessShowcase() {
     data,
     showAllPhotos,
     selectedImageIndex,
+    visibleImageIndex,
     isFavorite,
     isLoggedIn,
     selectedStore,
     rightSideGalleryImages,
     mainGalleryImage,
     allImages,
+    handleCarouselApi,
     handleImageClick,
     handleShare,
     handleCloseGallery,
@@ -47,245 +42,209 @@ export function BusinessShowcase() {
     return null;
   }
 
-  const {
-    businessName,
-    businessAddress,
-    averageRating,
-    reviewCount,
-    description,
-    amenities,
-    openTime,
-    closeTime,
-    businessDays,
-    instagramUrl,
-    instagramLabel,
-  } = data;
+  const { businessName, businessLocation, averageRating, reviewCount } = data;
+  const mobileImages = allImages.length > 0 ? allImages : [''];
+  const favoriteIcon = (
+    <Heart
+      className={cn('h-4 w-4', isFavorite && 'fill-[#EF4444] text-[#EF4444]')}
+      aria-hidden
+    />
+  );
 
   return (
-    <div>
-      <div className="mx-auto max-w-[90rem] px-4 pt-4 sm:px-6 md:pt-6 lg:px-12">
-        {/* Business Name and Actions */}
-        <div className="flex items-center justify-between mb-4 md:mb-6">
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-2xl text-[#0A0A0A] truncate">
+    <div className="mx-auto -mt-4 w-full max-w-[82.5rem] md:mt-0 md:px-10">
+      <div className="flex flex-col">
+        {/* Título e ações */}
+        <div className="order-2 flex flex-wrap items-end justify-between gap-6 px-5 pt-5 md:order-1 md:px-0 md:pt-4">
+          <div className="min-w-0">
+            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-[#0B0B0F] md:text-4xl">
               {businessName}
             </h1>
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-1 text-sm text-[#5F5C6E] md:text-[15px]">
+              {reviewCount > 0 ? (
+                <b className="flex items-center gap-1 font-bold text-[#0B0B0F]">
+                  <Star className="h-3.5 w-3.5 fill-[#0B0B0F]" aria-hidden />
+                  {formatRating(averageRating)}
+                </b>
+              ) : (
+                <b className="font-bold text-[#0B0B0F]">Novo</b>
+              )}
+              <span aria-hidden>·</span>
+              <button
+                type="button"
+                onClick={() =>
+                  setReviewsAttributesAction({
+                    storeId: selectedStore?.id,
+                    businessName: selectedStore?.name,
+                    isOpen: true,
+                  })
+                }
+                className="underline transition-colors hover:text-[#0B0B0F]"
+              >
+                {reviewCount} {reviewCount === 1 ? 'avaliação' : 'avaliações'}
+              </button>
+              <span aria-hidden>·</span>
+              <span>{businessLocation}</span>
+            </p>
           </div>
 
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="relative">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleShare}
-                className="flex items-center gap-2 rounded-lg border-[#D4D4D8] hover:bg-[#F4F4F5]"
-              >
-                <Share className="h-4 w-4" />
-                Compartilhar
-              </Button>
-            </div>
+          <div className="hidden gap-2.5 md:flex">
+            <button
+              type="button"
+              onClick={handleShare}
+              className={HEADER_ACTION_CLASS}
+            >
+              Compartilhar
+            </button>
 
             {isLoggedIn && (
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={handleSave}
-                className="flex items-center gap-2 rounded-lg border-[#D4D4D8] hover:bg-[#F4F4F5]"
+                aria-pressed={isFavorite}
+                className={HEADER_ACTION_CLASS}
               >
-                {isFavorite ? (
-                  <Heart className="h-4 w-4 fill-red-500 text-red-500" />
-                ) : (
-                  <Heart className="h-4 w-4" />
-                )}
+                {favoriteIcon}
                 Salvar
-              </Button>
+              </button>
             )}
           </div>
         </div>
 
-        {/* Images Gallery */}
-        <div className="mb-4 md:mb-8 relative">
-          {/* Desktop Grid */}
-          <div className="hidden md:grid grid-cols-4 gap-1 h-[420px] rounded-xl overflow-hidden">
-            {/* Main Image - Left Side */}
-            <div className="col-span-2 relative group cursor-pointer overflow-hidden">
-              <ImageWithFallback
-                src={mainGalleryImage}
-                fill
-                sizes="(min-width: 768px) 300px, (min-width: 1368px) 500px, (min-width: 1920px) 600px, 150px"
-                alt={businessName}
-                className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl aspect-square"
+        {/* Galeria */}
+        <div className="relative order-1 md:order-2 md:mt-6">
+          {/* Desktop: grade */}
+          <div
+            role="group"
+            aria-label="Galeria de fotos"
+            className="hidden grid-cols-[2fr_1fr_1fr] grid-rows-[220px_220px] gap-2 overflow-hidden rounded-[28px] bg-[#F4F3F7] md:grid"
+          >
+            <div className="row-span-2">
+              <button
+                type="button"
+                disabled={!mainGalleryImage}
                 onClick={() => handleImageClick(0)}
-              />
+                aria-label={`Abrir foto 1 de ${businessName}`}
+                className={GALLERY_TILE_CLASS}
+              >
+                <ImageWithFallback
+                  src={mainGalleryImage}
+                  fill
+                  priority
+                  sizes="(min-width: 1320px) 620px, 50vw"
+                  alt={businessName}
+                  className={GALLERY_IMAGE_CLASS}
+                />
+              </button>
             </div>
 
-            {/* Right Side Grid */}
-            <div className="col-span-2 grid grid-cols-2 gap-1">
-              {rightSideGalleryImages?.map((image: string, index: number) => (
-                <div
-                  key={index}
-                  className="relative group cursor-pointer overflow-hidden"
-                  onClick={() => handleImageClick(index + 1)}
-                >
-                  <ImageWithFallback
-                    fill
-                    sizes="100px"
-                    src={image}
-                    alt={`${businessName} - ${index + 2}`}
-                    className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl"
-                  />
-                </div>
-              ))}
-            </div>
+            {rightSideGalleryImages.map((image: string, index: number) => (
+              <button
+                key={index}
+                type="button"
+                disabled={!image}
+                onClick={() => handleImageClick(index + 1)}
+                aria-label={`Abrir foto ${index + 2} de ${businessName}`}
+                className={GALLERY_TILE_CLASS}
+              >
+                <ImageWithFallback
+                  fill
+                  sizes="(min-width: 1320px) 310px, 25vw"
+                  src={image}
+                  alt={`${businessName} - ${index + 2}`}
+                  className={GALLERY_IMAGE_CLASS}
+                />
+              </button>
+            ))}
           </div>
 
-          {/* Mobile Image Carousel with Swipe */}
-          <div className="md:hidden relative rounded-xl overflow-hidden">
+          {/* Mobile: foto de ponta a ponta com deslize */}
+          <div
+            role="group"
+            aria-label="Galeria de fotos"
+            className="relative md:hidden"
+          >
             <Carousel
               className="w-full"
-              opts={{
-                loop: true,
-                align: 'start',
-              }}
+              opts={{ loop: mobileImages.length > 1, align: 'start' }}
+              setApi={handleCarouselApi}
             >
-              <CarouselContent>
-                {allImages.map((image: string, index: number) => (
-                  <CarouselItem key={index}>
-                    <div className="relative h-64">
+              <CarouselContent className="ml-0">
+                {mobileImages.map((image: string, index: number) => (
+                  <CarouselItem key={index} className="pl-0">
+                    <button
+                      type="button"
+                      disabled={!image}
+                      onClick={() => handleImageClick(index)}
+                      aria-label={`Abrir foto ${index + 1} de ${businessName}`}
+                      className="relative block aspect-[4/3] w-full bg-[#F4F3F7]"
+                    >
                       <ImageWithFallback
-                        width={500}
-                        height={256}
+                        fill
+                        sizes="100vw"
+                        priority={index === 0}
                         src={image}
                         alt={`${businessName} - ${index + 1}`}
-                        className="w-full h-full object-cover cursor-pointer"
-                        onClick={() => handleImageClick(index)}
+                        className="object-cover"
                       />
-                    </div>
+                    </button>
                   </CarouselItem>
                 ))}
               </CarouselContent>
-
-              {allImages.length > 1 && (
-                <>
-                  <CarouselPrevious className="left-2 bg-white/90 hover:bg-white border-0 shadow-lg" />
-                  <CarouselNext className="right-2 bg-white/90 hover:bg-white border-0 shadow-lg" />
-
-                  {/* Photo Counter */}
-                  <div className="absolute bottom-3 right-3 bg-[#0A0A0A]/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm pointer-events-none">
-                    1 / {allImages.length}
-                  </div>
-
-                  {/* View All Button */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm hover:bg-white"
-                    onClick={() => handleImageClick(0)}
-                  >
-                    <Images className="h-4 w-4 mr-1" />
-                    Ver todas
-                  </Button>
-                </>
-              )}
             </Carousel>
+
+            <div className="absolute top-2 right-2 flex gap-1.5">
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Compartilhar"
+                className={PHOTO_ACTION_CLASS}
+              >
+                <Share className="h-[18px] w-[18px]" aria-hidden />
+              </button>
+              {isLoggedIn && (
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  aria-label={
+                    isFavorite
+                      ? 'Remover dos favoritos'
+                      : 'Salvar nos favoritos'
+                  }
+                  aria-pressed={isFavorite}
+                  className={PHOTO_ACTION_CLASS}
+                >
+                  {favoriteIcon}
+                </button>
+              )}
+            </div>
+
+            {allImages.length > 1 && (
+              <span className="pointer-events-none absolute right-3.5 bottom-3.5 grid h-8 place-items-center rounded-full bg-[#0B0B0F]/70 px-3 text-xs font-semibold text-white">
+                {visibleImageIndex + 1} / {allImages.length}
+              </span>
+            )}
           </div>
 
-          {/* Show All Photos Button - Bottom Right (Desktop Only) */}
           {!showAllPhotos && allImages.length > 0 && (
-            <Button
-              variant="outline"
-              className="hidden md:flex absolute bottom-4 right-4 bg-white text-black border-black hover:bg-[#F4F4F5] rounded-lg shadow-lg"
+            <button
+              type="button"
               onClick={() => handleImageClick(0)}
+              className="absolute right-4 bottom-4 hidden h-11 rounded-full bg-white px-[18px] text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] md:block"
             >
-              <Images className="h-4 w-4 mr-2" />
               Ver todas ({allImages.length})
-            </Button>
+            </button>
           )}
         </div>
-
-        {/* Business Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-          {/* Left Column - Main Info */}
-          <div className="lg:col-span-2">
-            <div className="mb-4 md:mb-6">
-              <p className="text-[#2B2B2B] mb-4">{description}</p>
-
-              {/* Amenities - Above Reviews */}
-              {amenities.length > 0 && (
-                <div className="mb-4 pb-4 border-b border-[#E4E4E7]">
-                  <div className="flex flex-wrap gap-2">
-                    {amenities.map((amenity: string, index: number) => (
-                      <Badge
-                        key={index}
-                        variant="outline"
-                        className="border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]"
-                      >
-                        {amenity}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Reviews */}
-              <div className="flex items-center gap-1 text-sm">
-                <Star className="h-4 w-4 fill-black text-black" />
-                <span className="font-medium">{averageRating.toFixed(1)}</span>
-                <span>·</span>
-                <button
-                  onClick={() =>
-                    setReviewsAttributesAction({
-                      storeId: selectedStore?.id,
-                      businessName: selectedStore?.name,
-                      isOpen: true,
-                    })
-                  }
-                  className="underline cursor-pointer hover:text-[#2B2B2B] transition-colors"
-                >
-                  {reviewCount} avaliações
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Opening Hours */}
-          <div className="lg:col-span-1">
-            <div className="bg-[#F4F4F5] rounded-lg p-4 border border-[#E4E4E7]">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="h-4 w-4 text-[#0A0A0A]" />
-                <h3 className="text-[#0A0A0A]">Horário de Funcionamento</h3>
-              </div>
-              <p className="text-sm text-[#2B2B2B]">
-                {formatBusinessHours(openTime, closeTime, businessDays)}
-              </p>
-              <div className="flex items-start gap-2 mt-4 pt-4 border-t border-[#E4E4E7]">
-                <MapPinIcon className="h-4 w-4 text-[#71717A] mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-[#2B2B2B]">{businessAddress}</p>
-              </div>
-              {instagramUrl && instagramLabel ? (
-                <a
-                  href={instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 mt-4 pt-4 border-t border-[#E4E4E7] text-sm text-[#2B2B2B] hover:text-[#0A0A0A]"
-                >
-                  <Instagram className="h-4 w-4 flex-shrink-0" />
-                  {instagramLabel}
-                </a>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        {/* Modern Photo Gallery */}
-        <ImageGallery
-          isOpen={showAllPhotos}
-          onClose={handleCloseGallery}
-          images={allImages}
-          businessName={businessName}
-          currentIndex={selectedImageIndex}
-        />
       </div>
+
+      <ImageGallery
+        isOpen={showAllPhotos}
+        onClose={handleCloseGallery}
+        images={allImages}
+        businessName={businessName}
+        currentIndex={selectedImageIndex}
+      />
     </div>
   );
 }

@@ -1,213 +1,92 @@
-import useSearchStore from '@/store/search/search.store';
-import { formatStorePrice } from '@/utils/helpers/price.helper';
+import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import {
-  Badge,
   Drawer,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-  Separator,
 } from '@repo/ui';
-import { Calendar, ChevronUp, Clock, MapPin, User } from 'lucide-react';
-import { useFormContext } from 'react-hook-form';
-import { TBookingFormData } from '../../booking.schema';
+import {
+  TBookingAdvanceConfig,
+  TBookingSummaryConfig,
+} from '../../booking.types';
+import { useBookingSidebar } from '../booking-sidebar/booking-sidebar.hook';
+import { BookingSummaryItems } from '../booking-sidebar/booking-summary-items';
 
-interface MobileBookingDrawerProps {
-  totalPrice: number;
-  totalDuration: number;
-}
+type TMobileBookingDrawerConfig = TBookingSummaryConfig & TBookingAdvanceConfig;
 
+/** Barra inferior do mobile: total, gaveta de resumo e botão de avanço. */
 export function MobileBookingDrawer({
   totalPrice,
   totalDuration,
-}: MobileBookingDrawerProps) {
-  const { watch } = useFormContext<TBookingFormData>();
-  const selectedServices = watch('selectedServices');
-  const selectedProfessional = watch('selectedProfessional');
-  const isAnyProfessional = watch('isAnyProfessional');
-  const selectedDate = watch('selectedDate');
-  const selectedTime = watch('selectedTime');
-
-  const selectedStore = useSearchStore((state) => state.selectedStore);
-  const businessName = selectedStore?.name || '';
-  const businessAddress = selectedStore
-    ? `${selectedStore.address}, ${selectedStore.city} - ${selectedStore.state}`
-    : '';
-
-  const formatPrice = (price: number) => {
-    return formatStorePrice(
-      price,
-      selectedStore?.currency,
-      selectedStore?.country,
-    );
-  };
-
-  const formatDuration = (minutes: number) => {
-    if (minutes < 60) {
-      return `${minutes}min`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return remainingMinutes > 0
-      ? `${hours}h ${remainingMinutes}min`
-      : `${hours}h`;
-  };
-
-  const formatFullDate = (date: Date) => {
-    const locale =
-      selectedStore?.country === 'BR'
-        ? 'pt-BR'
-        : selectedStore?.country === 'US'
-          ? 'en-US'
-          : selectedStore?.country || 'pt-BR';
-    return new Intl.DateTimeFormat(locale, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }).format(date);
-  };
-
-  if (selectedServices.length === 0) {
-    return null;
-  }
+  currentStep,
+  nextButtonText,
+  isNextDisabled,
+  onNext,
+}: TMobileBookingDrawerConfig) {
+  const summary = useBookingSidebar(totalPrice, totalDuration, currentStep);
+  const { businessName, businessAddress, selectedServices } = summary.data;
+  const { formatPrice } = summary.formatters;
+  const hasServices = selectedServices.length > 0;
 
   return (
-    <Drawer>
-      <DrawerTrigger asChild>
-        <button
-          className="w-full text-xs text-center text-[#2B2B2B] hover:text-[#0A0A0A] py-2 border-t border-[#F4F4F5] pt-3 flex items-center justify-center gap-1 transition-colors"
-          aria-label="Ver detalhes do agendamento"
-        >
-          Ver detalhes do agendamento
-          <ChevronUp className="h-3 w-3" />
-        </button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="border-b border-[#F4F4F5]">
-          <DrawerTitle>Resumo do Agendamento</DrawerTitle>
-          <DrawerDescription>
-            Confira os detalhes do seu agendamento antes de confirmar.
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="max-h-[70vh] overflow-y-auto p-4 space-y-4">
-          {/* Business Info */}
-          <div className="space-y-2">
-            <h3 className="text-[#0A0A0A]">{businessName}</h3>
-            <div className="flex items-start gap-2 text-sm text-[#2B2B2B]">
-              <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <span>{businessAddress}</span>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Services */}
-          <div className="space-y-3">
-            <h4 className="text-sm text-[#2B2B2B]">Serviços selecionados:</h4>
-            {selectedServices.map((service) => (
-              <div
-                key={service.id}
-                className="flex justify-between items-start gap-3"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[#0A0A0A]">{service.name}</span>
-                    {service.quantity > 1 && (
-                      <Badge className="bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white text-xs">
-                        {service.quantity}x
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                    <Badge variant="secondary" className="text-xs">
-                      {service.category?.name}
-                    </Badge>
-                    <span className="text-xs text-[#71717A]">
-                      {formatDuration(service.duration * service.quantity)}
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[#0A0A0A] font-medium whitespace-nowrap">
-                  {formatPrice(service.price * service.quantity)}
-                </span>
-              </div>
-            ))}
-
-            {selectedServices.length > 1 && (
-              <div className="border-t border-[#E4E4E7] pt-3 flex justify-between items-center text-sm">
-                <span className="text-[#2B2B2B]">Duração total:</span>
-                <span className="text-[#0A0A0A] font-medium">
-                  {formatDuration(totalDuration)}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Professional */}
-          {(selectedProfessional || isAnyProfessional) && (
-            <>
-              <Separator />
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-[#2B2B2B]">
-                  <User className="h-4 w-4" />
-                  <span>Profissional:</span>
-                </div>
-                <p className="text-[#0A0A0A] ml-6">
-                  {isAnyProfessional
-                    ? 'Qualquer profissional'
-                    : selectedProfessional?.user.firstName +
-                      ' ' +
-                      selectedProfessional?.user.lastName}
-                </p>
-                {selectedProfessional && (
-                  <p className="text-xs text-[#71717A] ml-6">
-                    {selectedProfessional.services
-                      ?.map((s) => s.name)
-                      .join(' • ')}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Date & Time */}
-          {selectedDate && selectedTime && (
-            <>
-              <Separator />
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-[#2B2B2B]">
-                  <Calendar className="h-4 w-4" />
-                  <span>Agendado para:</span>
-                </div>
-                <div className="ml-6">
-                  <p className="text-[#0A0A0A]">
-                    {formatFullDate(selectedDate)}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 text-sm">
-                    <Clock className="h-3 w-3 text-[#71717A]" />
-                    <span className="text-[#2B2B2B]">{selectedTime}</span>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Total */}
-          <Separator />
-          <div className="bg-[#F4F4F5] rounded-lg p-4 space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-[#0A0A0A]">Total:</span>
-              <span className="text-xl text-[#0A0A0A]">
-                {formatPrice(totalPrice)}
+    <div className="sticky bottom-0 z-20 mt-auto border-t border-[#EBE9F0] bg-white/98 px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
+      {hasServices ? (
+        <Drawer>
+          <DrawerTrigger asChild>
+            <button
+              type="button"
+              className="flex min-h-11 w-full items-center justify-between text-[13px] font-medium text-[#5F5C6E]"
+            >
+              <span className="text-left">
+                {selectedServices.length}{' '}
+                {selectedServices.length === 1 ? 'serviço' : 'serviços'}
+                <b className="block text-[17px] font-extrabold text-[#0B0B0F]">
+                  {formatPrice(totalPrice)}
+                </b>
               </span>
+              <u className="font-semibold text-[#0B0B0F]">Ver resumo</u>
+            </button>
+          </DrawerTrigger>
+          <DrawerContent className={plusJakartaSans.className}>
+            <DrawerHeader className="border-b border-[#F0EEF4] text-left">
+              <DrawerTitle className="text-xl font-extrabold tracking-[-0.025em] text-[#0B0B0F]">
+                Resumo da reserva
+              </DrawerTitle>
+              <DrawerDescription className="text-sm text-[#5F5C6E]">
+                {businessName} · {businessAddress}
+              </DrawerDescription>
+            </DrawerHeader>
+            <div className="max-h-[70vh] overflow-y-auto px-5 pb-[calc(20px+env(safe-area-inset-bottom,0px))]">
+              <BookingSummaryItems summary={summary} />
+
+              <div className="mt-5 flex items-baseline justify-between border-t border-[#F0EEF4] pt-5 text-[15px] font-semibold text-[#0B0B0F]">
+                Total
+                <b className="text-2xl font-extrabold">
+                  {formatPrice(totalPrice)}
+                </b>
+              </div>
+              <p className="mt-1 text-right text-[13px] text-[#5F5C6E]">
+                Pagamento no local
+              </p>
             </div>
-            <p className="text-xs text-[#71717A]">Pagamento no local</p>
-          </div>
-        </div>
-      </DrawerContent>
-    </Drawer>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <p className="flex min-h-11 items-center text-[13px] font-medium text-[#5F5C6E]">
+          Nenhum serviço selecionado
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={isNextDisabled}
+        className="mt-1.5 block w-full rounded-full bg-[#0B0B0F] p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0B0B0F]"
+      >
+        {nextButtonText}
+      </button>
+    </div>
   );
 }

@@ -4,10 +4,8 @@ import { useFavoritesMutations } from '@/hooks/use-mutations/use-favorites-mutat
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { TWorkingDays } from '@/types/api/stores.types';
 import { orderGalleryByMainImage } from '@/utils/helpers/gallery.helper';
-import {
-  instagramLabel,
-  toInstagramUrl,
-} from '@/utils/helpers/social.helper';
+import { instagramLabel, toInstagramUrl } from '@/utils/helpers/social.helper';
+import type { CarouselApi } from '@repo/ui';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useGetStore } from '../../booking.hook';
@@ -15,6 +13,7 @@ import { useGetStore } from '../../booking.hook';
 interface BusinessShowcaseData {
   businessName: string;
   businessAddress: string;
+  businessLocation: string;
   images: string[];
   averageRating: number;
   reviewCount: number;
@@ -27,22 +26,9 @@ interface BusinessShowcaseData {
   instagramLabel: string | null;
 }
 
-export const useBusinessShowcase = () => {
+/** Dados do espaço, lidos pelo cabeçalho e pelo bloco de informações. */
+export const useBusinessData = () => {
   const selectedStore = useGetStore();
-  const [showAllPhotos, setShowAllPhotos] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-  const { createFavorite, deleteFavorite } = useFavoritesMutations();
-
-  const { user, isLoggedIn } = useUserQuery();
-
-  const favorite = useMemo(() => {
-    return user?.favorites.find(
-      (favorite) => favorite.store.id === selectedStore?.id,
-    );
-  }, [user, selectedStore]);
-
-  const isFavorite = Boolean(favorite);
 
   const data: BusinessShowcaseData | null = useMemo(() => {
     if (!selectedStore) return null;
@@ -59,6 +45,7 @@ export const useBusinessShowcase = () => {
     return {
       businessName: selectedStore.name,
       businessAddress,
+      businessLocation: `${selectedStore.city}, ${selectedStore.state}`,
       averageRating,
       reviewCount,
       description: selectedStore.description || '',
@@ -70,6 +57,32 @@ export const useBusinessShowcase = () => {
       instagramLabel: instagramLabel(selectedStore.instagram),
     };
   }, [selectedStore]);
+
+  return data;
+};
+
+export const useBusinessShowcase = () => {
+  const selectedStore = useGetStore();
+  const data = useBusinessData();
+  const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [visibleImageIndex, setVisibleImageIndex] = useState(0);
+
+  const { createFavorite, deleteFavorite } = useFavoritesMutations();
+
+  const { user, isLoggedIn } = useUserQuery();
+
+  const favorite = useMemo(() => {
+    return user?.favorites.find(
+      (favorite) => favorite.store.id === selectedStore?.id,
+    );
+  }, [user, selectedStore]);
+
+  const isFavorite = Boolean(favorite);
+
+  const handleCarouselApi = useCallback((api: CarouselApi) => {
+    api?.on('select', () => setVisibleImageIndex(api.selectedScrollSnap()));
+  }, []);
 
   const handleImageClick = useCallback((index: number) => {
     setSelectedImageIndex(index);
@@ -147,12 +160,14 @@ export const useBusinessShowcase = () => {
     data,
     showAllPhotos,
     selectedImageIndex,
+    visibleImageIndex,
     isFavorite,
     isLoggedIn,
     selectedStore,
     allImages,
     rightSideGalleryImages,
     mainGalleryImage,
+    handleCarouselApi,
     handleImageClick,
     handleCloseGallery,
     handleShare,

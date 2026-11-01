@@ -4,6 +4,18 @@ export type TBookingStep =
   | 'datetime'
   | 'checkout';
 
+export type TBookingSummaryConfig = {
+  totalPrice: number;
+  totalDuration: number;
+  currentStep: TBookingStep;
+};
+
+export type TBookingAdvanceConfig = {
+  nextButtonText: string;
+  isNextDisabled: boolean;
+  onNext: () => void;
+};
+
 export interface IProfessional {
   id: string;
   name: string;

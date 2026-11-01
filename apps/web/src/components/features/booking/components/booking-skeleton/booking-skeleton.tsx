@@ -1,55 +1,33 @@
-import { Card, Skeleton } from '@repo/ui';
+import { HEADER_STICKY_TOP_CLASS } from '@/components/layout';
+import { cn, Skeleton } from '@repo/ui';
 
+/** Espelha o layout da etapa de serviços, a primeira exibida ao abrir a página. */
 export function BookingSkeleton() {
   return (
-    <div>
-      {/* Business Showcase Skeleton */}
+    <div className="flex min-h-[calc(100dvh-5rem)] flex-col md:min-h-[calc(100dvh-6rem)]">
       <BusinessShowcaseSkeleton />
 
-      {/* Main Content */}
-      <div className="max-w-[90rem] mx-auto px-4 md:px-6 py-4 md:py-8 pb-24 md:pb-8">
-        <div className="grid grid-cols-12 gap-4 md:gap-6">
-          {/* Main Content Column */}
-          <div className="col-span-12 lg:col-span-8">
-            <div className="space-y-6">
-              {/* Step Indicator - Desktop Only */}
-              <div className="hidden md:block">
-                <StepIndicatorSkeleton />
-              </div>
-
-              {/* Step Content Skeleton */}
-              <StepContentSkeleton />
-
-              {/* Navigation Buttons - Desktop */}
-              <div className="hidden md:flex mt-8 pt-6 justify-between items-center">
-                <Skeleton className="h-10 w-20" />
-                <Skeleton className="h-10 w-40" />
-              </div>
-            </div>
+      <div className="mx-auto w-full max-w-[82.5rem] px-5 pb-5 md:px-10 md:pb-0">
+        <div className="grid grid-cols-1 gap-10 pt-4 md:pt-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+          <div className="min-w-0">
+            <BusinessInfoSkeleton />
+            <StepIndicatorSkeleton />
+            <StepContentSkeleton />
           </div>
 
-          {/* Sidebar - Desktop Only */}
-          <div className="hidden lg:block col-span-12 lg:col-span-4">
+          <div className="hidden md:block">
             <BookingSidebarSkeleton />
           </div>
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white p-4 z-20 shadow-lg">
-        <div className="flex items-center justify-between gap-3">
-          {/* Summary Info */}
-          <div className="flex-1 space-y-2">
-            <Skeleton className="h-4 w-24" />
-            <Skeleton className="h-6 w-32" />
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-10 w-20" />
-            <Skeleton className="h-10 w-24" />
-          </div>
+      {/* Barra inferior do mobile */}
+      <div className="sticky bottom-0 z-20 mt-auto border-t border-[#EBE9F0] bg-white px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
+        <div className="flex min-h-11 flex-col justify-center gap-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-5 w-32" />
         </div>
+        <Skeleton className="mt-1.5 h-[54px] w-full rounded-full" />
       </div>
     </div>
   );
@@ -57,86 +35,55 @@ export function BookingSkeleton() {
 
 function BusinessShowcaseSkeleton() {
   return (
-    <div className="max-w-[90rem] mx-auto px-4 md:px-6">
-      {/* Business Name and Actions */}
-      <div className="flex items-center justify-between mb-4 md:mb-6">
-        <div className="flex-1">
-          <Skeleton className="h-8 w-48 md:h-10" />
-        </div>
-
-        <div className="flex items-center gap-2 md:gap-3">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-10 w-24" />
-        </div>
-      </div>
-
-      {/* Images Gallery */}
-      <div className="mb-4 md:mb-8">
-        {/* Desktop Grid */}
-        <div className="hidden md:grid grid-cols-4 gap-1 h-[420px] rounded-xl overflow-hidden">
-          {/* Main Image - Left Side */}
-          <div className="col-span-2 relative overflow-hidden">
-            <Skeleton className="w-full h-full" />
+    <div className="mx-auto -mt-4 w-full max-w-[82.5rem] md:mt-0 md:px-10">
+      <div className="flex flex-col">
+        <div className="order-2 flex flex-wrap items-end justify-between gap-6 px-5 pt-5 md:order-1 md:px-0 md:pt-4">
+          <div className="space-y-2.5">
+            <Skeleton className="h-8 w-64 md:h-10 md:w-96" />
+            <Skeleton className="h-4 w-56" />
           </div>
+          <div className="hidden gap-2.5 md:flex">
+            <Skeleton className="h-11 w-32 rounded-full" />
+            <Skeleton className="h-11 w-24 rounded-full" />
+          </div>
+        </div>
 
-          {/* Right Side Grid */}
-          <div className="col-span-2 grid grid-cols-2 gap-1">
+        {/* Galeria: grade no desktop, foto de ponta a ponta no mobile */}
+        <div className="order-1 md:order-2 md:mt-6">
+          <div className="hidden grid-cols-[2fr_1fr_1fr] grid-rows-[220px_220px] gap-2 overflow-hidden rounded-[28px] md:grid">
+            <Skeleton className="row-span-2 h-full w-full rounded-none" />
             {Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="relative overflow-hidden">
-                <Skeleton className="w-full h-full" />
-              </div>
+              <Skeleton key={index} className="h-full w-full rounded-none" />
             ))}
           </div>
-        </div>
-
-        {/* Mobile Image Carousel */}
-        <div className="md:hidden rounded-xl overflow-hidden">
-          <Skeleton className="h-64 w-full" />
+          <Skeleton className="aspect-[4/3] w-full rounded-none md:hidden" />
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Business Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
-        {/* Left Column - Main Info */}
-        <div className="lg:col-span-2">
-          <div className="mb-4 md:mb-6 space-y-4">
-            <Skeleton className="h-7 w-64" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
+function BusinessInfoSkeleton() {
+  return (
+    <div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
 
-            {/* Amenities */}
-            <div className="space-y-3 pb-4 border-b border-[#E4E4E7]">
-              <div className="flex flex-wrap gap-2">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <Skeleton key={index} className="h-8 w-24" />
-                ))}
-              </div>
-            </div>
+      <div className="mt-3.5 flex gap-2 overflow-hidden md:mt-4 md:flex-wrap">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-8 w-24 shrink-0 rounded-full" />
+        ))}
+      </div>
 
-            {/* Reviews */}
-            <Skeleton className="h-5 w-32" />
-          </div>
-        </div>
-
-        {/* Right Column - Opening Hours */}
-        <div className="lg:col-span-1">
-          <Card className="p-4 border border-[#E4E4E7] space-y-3">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-5 w-40" />
-            </div>
+      <div className="mt-[18px] grid gap-4 border-y border-[#EBE9F0] py-4 md:mt-6 md:grid-cols-3 md:gap-6 md:py-5">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="space-y-2">
+            <Skeleton className="h-3 w-16" />
             <Skeleton className="h-4 w-full" />
-
-            <div className="space-y-2 pt-4 border-t border-[#E4E4E7]">
-              <Skeleton className="h-4 w-4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </div>
-          </Card>
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -144,104 +91,71 @@ function BusinessShowcaseSkeleton() {
 
 function StepIndicatorSkeleton() {
   return (
-    <div className="flex items-center justify-between">
-      {Array.from({ length: 4 }).map((_, index) => (
-        <div key={index} className="flex items-center flex-1">
-          {/* Step Circle */}
-          <Skeleton className="h-8 w-8 rounded-full" />
-
-          {/* Step Label */}
-          {index < 3 && (
-            <>
-              <div className="flex-1 mx-2">
-                <Skeleton className="h-1 w-full" />
-              </div>
-            </>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function StepContentSkeleton() {
-  return (
-    <div className="space-y-6">
-      {/* Step Title */}
-      <Skeleton className="h-7 w-48" />
-
-      {/* Content Grid/List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Array.from({ length: 6 }).map((_, index) => (
-          <Card key={index} className="p-4 space-y-3">
-            {/* Image or Icon placeholder */}
-            <Skeleton className="h-32 w-full" />
-
-            {/* Title */}
-            <Skeleton className="h-5 w-3/4" />
-
-            {/* Description */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </div>
-
-            {/* Price and Duration */}
-            <div className="flex justify-between items-center pt-2">
-              <Skeleton className="h-5 w-20" />
-              <Skeleton className="h-5 w-16" />
-            </div>
-          </Card>
+    <div className="mt-7 mb-1.5 md:mt-9 md:mb-7">
+      <Skeleton className="h-4 w-full md:hidden" />
+      <div className="hidden gap-2 md:flex">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <div
+            key={index}
+            className="flex flex-1 items-center gap-2.5 border-t-[3px] border-[#EBE9F0] pt-3"
+          >
+            <Skeleton className="h-[26px] w-[26px] shrink-0 rounded-full" />
+            <Skeleton className="h-3.5 w-20" />
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
+function StepContentSkeleton() {
+  return (
+    <div>
+      <Skeleton className="mt-1.5 h-7 w-56 md:mt-0 md:h-8" />
+      <Skeleton className="mt-2 h-4 w-72 max-w-full" />
+
+      <div className="mt-4 mb-1 flex gap-2 md:mt-5 md:mb-2">
+        <Skeleton className="h-11 w-20 rounded-full" />
+        <Skeleton className="h-11 w-24 rounded-full" />
+      </div>
+
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={index}
+          className="flex items-center justify-between gap-4 border-b border-[#EBE9F0] py-[18px] md:gap-6 md:py-5"
+        >
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-3.5 w-56 max-w-full" />
+            <Skeleton className="h-3.5 w-28" />
+          </div>
+          <Skeleton className="h-11 w-24 shrink-0 rounded-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function BookingSidebarSkeleton() {
   return (
-    <div className="space-y-4">
-      <Card className="p-4 sm:p-5 sticky top-24 bg-white shadow-xl space-y-4">
-        {/* Header */}
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-36" />
-        </div>
+    <div
+      className={cn(
+        'rounded-[28px] bg-white p-7 shadow-[0_12px_40px_rgba(15,12,30,0.1)] lg:sticky',
+        HEADER_STICKY_TOP_CLASS,
+      )}
+    >
+      <Skeleton className="h-6 w-48" />
+      <Skeleton className="mt-2 h-4 w-40" />
 
-        <hr className="border-[#E4E4E7]" />
+      <div className="mt-5 border-t border-[#F0EEF4] pt-5">
+        <Skeleton className="h-4 w-full" />
+      </div>
 
-        {/* Resume Section */}
-        <div className="space-y-4">
-          <Skeleton className="h-5 w-32" />
-
-          {/* Services */}
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between items-start">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-5 w-16" />
-                </div>
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-16" />
-                  <Skeleton className="h-4 w-12" />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <hr className="border-[#E4E4E7]" />
-
-          {/* Total */}
-          <div className="flex justify-between items-center pt-2">
-            <Skeleton className="h-5 w-20" />
-            <Skeleton className="h-6 w-24" />
-          </div>
-
-          <Skeleton className="h-3 w-32" />
-        </div>
-      </Card>
+      <div className="mt-5 flex items-baseline justify-between border-t border-[#F0EEF4] pt-5">
+        <Skeleton className="h-4 w-14" />
+        <Skeleton className="h-7 w-28" />
+      </div>
+      <Skeleton className="mt-5 h-[54px] w-full rounded-full" />
     </div>
   );
 }

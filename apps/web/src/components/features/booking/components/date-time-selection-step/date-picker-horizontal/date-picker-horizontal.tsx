@@ -1,8 +1,11 @@
 'use client';
-import { Button, cn } from '@repo/ui/index';
+import { cn } from '@repo/ui/index';
 import { TWorkingDays } from '@/types/api/stores.types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+
+const NAV_BUTTON_CLASS =
+  'grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#E3E1EA] bg-white text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white';
 
 interface IDatePickerHorizontalProps {
   selected: Date | undefined;
@@ -109,20 +112,22 @@ export function DatePickerHorizontal({
   return (
     <div className="w-full">
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
+          type="button"
           onClick={handlePrevious}
           disabled={startIndex === 0}
-          className="h-8 w-8 p-0 flex-shrink-0"
+          className={NAV_BUTTON_CLASS}
           aria-label="Semana anterior"
         >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+        </button>
 
-        <div ref={scrollContainerRef} className="flex-1 overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          className="min-w-0 flex-1 overflow-x-auto [scrollbar-width:none]"
+        >
           <div className="flex gap-2">
-            {visibleDates.map((date, index) => {
+            {visibleDates.map((date) => {
               const isSelected = isDateSelected(date);
               const isDisabled = isDateDisabled(date);
               const isToday =
@@ -133,33 +138,34 @@ export function DatePickerHorizontal({
               return (
                 <button
                   key={date.toISOString()}
+                  type="button"
                   onClick={() => !isDisabled && onSelect(date)}
                   disabled={isDisabled}
                   className={cn(
-                    'flex min-w-[60px] flex-1 flex-col items-center gap-1 rounded-2xl border-2 p-3 transition-all',
-                    isSelected &&
-                      'border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-md',
+                    'flex min-w-[60px] flex-1 flex-col items-center gap-1 rounded-[14px] border p-3 transition-colors',
+                    isSelected && 'border-[#0B0B0F] bg-[#0B0B0F] text-white',
                     !isSelected &&
                       !isDisabled &&
-                      'border-[#E4E4E7] hover:border-[#D4D4D8] hover:bg-[#F4F4F5]',
+                      'border-[#E3E1EA] bg-white hover:bg-[#F4F3F7]',
                     isDisabled &&
-                      'border-[#F4F4F5] bg-[#F4F4F5] text-[#A1A1AA] cursor-not-allowed opacity-50',
+                      'cursor-default border-[#F0EEF4] bg-[#F7F6FA] text-[#8D8A9B] line-through',
                   )}
                   aria-label={`Selecionar ${formatDayName(date)}, ${formatDate(date)} de ${formatMonth(date)}`}
                   aria-pressed={isSelected}
                 >
                   <span
                     className={cn(
-                      'text-xs uppercase',
-                      isSelected ? 'text-white' : 'text-[#71717A]',
+                      'text-xs font-semibold uppercase',
+                      !isSelected && 'text-[#5F5C6E]',
+                      isDisabled && 'text-[#8D8A9B]',
                     )}
                   >
                     {formatDayName(date)}
                   </span>
                   <span
                     className={cn(
-                      'font-medium',
-                      isSelected ? 'text-white' : 'text-[#0A0A0A]',
+                      'text-sm font-semibold',
+                      !isSelected && !isDisabled && 'text-[#0B0B0F]',
                     )}
                   >
                     {formatDate(date)}
@@ -167,13 +173,17 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'text-xs',
-                      isSelected ? 'text-white/90' : 'text-[#71717A]',
+                      !isSelected && 'text-[#5F5C6E]',
+                      isDisabled && 'text-[#8D8A9B]',
                     )}
                   >
                     {formatMonth(date)}
                   </span>
                   {isToday && !isSelected && (
-                    <div className="w-1 h-1 rounded-full bg-[#0A0A0A] mt-0.5" />
+                    <span
+                      aria-hidden
+                      className="mt-0.5 h-1 w-1 rounded-full bg-[#0B0B0F]"
+                    />
                   )}
                 </button>
               );
@@ -181,16 +191,15 @@ export function DatePickerHorizontal({
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
+        <button
+          type="button"
           onClick={handleNext}
           disabled={startIndex + 7 >= dates.length}
-          className="h-8 w-8 p-0 flex-shrink-0"
+          className={NAV_BUTTON_CLASS}
           aria-label="Próxima semana"
         >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </button>
       </div>
     </div>
   );

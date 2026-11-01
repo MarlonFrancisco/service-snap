@@ -1,13 +1,21 @@
 'use client';
 import { ICategory, IService } from '@/types/api/service.types';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
-import { Badge, Button } from '@repo/ui';
-import { Check, Minus, Plus } from 'lucide-react';
+import { cn } from '@repo/ui';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
+
+const CHIP_CLASS =
+  'h-11 rounded-full border px-4 text-[13px] font-semibold transition-colors';
+const CHIP_ON_CLASS = 'border-[#0B0B0F] bg-[#0B0B0F] text-white';
+const CHIP_OFF_CLASS =
+  'border-[#E3E1EA] bg-white text-[#0B0B0F] hover:bg-[#F4F3F7]';
+const QUANTITY_BUTTON_CLASS =
+  'h-11 w-10 rounded-full text-lg text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white md:h-9 md:w-9';
+
 export function ServiceSelectionStep() {
   const store = useGetStore();
   const [selectedCategory, setSelectedCategory] = useState<
@@ -99,160 +107,112 @@ export function ServiceSelectionStep() {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
-          Selecione os serviços
-        </h2>
-        <p className="text-sm sm:text-base text-[#2B2B2B]">
-          Escolha um ou mais serviços que deseja agendar
-        </p>
-      </div>
+    <div>
+      <h2 className="mt-1.5 text-[22px] font-extrabold tracking-[-0.025em] text-[#0B0B0F] md:mt-0 md:text-[26px]">
+        Selecione os serviços
+      </h2>
+      <p className="mt-1 text-sm text-[#5F5C6E] md:mt-1.5 md:text-[15px]">
+        Escolha um ou mais serviços que deseja agendar
+      </p>
 
       {/* Category Filter */}
-      <div className="space-y-3">
-        <h3 className="text-sm text-[#2B2B2B]">Filtrar por categoria:</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedCategory ? 'outline' : 'default'}
-            size="sm"
-            onClick={() => setSelectedCategory(undefined)}
-            className={
-              !selectedCategory
-                ? 'bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white'
-                : 'border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]'
-            }
-          >
-            Todos
-          </Button>
-          {categories.map((category) => (
-            <Button
+      <div
+        role="group"
+        aria-label="Filtrar por categoria"
+        className="mt-4 mb-1 flex flex-wrap gap-2 md:mt-5 md:mb-2"
+      >
+        <button
+          type="button"
+          aria-pressed={!selectedCategory}
+          onClick={() => setSelectedCategory(undefined)}
+          className={cn(
+            CHIP_CLASS,
+            !selectedCategory ? CHIP_ON_CLASS : CHIP_OFF_CLASS,
+          )}
+        >
+          Todos
+        </button>
+        {categories.map((category) => {
+          const isCategorySelected = selectedCategory?.id === category.id;
+
+          return (
+            <button
               key={category.id}
-              variant={
-                selectedCategory?.id === category.id ? 'default' : 'outline'
-              }
-              size="sm"
+              type="button"
+              aria-pressed={isCategorySelected}
               onClick={() => setSelectedCategory(category)}
-              className={
-                selectedCategory?.id === category.id
-                  ? 'bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white'
-                  : 'border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]'
-              }
+              className={cn(
+                CHIP_CLASS,
+                isCategorySelected ? CHIP_ON_CLASS : CHIP_OFF_CLASS,
+              )}
             >
               {category.name}
-            </Button>
-          ))}
-        </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Services List */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-        {filteredServices.map((service) => (
-          <div
-            key={service.id}
-            className={`cursor-pointer rounded-2xl bg-white p-3 transition-all sm:p-4 ${
-              isSelected(service.id)
-                ? 'shadow-md ring-1 ring-black/5'
-                : 'shadow-sm hover:shadow-md'
-            }`}
-          >
-            <div className="flex flex-col gap-3">
-              {/* Header com título e check */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="text-sm sm:text-base text-[#0A0A0A]">
-                      {service.name}
-                    </h4>
-                    {isSelected(service.id) && (
-                      <div className="w-5 h-5 bg-[#0A0A0A] rounded-full flex items-center justify-center flex-shrink-0">
-                        <Check className="h-3 w-3 text-white" />
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-[#2B2B2B] mb-2">
-                    {service.description}
-                  </p>
-
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      variant="secondary"
-                      className="bg-[#F4F4F5] text-[#2B2B2B] text-xs"
-                    >
-                      {service.category?.name}
-                    </Badge>
-                    <span className="text-xs sm:text-sm text-[#71717A]">
-                      {formatDuration(service.duration)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Preço - sempre visível */}
-                <div className="text-right flex-shrink-0">
-                  <div className="text-base sm:text-lg text-[#0A0A0A]">
-                    {formatPrice(service.price)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Controles de quantidade - linha separada no mobile */}
-              <div className="flex justify-end">
-                {isSelected(service.id) ? (
-                  <div className="flex items-center gap-1.5 sm:gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-8 h-8 sm:w-9 sm:h-9 p-0 border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleQuantityChange(
-                          service,
-                          getServiceQuantity(service.id) - 1,
-                        );
-                      }}
-                    >
-                      <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </Button>
-
-                    <span className="mx-1 sm:mx-2 min-w-[20px] sm:min-w-[24px] text-center text-sm sm:text-base text-[#0A0A0A] font-medium">
-                      {getServiceQuantity(service.id)}
-                    </span>
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-8 h-8 sm:w-9 sm:h-9 p-0 border-black text-black hover:bg-[#F4F4F5]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleQuantityChange(
-                          service,
-                          getServiceQuantity(service.id) + 1,
-                        );
-                      }}
-                    >
-                      <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5] h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleServiceToggle(service);
-                    }}
-                  >
-                    <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    Adicionar
-                  </Button>
-                )}
-              </div>
-            </div>
+      {filteredServices.map((service) => (
+        <article
+          key={service.id}
+          className="flex items-center justify-between gap-4 border-b border-[#EBE9F0] py-[18px] md:gap-6 md:py-5"
+        >
+          <div className="min-w-0">
+            <h3 className="text-[15px] font-bold text-[#0B0B0F] md:text-base">
+              {service.name}
+            </h3>
+            <p className="mt-[3px] text-[13px] text-[#5F5C6E] md:text-sm">
+              {service.description}
+            </p>
+            <p className="mt-1.5 text-sm text-[#0B0B0F] md:mt-2">
+              <b className="font-extrabold">{formatPrice(service.price)}</b> ·{' '}
+              {formatDuration(service.duration)}
+            </p>
           </div>
-        ))}
-      </div>
+
+          {isSelected(service.id) ? (
+            <div className="flex h-11 shrink-0 items-center gap-0.5 rounded-full bg-[#0B0B0F] text-sm font-bold text-white md:gap-1.5 md:px-1">
+              <button
+                type="button"
+                aria-label={`Remover um: ${service.name}`}
+                className={QUANTITY_BUTTON_CLASS}
+                onClick={() =>
+                  handleQuantityChange(
+                    service,
+                    getServiceQuantity(service.id) - 1,
+                  )
+                }
+              >
+                −
+              </button>
+              <span aria-live="polite">{getServiceQuantity(service.id)}</span>
+              <button
+                type="button"
+                aria-label={`Adicionar mais um: ${service.name}`}
+                className={QUANTITY_BUTTON_CLASS}
+                onClick={() =>
+                  handleQuantityChange(
+                    service,
+                    getServiceQuantity(service.id) + 1,
+                  )
+                }
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              aria-label={`Adicionar ${service.name}`}
+              className="h-11 shrink-0 rounded-full border border-[#0B0B0F] bg-white px-4 text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] md:px-5"
+              onClick={() => handleServiceToggle(service)}
+            >
+              Adicionar
+            </button>
+          )}
+        </article>
+      ))}
     </div>
   );
 }

@@ -7,21 +7,19 @@ import { IAppointment } from '@/types/api/schedule.types';
 import { IProfessional, IUser } from '@/types/api/users.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
-import { Button } from '@repo/ui';
-import {
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  LogIn,
-  Mail,
-  Phone,
-  User,
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
+import { getInitials } from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
+
+const SUBTITLE_CLASS = 'mt-1.5 mb-6 text-[15px] text-[#5F5C6E]';
+const NOTICE_CLASS =
+  'mt-5 rounded-[14px] bg-[#F7F6FA] px-[18px] py-4 text-sm leading-[1.5] text-[#0B0B0F]';
+const PRIMARY_BUTTON_CLASS =
+  'mt-6 flex h-14 w-full max-w-[420px] items-center justify-center gap-2 rounded-full bg-[#0B0B0F] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-60';
 
 export function CheckoutStep() {
   const store = useGetStore();
@@ -84,102 +82,81 @@ export function CheckoutStep() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
-          Finalize seu agendamento
-        </h2>
-        <p className="text-sm sm:text-base text-[#2B2B2B]">
-          Informe seus dados para confirmar a reserva
-        </p>
-      </div>
+    <div>
+      <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-[#0B0B0F]">
+        Finalize seu agendamento
+      </h1>
 
-      {/* Dados do Cliente */}
       {isLoggedIn ? (
-        /* Estado Logado - Confirmação */
-        <div className="space-y-6">
-          <div className="rounded-2xl border border-[#E4E4E7] bg-[#F4F4F5] p-6 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#047857]">
-                <CheckCircle2 className="h-6 w-6 text-white" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-[#0A0A0A] mb-1">Você está autenticado</h3>
-                <p className="text-sm text-[#2B2B2B] mb-4">
-                  Suas informações estão prontas para o agendamento
-                </p>
-                <div className="grid sm:grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-[#71717A]" />
-                    <span className="text-[#0A0A0A]">
-                      {user?.firstName} {user?.lastName}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-[#71717A]" />
-                    <span className="text-[#0A0A0A]">{user?.email}</span>
-                  </div>
-                  <div className="flex items-center gap-2 sm:col-span-2">
-                    <Phone className="h-4 w-4 text-[#71717A]" />
-                    <span className="text-[#0A0A0A]">{user?.telephone}</span>
-                  </div>
-                </div>
-              </div>
+        <>
+          <p className={SUBTITLE_CLASS}>
+            Confira seus dados e confirme a reserva
+          </p>
+
+          <div className="flex items-center gap-4 rounded-[22px] border border-[#E3E1EA] p-5">
+            <span
+              aria-hidden
+              className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-[#0B0B0F] text-[15px] font-bold text-white"
+            >
+              {getInitials(user?.firstName, user?.lastName)}
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-base font-bold text-[#0B0B0F]">
+                {user?.firstName} {user?.lastName}
+              </h2>
+              <p className="mt-[3px] text-sm break-words text-[#5F5C6E]">
+                {[user?.email, user?.telephone].filter(Boolean).join(' · ')}
+              </p>
             </div>
           </div>
-        </div>
-      ) : (
-        /* Estado Não Logado - Formulário Clean */
-        <div className="space-y-6">{/* Opção de Login - Discreto */}</div>
-      )}
 
-      {/* CTA Final - Mais destacado */}
-      <div className="space-y-3 pt-2">
-        {isLoggedIn ? (
-          <>
-            <Button
-              onClick={handleSchedule}
-              className="h-14 w-full rounded-2xl bg-[#0A0A0A] text-white hover:bg-[#2B2B2B]"
-              disabled={isCreatingSchedule}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <span>
-                  {isCreatingSchedule
-                    ? 'Confirmando...'
-                    : 'Confirmar Agendamento'}
-                </span>
-                {isCreatingSchedule ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <ArrowRight />
-                )}
-              </div>
-            </Button>
+          <p className={NOTICE_CLASS}>
+            O pagamento é feito no local, direto com o estabelecimento.
+          </p>
 
-            <p className="text-xs text-center text-[#71717A] leading-relaxed">
-              Ao confirmar, você concorda com nossos{' '}
-              <a href="/terms" className="underline hover:text-[#2B2B2B]">
-                termos de serviço
-              </a>{' '}
-              e{' '}
-              <a href="/privacy" className="underline hover:text-[#2B2B2B]">
-                política de cancelamento
-              </a>
-            </p>
-          </>
-        ) : (
-          <Button
-            onClick={handleLoginClick}
-            className="h-14 w-full rounded-2xl bg-[#0A0A0A] text-white hover:bg-[#2B2B2B]"
+          <button
+            type="button"
+            onClick={handleSchedule}
+            disabled={isCreatingSchedule}
+            className={PRIMARY_BUTTON_CLASS}
           >
-            <div className="flex items-center justify-center gap-2">
-              <span>Fazer login para confirmar</span>
-              <LogIn />
-            </div>
-          </Button>
-        )}
-      </div>
+            {isCreatingSchedule ? 'Confirmando...' : 'Confirmar agendamento'}
+            {isCreatingSchedule && (
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+            )}
+          </button>
+
+          <p className="mt-3 max-w-[420px] text-[13px] leading-[1.5] text-[#5F5C6E]">
+            Ao confirmar, você concorda com nossos{' '}
+            <a href="/terms" className="underline hover:text-[#0B0B0F]">
+              termos de serviço
+            </a>{' '}
+            e{' '}
+            <a href="/privacy" className="underline hover:text-[#0B0B0F]">
+              política de privacidade
+            </a>
+            .
+          </p>
+        </>
+      ) : (
+        <>
+          <p className={SUBTITLE_CLASS}>
+            Entre na sua conta para confirmar a reserva
+          </p>
+
+          <p className={NOTICE_CLASS}>
+            Sua seleção fica salva. Depois do login, você volta para esta etapa.
+          </p>
+
+          <button
+            type="button"
+            onClick={handleLoginClick}
+            className={PRIMARY_BUTTON_CLASS}
+          >
+            Fazer login para confirmar
+          </button>
+        </>
+      )}
     </div>
   );
 }

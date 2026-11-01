@@ -1,11 +1,25 @@
 'use client';
 import { IProfessional } from '@/types/api';
-import { Card } from '@repo/ui';
-import { Check, Info, User } from 'lucide-react';
+import { cn } from '@repo/ui';
+import { Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
+import { getInitials } from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
+
+const OPTION_CLASS =
+  'flex w-full items-center gap-4 rounded-[22px] border border-[#E3E1EA] bg-white px-5 py-[18px] text-left text-[#0B0B0F] transition-colors enabled:hover:border-[#A6A3B4] disabled:cursor-not-allowed disabled:opacity-50';
+const OPTION_SELECTED_CLASS =
+  'border-2 border-[#0B0B0F] px-[19px] py-[17px] enabled:hover:border-[#0B0B0F]';
+const OPTION_AVATAR_CLASS =
+  'grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-[#F4F3F7] text-[15px] font-bold';
+const OPTION_TITLE_CLASS =
+  'flex flex-wrap items-center gap-2 text-base font-bold';
+const OPTION_DESCRIPTION_CLASS = 'mt-[3px] block text-sm text-[#5F5C6E]';
+const OPTION_RADIO_CLASS =
+  'ml-auto h-6 w-6 shrink-0 rounded-full border-2 border-[#A6A3B4]';
+const OPTION_RADIO_ON_CLASS = 'border-[7px] border-[#0B0B0F]';
 
 export function ProfessionalSelectionStep() {
   const stores = useGetStore();
@@ -122,159 +136,110 @@ export function ProfessionalSelectionStep() {
     );
   };
 
+  const isAnySelected = isAnyProfessional && compatibilityStatus.canUseAny;
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
-          Escolha o profissional
-        </h2>
-        <p className="text-sm sm:text-base text-[#2B2B2B]">
-          Selecione um profissional ou deixe o sistema escolher automaticamente
-        </p>
-      </div>
+    <div>
+      <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-[#0B0B0F]">
+        Escolha o profissional
+      </h1>
+      <p className="mt-1.5 mb-6 text-[15px] text-[#5F5C6E]">
+        Selecione um profissional ou deixe o sistema escolher automaticamente
+      </p>
 
       {/* Informações de compatibilidade */}
       {!compatibilityStatus.canUseAny &&
         !compatibilityStatus.hasIncompatibleCombination && (
-          <Card className="p-4 bg-[#F4F4F5] shadow-sm">
-            <div className="flex items-start gap-3 text-[#2B2B2B]">
-              <Info className="h-5 w-5 text-[#2B2B2B] mt-0.5" />
-              <div>
-                <p className="text-sm mb-1">
-                  <strong>Atenção:</strong> A combinação de serviços
-                  selecionados exige profissionais específicos.
-                </p>
-                <p className="text-xs text-[#2B2B2B]">
-                  Escolha um dos profissionais listados abaixo para continuar.
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
-
-      {/* Opção "Qualquer Profissional" */}
-      <Card
-        className={`p-4 cursor-pointer transition-all bg-white ${
-          compatibilityStatus.canUseAny
-            ? isAnyProfessional
-              ? 'shadow-md ring-1 ring-black/5'
-              : 'shadow-sm hover:shadow-md'
-            : 'shadow-sm cursor-not-allowed opacity-50'
-        }`}
-        onClick={
-          compatibilityStatus.canUseAny
-            ? handleAnyProfessionalSelect
-            : undefined
-        }
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                compatibilityStatus.canUseAny ? 'bg-[#E4E4E7]' : 'bg-[#E4E4E7]'
-              }`}
-            >
-              <User
-                className={`h-5 w-5 ${
-                  compatibilityStatus.canUseAny
-                    ? 'text-[#2B2B2B]'
-                    : 'text-[#A1A1AA]'
-                }`}
-              />
-            </div>
-
+          <div className="mb-3 flex items-start gap-3 rounded-[14px] bg-[#F7F6FA] px-[18px] py-4 text-sm leading-[1.5] text-[#0B0B0F]">
+            <Info className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
             <div>
-              <h4
-                className={`${
-                  compatibilityStatus.canUseAny
-                    ? 'text-[#0A0A0A]'
-                    : 'text-[#A1A1AA]'
-                }`}
-              >
-                Qualquer Profissional
-              </h4>
-              <p
-                className={`text-sm ${
-                  compatibilityStatus.canUseAny
-                    ? 'text-[#2B2B2B]'
-                    : 'text-[#A1A1AA]'
-                }`}
-              >
-                {compatibilityStatus.canUseAny
-                  ? 'O sistema escolherá o melhor profissional disponível'
-                  : 'Não disponível para esta combinação de serviços'}
+              <p>
+                <strong>Atenção:</strong> A combinação de serviços selecionados
+                exige profissionais específicos.
+              </p>
+              <p className="mt-1 text-[13px] text-[#5F5C6E]">
+                Escolha um dos profissionais listados abaixo para continuar.
               </p>
             </div>
           </div>
+        )}
 
-          {isAnyProfessional && compatibilityStatus.canUseAny && (
-            <div className="w-6 h-6 bg-[#0A0A0A] rounded-full flex items-center justify-center">
-              <Check className="h-4 w-4 text-white" />
-            </div>
+      {/* Opção "Qualquer profissional" */}
+      <button
+        type="button"
+        disabled={!compatibilityStatus.canUseAny}
+        aria-pressed={isAnySelected}
+        onClick={handleAnyProfessionalSelect}
+        className={cn(OPTION_CLASS, isAnySelected && OPTION_SELECTED_CLASS)}
+      >
+        <span aria-hidden className={OPTION_AVATAR_CLASS}>
+          ✦
+        </span>
+        <span className="min-w-0">
+          <span className={OPTION_TITLE_CLASS}>Qualquer profissional</span>
+          <span className={OPTION_DESCRIPTION_CLASS}>
+            {compatibilityStatus.canUseAny
+              ? 'O sistema escolherá o melhor profissional disponível'
+              : 'Não disponível para esta combinação de serviços'}
+          </span>
+        </span>
+        <span
+          aria-hidden
+          className={cn(
+            OPTION_RADIO_CLASS,
+            isAnySelected && OPTION_RADIO_ON_CLASS,
           )}
-        </div>
-      </Card>
+        />
+      </button>
 
       {/* Lista de Profissionais */}
-      <div className="space-y-3">
-        <h3 className="text-sm text-[#2B2B2B]">
-          Ou escolha um profissional específico:
-        </h3>
+      <p className="mt-7 mb-3 text-[13px] font-bold tracking-[0.06em] text-[#5F5C6E] uppercase">
+        Ou escolha um profissional específico
+      </p>
 
+      <div className="grid gap-3">
         {compatibilityStatus.availableProfessionals.map((professional) => {
           const canDoAll = canProfessionalDoAllServices(professional);
           const availableServices = getServicesForProfessional(professional);
           const isSelected = selectedProfessional?.id === professional.id;
 
           return (
-            <Card
+            <button
               key={professional.id}
-              className={`p-4 cursor-pointer transition-all bg-white ${
-                isSelected
-                  ? 'shadow-md ring-1 ring-black/5'
-                  : 'shadow-sm hover:shadow-md'
-              }`}
+              type="button"
+              aria-pressed={isSelected}
               onClick={() => handleProfessionalSelect(professional)}
+              className={cn(OPTION_CLASS, isSelected && OPTION_SELECTED_CLASS)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#0A0A0A]/10 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-[#0A0A0A]" />
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-[#0A0A0A]">
-                        {professional.user.firstName}{' '}
-                        {professional.user.lastName}
-                      </h4>
-                      {!canDoAll && (
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
-                          Parcial
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-sm text-[#2B2B2B] mb-2">
-                      {professional.services?.map((s) => s.name).join(' • ')}
-                    </p>
-
-                    {!canDoAll && (
-                      <p className="text-xs text-[#71717A]">
-                        Pode realizar:{' '}
-                        {availableServices.map((s) => s.name).join(', ')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {isSelected && (
-                  <div className="w-6 h-6 bg-[#0A0A0A] rounded-full flex items-center justify-center">
-                    <Check className="h-4 w-4 text-white" />
-                  </div>
+              <span aria-hidden className={OPTION_AVATAR_CLASS}>
+                {getInitials(
+                  professional.user.firstName,
+                  professional.user.lastName,
                 )}
-              </div>
-            </Card>
+              </span>
+              <span className="min-w-0">
+                <span className={OPTION_TITLE_CLASS}>
+                  {professional.user.firstName} {professional.user.lastName}
+                  {!canDoAll && (
+                    <span className="rounded-full bg-[#FFF1E0] px-[9px] py-[3px] text-xs font-bold text-[#8A4B00]">
+                      Parcial
+                    </span>
+                  )}
+                </span>
+                <span className={OPTION_DESCRIPTION_CLASS}>
+                  {canDoAll
+                    ? professional.services?.map((s) => s.name).join(' • ')
+                    : `Pode realizar: ${availableServices.map((s) => s.name).join(', ')}`}
+                </span>
+              </span>
+              <span
+                aria-hidden
+                className={cn(
+                  OPTION_RADIO_CLASS,
+                  isSelected && OPTION_RADIO_ON_CLASS,
+                )}
+              />
+            </button>
           );
         })}
       </div>
