@@ -1,57 +1,46 @@
 import { useCallback, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { TStoreFormSchema } from '../store-form.schema';
+import type { TStoreFormSchema } from '../store-form.schema';
 
-export const BUSINESS_DAYS_TRANSLATED = {
-  monday: 'Segunda',
-  tuesday: 'Terça',
-  wednesday: 'Quarta',
-  thursday: 'Quinta',
-  friday: 'Sexta',
-  saturday: 'Sábado',
-  sunday: 'Domingo',
-};
+type TBusinessDay = keyof NonNullable<TStoreFormSchema['businessDays']>;
 
-// Manter ordem fixa dos dias da semana
-const BUSINESS_DAYS_ORDER = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
-] as const;
+const BUSINESS_DAYS: readonly { key: TBusinessDay; label: string }[] = [
+  { key: 'monday', label: 'Segunda' },
+  { key: 'tuesday', label: 'Terça' },
+  { key: 'wednesday', label: 'Quarta' },
+  { key: 'thursday', label: 'Quinta' },
+  { key: 'friday', label: 'Sexta' },
+  { key: 'saturday', label: 'Sábado' },
+  { key: 'sunday', label: 'Domingo' },
+];
 
-export function useBusinessHoursTab() {
+export const useBusinessHoursTab = () => {
   const form = useFormContext<TStoreFormSchema>();
 
   const businessDays = form.watch('businessDays');
 
-  const orderedBusinessDays = useMemo(() => {
-    return BUSINESS_DAYS_ORDER.reduce(
-      (acc, day) => ({
-        ...acc,
-        [day]: businessDays[day],
-      }),
-      {} as Record<keyof TStoreFormSchema['businessDays'], boolean>,
-    );
-  }, [businessDays]);
+  const days = useMemo(
+    () =>
+      BUSINESS_DAYS.map((day) => ({
+        ...day,
+        isOpen: businessDays?.[day.key] ?? false,
+      })),
+    [businessDays],
+  );
 
   const handleDayToggle = useCallback(
-    (day: keyof TStoreFormSchema['businessDays']) => {
+    (day: TBusinessDay) => {
       const current = form.getValues('businessDays');
-      current[day] = !current[day];
-      form.setValue('businessDays', current, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
+      if (!current) return;
+
+      form.setValue(
+        'businessDays',
+        { ...current, [day]: !current[day] },
+        { shouldValidate: true, shouldDirty: true },
+      );
     },
     [form],
   );
 
-  return {
-    businessDays: orderedBusinessDays,
-    handleDayToggle,
-  };
-}
+  return { days, handleDayToggle };
+};

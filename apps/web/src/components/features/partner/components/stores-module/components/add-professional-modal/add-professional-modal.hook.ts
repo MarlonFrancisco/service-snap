@@ -1,17 +1,27 @@
 import { useStoreMemberMutations } from '@/hooks/partner/store/use-store-member-mutations/use-store-member-mutations.hook';
 import { useServicesStore, useStoresStore } from '@/store';
-import { IUser } from '@/types/api';
-import { IService } from '@/types/api/service.types';
+import type { IProfessional, IUser } from '@/types/api';
+import type { IService } from '@/types/api/service.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useIsMobile } from '@repo/ui/index';
 import { useCallback, useEffect } from 'react';
 import { useForm, useFormContext } from 'react-hook-form';
-import { toast } from 'sonner';
-import { TStoreFormSchema } from '../add-store-modal/store-form-tabs/store-form.schema';
+import type { TStoreFormSchema } from '../add-store-modal/store-form-tabs/store-form.schema';
 import {
   professionalFormSchema,
-  TProfessionalFormSchema,
+  type TProfessionalFormSchema,
 } from './add-professional.schema';
+
+const toProfessionalFormValues = (
+  professional: IProfessional,
+): TProfessionalFormSchema => ({
+  id: professional.id,
+  role: professional.role || 'professional',
+  user: {
+    email: professional.user.email || '',
+  },
+  services: professional.services ?? [],
+});
 
 export const useAddProfessionalModal = () => {
   const { isAddProfessional, professional, setIsAddProfessional } =
@@ -23,19 +33,13 @@ export const useAddProfessionalModal = () => {
 
   const form = useForm<TProfessionalFormSchema>({
     resolver: zodResolver(professionalFormSchema),
+    defaultValues: toProfessionalFormValues(professional),
   });
 
   const isEditing = !!professional.id;
 
   useEffect(() => {
-    form.reset({
-      id: professional.id,
-      role: professional.role || 'professional',
-      user: {
-        email: professional.user.email || '',
-      },
-      services: professional.services,
-    });
+    form.reset(toProfessionalFormValues(professional));
   }, [professional, form]);
 
   const isMobile = useIsMobile();
@@ -61,10 +65,9 @@ export const useAddProfessionalModal = () => {
     form.setValue('services', next, { shouldDirty: true });
   };
 
+  // Erros aparecem nos próprios campos, via `FormMessage`.
   const handleSubmit = useCallback(() => {
-    const asyncFn = async () => {
-      const data = form.getValues();
-
+    form.handleSubmit((data) => {
       const fn = isEditing
         ? updateStoreMemberMutation.mutate
         : createStoreMemberMutation.mutate;
@@ -87,13 +90,6 @@ export const useAddProfessionalModal = () => {
           },
         },
       );
-    };
-
-    form.handleSubmit(asyncFn, (errors) => {
-      const firstError = Object.values(errors)[0]?.message;
-      if (firstError) {
-        toast.error(firstError);
-      }
     })();
   }, [
     form,
@@ -104,6 +100,13 @@ export const useAddProfessionalModal = () => {
     setIsAddProfessional,
   ]);
 
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) setIsAddProfessional({ isOpen: false });
+    },
+    [setIsAddProfessional],
+  );
+
   const handleClose = useCallback(() => {
     setIsAddProfessional({ isOpen: false });
   }, [setIsAddProfessional]);
@@ -111,7 +114,6 @@ export const useAddProfessionalModal = () => {
   return {
     form,
     isAddProfessional,
-    professional,
     isEditing,
     isMobile,
     services,
@@ -119,9 +121,15 @@ export const useAddProfessionalModal = () => {
     isLoading:
       createStoreMemberMutation.isPending ||
       updateStoreMemberMutation.isPending,
+    title: isEditing ? 'Editar profissional' : 'Novo profissional',
+    description: isEditing
+      ? 'Altere o papel e os serviços. Nome e telefone vêm do cadastro do usuário.'
+      : 'Nome e telefone são sincronizados pelo cadastro do usuário.',
+    submitLabel: isEditing ? 'Salvar alterações' : 'Adicionar profissional',
     addService,
     removeService,
     handleSubmit,
+    handleOpenChange,
     handleClose,
   };
 };

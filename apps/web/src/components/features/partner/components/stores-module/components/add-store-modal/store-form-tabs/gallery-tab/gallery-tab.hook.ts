@@ -1,16 +1,18 @@
 import { useGalleryMutations } from '@/hooks/partner/store/use-gallery-mutations/use-gallery-mutations.hook';
-import { IStoreGallery } from '@/types/api/stores.types';
+import type { IStoreGallery } from '@/types/api/stores.types';
 import { useFormContext } from 'react-hook-form';
-import { TStoreFormSchema } from '../store-form.schema';
+import type { TStoreFormSchema } from '../store-form.schema';
 
 export const useGalleryTab = () => {
   const { createImageMutation, deleteImageMutation, updateMainImageMutation } =
     useGalleryMutations();
   const form = useFormContext<TStoreFormSchema>();
 
-  const gallery = form.watch('gallery');
+  const gallery = form.watch('gallery') as IStoreGallery[];
 
-  const onGalleryChange = async (images: IStoreGallery[]) => {
+  // Os callbacks leem o valor atual: em upload múltiplo, cada resposta chega
+  // depois de a anterior ter alterado a lista.
+  const onGalleryChange = (images: IStoreGallery[]) => {
     images.forEach((image) =>
       createImageMutation.mutate(
         {
@@ -19,15 +21,15 @@ export const useGalleryTab = () => {
         },
         {
           onSuccess: (data) => {
-            form.setValue('gallery', [...gallery, data]);
+            form.setValue('gallery', [...form.getValues('gallery'), data]);
           },
         },
       ),
     );
   };
 
-  const onChangeMainImage = async (image: IStoreGallery) => {
-    await updateMainImageMutation.mutate(
+  const onChangeMainImage = (image: IStoreGallery) => {
+    updateMainImageMutation.mutate(
       {
         storeId: form.getValues('id')!,
         imageId: image.id,
@@ -36,7 +38,7 @@ export const useGalleryTab = () => {
         onSuccess: () => {
           form.setValue(
             'gallery',
-            gallery.map((img) => ({
+            form.getValues('gallery').map((img) => ({
               ...img,
               isMain: img.id === image.id,
             })),
@@ -53,7 +55,7 @@ export const useGalleryTab = () => {
         onSuccess: () => {
           form.setValue(
             'gallery',
-            gallery.filter((img) => img.id !== imageId),
+            form.getValues('gallery').filter((img) => img.id !== imageId),
           );
         },
       },

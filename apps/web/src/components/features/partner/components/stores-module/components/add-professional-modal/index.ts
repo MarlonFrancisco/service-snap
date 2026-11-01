@@ -1,2 +1,2 @@
 export { AddProfessionalModal } from './add-professional-modal';
-export type { TAddProfessionalModalConfig } from './add-professional-modal.types';
+export type { TProfessionalFormFieldsConfig } from './add-professional-modal.types';

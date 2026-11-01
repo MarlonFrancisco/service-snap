@@ -1,161 +1,133 @@
-import { StorePublicPresence } from '@/components/features/partner/components/stores-module/components/store-public-presence';
-import { useStoreMutations } from '@/hooks/partner/store/use-store-mutations/use-store-mutations.hook';
-import { useStoresStore } from '@/store';
 import {
-  Badge,
-  Button,
+  PARTNER_MUTED_TEXT_CLASS,
+  PARTNER_PORTAL_CLASS,
+} from '@/components/features/partner/partner.styles';
+import {
+  cn,
   Drawer,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  ScrollArea,
 } from '@repo/ui';
 import {
-  Clock,
-  Mail,
-  MapPin,
-  Phone,
-  Settings,
-  Trash2,
-} from 'lucide-react';
+  STORES_DANGER_TEXT_CLASS,
+  STORES_DRAWER_CLASS,
+  STORES_SECONDARY_BUTTON_CLASS,
+} from '../../stores-module.styles';
+import { STORE_DELETE_CONSEQUENCE } from '../../utils/stores-module.constants';
+import { ConfirmDialog } from '../confirm-dialog';
+import { StorePublicPresence } from '../store-public-presence';
+import { useStoreDetailsDrawer } from './store-details-drawer.hook';
+
+const DETAIL_LABEL_CLASS = cn('text-xs', PARTNER_MUTED_TEXT_CLASS);
+const DETAIL_VALUE_CLASS = 'mt-0.5 font-semibold break-words';
 
 export const StoreDetailsDrawer = () => {
   const {
     store,
-    isViewDetailsStoreOpen,
-    setViewDetailsStore,
-    setIsAddModalOpen,
-  } = useStoresStore();
-  const { deleteStoreMutation } = useStoreMutations();
+    isOpen,
+    isDeleting,
+    hoursLabel,
+    locationLabel,
+    handleOpenChange,
+    handleManage,
+    handleDelete,
+  } = useStoreDetailsDrawer();
 
-  if (!store?.id) return null;
+  if (!store.id) return null;
 
   return (
-    <Drawer
-      open={isViewDetailsStoreOpen}
-      onOpenChange={(open) => !open && setViewDetailsStore({ isOpen: false })}
-    >
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="border-b border-gray-200">
-          <DrawerTitle className="text-gray-900">{store?.name}</DrawerTitle>
-          <DrawerDescription className="text-gray-600">
+    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+      <DrawerContent className={cn(PARTNER_PORTAL_CLASS, STORES_DRAWER_CLASS)}>
+        <DrawerHeader className="border-b border-[#EBE9F0] text-left">
+          <DrawerTitle className="text-xl font-extrabold tracking-[-0.02em]">
+            {store.name}
+          </DrawerTitle>
+          <DrawerDescription className={PARTNER_MUTED_TEXT_CLASS}>
             Detalhes da loja
           </DrawerDescription>
         </DrawerHeader>
 
-        <ScrollArea className="flex-1 overflow-y-auto">
-          <div className="p-4 space-y-4">
-            {/* Description */}
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
+          <p className={cn('text-sm leading-normal', PARTNER_MUTED_TEXT_CLASS)}>
+            {store.description}
+          </p>
+
+          <dl className="m-0 mt-4 grid gap-3.5 text-sm">
             <div>
-              <p className="text-sm text-gray-700 leading-relaxed">
-                {store.description}
-              </p>
+              <dt className={DETAIL_LABEL_CLASS}>Endereço</dt>
+              <dd className={DETAIL_VALUE_CLASS}>{locationLabel}</dd>
             </div>
-
-            {/* Address */}
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="flex items-start gap-2.5">
-                <MapPin className="h-4 w-4 text-gray-600 mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 mb-1">Endereço</p>
-                  <p className="text-sm text-gray-900 leading-snug mb-1">
-                    {store.address}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {store.city} - {store.state}
-                  </p>
-                  {store.zipCode && (
-                    <p className="text-xs text-gray-600">
-                      CEP: {store.zipCode}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Info */}
-            <div className="grid grid-cols-1 gap-2.5">
-              <div className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <Phone className="h-4 w-4 text-gray-600 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">Telefone</p>
-                  <p className="text-sm text-gray-900">{store.telephone}</p>
-                </div>
-              </div>
-
-              {store.email && (
-                <div className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <Mail className="h-4 w-4 text-gray-600 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs text-gray-500 mb-0.5">E-mail</p>
-                    <p className="text-sm text-gray-900 truncate">
-                      {store.email}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <Clock className="h-4 w-4 text-gray-600 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs text-gray-500 mb-0.5">
-                    Horário de Funcionamento
-                  </p>
-                  <p className="text-sm text-gray-900">horários variados</p>
-                </div>
-              </div>
-            </div>
-
-            <StorePublicPresence
-              storeId={store.id}
-              instagram={store.instagram}
-            />
-
-            {/* Amenities */}
-            {store.amenities && store.amenities.length > 0 && (
+            {store.zipCode ? (
               <div>
-                <p className="text-xs text-gray-500 mb-2">Comodidades</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {store.amenities.map((amenity) => (
-                    <Badge
-                      key={amenity}
-                      variant="outline"
-                      className="text-xs border-gray-300 bg-white"
-                    >
-                      {amenity}
-                    </Badge>
-                  ))}
-                </div>
+                <dt className={DETAIL_LABEL_CLASS}>CEP</dt>
+                <dd className={DETAIL_VALUE_CLASS}>{store.zipCode}</dd>
               </div>
-            )}
-          </div>
-        </ScrollArea>
+            ) : null}
+            <div>
+              <dt className={DETAIL_LABEL_CLASS}>Horário</dt>
+              <dd className={DETAIL_VALUE_CLASS}>{hoursLabel}</dd>
+            </div>
+            <div>
+              <dt className={DETAIL_LABEL_CLASS}>Telefone</dt>
+              <dd className={DETAIL_VALUE_CLASS}>{store.telephone}</dd>
+            </div>
+            {store.email ? (
+              <div>
+                <dt className={DETAIL_LABEL_CLASS}>E-mail</dt>
+                <dd className={DETAIL_VALUE_CLASS}>{store.email}</dd>
+              </div>
+            ) : null}
+          </dl>
 
-        <DrawerFooter className="border-t border-gray-200 pt-4">
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddModalOpen({ isOpen: true, store });
-              }}
-              className="min-h-[48px]"
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Gerenciar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                deleteStoreMutation.mutate(store.id!);
-              }}
-              className="min-h-[48px] text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Excluir
-            </Button>
-          </div>
+          <StorePublicPresence storeId={store.id} instagram={store.instagram} />
+
+          {store.amenities?.length ? (
+            <div className="mt-4">
+              <p className={DETAIL_LABEL_CLASS}>Comodidades</p>
+              <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                {store.amenities.map((amenity) => (
+                  <li
+                    key={amenity}
+                    className="rounded-full bg-[#F4F3F7] px-2.5 py-1 text-[13px] font-semibold"
+                  >
+                    {amenity}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+
+        <DrawerFooter className="grid grid-cols-2 gap-2 border-t border-[#EBE9F0]">
+          <button
+            type="button"
+            onClick={handleManage}
+            className={STORES_SECONDARY_BUTTON_CLASS}
+          >
+            Gerenciar
+          </button>
+          <ConfirmDialog
+            title={`Excluir a loja ${store.name}?`}
+            description={STORE_DELETE_CONSEQUENCE}
+            cancelLabel="Manter loja"
+            confirmLabel="Excluir loja"
+            onConfirm={handleDelete}
+            trigger={
+              <button
+                type="button"
+                disabled={isDeleting}
+                className={cn(
+                  STORES_SECONDARY_BUTTON_CLASS,
+                  STORES_DANGER_TEXT_CLASS,
+                )}
+              >
+                {isDeleting ? 'Excluindo...' : 'Excluir loja'}
+              </button>
+            }
+          />
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

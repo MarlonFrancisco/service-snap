@@ -142,7 +142,7 @@ export const storeFormSchema = z.object({
     })
     .optional(),
 
-  blockedTimes: z.array(z.any()).optional(),
+  blockedTimes: z.array(z.unknown()).optional(),
 });
 
 // Type inference do schema

@@ -1,14 +1,14 @@
-import { Button, Spinner, Tabs, TabsList, TabsTrigger } from '@repo/ui';
 import {
-  Building2,
-  CheckCircle2,
-  Clock,
-  Globe2,
-  Images,
-  Phone,
-  Users,
-} from 'lucide-react';
+  PARTNER_FOCUS_CLASS,
+  PARTNER_MUTED_TEXT_CLASS,
+} from '@/components/features/partner/partner.styles';
+import { cn, Spinner, Tabs, TabsList, TabsTrigger } from '@repo/ui';
 import { FormProvider } from 'react-hook-form';
+import {
+  STORES_ERROR_TEXT_CLASS,
+  STORES_PRIMARY_BUTTON_CLASS,
+  STORES_SECONDARY_BUTTON_CLASS,
+} from '../../../stores-module.styles';
 import { AddProfessionalModal } from '../../add-professional-modal';
 import { BasicInfoTab } from './basic-info-tab';
 import { BusinessHoursTab } from './business-hours-tab/business-hours-tab';
@@ -19,111 +19,108 @@ import { RegionTab } from './region-tab';
 import { useStoreFormTabs } from './store-form-tabs.hook';
 
 export const StoreFormTabs = () => {
-  const { form, isEditingStore, isLoading, handleSubmit, handleClose } =
-    useStoreFormTabs();
+  const {
+    form,
+    tabs,
+    invalidTabsLabel,
+    activeTab,
+    isEditingStore,
+    isLoading,
+    handleTabChange,
+    handleSubmit,
+    handleClose,
+  } = useStoreFormTabs();
 
   return (
     <FormProvider {...form}>
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Tabs
-          defaultValue="basic"
-          className="flex-1 flex flex-col overflow-hidden"
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden"
         >
-          {/* Tabs Header */}
-          <div className="px-4 sm:px-6 lg:px-8 pt-4 pb-0 border-b border-gray-200 shrink-0 overflow-x-auto scrollbar-hide bg-white">
-            <TabsList className="inline-flex bg-gray-100 p-1.5 rounded-lg h-12">
-              <TabsTrigger
-                value="basic"
-                className="px-4 sm:px-6 h-9 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm"
-              >
-                <Building2 className="h-4 w-4 mr-2" />
-                Informações Básicas
-              </TabsTrigger>
-              <TabsTrigger
-                value="region"
-                className="px-4 sm:px-6 h-9 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm"
-              >
-                <Globe2 className="h-4 w-4 mr-2" />
-                Região & Moeda
-              </TabsTrigger>
-              <TabsTrigger
-                value="contact"
-                className="px-4 sm:px-6 h-9 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm"
-              >
-                <Phone className="h-4 w-4 mr-2" />
-                Contato & Redes
-              </TabsTrigger>
-              <TabsTrigger
-                value="hours"
-                className="px-4 sm:px-6 h-9 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm"
-              >
-                <Clock className="h-4 w-4 mr-2" />
-                Horários
-              </TabsTrigger>
-              <TabsTrigger
-                value="gallery"
-                disabled={!isEditingStore}
-                className="px-4 sm:px-6 h-9 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm"
-              >
-                <Images className="h-4 w-4 mr-2" />
-                Galeria
-              </TabsTrigger>
-              <TabsTrigger
-                value="staff"
-                disabled={!isEditingStore}
-                className="px-4 sm:px-6 h-9 data-[state=active]:bg-white data-[state=active]:shadow-sm text-xs sm:text-sm"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Funcionários
-              </TabsTrigger>
+          <div className="mt-3.5 shrink-0 px-5 md:px-[30px]">
+            <TabsList
+              aria-label="Seções da loja"
+              className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-[#EBE9F0] bg-transparent p-0"
+            >
+              {tabs.map((tab) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  disabled={tab.isDisabled}
+                  className={cn(
+                    'h-auto min-h-[46px] flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3.5 text-[13px] font-semibold text-[#5F5C6E] shadow-none data-[state=active]:border-[#0B0B0F] data-[state=active]:bg-transparent data-[state=active]:text-[#0B0B0F] data-[state=active]:shadow-none',
+                    PARTNER_FOCUS_CLASS,
+                    tab.hasError && 'text-[#A4231A]',
+                  )}
+                >
+                  {tab.label}
+                  {tab.hasError ? (
+                    <>
+                      <span
+                        aria-hidden="true"
+                        className="size-2 rounded-full bg-[#A4231A]"
+                      />
+                      <span className="sr-only">(contém erro)</span>
+                    </>
+                  ) : null}
+                </TabsTrigger>
+              ))}
             </TabsList>
+
+            {isEditingStore ? null : (
+              <p className={cn('mt-2 text-xs', PARTNER_MUTED_TEXT_CLASS)}>
+                Galeria e equipe ficam disponíveis depois de criar a loja.
+              </p>
+            )}
           </div>
 
-          {/* Scrollable Content Area */}
-          <div className="flex-1 overflow-y-auto bg-gray-50">
-            <div className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-              <BasicInfoTab />
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-[22px] md:px-[30px]">
+            {invalidTabsLabel ? (
+              <p role="alert" className={cn(STORES_ERROR_TEXT_CLASS, 'mb-5')}>
+                Revise os campos com erro em: {invalidTabsLabel}.
+              </p>
+            ) : null}
 
-              <RegionTab />
+            <BasicInfoTab />
 
-              <ContactTab />
+            <RegionTab />
 
-              <BusinessHoursTab />
+            <ContactTab />
 
-              <GalleryTab />
+            <BusinessHoursTab />
 
-              <ProfessionalTab />
-            </div>
+            <GalleryTab />
+
+            <ProfessionalTab />
           </div>
 
-          {/* Fixed Footer with Actions */}
-          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 border-t border-gray-200 bg-white shrink-0">
-            <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                className="w-full sm:w-auto min-h-[48px] sm:min-h-[44px] px-8 border-gray-300"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={isLoading || !form.formState.isDirty}
-                className="bg-gray-900 hover:bg-gray-800 text-white w-full sm:w-auto min-h-[48px] sm:min-h-[44px] px-8"
-              >
-                {isLoading ? (
-                  <>
-                    <Spinner />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    {isEditingStore ? 'Salvar Alterações' : 'Criar Loja'}
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="flex shrink-0 flex-col-reverse gap-2.5 border-t border-[#EBE9F0] px-5 py-3.5 sm:flex-row sm:justify-end md:px-[30px]">
+            <button
+              type="button"
+              onClick={handleClose}
+              className={STORES_SECONDARY_BUTTON_CLASS}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading || !form.formState.isDirty}
+              className={STORES_PRIMARY_BUTTON_CLASS}
+            >
+              {isLoading ? (
+                <>
+                  <Spinner />
+                  Salvando...
+                </>
+              ) : isEditingStore ? (
+                'Salvar alterações'
+              ) : (
+                'Criar loja'
+              )}
+            </button>
           </div>
         </Tabs>
       </div>

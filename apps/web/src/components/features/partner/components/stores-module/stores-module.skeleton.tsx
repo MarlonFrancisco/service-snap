@@ -1,27 +1,33 @@
-import { Skeleton } from '@repo/ui';
+import { PARTNER_MUTED_TEXT_CLASS } from '@/components/features/partner/partner.styles';
+import { cn, Skeleton } from '@repo/ui';
 import { StoreCardSkeleton } from './components/store-card/store-card.skeleton';
 
-export const StoresModuleSkeleton = () => {
-  return (
-    <div className="space-y-6 pb-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-gray-900 mb-1">Gestão de Lojas</h2>
-          <p className="text-gray-600 text-sm">
-            Gerencie suas unidades, equipes e configurações
-          </p>
-        </div>
+const SKELETON_CARDS = ['first', 'second'] as const;
 
-        <Skeleton className="h-[44px] sm:h-[40px] w-full sm:w-[180px] bg-gray-200 shrink-0" />
+export const StoresModuleSkeleton = () => (
+  <div className="grid gap-[18px]" role="status" aria-label="Carregando lojas">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <h2 className="text-2xl font-extrabold tracking-[-0.025em]">
+          Gestão de lojas
+        </h2>
+        <p className={cn('mt-0.5 text-[15px]', PARTNER_MUTED_TEXT_CLASS)}>
+          Gerencie suas lojas, equipes e configurações
+        </p>
       </div>
 
-      {/* Stores List */}
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <StoreCardSkeleton key={index} />
-        ))}
-      </div>
+      <Skeleton className="h-12 w-full rounded-full bg-[#EBE9F0] sm:w-40" />
     </div>
-  );
-};
+
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-3.5">
+      <Skeleton className="h-[106px] rounded-[22px] bg-[#EBE9F0]" />
+      <Skeleton className="h-[106px] rounded-[22px] bg-[#EBE9F0]" />
+    </div>
+
+    <div className="grid gap-[18px]">
+      {SKELETON_CARDS.map((card) => (
+        <StoreCardSkeleton key={card} />
+      ))}
+    </div>
+  </div>
+);

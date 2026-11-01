@@ -1,2 +1,2 @@
-export { StaffTab } from './professional-tab';
-export type { TStaffTabConfig } from './professional-tab.types';
+export { ProfessionalTab } from './professional-tab';
+export type { TProfessionalCardConfig } from './professional-tab.types';

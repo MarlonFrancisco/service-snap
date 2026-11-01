@@ -1,276 +1,182 @@
+import { PARTNER_FOCUS_CLASS } from '@/components/features/partner/partner.styles';
 import {
-  Badge,
-  Button,
-  Checkbox,
+  cn,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
+  Input,
+  Label,
   TabsContent,
   Textarea,
 } from '@repo/ui';
-import { Building2, MapPin, Plus, X } from 'lucide-react';
-import { AMENITIES_LIST } from '../../../../utils/stores-module.constants';
-import { isCustomAmenity as checkIsCustomAmenity } from '../../../../utils/stores-module.helpers';
+import { X } from 'lucide-react';
+import {
+  STORES_CHIP_CLASS,
+  STORES_CHIP_REMOVE_CLASS,
+  STORES_COMPACT_BUTTON_CLASS,
+  STORES_FIELD_CLASS,
+  STORES_FIELDSET_CLASS,
+  STORES_HINT_CLASS,
+  STORES_LABEL_CLASS,
+  STORES_LEGEND_CLASS,
+  STORES_TAB_PANEL_CLASS,
+  STORES_TEXTAREA_CLASS,
+} from '../../../../stores-module.styles';
+import {
+  AMENITIES_LIST,
+  AMENITY_LABELS,
+} from '../../../../utils/stores-module.constants';
+import { StoreTextField } from '../store-text-field';
 import { useBasicInfoTab } from './basic-info-tab.hook';
+
+const CUSTOM_AMENITY_INPUT_ID = 'store-custom-amenity';
 
 export const BasicInfoTab = () => {
   const {
     form,
     amenities,
+    customAmenities,
     customAmenity,
     setCustomAmenity,
+    onToggleAmenity,
     onAddCustomAmenity,
     onRemoveAmenity,
   } = useBasicInfoTab();
 
   return (
-    <TabsContent value="basic" className="space-y-6 sm:space-y-8 mt-0">
-      {/* Identity Section */}
-      <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 space-y-4 sm:space-y-5">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-            <Building2 className="h-4 w-4 text-gray-700" />
-          </div>
-          <h3 className="text-gray-900">Identidade da Loja</h3>
-        </div>
+    <TabsContent value="basic" className={STORES_TAB_PANEL_CLASS}>
+      <fieldset className={STORES_FIELDSET_CLASS}>
+        <legend className={STORES_LEGEND_CLASS}>Identidade da loja</legend>
 
-        <FormField
-          name="name"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome da Loja *</FormLabel>
-              <FormControl>
-                <InputGroup>
-                  <InputGroupInput placeholder="Ex: Loja Centro" {...field} />
-                  <InputGroupAddon>
-                    <Building2 />
-                  </InputGroupAddon>
-                </InputGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <StoreTextField name="name" label="Nome da loja *" />
 
         <FormField
           name="description"
           control={form.control}
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descrição</FormLabel>
+            <FormItem className="gap-1.5">
+              <FormLabel className={STORES_LABEL_CLASS}>Descrição *</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Ex: Salon moderno especializado em cortes e tratamentos capilares, com ambiente acolhedor e profissionais experientes..."
-                  rows={3}
-                  className="resize-none border-accent border-2"
-                  maxLength={500}
                   {...field}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Conte o que sua loja oferece e como é o atendimento."
+                  className={STORES_TEXTAREA_CLASS}
                 />
               </FormControl>
-              <p className="text-xs text-gray-500 mt-1 text-right">
+              <p className={STORES_HINT_CLASS}>
                 {field.value?.length || 0}/500 caracteres
               </p>
               <FormMessage />
             </FormItem>
           )}
         />
-      </div>
+      </fieldset>
 
-      {/* Location Section */}
-      <div className="bg-white p-4 sm:p-6 rounded-xl border border-gray-200 space-y-4 sm:space-y-5">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-            <MapPin className="h-4 w-4 text-gray-700" />
-          </div>
-          <h3 className="text-gray-900">Localização</h3>
-        </div>
+      <fieldset className={STORES_FIELDSET_CLASS}>
+        <legend className={STORES_LEGEND_CLASS}>Localização</legend>
 
-        <FormField
+        <StoreTextField
           name="address"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Endereço *</FormLabel>
-              <FormControl>
-                <InputGroup>
-                  <InputGroupInput
-                    placeholder="Rua, número, complemento..."
-                    {...field}
-                  />
-                  <InputGroupAddon>
-                    <MapPin />
-                  </InputGroupAddon>
-                </InputGroup>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Endereço *"
+          placeholder="Rua, número, complemento"
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-5">
-          <FormField
-            name="city"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cidade *</FormLabel>
-                <FormControl>
-                  <InputGroup>
-                    <InputGroupInput placeholder="Ex: São Paulo" {...field} />
-                    <InputGroupAddon>
-                      <MapPin />
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            name="state"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Estado *</FormLabel>
-                <FormControl>
-                  <InputGroup>
-                    <InputGroupInput placeholder="Ex: SP" {...field} />
-                    <InputGroupAddon>
-                      <MapPin />
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[2fr_1fr_1fr]">
+          <StoreTextField name="city" label="Cidade *" />
+          <StoreTextField name="state" label="Estado *" placeholder="SP" />
+          <StoreTextField
             name="zipCode"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CEP *</FormLabel>
-                <FormControl>
-                  <InputGroup>
-                    <InputGroupInput placeholder="Ex: 00000-000" {...field} />
-                    <InputGroupAddon>
-                      <MapPin />
-                    </InputGroupAddon>
-                  </InputGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="CEP *"
+            placeholder="00000-000"
+            hint="Aceita apenas o formato brasileiro: 00000-000."
           />
-          <div className="flex-1">
-            <h3 className="text-gray-900">Comodidades</h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Selecione as comodidades padrão ou adicione personalizadas
-            </p>
-          </div>
         </div>
+      </fieldset>
 
-        {/* Predefined Amenities */}
-        <div>
-          <p className="text-xs text-gray-600 mb-3">Comodidades Padrão</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {AMENITIES_LIST.map((amenity) => (
-              <label
+      <fieldset className={STORES_FIELDSET_CLASS}>
+        <legend className={STORES_LEGEND_CLASS}>Comodidades</legend>
+
+        <div
+          role="group"
+          aria-label="Comodidades padrão"
+          className="flex flex-wrap gap-2"
+        >
+          {AMENITIES_LIST.map((amenity) => {
+            const isSelected = amenities.includes(amenity);
+
+            return (
+              <button
                 key={amenity}
-                className="flex items-center gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50"
+                type="button"
+                aria-pressed={isSelected}
+                onClick={() => onToggleAmenity(amenity)}
+                className={cn(
+                  'min-h-11 rounded-full border px-3.5 text-[13px] font-semibold transition-colors',
+                  PARTNER_FOCUS_CLASS,
+                  isSelected
+                    ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
+                    : 'border-[#E3E1EA] bg-white text-[#0B0B0F] hover:bg-[#F7F6FA]',
+                )}
               >
-                <Checkbox
-                  checked={amenities.includes(amenity)}
-                  onCheckedChange={(checked) => {
-                    const current = form.getValues('amenities');
-                    if (checked) {
-                      form.setValue('amenities', [...current, amenity], {
-                        shouldValidate: true,
-                      });
-                    } else {
-                      form.setValue(
-                        'amenities',
-                        current.filter((a) => a !== amenity),
-                        { shouldValidate: true },
-                      );
-                    }
-                  }}
-                />
-                <span className="text-sm text-gray-700">{amenity}</span>
-              </label>
-            ))}
-          </div>
+                {AMENITY_LABELS[amenity]}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Custom Amenities Input */}
-        <div>
-          <p className="text-xs text-gray-600 mb-3">
-            Adicionar Comodidade Personalizada
-          </p>
-          <div className="flex gap-2">
-            <InputGroup>
-              <InputGroupInput
-                placeholder="Ex: Massagem Relaxante, Sauna..."
-                value={customAmenity}
-                onChange={(e) => setCustomAmenity(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    onAddCustomAmenity();
-                  }
-                }}
-                maxLength={30}
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton type="button" onClick={onAddCustomAmenity}>
-                  <Plus />
-                  Adicionar
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
+        <div className="grid gap-1.5">
+          <Label htmlFor={CUSTOM_AMENITY_INPUT_ID} className={STORES_LABEL_CLASS}>
+            Outra comodidade
+          </Label>
+          <div className="flex items-center gap-2">
+            <Input
+              id={CUSTOM_AMENITY_INPUT_ID}
+              value={customAmenity}
+              maxLength={30}
+              onChange={(event) => setCustomAmenity(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                  onAddCustomAmenity();
+                }
+              }}
+              className={STORES_FIELD_CLASS}
+            />
+            <button
+              type="button"
+              onClick={onAddCustomAmenity}
+              className={cn(STORES_COMPACT_BUTTON_CLASS, 'shrink-0')}
+            >
+              Adicionar
+            </button>
           </div>
-          <p className="text-xs text-gray-500 mt-1.5">
+          <p className={STORES_HINT_CLASS}>
             {customAmenity.length}/30 caracteres
           </p>
         </div>
 
-        {/* Custom Amenities List */}
-        {amenities.some(checkIsCustomAmenity) && (
-          <div>
-            <p className="text-xs text-gray-600 mb-3">
-              Comodidades Personalizadas (
-              {amenities.filter(checkIsCustomAmenity).length})
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {amenities.filter(checkIsCustomAmenity).map((amenity, idx) => (
-                <Badge
-                  key={idx}
-                  variant="outline"
-                  className="text-sm pl-3 pr-2 py-1.5 border-gray-900 bg-gray-50 text-gray-900 gap-2"
+        {customAmenities.length > 0 ? (
+          <ul className="flex flex-wrap gap-2">
+            {customAmenities.map((amenity) => (
+              <li key={amenity} className={STORES_CHIP_CLASS}>
+                {amenity}
+                <button
+                  type="button"
+                  aria-label={`Remover ${amenity}`}
+                  onClick={() => onRemoveAmenity(amenity)}
+                  className={STORES_CHIP_REMOVE_CLASS}
                 >
-                  {amenity}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onRemoveAmenity(amenity)}
-                  >
-                    <X className="h-3 w-3 text-gray-500" />
-                  </Button>
-                </Badge>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+                  <X aria-hidden="true" className="size-3.5" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </fieldset>
     </TabsContent>
   );
 };

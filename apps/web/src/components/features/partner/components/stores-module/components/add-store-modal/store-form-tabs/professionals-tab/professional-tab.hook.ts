@@ -2,11 +2,19 @@ import { useStoreMemberMutations } from '@/hooks/partner/store/use-store-member-
 import { useStoreMembersQuery } from '@/hooks/use-query/use-store-members-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { useStoresStore } from '@/store';
-import { IProfessional } from '@/types/api';
+import type { IProfessional } from '@/types/api';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { TStoreFormSchema } from '../store-form.schema';
+import { PLAN_UPGRADE_ROUTE } from '../../../../utils/stores-module.constants';
+import {
+  getPlanUsage,
+  getProfessionalName,
+} from '../../../../utils/stores-module.helpers';
+import type { TStoreFormSchema } from '../store-form.schema';
+
+const getTeamSummary = (count: number) =>
+  `${count} ${count === 1 ? 'profissional' : 'profissionais'} nesta loja`;
 
 export const useProfessionalTab = () => {
   const { updateStoreMemberMutation, deleteStoreMemberMutation } =
@@ -14,6 +22,8 @@ export const useProfessionalTab = () => {
   const { setIsAddProfessional } = useStoresStore();
   const { currentPlan } = useSubscriptionQuery();
   const router = useRouter();
+  const [professionalToRemove, setProfessionalToRemove] =
+    useState<IProfessional | null>(null);
 
   const form = useFormContext<TStoreFormSchema>();
   const storeId = form.watch('id');
@@ -24,24 +34,18 @@ export const useProfessionalTab = () => {
       enabled: !!storeId,
     });
 
-  const professionalsUsage = useMemo(() => {
-    if (!currentPlan) return null;
+  const professionalsUsage = useMemo(
+    () =>
+      currentPlan
+        ? getPlanUsage(
+            currentPlan.storeMembersLength,
+            currentPlan.features.PRO_LIMIT,
+          )
+        : null,
+    [currentPlan],
+  );
 
-    const limit = currentPlan.features.PRO_LIMIT;
-    const isUnlimited = limit === 0;
-    const current = currentPlan.storeMembersLength;
-    const isAtLimit = !isUnlimited && current >= limit;
-
-    return {
-      current,
-      limit,
-      isUnlimited,
-      isAtLimit,
-      label: isUnlimited
-        ? `${current}/∞ no plano`
-        : `${current}/${limit} no plano`,
-    };
-  }, [currentPlan]);
+  const isLoadingProfessionals = !!storeId && isPendingStoreMembers;
 
   const handleAddProfessional = useCallback(
     (professional?: IProfessional) => {
@@ -54,27 +58,33 @@ export const useProfessionalTab = () => {
   );
 
   const handleUpgrade = useCallback(() => {
-    router.push('/partner/plans/upgrade');
+    router.push(PLAN_UPGRADE_ROUTE);
   }, [router]);
 
-  const handleDeleteProfessional = useCallback(
-    (professionalId: string) => {
-      if (!storeId) return;
+  const handleRemoveOpenChange = useCallback((open: boolean) => {
+    if (!open) setProfessionalToRemove(null);
+  }, []);
 
-      deleteStoreMemberMutation.mutate(
-        {
-          storeId,
-          professionalId,
+  const handleConfirmRemove = useCallback(() => {
+    if (!storeId || !professionalToRemove) return;
+
+    deleteStoreMemberMutation.mutate(
+      {
+        storeId,
+        professionalId: professionalToRemove.id,
+      },
+      {
+        onSuccess: () => {
+          setIsAddProfessional({ isOpen: false });
         },
-        {
-          onSuccess: () => {
-            setIsAddProfessional({ isOpen: false });
-          },
-        },
-      );
-    },
-    [storeId, deleteStoreMemberMutation, setIsAddProfessional],
-  );
+      },
+    );
+  }, [
+    storeId,
+    professionalToRemove,
+    deleteStoreMemberMutation,
+    setIsAddProfessional,
+  ]);
 
   const handleToggleProfessionalStatus = useCallback(
     (professional: IProfessional) => {
@@ -91,15 +101,35 @@ export const useProfessionalTab = () => {
     [storeId, updateStoreMemberMutation],
   );
 
+  const removalName = professionalToRemove
+    ? getProfessionalName(professionalToRemove) ||
+      professionalToRemove.user.email
+    : 'este profissional';
+
+  const statusSummary = isLoadingProfessionals
+    ? 'Carregando profissionais...'
+    : isError
+      ? 'Não foi possível carregar a equipe'
+      : getTeamSummary(storeMembers.length);
+
   return {
     professionals: storeMembers,
-    isLoadingProfessionals: !!storeId && isPendingStoreMembers,
+    isLoadingProfessionals,
     isErrorProfessionals: isError,
     refetchProfessionals: refetch,
     professionalsUsage,
+    isAddDisabled: isLoadingProfessionals || isError,
+    teamSummary:
+      professionalsUsage && !isLoadingProfessionals
+        ? `${statusSummary} · ${professionalsUsage.label}`
+        : statusSummary,
+    isRemoveDialogOpen: !!professionalToRemove,
+    removeDialogTitle: `Remover ${removalName} da equipe?`,
     handleAddProfessional,
     handleUpgrade,
-    handleDeleteProfessional,
+    handleRequestRemove: setProfessionalToRemove,
+    handleRemoveOpenChange,
+    handleConfirmRemove,
     handleToggleProfessionalStatus,
   };
 };
