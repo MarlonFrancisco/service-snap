@@ -1,442 +1,221 @@
 'use client';
-import { TrendBadge } from '@/components/features/partner/components/dashboard-module/components/trend-badge';
-import { PeriodFilterWithRefresh } from '@/components/features/partner/components/dashboard-module/components/period-filter-with-refresh';
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Progress,
-} from '@repo/ui';
-import { Crown, DollarSign, Download, Heart, Star, Users } from 'lucide-react';
-import { motion } from 'motion/react';
+
+import { PARTNER_FOCUS_CLASS } from '@/components/features/partner/partner.styles';
+import { cn } from '@repo/ui';
 import {
   Area,
-  AreaChart,
   CartesianGrid,
+  ComposedChart,
   Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import {
+  MetricCard,
+  MetricsChartTable,
+  MetricsPageHeader,
+  MetricsRefreshAlert,
+  MetricsRow,
+  MetricsSection,
+  MetricsSectionEmpty,
+} from '../components/metrics-ui';
+import { MetricsState } from '../components/metrics-state';
+import { PeriodFilterWithRefresh } from '../components/period-filter-with-refresh';
+import {
+  METRICS_AXIS_PROPS,
+  METRICS_CHART_COLORS,
+  METRICS_KPI_GRID_CLASS,
+  METRICS_LEGEND_CLASS,
+  METRICS_PAGE_CLASS,
+  METRICS_SECTION_GRID_CLASS,
+  METRICS_TOOLTIP_STYLE,
+} from '../dashboard-module.styles';
+import { formatCount } from '../utils/metrics.helpers';
 import { CustomerMetricsNotFound } from './customer-metrics-not-found';
 import { useCustomerMetrics } from './customer-metrics.hook';
-import { CustomerMetricsSkeleton } from './customer-metrics.skeleton';
 
 export function CustomerMetricsModule() {
   const {
+    view,
+    isRefreshing,
+    hasRefreshError,
+    handleRefresh,
+    handleRetry,
     period,
     setPeriod,
-    periodLabels,
+    summary,
     stats,
-    retentionData,
-    lifetimeValueData,
+    hasCustomers,
+    evolution,
+    hasEvolution,
+    segmentRows,
     topCustomers,
-    isLoading,
-    isEnabledCustomers,
-    customers,
-    handleRefresh,
     handleExportCsv,
-    isRefreshing,
     canExport,
   } = useCustomerMetrics();
 
-  if (isLoading && isEnabledCustomers) {
-    return <CustomerMetricsSkeleton />;
-  }
-
-  if (!customers) {
-    return <CustomerMetricsNotFound />;
+  if (view === 'no-store') {
+    return (
+      <MetricsState
+        view={view}
+        onRetry={handleRetry}
+        empty={<CustomerMetricsNotFound />}
+      />
+    );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with View Toggle */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-xs text-gray-500 mb-1">Base de Clientes</p>
-          <div className="flex items-baseline gap-2">
-            <h2 className="text-gray-900">
-              {customers?.customerBase?.value || 0} Clientes
-            </h2>
-            <TrendBadge
-              value={customers?.customerBase?.comparison.percentageChange || 0}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+    <div className={METRICS_PAGE_CLASS}>
+      <MetricsPageHeader title="Base de clientes" summary={summary}>
+        <div className="flex w-full flex-wrap items-center gap-2 md:w-auto">
           <PeriodFilterWithRefresh
             value={period}
             onValueChange={setPeriod}
-            periodLabels={periodLabels}
             onRefresh={handleRefresh}
             isRefreshing={isRefreshing}
           />
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
             onClick={handleExportCsv}
             disabled={!canExport}
-            className="min-h-[36px]"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Exportar CSV
-          </Button>
-        </div>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.05 }}
-          >
-            <Card className="shadow-sm hover:shadow-md transition-all group border-0 active:scale-[0.98]">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gray-100 flex items-center justify-center group-hover:bg-gray-900 transition-colors">
-                    {stat.icon === 'Users' && (
-                      <Users className="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
-                    )}
-                    {stat.icon === 'Heart' && (
-                      <Heart className="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
-                    )}
-                    {stat.icon === 'DollarSign' && (
-                      <DollarSign className="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
-                    )}
-                    {stat.icon === 'Star' && (
-                      <Star className="h-5 w-5 text-gray-600 group-hover:text-white transition-colors" />
-                    )}
-                  </div>
-                  <TrendBadge
-                    value={Number(stat.trend.replace('%', ''))}
-                    variant="outline"
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-1.5">{stat.label}</p>
-                  <p className="text-xl sm:text-2xl text-gray-900 mb-0.5">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-gray-400">{stat.detail}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Retention Chart */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.2 }}
-      >
-        <Card className="shadow-sm border-0">
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-base text-gray-900">
-                  Evolução de Clientes
-                </CardTitle>
-                <p className="text-xs text-gray-500 mt-1">
-                  Clientes novos, recorrentes e churn nos últimos 6 meses
-                </p>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-gray-900" />
-                  <span className="text-gray-600">Novos</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-green-500" />
-                  <span className="text-gray-600">Recorrentes</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-red-500" />
-                  <span className="text-gray-600">Churn</span>
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="px-3 sm:px-6">
-            {retentionData.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[250px] sm:h-[300px] text-center">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <Users className="h-8 w-8 text-gray-400" />
-                </div>
-                <p className="text-sm text-gray-500 mb-1">
-                  Nenhum dado de clientes
-                </p>
-                <p className="text-xs text-gray-400">
-                  Os dados aparecerão quando houver histórico de clientes
-                </p>
-              </div>
-            ) : (
-              <div className="w-full h-[250px] sm:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={retentionData}
-                    margin={{ top: 10, right: 5, left: -15, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="5%"
-                          stopColor="#000000"
-                          stopOpacity={0.12}
-                        />
-                        <stop offset="95%" stopColor="#000000" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient
-                        id="colorReturning"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="#10b981"
-                          stopOpacity={0.12}
-                        />
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke="#f5f5f5"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="month"
-                      stroke="#9ca3af"
-                      fontSize={11}
-                      tickLine={false}
-                      axisLine={false}
-                    />
-                    <YAxis
-                      stroke="#9ca3af"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      width={40}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '10px',
-                        padding: '8px 12px',
-                        fontSize: '12px',
-                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                      }}
-                      formatter={(value: number, name: string) => {
-                        if (name === 'new') return [value, 'Novos'];
-                        if (name === 'returning') return [value, 'Recorrentes'];
-                        if (name === 'churn') return [value, 'Churn'];
-                        return [value, name];
-                      }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="returning"
-                      stroke="#10b981"
-                      strokeWidth={2.5}
-                      fillOpacity={1}
-                      fill="url(#colorReturning)"
-                      name="returning"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="new"
-                      stroke="#000000"
-                      strokeWidth={2.5}
-                      fillOpacity={1}
-                      fill="url(#colorNew)"
-                      name="new"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="churn"
-                      stroke="#ef4444"
-                      strokeWidth={2.5}
-                      dot={{ fill: '#ef4444', r: 4 }}
-                      name="churn"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+            className={cn(
+              'h-[50px] w-full rounded-full border border-[#0B0B0F] bg-white px-5 text-[13px] font-bold transition-colors hover:bg-[#F7F6FA] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto',
+              PARTNER_FOCUS_CLASS,
             )}
-          </CardContent>
-        </Card>
-      </motion.div>
+          >
+            Exportar CSV
+          </button>
+        </div>
+      </MetricsPageHeader>
 
-      {/* LTV & Top Customers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.35 }}
-        >
-          <Card className="shadow-sm border-0">
-            <CardHeader className="pb-3">
-              <div>
-                <CardTitle className="text-base text-gray-900">
-                  Lifetime Value por Segmento
-                </CardTitle>
-                <p className="text-xs text-gray-500 mt-1">
-                  Valor e retenção por categoria
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6">
-              {lifetimeValueData.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[180px] text-center">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                    <DollarSign className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <p className="text-sm text-gray-500 mb-1">
-                    Nenhum segmento de clientes
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Os dados aparecerão quando houver clientes cadastrados
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {lifetimeValueData.map((segment, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm text-gray-900">
-                              {segment.segment}
-                            </p>
-                            {segment.segment === 'VIPs' && (
-                              <Crown className="h-3.5 w-3.5 text-yellow-500" />
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-500">
-                            {segment.customers} clientes • {segment.avgVisits}{' '}
-                            visitas/mês
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-900">
-                            R$ {segment.ltv.toLocaleString('pt-BR')}
-                          </p>
-                          <Badge
-                            variant="outline"
-                            className={`text-xs ${
-                              segment.retention >= 90
-                                ? 'text-green-700 border-green-200 bg-green-50'
-                                : segment.retention >= 70
-                                  ? 'text-yellow-700 border-yellow-200 bg-yellow-50'
-                                  : 'text-red-700 border-red-200 bg-red-50'
-                            }`}
-                          >
-                            {segment.retention}% retenção
-                          </Badge>
-                        </div>
-                      </div>
-                      <Progress
-                        value={(segment.ltv / 2400) * 100}
-                        className="h-1.5"
+      {hasRefreshError && <MetricsRefreshAlert />}
+
+      {view === 'ready' && hasCustomers ? (
+        <>
+          <div className={METRICS_KPI_GRID_CLASS}>
+            {stats.map((stat) => (
+              <MetricCard key={stat.label} {...stat} />
+            ))}
+          </div>
+
+          <MetricsSection
+            title="Evolução de clientes"
+            subtitle="Clientes atendidos e novos clientes nos últimos 6 meses"
+          >
+            {hasEvolution ? (
+              <>
+                <MetricsChartTable
+                  caption="Clientes por mês"
+                  headers={['Mês', 'Clientes no mês', 'Novos']}
+                  rows={evolution.map((item) => [
+                    item.month,
+                    item.totalCustomers,
+                    item.newCustomers,
+                  ])}
+                />
+                <div aria-hidden="true" className="h-[220px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <ComposedChart
+                      data={evolution}
+                      margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                    >
+                      <CartesianGrid
+                        stroke={METRICS_CHART_COLORS.grid}
+                        vertical={false}
                       />
-                    </div>
-                  ))}
+                      <XAxis dataKey="month" {...METRICS_AXIS_PROPS} />
+                      <YAxis
+                        {...METRICS_AXIS_PROPS}
+                        width={40}
+                        allowDecimals={false}
+                      />
+                      <Tooltip
+                        contentStyle={METRICS_TOOLTIP_STYLE}
+                        formatter={(value, name) => [formatCount(value), name]}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="totalCustomers"
+                        name="Clientes no mês"
+                        stroke={METRICS_CHART_COLORS.ink}
+                        strokeWidth={2}
+                        fill={METRICS_CHART_COLORS.area}
+                        fillOpacity={1}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="newCustomers"
+                        name="Novos"
+                        stroke={METRICS_CHART_COLORS.muted}
+                        strokeWidth={2}
+                        dot={{ r: 3, fill: METRICS_CHART_COLORS.muted }}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+                <div aria-hidden="true" className={METRICS_LEGEND_CLASS}>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-0.5 w-4 bg-[#0B0B0F]" />
+                    Clientes no mês
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-0.5 w-4 bg-[#5F5C6E]" />
+                    Novos
+                  </span>
+                </div>
+              </>
+            ) : (
+              <MetricsSectionEmpty message="Nenhum dado de clientes nos últimos 6 meses." />
+            )}
+          </MetricsSection>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
-        >
-          <Card className="shadow-sm border-0">
-            <CardHeader className="pb-3">
-              <div>
-                <CardTitle className="text-base text-gray-900">
-                  Top Clientes
-                </CardTitle>
-                <p className="text-xs text-gray-500 mt-1">
-                  Clientes com maior valor gerado
-                </p>
-              </div>
-            </CardHeader>
-            <CardContent className="px-3 sm:px-6">
-              {topCustomers.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[180px] text-center">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                    <Star className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <p className="text-sm text-gray-500 mb-1">
-                    Nenhum cliente cadastrado
-                  </p>
-                  <p className="text-xs text-gray-400">
-                    Os dados aparecerão quando houver clientes
-                  </p>
-                </div>
+          <div className={METRICS_SECTION_GRID_CLASS}>
+            <MetricsSection
+              title="Valor por segmento"
+              subtitle="Valor médio e clientes ativos por tipo de cliente"
+            >
+              {segmentRows.length > 0 ? (
+                segmentRows.map((item) => (
+                  <MetricsRow
+                    key={item.segment}
+                    label={item.segment}
+                    sublabel={item.detail}
+                    value={item.value}
+                  />
+                ))
               ) : (
-                <div className="space-y-3">
-                  {topCustomers.map((customer, index) => {
-                    const rankIcons = ['🥇', '🥈', '🥉'];
-                    return (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors group"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className="relative">
-                            <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center text-white text-sm">
-                              {customer.name
-                                .split(' ')
-                                .map((n) => n[0])
-                                .join('')}
-                            </div>
-                            {index < 3 && (
-                              <div className="absolute -top-1 -right-1 text-sm">
-                                {rankIcons[index]}
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-gray-900 truncate">
-                              {customer.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {customer.visits} visitas • {customer.lastVisit}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="text-right">
-                            <p className="text-sm text-gray-900">
-                              R$ {customer.spent.toLocaleString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <MetricsSectionEmpty message="Nenhum segmento de clientes ainda." />
               )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      </div>
+            </MetricsSection>
+
+            <MetricsSection
+              title="Top clientes"
+              subtitle="Clientes com maior valor gerado"
+            >
+              {topCustomers.length > 0 ? (
+                topCustomers.map((customer, index) => (
+                  <MetricsRow
+                    key={customer.id}
+                    label={`${index + 1}º ${customer.name}`}
+                    sublabel={customer.detail}
+                    value={customer.spent}
+                  />
+                ))
+              ) : (
+                <MetricsSectionEmpty message="Nenhum cliente com valor registrado ainda." />
+              )}
+            </MetricsSection>
+          </div>
+        </>
+      ) : (
+        <MetricsState
+          view={view}
+          onRetry={handleRetry}
+          empty={<CustomerMetricsNotFound />}
+        />
+      )}
     </div>
   );
 }

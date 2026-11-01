@@ -44,6 +44,7 @@ export interface IStore extends TWorkingHours {
   state: string;
   zipCode: string;
   telephone: string;
+  monthlyGoal?: number;
   isActive: boolean;
   amenities: string[];
   openTime: string;

@@ -1,53 +1,54 @@
-'use client';
-
 import {
-  Button,
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from '@repo/ui';
-import { ArrowRight, LucideIcon } from 'lucide-react';
+  PARTNER_MUTED_TEXT_CLASS,
+  PARTNER_PRIMARY_ACTION_CLASS,
+} from '@/components/features/partner/partner.styles';
+import { cn } from '@repo/ui';
+import type { LucideIcon } from 'lucide-react';
+import Link from 'next/link';
+import type { TMetricsHeading } from '../dashboard-module.types';
+import { METRICS_AGENDA_HREF } from '../utils/metrics.constants';
 
-interface MetricsNotFoundProps {
-  title?: string;
-  description?: string;
+export type TMetricsNotFoundConfig = {
+  title: string;
+  description: string;
+  icon: LucideIcon;
   actionLabel?: string;
-  onAction?: () => void;
-  icon?: LucideIcon;
-}
+  actionHref?: string;
+  titleAs?: TMetricsHeading;
+};
 
-export function MetricsNotFound({
-  title = 'Nenhuma métrica disponível',
-  description = 'Ainda não há dados de métricas para exibir. Comece a registrar para ver suas estatísticas aqui.',
-  actionLabel = 'Voltar',
-  onAction,
+export const METRICS_STATE_PANEL_CLASS =
+  'flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-[#EBE9F0] bg-white p-6 text-center';
+
+export const MetricsNotFound = ({
+  title,
+  description,
   icon: Icon,
-}: MetricsNotFoundProps) {
-  return (
-    <div className="min-h-[calc(100vh-156px)] flex items-center justify-center">
-      <Empty>
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            {Icon ? <Icon className="h-6 w-6" /> : <div />}
-          </EmptyMedia>
-          <EmptyTitle>{title}</EmptyTitle>
-          <EmptyDescription>{description}</EmptyDescription>
-        </EmptyHeader>
-        {onAction && (
-          <EmptyContent>
-            <Button
-              className="flex items-center gap-2"
-              onClick={onAction}
-            >
-              {actionLabel}
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </EmptyContent>
-        )}
-      </Empty>
-    </div>
-  );
-}
+  actionLabel = 'Ir para a agenda',
+  actionHref = METRICS_AGENDA_HREF,
+  titleAs: Title = 'h3',
+}: TMetricsNotFoundConfig) => (
+  <div className={METRICS_STATE_PANEL_CLASS}>
+    <span
+      aria-hidden="true"
+      className="grid size-12 place-items-center rounded-full bg-[#F4F3F7]"
+    >
+      <Icon className="size-[22px] stroke-[1.8]" />
+    </span>
+    <Title className="text-lg font-extrabold tracking-[-0.02em]">{title}</Title>
+    <p
+      className={cn(
+        'max-w-[340px] text-sm leading-normal',
+        PARTNER_MUTED_TEXT_CLASS,
+      )}
+    >
+      {description}
+    </p>
+    <Link
+      href={actionHref}
+      className={cn(PARTNER_PRIMARY_ACTION_CLASS, 'mt-1.5 px-[18px]')}
+    >
+      {actionLabel}
+    </Link>
+  </div>
+);

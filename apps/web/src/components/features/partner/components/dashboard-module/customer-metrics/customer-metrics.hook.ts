@@ -1,141 +1,146 @@
-import type { PeriodFilterValue } from '@/components/features/partner/components/dashboard-module/components/period-filter-with-refresh';
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query/use-metrics-query.hook';
-import { usePartnerStore } from '@/store/partner/partner.store';
 import { downloadCsv, rowsToCsv } from '@/utils/helpers/csv.helper';
 import { useCallback, useState } from 'react';
+import { useMetricsStore, useMetricsView } from '../dashboard-module.hook';
+import type {
+  TMetricCardConfig,
+  TPeriodFilterValue,
+} from '../dashboard-module.types';
+import {
+  formatCount,
+  formatPercent,
+  formatRating,
+  formatSignedPercent,
+  formatSignedPoints,
+  formatSignedRating,
+  pluralize,
+  toMetricNumber,
+  translateMonth,
+} from '../utils/metrics.helpers';
 
-export function useCustomerMetrics() {
-  const [period, setPeriod] = useState<PeriodFilterValue>('month');
-  const [isRefreshing, setIsRefreshing] = useState(false);
+const MS_PER_DAY = 1000 * 60 * 60 * 24;
+const DAYS_PER_WEEK = 7;
+const DAYS_PER_MONTH = 30;
 
-  const activeStore = usePartnerStore((state) => state.activeStore);
+const formatLastVisit = (lastVisit: Date | string): string => {
+  const daysAgo = Math.floor(
+    (Date.now() - new Date(lastVisit).getTime()) / MS_PER_DAY,
+  );
 
-  const periodLabels = {
-    week: 'Semanal',
-    month: 'Mensal',
-    quarter: 'Trimestral',
+  // A consulta considera todos os agendamentos, inclusive os futuros.
+  if (daysAgo < 0) return 'Agendamento futuro';
+  if (daysAgo === 0) return 'Hoje';
+  if (daysAgo < DAYS_PER_WEEK) {
+    return `Há ${pluralize(daysAgo, 'dia', 'dias')}`;
+  }
+  if (daysAgo < DAYS_PER_MONTH) {
+    return `Há ${pluralize(Math.floor(daysAgo / DAYS_PER_WEEK), 'semana', 'semanas')}`;
+  }
+  return `Há ${pluralize(Math.floor(daysAgo / DAYS_PER_MONTH), 'mês', 'meses')}`;
+};
+
+export const useCustomerMetrics = () => {
+  const [period, setPeriod] = useState<TPeriodFilterValue>('month');
+  const { activeStore, storeId, money } = useMetricsStore();
+  const currency = activeStore.currency;
+  const storeName = activeStore.name;
+
+  const {
+    customers,
+    isPendingCustomers,
+    isErrorCustomers,
+    isFetchingCustomers,
+    customersRefetch,
+  } = useMetricsQuery({
+    storeId,
+    period,
+    includeCustomers: true,
+  });
+
+  const customerCount = toMetricNumber(customers?.customerBase?.value);
+  const vipCustomers = customers?.topVIPCustomers ?? [];
+  const segments = customers?.ltvBySegment ?? [];
+
+  const viewState = useMetricsView({
+    isPending: isPendingCustomers,
+    isError: isErrorCustomers,
+    isFetching: isFetchingCustomers,
+    hasData: !!customers,
+    hasActivity: customerCount > 0 || vipCustomers.length > 0,
+    refetch: customersRefetch,
+  });
+
+  const summary = customers
+    ? `${pluralize(customerCount, 'cliente', 'clientes')} · ${formatSignedPercent(customers.customerBase.comparison.percentageChange)}`
+    : undefined;
+
+  const getRatingCard = (): TMetricCardConfig => {
+    const reviewCount = toMetricNumber(customers?.npsScore.reviewCount);
+
+    if (!customers || reviewCount === 0) {
+      return {
+        label: 'Nota média',
+        value: '—',
+        detail: 'Sem avaliações no período',
+      };
+    }
+
+    return {
+      label: 'Nota média',
+      value: formatRating(customers.npsScore.value),
+      detail: `${formatSignedRating(customers.npsScore.comparison.absoluteChange)} · ${pluralize(reviewCount, 'avaliação', 'avaliações')}`,
+    };
   };
 
-  const { customers, isPendingCustomers, isEnabledCustomers, customersRefetch } =
-    useMetricsQuery({
-      storeId: activeStore?.id,
-      period,
-      includeCustomers: true,
-    });
-
-  const stats = customers
+  const stats: TMetricCardConfig[] = customers
     ? [
         {
-          label: 'Base de Clientes',
-          value: customers.customerBase?.value.toLocaleString() || '0',
-          icon: 'Users',
-          trend: `${customers.customerBase.comparison.percentageChange > 0 ? '+' : ''}${customers.customerBase.comparison.percentageChange}%`,
-          trendUp: customers.customerBase.comparison.percentageChange > 0,
-          trendNeutral:
-            customers.customerBase.comparison.percentageChange === 0,
-          comparison: 'vs mês anterior',
-          detail: `+${customers.customerBase.comparison.newCustomers} novos`,
+          label: 'Base de clientes',
+          value: formatCount(customerCount),
+          detail: `+${formatCount(customers.customerBase.comparison.newCustomers)} novos`,
         },
         {
-          label: 'Taxa de Retenção',
-          value: `${customers.retentionRate.value}%`,
-          icon: 'Heart',
-          trend: `${customers.retentionRate.comparison.percentageChange > 0 ? '+' : ''}${customers.retentionRate.comparison.percentageChange}%`,
-          trendUp: customers.retentionRate.comparison.percentageChange > 0,
-          trendNeutral:
-            customers.retentionRate.comparison.percentageChange === 0,
-          comparison: 'vs mês anterior',
-          detail: customers.retentionRate.context || '',
+          label: 'Taxa de retenção',
+          value: formatPercent(customers.retentionRate.value),
+          detail: formatSignedPoints(
+            customers.retentionRate.comparison.percentageChange,
+          ),
         },
         {
-          label: 'LTV Médio',
-          value: new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-          }).format(customers.averageLTV.value),
-          icon: 'DollarSign',
-          trend: `${customers.averageLTV.comparison.percentageChange > 0 ? '+' : ''}${customers.averageLTV.comparison.percentageChange}%`,
-          trendUp: customers.averageLTV.comparison.percentageChange > 0,
-          trendNeutral: customers.averageLTV.comparison.percentageChange === 0,
-          comparison: 'vs mês anterior',
-          detail:
-            customers.averageLTV.cac != null
-              ? `CAC: ${new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                }).format(customers.averageLTV.cac)}`
-              : 'CAC indisponível',
+          label: 'Valor médio por cliente',
+          value: money.formatMoney(customers.averageLTV.value),
+          detail: formatSignedPercent(
+            customers.averageLTV.comparison.percentageChange,
+          ),
         },
-        {
-          label: 'NPS Score',
-          value: `${customers.npsScore.value}`,
-          icon: 'Star',
-          trend: `${customers.npsScore.comparison.absoluteChange > 0 ? '+' : ''}${customers.npsScore.comparison.absoluteChange}`,
-          trendUp: (customers.npsScore.comparison.absoluteChange || 0) > 0,
-          trendNeutral:
-            (customers.npsScore.comparison.absoluteChange || 0) === 0,
-          comparison: 'vs mês anterior',
-          detail: `${customers.npsScore.reviewCount} avaliações`,
-        },
+        getRatingCard(),
       ]
     : [];
 
-  const retentionData =
-    customers?.customerEvolution?.map((item) => ({
-      month: item.month,
-      new: item.newCustomers,
-      returning: item.recurringCustomers,
-      churn: item.churn,
-      total: item.totalCustomers,
-    })) || [];
+  const evolution = (customers?.customerEvolution ?? []).map((item) => ({
+    month: translateMonth(item.month),
+    newCustomers: toMetricNumber(item.newCustomers),
+    totalCustomers: toMetricNumber(item.totalCustomers),
+  }));
 
-  const lifetimeValueData =
-    customers?.ltvBySegment?.map((item) => ({
-      segment: item.segment,
-      ltv: item.averageLTV,
-      customers: item.customerCount,
-      avgVisits: item.averageMonthlyVisits,
-      retention: item.retentionRate,
-    })) || [];
+  const segmentRows = segments.map((item) => ({
+    segment: item.segment,
+    value: money.formatMoney(item.averageLTV),
+    detail: `${pluralize(toMetricNumber(item.customerCount), 'cliente', 'clientes')} · ${formatPercent(item.retentionRate)} ativos em 30 dias`,
+  }));
 
-  const topCustomers =
-    customers?.topVIPCustomers?.map((item) => {
-      const lastVisitDate = new Date(item.lastVisit);
-      const daysAgo = Math.floor(
-        (Date.now() - lastVisitDate.getTime()) / (1000 * 60 * 60 * 24),
-      );
-      const lastVisitText =
-        daysAgo === 0
-          ? 'Hoje'
-          : daysAgo === 1
-            ? 'Há 1 dia'
-            : daysAgo < 7
-              ? `Há ${daysAgo} dias`
-              : daysAgo < 30
-                ? `Há ${Math.floor(daysAgo / 7)} ${Math.floor(daysAgo / 7) === 1 ? 'semana' : 'semanas'}`
-                : `Há ${Math.floor(daysAgo / 30)} ${Math.floor(daysAgo / 30) === 1 ? 'mês' : 'meses'}`;
-
-      return {
-        name: item.customerName,
-        visits: item.visits,
-        spent: item.totalSpent,
-        lastVisit: lastVisitText,
-        status: 'active',
-        riskLevel: 'low',
-      };
-    }) || [];
-
-  const handleRefresh = () => {
-    customersRefetch();
-    setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 2000);
-  };
+  const topCustomers = vipCustomers.map((item) => ({
+    id: item.customerId,
+    name: item.customerName,
+    detail: `${pluralize(toMetricNumber(item.visits), 'visita', 'visitas')} · ${formatLastVisit(item.lastVisit)}`,
+    spent: money.formatMoney(item.totalSpent),
+  }));
 
   const handleExportCsv = useCallback(() => {
     if (!customers) return;
 
-    const money = (value: number) =>
-      value.toLocaleString('pt-BR', {
+    const amount = (value: number) =>
+      toMetricNumber(value).toLocaleString('pt-BR', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
@@ -146,21 +151,26 @@ export function useCustomerMetrics() {
     const summaryRows = [
       ['Base de clientes', customers.customerBase.value, '', ''],
       ['Taxa de retenção (%)', customers.retentionRate.value, '', ''],
-      ['LTV médio (R$)', money(customers.averageLTV.value), '', ''],
-      ['NPS', customers.npsScore.value, '', ''],
+      [
+        `Valor médio por cliente (${currency})`,
+        amount(customers.averageLTV.value),
+        '',
+        '',
+      ],
+      ['Nota média', customers.npsScore.value, '', ''],
     ];
 
-    const vipRows = (customers.topVIPCustomers || []).map((item) => [
+    const vipRows = (customers.topVIPCustomers ?? []).map((item) => [
       item.customerName,
       item.visits,
-      money(item.totalSpent),
+      amount(item.totalSpent),
       date(item.lastVisit),
     ]);
 
-    const segmentRows = (customers.ltvBySegment || []).map((item) => [
+    const csvSegmentRows = (customers.ltvBySegment ?? []).map((item) => [
       item.segment,
       item.customerCount,
-      money(item.averageLTV),
+      amount(item.averageLTV),
       `${item.retentionRate}%`,
     ]);
 
@@ -168,45 +178,47 @@ export function useCustomerMetrics() {
       rowsToCsv(['Métrica', 'Valor', '', ''], summaryRows),
       '',
       rowsToCsv(
-        ['Cliente', 'Visitas', 'Total gasto (R$)', 'Última visita'],
+        ['Cliente', 'Visitas', `Total gasto (${currency})`, 'Última visita'],
         vipRows,
       ),
       '',
       rowsToCsv(
-        ['Segmento', 'Clientes', 'LTV médio (R$)', 'Retenção'],
-        segmentRows,
+        [
+          'Segmento',
+          'Clientes',
+          `Valor médio (${currency})`,
+          'Ativos em 30 dias',
+        ],
+        csvSegmentRows,
       ),
     ].join('\n');
 
     const stamp = new Date().toISOString().slice(0, 10);
-    const storeSlug = (activeStore?.name || 'loja')
+    const storeSlug = (storeName || 'loja')
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[̀-ͯ]/g, '')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
 
     downloadCsv(`clientes-${storeSlug || 'loja'}-${stamp}.csv`, csv);
-  }, [customers, activeStore?.name]);
+  }, [customers, currency, storeName]);
 
   return {
+    ...viewState,
     period,
-    periodLabels,
-    stats,
-    retentionData,
-    lifetimeValueData,
-    topCustomers,
-    isLoading: isPendingCustomers,
-    customers,
-    isEnabledCustomers,
     setPeriod,
-    handleRefresh,
+    summary,
+    stats,
+    hasCustomers: !!customers,
+    evolution,
+    hasEvolution: evolution.some(
+      (item) => item.totalCustomers > 0 || item.newCustomers > 0,
+    ),
+    segmentRows,
+    topCustomers,
     handleExportCsv,
-    isRefreshing,
     canExport:
-      !!customers &&
-      ((customers.topVIPCustomers?.length || 0) > 0 ||
-        (customers.ltvBySegment?.length || 0) > 0 ||
-        (customers.customerBase?.value || 0) > 0),
+      customerCount > 0 || vipCustomers.length > 0 || segments.length > 0,
   };
-}
+};

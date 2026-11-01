@@ -1,70 +1,68 @@
 'use client';
-import { Button, ToggleGroup, ToggleGroupItem } from '@repo/ui';
+
+import {
+  PARTNER_FOCUS_CLASS,
+  PARTNER_ICON_BUTTON_CLASS,
+} from '@/components/features/partner/partner.styles';
+import { cn } from '@repo/ui';
 import { RefreshCw } from 'lucide-react';
+import type { TPeriodFilterConfig } from '../dashboard-module.types';
+import { PERIOD_OPTIONS } from '../utils/metrics.constants';
 
-export type PeriodFilterValue = 'week' | 'month' | 'quarter';
-
-interface PeriodFilterWithRefreshProps {
-  value: PeriodFilterValue;
-  onValueChange: (value: PeriodFilterValue) => void;
-  onRefresh?: () => void;
-  isRefreshing?: boolean;
-  periods?: PeriodFilterValue[];
-  periodLabels?: Record<PeriodFilterValue, string>;
-}
-
-const defaultPeriodLabels: Record<PeriodFilterValue, string> = {
-  week: 'Semanal',
-  month: 'Mensal',
-  quarter: 'Trimestral',
-};
-
-export function PeriodFilterWithRefresh({
+export const PeriodFilterWithRefresh = ({
   value,
   onValueChange,
   onRefresh,
   isRefreshing = false,
-  periods = ['week', 'month', 'quarter'],
-  periodLabels = defaultPeriodLabels,
-}: PeriodFilterWithRefreshProps) {
-  return (
-    <div className="flex items-center gap-2 w-full sm:w-auto">
-      {/* Period Filter */}
-      <div className="flex items-center gap-0.5 sm:gap-1 bg-gray-100 rounded-lg p-1 flex-1 sm:flex-initial">
-        <ToggleGroup
-          type="single"
-          value={value}
-          onValueChange={(newValue) => {
-            if (newValue) onValueChange(newValue as PeriodFilterValue);
-          }}
-        >
-          {periods.map((period) => (
-            <ToggleGroupItem
-              key={period}
-              value={period}
-              className="px-2 sm:px-5 py-1.5 sm:py-2 text-xs rounded-md transition-all touch-manipulation min-h-[36px] data-[state=on]:bg-white data-[state=on]:text-gray-900 data-[state=on]:shadow-sm data-[state=off]:text-gray-600 data-[state=off]:hover:text-gray-900 data-[state=off]:active:bg-gray-200"
-            >
-              {periodLabels[period]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+}: TPeriodFilterConfig) => (
+  <div className="flex w-full items-center gap-2 md:w-auto">
+    <div
+      role="group"
+      aria-label="Período"
+      className="flex min-w-0 flex-1 gap-1 rounded-full border border-[#E3E1EA] p-1 md:flex-initial"
+    >
+      {PERIOD_OPTIONS.map((option) => {
+        const isActive = option.value === value;
 
-      {/* Refresh Button (optional) */}
-      {onRefresh && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onRefresh}
-          disabled={isRefreshing}
-          className="shrink-0 min-h-[36px] min-w-[36px]"
-          aria-label="Atualizar dados"
-        >
-          <RefreshCw
-            className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-          />
-        </Button>
-      )}
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => onValueChange(option.value)}
+            className={cn(
+              'h-10 min-w-0 flex-1 rounded-full px-2 text-[13px] font-bold transition-colors md:flex-initial md:px-4',
+              isActive
+                ? 'bg-[#0B0B0F] text-white'
+                : 'text-[#0B0B0F] hover:bg-[#F7F6FA]',
+              PARTNER_FOCUS_CLASS,
+            )}
+          >
+            {option.label}
+          </button>
+        );
+      })}
     </div>
-  );
-}
+
+    {onRefresh && (
+      <button
+        type="button"
+        onClick={onRefresh}
+        disabled={isRefreshing}
+        aria-label="Atualizar dados"
+        className={cn(
+          PARTNER_ICON_BUTTON_CLASS,
+          'disabled:cursor-not-allowed disabled:opacity-60',
+        )}
+      >
+        <RefreshCw
+          aria-hidden="true"
+          className={cn(
+            'size-4',
+            isRefreshing && 'motion-safe:animate-spin',
+          )}
+        />
+      </button>
+    )}
+  </div>
+);
