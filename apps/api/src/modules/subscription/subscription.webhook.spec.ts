@@ -65,7 +65,14 @@ function makeRepo() {
     rows,
     findOne: async ({ where }: any) => {
       await tick();
-      return rows.find((row) => matches(row, where)) ?? null;
+      const row = rows.find((r) => matches(r, where));
+      // Como o TypeORM: coluna `date` volta do banco como string
+      return row
+        ? {
+            ...row,
+            currentPeriodEnd: row.currentPeriodEnd?.toISOString().slice(0, 10),
+          }
+        : null;
     },
     find: async ({ where }: any) => {
       await tick();
@@ -345,6 +352,20 @@ describe('idempotência', () => {
 
     expect(results.map((r) => r.status)).toEqual([200, 200]);
     expect(repo.rows).toHaveLength(1);
+  });
+
+  it('invoice.paid que perde a corrida do insert ainda notifica e responde 200', async () => {
+    const { post, repo, state, notification } = await boot();
+    state.set('sub_new', stripeSubscription('sub_new', 'active'));
+
+    const results = await Promise.all([
+      post(invoiceEvent('evt_inv_1', 'paid')),
+      post(invoiceEvent('evt_inv_2', 'paid')),
+    ]);
+
+    expect(results.map((r) => r.status)).toEqual([200, 200]);
+    expect(repo.rows).toHaveLength(1);
+    expect(notification.invoicePaid).toHaveBeenCalledTimes(2);
   });
 
   it('propaga erro inesperado para a Stripe retentar, com log', async () => {

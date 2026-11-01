@@ -430,7 +430,8 @@ export class SubscriptionService {
       }
       // Outra entrega concorrente inseriu primeiro; o índice único impediu a duplicata
       await this.subscriptionRepository.update({ subscriptionId }, fields);
-      return findExisting();
+      // Coluna `date` volta do banco como string; `fields` mantém os Date
+      return Object.assign(await findExisting(), fields);
     }
   }
 
