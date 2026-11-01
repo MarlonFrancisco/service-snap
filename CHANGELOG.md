@@ -1,3 +1,18 @@
+## 0.14.0 (2026-11-01)
+
+### Feat
+
+- **web**: restyle booking/search and move mobile search into the header
+- **ui**: allow hiding the default Sheet close button
+- **web**: redesign pricing page to match marketplace home
+- **web**: add official ServiceSnap social profiles (#17)
+
+### Fix
+
+- **api**: use DB_URL for the reset-db script
+- **web**: repair partner banner image URL and allow quality 90
+- **web**: improve homepage search routing, LCP and partner image
+
 ## 0.13.0 (2026-11-01)
 
 ### Feat
