@@ -26,7 +26,14 @@ export class NotificationsSettingsService {
   async update(
     notificationsSettings: NotificationsSettingsDto,
   ): Promise<NotificationsSettings> {
-    await this.notificationsSettingsRepository.save(notificationsSettings);
+    // A linha é localizada pela loja: o `id` do corpo pode faltar ou ser de outra loja
+    const current = await this.findOne(notificationsSettings.store.id);
+
+    await this.notificationsSettingsRepository.save({
+      ...notificationsSettings,
+      id: current?.id,
+    });
+
     return this.findOne(notificationsSettings.store.id);
   }
 

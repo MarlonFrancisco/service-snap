@@ -80,6 +80,7 @@ export class UpdateStoreDto {
   facebook: string;
 
   @IsBoolean()
+  @IsOptional()
   isActive: boolean;
 
   @IsArray()
