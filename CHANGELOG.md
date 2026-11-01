@@ -1,3 +1,35 @@
+## 0.13.0 (2026-11-01)
+
+### Feat
+
+- **web**: unify marketplace header with category marquee
+- **web**: promote marketplace homepage v2 to / and drop the legacy home
+- **web**: add homepage v2 with API-backed experience carousels
+- **web**: apply the brand icon kit and wordmark (#16)
+- **web**: Instagram do parceiro e URL do Google Perfil (G7) (#14)
+- G6 indicação bilateral (código, atribuição e share links) (#13)
+- **ui**: add country flags and mask to the phone input
+- **web**: onboarding do parceiro + export CSV de clientes (#12)
+- **api**: replace SendGrid with Resend for transactional email
+- **web**: páginas /categoria/cidade com metadata e JSON-LD (#11)
+- A1 limites PRO_LIMIT + F6 checklist (#10)
+- **web**: P2 sitemap, pricing SSR e escopo legal (#7)
+- **web**: P2 higiene pública — soft 404, checkout, links e H1 (#6)
+- **web**: P1 billing UX — cancel vs upgrade e faturas (#4)
+- P1 WhatsApp parceiro — status, teste, templates (#3)
+- P1 busca — relevância por categoria e local (#2)
+- **web**: primeiros P1 — confiança, SEO e empty states (#1)
+
+### Fix
+
+- **web**: redirecionar /booking sem busca com 301 (#15)
+- **api**: persist the session cookies on register
+- **web**: send the signup phone number on register
+- P2 higiene parceiro — analytics, moeda, header e perfil (#8)
+- P1 performance — fail-fast DB e budget no SSR (#5)
+- **api**: preserve raw Stripe webhook body on Vercel
+- **api**: enable Nest rawBody for Stripe webhook signature verification
+
 ## 0.12.1 (2026-10-22)
 
 ### Fix
