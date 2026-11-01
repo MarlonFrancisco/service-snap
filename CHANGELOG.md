@@ -1,3 +1,13 @@
+## 0.15.1 (2026-11-01)
+
+### Fix
+
+- **api**: hide login codes from API responses and scope favorites to owner
+- **api**: await invoice emails and log invoice webhook errors
+- **api**: keep Date fields when a webhook loses the subscription insert race
+- **api**: make Stripe webhook handling idempotent and order-independent
+- **api**: restrict partner store routes to store owner and members
+
 ## 0.15.0 (2026-11-01)
 
 ### Feat
