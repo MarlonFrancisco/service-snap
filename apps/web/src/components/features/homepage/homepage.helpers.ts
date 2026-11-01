@@ -2,10 +2,7 @@
 import { resolveStoreImageSrc } from '@/components/ui/image-with-fallback/image-with-fallback.helpers';
 import type { ISearchResult } from '@/types/api/search.types';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
-import type {
-  TExperienceBadgeTone,
-  TExperienceCard,
-} from './homepage.types';
+import type { TExperienceCard } from './homepage.types';
 
 const getAverageRating = (store: ISearchResult) => {
   const reviews = store.metadata.reviews;
@@ -34,21 +31,13 @@ const getMainImage = (store: ISearchResult) => {
   return resolveStoreImageSrc(main?.url) || STORE_PLACEHOLDER_IMAGE;
 };
 
-const getBadge = (
-  store: ISearchResult,
-  rating: number,
-): { label: string; tone: TExperienceBadgeTone } => {
+const getBadgeLabel = (store: ISearchResult, rating: number) => {
   const reviewCount = store.metadata.reviews.length;
 
-  if (rating >= 4.9 && reviewCount >= 50) {
-    return { label: 'Preferido dos clientes', tone: 'primary' };
-  }
+  if (rating >= 4.9 && reviewCount >= 50) return 'Preferido dos clientes';
+  if (store.metadata.gallery?.length) return 'Espaço verificado';
 
-  if (store.metadata.gallery?.length) {
-    return { label: 'Espaço verificado', tone: 'verified' };
-  }
-
-  return { label: 'Agende agora', tone: 'success' };
+  return 'Agende agora';
 };
 
 export const mapSearchResultToExperienceCard = (
@@ -57,7 +46,6 @@ export const mapSearchResultToExperienceCard = (
 ): TExperienceCard => {
   const rating = getAverageRating(store);
   const averagePrice = getAveragePrice(store);
-  const badge = getBadge(store, rating);
   const firstService = store.content.services[0];
   const category =
     store.content.categoryNames?.[0] || firstService?.name || fallbackQuery;
@@ -65,7 +53,12 @@ export const mapSearchResultToExperienceCard = (
   return {
     id: store.id,
     name: store.content.name,
-    rating: rating ? rating.toFixed(2) : '—',
+    rating: rating
+      ? rating.toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
+      : null,
     reviews: store.metadata.reviews.length,
     location: [store.content.city, store.content.state]
       .filter(Boolean)
@@ -80,8 +73,7 @@ export const mapSearchResultToExperienceCard = (
       : 'A consultar',
     image: getMainImage(store),
     imageAlt: store.content.name,
-    badgeLabel: badge.label,
-    badgeTone: badge.tone,
+    badgeLabel: getBadgeLabel(store, rating),
     query: category,
   };
 };

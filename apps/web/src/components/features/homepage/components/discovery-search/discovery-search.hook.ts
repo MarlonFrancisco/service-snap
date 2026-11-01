@@ -5,7 +5,7 @@ const PLACEHOLDERS = [
   "Ex: 'salão de beleza perto de mim'",
   "Ex: 'massagem relaxante hoje'",
   "Ex: 'manicure urgente'",
-  "Ex: 'cabelereiro com disponibilidade'",
+  "Ex: 'cabeleireiro com disponibilidade'",
 ];
 
 export const useDiscoverySearch = () => {

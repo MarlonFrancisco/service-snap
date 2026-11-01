@@ -1,15 +1,8 @@
 ﻿import { ImageWithFallback } from '@/components/ui/image-with-fallback';
-import { cn } from '@repo/ui';
-import { BadgeCheck, Star, Zap } from 'lucide-react';
+import { Star } from 'lucide-react';
 import Link from 'next/link';
-import type { TExperienceBadgeTone, TExperienceCard } from '../../homepage.types';
+import type { TExperienceCard } from '../../homepage.types';
 import { ExperienceFavoriteButton } from './experience-favorite-button';
-
-const badgeClassName: Record<TExperienceBadgeTone, string> = {
-  success: 'bg-[#10B981]',
-  primary: 'bg-[#0A0A0A]',
-  verified: 'bg-[#0A0A0A]',
-};
 
 type TExperienceCardConfig = {
   experience: TExperienceCard;
@@ -20,66 +13,59 @@ export const ExperienceCard = ({
   experience,
   priority = false,
 }: TExperienceCardConfig) => {
-  const BadgeIcon = experience.badgeTone === 'success' ? Zap : BadgeCheck;
   const bookingHref = `/booking/${experience.id}`;
+  const unratedDetails = [experience.location, experience.service]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
-    <article className="group relative flex h-full w-full min-w-0 flex-col rounded-2xl bg-white shadow-sm transition-all duration-300 active:scale-[0.98] md:hover:-translate-y-1 md:hover:shadow-xl">
+    <article className="group relative flex h-full w-full min-w-0 flex-col">
       <Link
         href={bookingHref}
-        className="absolute inset-0 z-10 rounded-2xl"
+        className="absolute inset-0 z-10 rounded-[20px] md:rounded-[22px]"
         aria-label={`Ver ${experience.name}`}
       />
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-t-2xl bg-[#e8e7f1]">
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[20px] bg-[#e8e7f1] md:rounded-[22px]">
         <ImageWithFallback
           src={experience.image}
           alt={experience.imageAlt}
           fill
           priority={priority}
-          sizes="(min-width: 1024px) 14vw, (min-width: 640px) 33vw, 80vw"
+          sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 252px"
           className="object-cover transition-transform duration-500 md:group-hover:scale-105"
         />
-        <div
-          className={cn(
-            'absolute top-3 left-3 z-20 flex max-w-[calc(100%-2.75rem)] items-center gap-1 rounded-full px-2 py-1 text-[10px] leading-none text-white shadow-md',
-            badgeClassName[experience.badgeTone],
-          )}
-        >
-          <BadgeIcon className="h-3 w-3 shrink-0" />
-          <span className="truncate">{experience.badgeLabel}</span>
-        </div>
+        <span className="absolute top-3 left-3 max-w-[calc(100%-4.5rem)] truncate rounded-full bg-[#0B0B0F] px-[11px] py-1.5 text-xs font-semibold text-white md:top-3.5 md:left-3.5 md:px-3">
+          {experience.badgeLabel}
+        </span>
         <ExperienceFavoriteButton storeId={experience.id} />
       </div>
-      <div className="relative z-0 flex min-h-0 flex-1 flex-col gap-2 rounded-b-2xl p-3">
-        <div className="min-h-0">
-          <h3 className="line-clamp-1 text-sm font-semibold text-[#0A0A0A]">
-            {experience.name}
-          </h3>
-          <div className="mt-1 flex items-center gap-0.5 text-[#0A0A0A]">
-            <Star className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]" />
-            <span className="text-xs font-semibold">{experience.rating}</span>
-            <span className="text-[10px] text-[#71717A]">
-              ({experience.reviews})
-            </span>
-          </div>
-          <p className="mt-1 line-clamp-1 text-xs text-[#71717A]">
-            {experience.location}
-          </p>
-          <p className="mt-1 line-clamp-1 min-h-4 text-xs text-[#2B2B2B]">
-            {experience.service}
-          </p>
-        </div>
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
-          <div className="min-w-0">
-            <span className="block text-[10px] text-[#71717A]">A partir de</span>
-            <span className="block text-sm font-semibold whitespace-nowrap text-[#0A0A0A]">
-              {experience.price}
-            </span>
-          </div>
-          <span className="relative z-20 shrink-0 rounded-lg bg-[#0A0A0A] px-2.5 py-1.5 text-xs font-semibold text-white pointer-events-none">
-            Agendar
-          </span>
-        </div>
+      <h3 className="mt-3 line-clamp-1 text-base font-bold tracking-[-0.01em] text-[#0B0B0F] md:mt-3.5">
+        {experience.name}
+      </h3>
+      <p className="mt-[3px] line-clamp-1 text-sm text-[#5F5C6E] md:mt-1">
+        {experience.rating ? (
+          <>
+            <Star
+              className="mr-1 inline h-3.5 w-3.5 -translate-y-px fill-[#0B0B0F] text-[#0B0B0F]"
+              aria-hidden
+            />
+            <b className="text-[#0B0B0F]">{experience.rating}</b> (
+            {experience.reviews}) · {experience.location}
+          </>
+        ) : (
+          unratedDetails
+        )}
+      </p>
+      <div className="mt-auto flex items-end justify-between gap-2 pt-2.5 md:pt-3">
+        <span className="min-w-0 text-xs text-[#5F5C6E]">
+          A partir de
+          <b className="block text-[17px] font-extrabold whitespace-nowrap text-[#0B0B0F]">
+            {experience.price}
+          </b>
+        </span>
+        <span className="shrink-0 rounded-full bg-[#0B0B0F] px-5 py-[11px] text-[13px] font-bold text-white">
+          Agendar
+        </span>
       </div>
     </article>
   );

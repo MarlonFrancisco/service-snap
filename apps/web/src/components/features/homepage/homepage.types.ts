@@ -1,9 +1,8 @@
-export type TExperienceBadgeTone = 'success' | 'primary' | 'verified';
-
 export type TExperienceCard = {
   id: string;
   name: string;
-  rating: string;
+  /** Média formatada em pt-BR; `null` quando o espaço ainda não tem avaliações. */
+  rating: string | null;
   reviews: number;
   location: string;
   service: string;
@@ -11,7 +10,6 @@ export type TExperienceCard = {
   image: string;
   imageAlt: string;
   badgeLabel: string;
-  badgeTone: TExperienceBadgeTone;
   query: string;
 };
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@repo/ui';
-import { Search, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useDiscoverySearch } from './discovery-search.hook';
 
 export const DiscoverySearch = () => {
@@ -19,10 +19,13 @@ export const DiscoverySearch = () => {
   return (
     <section
       id="descoberta"
-      className="mx-auto w-full max-w-[90rem] px-4 pt-4 pb-1 sm:px-6 sm:pt-6 sm:pb-2 lg:px-12"
+      className="sticky top-16 z-40 bg-white/97 pt-2 pb-3 md:static md:z-auto md:bg-transparent md:pt-10 md:pb-0"
     >
+      <h1 className="sr-only text-center font-extrabold tracking-[-0.035em] text-[#0B0B0F] md:not-sr-only md:text-[44px]">
+        Agende cuidados perto de você
+      </h1>
       <form
-        className="w-full"
+        className="mx-5 md:mx-auto md:mt-7 md:max-w-[760px] md:px-5"
         onSubmit={(event) => {
           event.preventDefault();
           explore();
@@ -30,18 +33,10 @@ export const DiscoverySearch = () => {
       >
         <label
           className={cn(
-            'flex items-center gap-2 rounded-2xl border bg-white px-3 py-2 shadow-sm transition-colors sm:gap-3 sm:px-5 sm:py-3',
-            isFocused
-              ? 'border-[#0A0A0A] shadow-md'
-              : 'border-[#E4E4E7] hover:border-[#D4D4D8]',
+            'flex h-14 items-center gap-2 rounded-full border bg-white pr-2 pl-[18px] shadow-[0_8px_24px_rgba(15,12,30,0.08)] transition-colors md:h-[68px] md:gap-3 md:pr-2.5 md:pl-[26px] md:shadow-[0_10px_32px_rgba(15,12,30,0.08)]',
+            isFocused ? 'border-[#0B0B0F]' : 'border-[#E3E1EA]',
           )}
         >
-          <Search
-            className={cn(
-              'h-5 w-5 shrink-0',
-              isFocused ? 'text-[#0A0A0A]' : 'text-[#71717A]',
-            )}
-          />
           <input
             id="descoberta-query"
             type="search"
@@ -51,24 +46,19 @@ export const DiscoverySearch = () => {
             onFocus={handleFocus}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
-            className="min-w-0 flex-1 bg-transparent text-sm text-[#0A0A0A] outline-none placeholder:text-[#A1A1AA] sm:text-base"
+            className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#0B0B0F] outline-none placeholder:text-[#5F5C6E] md:text-base"
             aria-label="Buscar serviços com IA"
           />
           <span
-            className={cn(
-              'inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-semibold tracking-wide uppercase transition-colors sm:px-2.5 sm:text-xs',
-              isFocused
-                ? 'bg-[#0A0A0A] text-white'
-                : 'bg-[#F4F4F5] text-[#2B2B2B]',
-            )}
+            className="hidden shrink-0 items-center gap-1 rounded-full border border-[#E3E1EA] px-3.5 py-2 text-xs font-bold text-[#0B0B0F] md:inline-flex"
             title="Busca integrada com inteligência artificial"
           >
-            <Sparkles className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden />
+            <Sparkles className="h-3.5 w-3.5" aria-hidden />
             IA
           </span>
           <button
             type="submit"
-            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-[#0A0A0A] px-3.5 py-2 text-xs font-semibold text-white transition-colors active:scale-[0.98] hover:bg-[#2B2B2B] sm:px-4 sm:text-sm"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-[#0B0B0F] px-[18px] text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B] active:scale-[0.98] md:h-12 md:px-7 md:text-[15px]"
           >
             Buscar
           </button>

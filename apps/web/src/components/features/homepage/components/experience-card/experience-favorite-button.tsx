@@ -35,11 +35,11 @@ export const ExperienceFavoriteButton = ({
       aria-label={isFavorite ? 'Remover dos favoritos' : 'Favoritar'}
       aria-pressed={isFavorite}
       onClick={handleClick}
-      className="absolute top-3 right-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#2B2B2B] shadow backdrop-blur-md transition-colors active:scale-95 hover:text-[#EF4444]"
+      className="absolute top-1.5 right-1.5 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-white/92 text-[#0B0B0F] transition-colors active:scale-95 hover:text-[#EF4444] md:top-2 md:right-2"
     >
       <Heart
         className={cn(
-          'h-[18px] w-[18px] transition-transform',
+          'h-[22px] w-[22px] transition-transform',
           isFavorite && 'fill-[#EF4444] text-[#EF4444]',
           isAnimating && 'scale-125',
         )}
