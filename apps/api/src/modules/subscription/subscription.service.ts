@@ -8,7 +8,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import { In, MoreThanOrEqual, type Repository } from 'typeorm';
+import {
+  In,
+  MoreThanOrEqual,
+  Not,
+  QueryFailedError,
+  type Repository,
+} from 'typeorm';
 
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,7 +22,6 @@ import type { Cache } from 'cache-manager';
 import Stripe from 'stripe';
 import {
   getSubscriptionIdFromInvoice,
-  getSubscriptionPeriodDate,
   normalizeSubscriptionMetadata,
 } from '../../utils';
 import { NotificationService } from '../notification';
@@ -25,16 +30,22 @@ import { StoresService } from '../partner/stores/stores.services';
 import { StripeService } from '../stripe';
 import { UsersService } from '../users';
 import { CurrentPlanDto } from './dto/current-plan.dto';
-import { CustomerSubscriptionCreatedDto } from './dto/customer-subscription-created.dto';
 import { CustomerSubscriptionUpdateDto } from './dto/customer-subscription-update.dto';
 import { Subscription } from './subscription.entity';
-import {
-  TCheckoutSessionStatus,
-  TSubscriptionStatus,
-} from './subscription.types';
+import { TCheckoutSessionStatus } from './subscription.types';
 
 /** Stripe retenta webhooks por ~3 dias; TTL cobre retries sem acumular chaves. */
 const WEBHOOK_EVENT_TTL_MS = 72 * 60 * 60 * 1000;
+
+const PG_UNIQUE_VIOLATION = '23505';
+
+const isStripeResourceMissing = (error: unknown) =>
+  error instanceof Stripe.errors.StripeError &&
+  error.code === 'resource_missing';
+
+const isUniqueViolation = (error: unknown) =>
+  error instanceof QueryFailedError &&
+  (error.driverError as { code?: string })?.code === PG_UNIQUE_VIOLATION;
 
 @Injectable()
 export class SubscriptionService {
@@ -322,109 +333,142 @@ export class SubscriptionService {
     return { status: subscription ? 'active' : 'processing' };
   }
 
-  async handleCustomerSubscriptionCreated({
-    user: { paymentCustomerId },
-    ...customerSubscription
-  }: CustomerSubscriptionCreatedDto) {
+  /**
+   * Alinha o registro local com o estado atual na Stripe. A Stripe não garante
+   * ordem nem entrega única, então o payload do evento serve só como gatilho:
+   * reprocessar ou receber eventos fora de ordem converge para o mesmo estado.
+   */
+  async syncSubscription(subscriptionId: string): Promise<Subscription | null> {
+    let stripeSubscription: Stripe.Subscription;
+
     try {
-      const currentSubscription = await this.subscriptionRepository.findOne({
-        where: {
-          user: { paymentCustomerId },
-          status: In(['active', 'trialing', 'paid']),
-        },
-        relations: ['user'],
-      });
-
-      const productDetails = await this.stripeService.products.retrieve(
-        customerSubscription.productId,
-      );
-
-      const features = normalizeSubscriptionMetadata(productDetails.metadata);
-
-      if (currentSubscription) {
-        await this.stripeService.subscriptions.cancel(
-          currentSubscription.subscriptionId,
-          {
-            prorate: true,
-          },
-        );
-
-        const newSubscription = await this.subscriptionRepository.create({
-          ...customerSubscription,
-          user: currentSubscription.user,
-          features,
-        });
-
-        await this.subscriptionRepository.save(newSubscription);
-
-        return newSubscription;
-      }
-
-      const user = await this.userService.findByOne({ paymentCustomerId });
-
-      const newSubscription = await this.subscriptionRepository.create({
-        ...customerSubscription,
-        user,
-        features,
-      });
-
-      await this.subscriptionRepository.save(newSubscription);
+      stripeSubscription =
+        await this.stripeService.subscriptions.retrieve(subscriptionId);
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      if (!isStripeResourceMissing(error)) {
+        throw error;
+      }
+      // Removida na Stripe (ex.: customer excluído): não há mais o que buscar
+      this.logger.warn(
+        `[syncSubscription] Subscription ${subscriptionId} not found on Stripe; marking as canceled`,
+      );
+      await this.subscriptionRepository.update(
+        { subscriptionId },
+        { status: 'canceled', currentPeriodEnd: new Date() },
+      );
+      return null;
     }
+
+    const { user, ...dto } = CustomerSubscriptionUpdateDto.fromStripe({
+      object: stripeSubscription,
+    } as Stripe.CustomerSubscriptionUpdatedEvent.Data);
+
+    const productDetails = await this.stripeService.products.retrieve(
+      dto.productId,
+    );
+
+    const subscription = await this.saveSubscription(
+      user.paymentCustomerId,
+      subscriptionId,
+      {
+        status: dto.status,
+        priceId: dto.priceId,
+        productId: dto.productId,
+        currentPeriodStart: dto.currentPeriodStart,
+        currentPeriodEnd: stripeSubscription.ended_at
+          ? new Date(stripeSubscription.ended_at * 1000)
+          : dto.currentPeriodEnd,
+        features: normalizeSubscriptionMetadata(productDetails.metadata),
+      },
+    );
+
+    if (subscription && ['active', 'trialing'].includes(dto.status)) {
+      await this.cancelOlderSubscriptions(subscription, stripeSubscription);
+    }
+
+    return subscription;
   }
 
-  async handleCustomerSubscriptionUpdated(
-    customerSubscription: CustomerSubscriptionUpdateDto,
-  ) {
-    try {
-      const subscription = await this.subscriptionRepository.findOne({
-        where: { subscriptionId: customerSubscription.subscriptionId },
-        relations: ['user'],
-      });
-
-      if (!subscription) {
-        this.logger.warn(
-          `[handleCustomerSubscriptionUpdated] Subscription not found: ${customerSubscription.subscriptionId}`,
-        );
-        return;
-      }
-
-      const productDetails = await this.stripeService.products.retrieve(
-        customerSubscription.productId,
-      );
-
-      const features = normalizeSubscriptionMetadata(productDetails.metadata);
-
-      await this.subscriptionRepository.update(subscription.id, {
-        status: customerSubscription.status,
-        currentPeriodStart: customerSubscription.currentPeriodStart,
-        currentPeriodEnd: customerSubscription.currentPeriodEnd,
-        priceId: customerSubscription.priceId,
-        productId: customerSubscription.productId,
-        features,
-      });
-    } catch (error) {
-      throw new InternalServerErrorException(error);
-    }
-  }
-
-  async handleCustomerSubscriptionDeleted(subscriptionId: string) {
-    try {
-      const subscription = await this.subscriptionRepository.findOne({
+  private async saveSubscription(
+    paymentCustomerId: string,
+    subscriptionId: string,
+    fields: Partial<Subscription>,
+  ): Promise<Subscription | null> {
+    const findExisting = () =>
+      this.subscriptionRepository.findOne({
         where: { subscriptionId },
+        relations: ['user'],
       });
 
-      if (!subscription) {
-        return;
-      }
+    const existing = await findExisting();
 
-      subscription.status = 'canceled';
-      subscription.currentPeriodEnd = new Date();
+    if (existing) {
+      await this.subscriptionRepository.update({ subscriptionId }, fields);
+      return Object.assign(existing, fields);
+    }
 
-      await this.subscriptionRepository.save(subscription);
+    const user = await this.userService.findByOne({ paymentCustomerId });
+
+    if (!user) {
+      this.logger.warn(
+        `[saveSubscription] No user for customer ${paymentCustomerId}; skipping subscription ${subscriptionId}`,
+      );
+      return null;
+    }
+
+    try {
+      return await this.subscriptionRepository.save(
+        this.subscriptionRepository.create({
+          ...fields,
+          subscriptionId,
+          user,
+        }),
+      );
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      if (!isUniqueViolation(error)) {
+        throw error;
+      }
+      // Outra entrega concorrente inseriu primeiro; o índice único impediu a duplicata
+      await this.subscriptionRepository.update({ subscriptionId }, fields);
+      return findExisting();
+    }
+  }
+
+  /**
+   * Troca de plano: encerra as assinaturas anteriores do usuário. Compara a data
+   * de criação na Stripe para que um evento atrasado da assinatura antiga nunca
+   * cancele a mais nova, nem a assinatura cancele a si mesma em uma reentrega.
+   */
+  private async cancelOlderSubscriptions(
+    subscription: Subscription,
+    stripeSubscription: Stripe.Subscription,
+  ) {
+    const others = await this.subscriptionRepository.find({
+      where: {
+        user: { id: subscription.user.id },
+        status: In(['active', 'trialing', 'paid']),
+        subscriptionId: Not(subscription.subscriptionId),
+      },
+    });
+
+    for (const { subscriptionId } of others) {
+      try {
+        const other =
+          await this.stripeService.subscriptions.retrieve(subscriptionId);
+
+        if (
+          other.status !== 'canceled' &&
+          other.created < stripeSubscription.created
+        ) {
+          await this.stripeService.subscriptions.cancel(subscriptionId, {
+            prorate: true,
+          });
+        }
+      } catch (error) {
+        if (!isStripeResourceMissing(error)) {
+          throw error;
+        }
+      }
     }
   }
 
@@ -463,33 +507,11 @@ export class SubscriptionService {
         return;
       }
 
-      const subscription = await this.subscriptionRepository.findOne({
-        where: { subscriptionId },
-        relations: ['user'],
-      });
+      const subscription = await this.syncSubscription(subscriptionId);
 
       if (!subscription) {
-        this.logger.error(
-          `[SubscriptionService.handleInvoicePaid] Subscription not found for ID: ${subscriptionId}`,
-        );
-
-        throw new NotFoundException('Subscription not found');
+        return;
       }
-
-      const linePeriod = invoiceData.object.lines.data[0]?.period;
-      if (linePeriod) {
-        const { currentPeriodEnd } = getSubscriptionPeriodDate(
-          linePeriod.start,
-          linePeriod.end,
-        );
-        subscription.currentPeriodEnd = currentPeriodEnd;
-      }
-
-      const stripeSubscription =
-        await this.stripeService.subscriptions.retrieve(subscriptionId);
-      subscription.status = stripeSubscription.status as TSubscriptionStatus;
-
-      await this.subscriptionRepository.save(subscription);
 
       void this.notificationService.invoicePaid(
         subscription.user.email,
@@ -516,23 +538,11 @@ export class SubscriptionService {
         return;
       }
 
-      const subscription = await this.subscriptionRepository.findOne({
-        where: { subscriptionId },
-        relations: ['user'],
-      });
+      const subscription = await this.syncSubscription(subscriptionId);
 
       if (!subscription) {
-        this.logger.error(
-          `[SubscriptionService.handleInvoicePaymentFailed] Subscription not found for ID: ${subscriptionId}`,
-        );
-        throw new NotFoundException('Subscription not found');
+        return;
       }
-
-      const stripeSubscription =
-        await this.stripeService.subscriptions.retrieve(subscriptionId);
-      subscription.status = stripeSubscription.status as TSubscriptionStatus;
-
-      await this.subscriptionRepository.save(subscription);
 
       await this.notificationService.paymentFailed(
         subscription.user.email,
@@ -576,6 +586,7 @@ export class SubscriptionService {
       throw new BadRequestException('Invalid Stripe signature');
     }
 
+    // Só evita trabalho e e-mails repetidos: a consistência vem do syncSubscription
     const cacheKey = `stripe:webhook:event:${event.id}`;
     const alreadyProcessed = await this.cacheManager.get(cacheKey);
 
@@ -583,6 +594,9 @@ export class SubscriptionService {
       this.logger.log(`[webhook] Duplicate event ${event.id}; skipping`);
       return { received: true, duplicate: true };
     }
+
+    const syncFromEvent = () =>
+      this.syncSubscription((event.data.object as Stripe.Subscription).id);
 
     const handlers: Record<string, () => Promise<unknown>> = {
       'checkout.session.completed': () =>
@@ -599,26 +613,9 @@ export class SubscriptionService {
         this.handleInvoicePaymentFailed(
           event.data as Stripe.InvoicePaymentFailedEvent.Data,
         ),
-      'customer.subscription.created': () =>
-        this.handleCustomerSubscriptionCreated(
-          CustomerSubscriptionCreatedDto.fromStripe(
-            event.data as Stripe.CustomerSubscriptionCreatedEvent.Data,
-          ),
-        ),
-      'customer.subscription.updated': () =>
-        this.handleCustomerSubscriptionUpdated(
-          CustomerSubscriptionUpdateDto.fromStripe(
-            event.data as Stripe.CustomerSubscriptionUpdatedEvent.Data,
-          ),
-        ),
-      'customer.subscription.deleted': () => {
-        const subscriptionId = (
-          event.data
-            .object as Stripe.CustomerSubscriptionDeletedEvent.Data['object']
-        ).id;
-
-        return this.handleCustomerSubscriptionDeleted(subscriptionId);
-      },
+      'customer.subscription.created': syncFromEvent,
+      'customer.subscription.updated': syncFromEvent,
+      'customer.subscription.deleted': syncFromEvent,
     };
 
     const handler = handlers[event.type];

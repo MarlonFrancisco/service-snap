@@ -5,6 +5,7 @@ import type { TSubscriptionStatus } from './subscription.types';
 
 @Entity('subscriptions')
 @Index('idx_subscriptions_user', ['user.id'])
+@Index('uq_subscriptions_subscription_id', ['subscriptionId'], { unique: true })
 export class Subscription extends BaseEntity {
   @ManyToOne(() => User, (user) => user.subscriptions)
   user: User;

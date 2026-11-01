@@ -1,8 +1,11 @@
+import KeyvRedis from '@keyv/redis';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { Global, Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { RedisStore } from 'cache-manager-ioredis-yet';
-import { redisStore } from 'cache-manager-ioredis-yet';
+
+const DEFAULT_TTL_MS = 300000; // 5 minutos em milissegundos
+const REDIS_CONNECT_TIMEOUT_MS = 2000;
+const REDIS_MAX_RECONNECT_RETRIES = 3;
 
 @Global()
 @Module({
@@ -19,49 +22,36 @@ import { redisStore } from 'cache-manager-ioredis-yet';
             '⚠️  REDIS_URL não configurada. Usando cache em memória.',
           );
           // Se não houver Redis configurado, usa cache em memória
-          return {
-            ttl: 300000, // 5 minutos em milissegundos
-            max: 100, // máximo de 100 itens em cache
-          } as any;
+          return { ttl: DEFAULT_TTL_MS };
         }
 
-        try {
-          // Parse da URL do Redis
-          const url = new URL(redisUrl);
-          const redisOptions = {
-            host: url.hostname,
-            port: parseInt(url.port) || 6379,
-            password: url.password || undefined,
-            username: url.username || undefined,
-            db: 0,
-          };
+        // @nestjs/cache-manager v3 só lê `stores`; a opção `store` é ignorada
+        // e faria o cache cair silenciosamente em memória.
+        // Redis fora do ar não pode travar requests: sem fila offline e com
+        // retries limitados, a operação falha rápido e o cache vira miss.
+        const store = new KeyvRedis(
+          {
+            url: redisUrl,
+            disableOfflineQueue: true,
+            socket: {
+              connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
+              reconnectStrategy: (retries) =>
+                retries < REDIS_MAX_RECONNECT_RETRIES ? retries * 100 : false,
+            },
+          },
+          { throwOnConnectError: false },
+        );
 
-          logger.log(
-            `🔌 Conectando ao Redis em ${url.hostname}:${url.port}...`,
-          );
+        const onError = (error: Error) => {
+          logger.error(`❌ Erro no Redis: ${error.message}`);
+        };
 
-          // Configuração com Redis
-          const store: RedisStore = await redisStore({
-            ...redisOptions,
-            ttl: 300000, // 5 minutos em milissegundos
-          });
+        // O client do node-redis emite 'error' por conta própria: sem listener,
+        // uma queda de conexão vira exceção não capturada e derruba o processo.
+        store.client.on('error', onError);
+        store.on('error', onError);
 
-          return {
-            store,
-          } as any;
-        } catch (error) {
-          logger.error(
-            '❌ Erro ao conectar ao Redis:',
-            (error as Error).message,
-          );
-          logger.warn('⚠️  Usando cache em memória como fallback.');
-
-          // Fallback para cache em memória se Redis falhar
-          return {
-            ttl: 300000,
-            max: 100,
-          } as any;
-        }
+        return { ttl: DEFAULT_TTL_MS, stores: [store] };
       },
     }),
   ],
