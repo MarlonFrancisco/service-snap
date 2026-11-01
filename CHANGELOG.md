@@ -1,3 +1,11 @@
+## 0.15.2 (2026-11-01)
+
+### Fix
+
+- **web**: corrigir detalhes de tela no painel
+- **api**: traduzir a mensagem de usuário não encontrado
+- **api**: close authorization gaps in bookings, public store and members
+
 ## 0.15.1 (2026-11-01)
 
 ### Fix
