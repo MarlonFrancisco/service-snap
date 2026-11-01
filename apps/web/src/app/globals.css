@@ -3,16 +3,3 @@
 /* Configurar sources para scan do Tailwind incluindo o pacote @repo/ui */
 @source "../**/*.{ts,tsx}";
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
-
-@keyframes category-marquee {
-  from {
-    transform: translate3d(0, 0, 0);
-  }
-  to {
-    transform: translate3d(-50%, 0, 0);
-  }
-}
-
-@utility animate-category-marquee {
-  animation: category-marquee 55s linear infinite;
-}

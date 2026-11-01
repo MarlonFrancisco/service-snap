@@ -2,27 +2,15 @@
 
 import { cn } from '@repo/ui/index';
 import { MarketplaceHeader } from './components/marketplace-header';
-import {
-  HEADER_OFFSET_BARE_CLASS,
-  HEADER_OFFSET_CLASS,
-  HEADER_OFFSET_WITH_SEARCH_CLASS,
-} from './header.constants';
+import { HEADER_OFFSET_CLASS } from './header.constants';
 import type { THeaderConfig } from './header.types';
 
 export const Header = ({
   showSearchBar = false,
-  showCategories = true,
   children,
   className,
   ...props
 }: THeaderConfig) => {
-  // Search lives in the logo row, so it does not add extra offset height.
-  const contentOffset = showCategories
-    ? showSearchBar
-      ? HEADER_OFFSET_WITH_SEARCH_CLASS
-      : HEADER_OFFSET_CLASS
-    : HEADER_OFFSET_BARE_CLASS;
-
   return (
     <div
       className={cn(
@@ -31,12 +19,9 @@ export const Header = ({
       )}
       {...props}
     >
-      <MarketplaceHeader
-        showCategories={showCategories}
-        showSearchBar={showSearchBar}
-      />
+      <MarketplaceHeader showSearchBar={showSearchBar} />
 
-      <div className={cn('min-h-screen', contentOffset)}>{children}</div>
+      <div className={cn('min-h-screen', HEADER_OFFSET_CLASS)}>{children}</div>
     </div>
   );
 };

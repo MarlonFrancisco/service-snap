@@ -22,7 +22,7 @@ export const Pricing = () => {
   })();
 
   return (
-    <Header showCategories={false}>
+    <Header>
       {/* Hero */}
       <section className={`${SECTION} pt-6 pb-4 sm:pt-10 sm:pb-6`}>
         <div className="mx-auto max-w-3xl text-center">

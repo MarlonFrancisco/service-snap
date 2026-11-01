@@ -4,6 +4,39 @@ import { useAuthStore } from '@/store/auth/auth.store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+const DISCOVERY_SECTION_ID = 'descoberta';
+const DISCOVERY_INPUT_ID = 'descoberta-query';
+const HEADER_HEIGHT_PX = 80;
+
+/** Mostra a busca compacta do header quando a busca principal sai da tela. */
+export const useCompactSearch = (isEnabled: boolean) => {
+  const [isCompactSearchVisible, setIsCompactSearchVisible] = useState(false);
+
+  useEffect(() => {
+    if (!isEnabled) return;
+
+    const section = document.getElementById(DISCOVERY_SECTION_ID);
+    if (!section) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsCompactSearchVisible(!entry?.isIntersecting),
+      { rootMargin: `-${HEADER_HEIGHT_PX}px 0px 0px 0px` },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [isEnabled]);
+
+  const focusDiscoverySearch = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document
+      .getElementById(DISCOVERY_INPUT_ID)
+      ?.focus({ preventScroll: true });
+  }, []);
+
+  return { isCompactSearchVisible, focusDiscoverySearch };
+};
+
 export const useMarketplaceHeader = () => {
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);

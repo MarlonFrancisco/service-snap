@@ -27,7 +27,7 @@ export function SearchResults() {
 
   return (
     <Header showSearchBar>
-      <div className="h-full w-full px-4 sm:px-6 lg:px-12">
+      <div className="mx-auto h-full w-full max-w-[82.5rem] px-5 md:px-10">
         {isPending && (
           <div className="grid min-h-[calc(100vh-180px)] grid-cols-12 gap-0 lg:gap-10">
             <div className="col-span-12 py-6 lg:col-span-7 xl:col-span-7">

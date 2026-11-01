@@ -2,22 +2,32 @@
 
 import { LocaleDialog } from '@/components/layout/locale-dialog';
 import useSearchStore from '@/store/search/search.store';
-import { Globe, Menu, Search, UserRound } from 'lucide-react';
+import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
+import { cn } from '@repo/ui';
+import { Menu, Search, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import { CategoryRail } from '../category-rail';
+import {
+  HEADER_SEARCH_FIELD_CLASS,
+  HEADER_SEARCH_ICON_CLASS,
+  HEADER_SEARCH_SLOT_CLASS,
+} from '../../header.constants';
 import { HeaderLogo } from '../header-logo';
 import { SearchBar } from '../search-bar/search-bar';
-import { useMarketplaceHeader } from './marketplace-header.hook';
+import {
+  useCompactSearch,
+  useMarketplaceHeader,
+} from './marketplace-header.hook';
 
 type TMarketplaceHeaderConfig = {
-  showCategories?: boolean;
   showSearchBar?: boolean;
+  /** Atalho para a busca da própria página, visível quando ela sai da tela. */
+  compactSearch?: boolean;
 };
 
 export const MarketplaceHeader = ({
-  showCategories = true,
   showSearchBar = false,
+  compactSearch = false,
 }: TMarketplaceHeaderConfig = {}) => {
   const [isLocaleOpen, setIsLocaleOpen] = useState(false);
   const setIsMobileSearchOpen = useSearchStore(
@@ -34,17 +44,54 @@ export const MarketplaceHeader = ({
     closeMenu,
     handleAuth,
   } = useMarketplaceHeader();
+  const { isCompactSearchVisible, focusDiscoverySearch } =
+    useCompactSearch(compactSearch);
+
+  const handleOpenLocale = () => {
+    closeMenu();
+    setIsLocaleOpen(true);
+  };
 
   return (
     <>
-      <header className="fixed top-0 right-0 left-0 z-50 border-b border-[#EDEDED] bg-white/90 backdrop-blur-xl">
-        <div className="flex h-16 w-full items-center justify-between gap-3 px-4 sm:px-6 md:h-20 md:gap-4 lg:px-12">
+      <header
+        className={cn(
+          plusJakartaSans.className,
+          'fixed top-0 right-0 left-0 z-50 border-b border-[#EDEDED] bg-white/90 backdrop-blur-xl',
+        )}
+      >
+        <div className="relative mx-auto flex h-16 w-full max-w-[82.5rem] items-center justify-between gap-3 px-5 md:h-20 md:gap-4 md:px-10">
           <div className="shrink-0">
             <HeaderLogo width={148} height={37} />
           </div>
 
+          {compactSearch ? (
+            <div className={HEADER_SEARCH_SLOT_CLASS}>
+              <button
+                type="button"
+                aria-label="Abrir busca"
+                tabIndex={isCompactSearchVisible ? undefined : -1}
+                onClick={focusDiscoverySearch}
+                className={cn(
+                  HEADER_SEARCH_FIELD_CLASS,
+                  'justify-between gap-2 border-[#E3E1EA] text-[#5F5C6E] motion-safe:transition-all',
+                  isCompactSearchVisible
+                    ? 'visible scale-100 opacity-100'
+                    : 'invisible scale-[0.92] opacity-0',
+                )}
+              >
+                <span className="truncate">
+                  Ex: ‘cabeleireiro com disponibilidade’
+                </span>
+                <span className={HEADER_SEARCH_ICON_CLASS}>
+                  <Search className="h-4 w-4" strokeWidth={2.6} aria-hidden />
+                </span>
+              </button>
+            </div>
+          ) : null}
+
           {showSearchBar ? (
-            <div className="mx-auto hidden min-w-0 w-full max-w-xl flex-1 px-4 md:block lg:max-w-2xl">
+            <div className={HEADER_SEARCH_SLOT_CLASS}>
               <SearchBar />
             </div>
           ) : null}
@@ -66,24 +113,16 @@ export const MarketplaceHeader = ({
                 <Search className="h-5 w-5" />
               </button>
             ) : null}
-            <button
-              type="button"
-              aria-label="Idioma e moeda"
-              onClick={() => setIsLocaleOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-[#2B2B2B] transition-colors hover:bg-[#e8e7f1] md:h-10 md:w-10"
-            >
-              <Globe className="h-5 w-5" />
-            </button>
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
                 aria-expanded={isMenuOpen}
                 aria-label="Abrir menu da conta"
                 onClick={toggleMenu}
-                className="flex items-center gap-2 rounded-full border border-[#EDEDED] bg-white py-1 pr-1.5 pl-2.5 transition-shadow active:scale-[0.98] md:gap-3 md:py-1.5 md:pr-2 md:pl-3 md:hover:shadow-md"
+                className="flex items-center rounded-full bg-white transition-shadow active:scale-[0.98] md:gap-3 md:border md:border-[#EDEDED] md:py-1.5 md:pr-2 md:pl-3 md:hover:shadow-md"
               >
-                <Menu className="h-5 w-5 text-[#2B2B2B]" />
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#0A0A0A] text-xs font-semibold text-white md:h-8 md:w-8">
+                <Menu className="hidden h-5 w-5 text-[#2B2B2B] md:block" />
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A0A0A] text-xs font-semibold text-white md:h-8 md:w-8">
                   {isLoggedIn && initials ? (
                     initials
                   ) : (
@@ -114,6 +153,13 @@ export const MarketplaceHeader = ({
                   >
                     {partnerLabel}
                   </Link>
+                  <button
+                    type="button"
+                    onClick={handleOpenLocale}
+                    className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-[#2B2B2B] hover:bg-[#F4F4F5]"
+                  >
+                    Idioma e moeda
+                  </button>
                   <Link
                     href="/help"
                     onClick={closeMenu}
@@ -126,8 +172,6 @@ export const MarketplaceHeader = ({
             </div>
           </div>
         </div>
-
-        {showCategories ? <CategoryRail /> : null}
 
         <LocaleDialog open={isLocaleOpen} onOpenChange={setIsLocaleOpen} />
       </header>

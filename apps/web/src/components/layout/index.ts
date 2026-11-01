@@ -3,8 +3,8 @@ export * from './footer';
 export type { TFooterConfig } from './footer';
 export {
   Header,
+  HEADER_OFFSET_BARE_CLASS,
   HEADER_OFFSET_CLASS,
-  HEADER_OFFSET_WITH_SEARCH_CLASS,
   HEADER_STICKY_TOP_CLASS,
   MarketplaceHeader,
 } from './header';
