@@ -22,22 +22,18 @@ export default async function PartnerLayout({ children }: PartnerLayoutProps) {
     redirect('/pricing');
   }
 
-  StoreService.headers = {
-    Cookie: `access_token=${accessToken}`,
-  };
-
-  SubscriptionService.headers = {
+  const sessionHeaders = {
     Cookie: `access_token=${accessToken}`,
   };
 
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: CACHE_QUERY_KEYS.currentPlan(),
-      queryFn: () => SubscriptionService.getCurrentPlan(),
+      queryFn: () => SubscriptionService.getCurrentPlan(sessionHeaders),
     }),
     queryClient.prefetchQuery({
       queryKey: CACHE_QUERY_KEYS.stores(),
-      queryFn: () => StoreService.getAll(),
+      queryFn: () => StoreService.getAll(sessionHeaders),
     }),
   ]);
 

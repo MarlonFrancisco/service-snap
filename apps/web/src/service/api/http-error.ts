@@ -17,3 +17,7 @@ export function isApiHttpError(error: unknown): error is ApiHttpError {
 export function isNotFoundError(error: unknown): boolean {
   return isApiHttpError(error) && error.status === 404;
 }
+
+export function isUnauthorizedError(error: unknown): boolean {
+  return isApiHttpError(error) && error.status === 401;
+}

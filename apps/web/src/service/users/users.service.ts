@@ -4,12 +4,9 @@ import { HttpClientService } from '../api/http-client.service';
 
 export class UsersService {
   static apiClient: HttpClientService = apiClient;
-  static headers?: HeadersInit;
 
-  static async getUser() {
-    return await this.apiClient.get<IUser>('/users/me', {
-      headers: this.headers,
-    });
+  static async getUser(headers?: HeadersInit) {
+    return await this.apiClient.get<IUser>('/users/me', { headers });
   }
 
   static async updateAvatar(avatar: string) {

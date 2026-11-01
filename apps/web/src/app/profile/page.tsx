@@ -1,5 +1,6 @@
 import { Profile } from '@/components/features/profile';
 import type { TProfileTab } from '@/components/features/profile/profile.types';
+import { isUnauthorizedError } from '@/service/api';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -24,11 +25,12 @@ export default async function ProfilePage({ searchParams }: TProfilePageParams) 
     return redirect('/');
   }
 
-  UsersService.headers = {
+  const user = await UsersService.getUser({
     Cookie: `access_token=${accessToken}`,
-  };
-
-  const user = await UsersService.getUser();
+  }).catch((error) => {
+    if (isUnauthorizedError(error)) return null;
+    throw error;
+  });
 
   if (!user) {
     return redirect('/');

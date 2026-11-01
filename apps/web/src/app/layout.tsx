@@ -1,7 +1,7 @@
 import { AuthModal } from '@/components/features/auth';
 import { Config, MobileSearchOverlay, Toaster } from '@/components/layout';
 import { ReviewsModal } from '@/components/layout/reviews-modal';
-import { QueryProvider } from '@/providers';
+import { QueryProvider, UserIdentificationProvider } from '@/providers';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -180,13 +180,13 @@ export default async function RootLayout({
   const userIdentification = cookieStore.get('user_identification')?.value;
 
   if (userIdentification) {
-    UsersService.headers = {
+    const sessionHeaders = {
       Cookie: `access_token=${cookieStore.get('access_token')?.value}`,
     };
 
     await queryClient.prefetchQuery({
       queryKey: CACHE_QUERY_KEYS.user(userIdentification),
-      queryFn: () => UsersService.getUser(),
+      queryFn: () => UsersService.getUser(sessionHeaders),
     });
   }
 
@@ -197,16 +197,18 @@ export default async function RootLayout({
       <body
         className={`${monaSans.variable} ${geistSans.variable} ${geistMono.variable}`}
       >
-        <QueryProvider>
-          <HydrationBoundary state={dehydratedState}>
-            {children}
-            <Config />
-            <AuthModal />
-            <Toaster />
-            <ReviewsModal />
-            <MobileSearchOverlay />
-          </HydrationBoundary>
-        </QueryProvider>
+        <UserIdentificationProvider value={userIdentification}>
+          <QueryProvider>
+            <HydrationBoundary state={dehydratedState}>
+              {children}
+              <Config />
+              <AuthModal />
+              <Toaster />
+              <ReviewsModal />
+              <MobileSearchOverlay />
+            </HydrationBoundary>
+          </QueryProvider>
+        </UserIdentificationProvider>
 
         <Script
           src="https://accounts.google.com/gsi/client"

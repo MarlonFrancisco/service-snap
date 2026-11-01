@@ -3,12 +3,9 @@ import { apiClient } from '../api';
 
 export class StoreService {
   static apiClient = apiClient;
-  static headers?: HeadersInit;
 
-  static async getAll() {
-    return await this.apiClient.get<IStore[]>('/partner/stores', {
-      headers: this.headers,
-    });
+  static async getAll(headers?: HeadersInit) {
+    return await this.apiClient.get<IStore[]>('/partner/stores', { headers });
   }
 
   static async get(storeId: string) {

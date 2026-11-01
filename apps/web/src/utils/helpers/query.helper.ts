@@ -1,4 +1,4 @@
-import { isNotFoundError } from '@/service/api';
+import { isNotFoundError, isUnauthorizedError } from '@/service/api';
 import { TCurrencyCode } from '@repo/shared/constants';
 import { isServer, QueryClient } from '@tanstack/react-query';
 
@@ -11,7 +11,9 @@ const makeQueryClient = () => {
         refetchOnWindowFocus: false,
         staleTime: maxAgeCache,
         retry: (failureCount, error) =>
-          !isNotFoundError(error) && failureCount <= 2,
+          !isNotFoundError(error) &&
+          !isUnauthorizedError(error) &&
+          failureCount <= 2,
       },
     },
   });
