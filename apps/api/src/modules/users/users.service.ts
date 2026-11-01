@@ -36,6 +36,15 @@ export class UsersService {
     return user;
   }
 
+  async findAuthCode(
+    id: string,
+  ): Promise<Pick<User, 'authCode' | 'authCodeExpiresAt'> | null> {
+    return this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'authCode', 'authCodeExpiresAt'],
+    });
+  }
+
   async findByOne({
     email,
     telephone,

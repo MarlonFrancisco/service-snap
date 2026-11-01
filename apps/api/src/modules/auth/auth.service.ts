@@ -100,11 +100,13 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    if (user.authCode !== body.code) {
+    const authCode = await this.userService.findAuthCode(user.id);
+
+    if (authCode?.authCode !== body.code) {
       throw new UnauthorizedException('Invalid code');
     }
 
-    if (user.authCodeExpiresAt < new Date()) {
+    if (authCode.authCodeExpiresAt < new Date()) {
       throw new UnauthorizedException('Code expired');
     }
 

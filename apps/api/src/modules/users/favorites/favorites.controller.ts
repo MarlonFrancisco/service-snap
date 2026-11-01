@@ -10,10 +10,11 @@ import {
 import { plainToInstance } from 'class-transformer';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { FavoriteDto } from './dto/favorite.dto';
+import { FavoriteOwnerGuard } from './favorite-owner.guard';
 import { FavoritesService } from './favorites.service';
 
 @Controller('users/:userId/favorites')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FavoriteOwnerGuard)
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}
 
@@ -30,8 +31,8 @@ export class FavoritesController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string) {
-    await this.favoritesService.delete(id);
+  async delete(@Param('userId') userId: string, @Param('id') id: string) {
+    await this.favoritesService.delete(userId, id);
     return { id };
   }
 }

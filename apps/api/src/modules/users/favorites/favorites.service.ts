@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FavoriteDto } from './dto/favorite.dto';
@@ -12,7 +12,8 @@ export class FavoritesService {
   ) {}
 
   async create(favorite: FavoriteDto): Promise<Favorite> {
-    return this.favoriteRepository.save(favorite);
+    // Com `id` no corpo, o save sobrescreveria um favorito existente
+    return this.favoriteRepository.save({ ...favorite, id: undefined });
   }
 
   async findAll(userId: string): Promise<Favorite[]> {
@@ -28,7 +29,14 @@ export class FavoritesService {
     return favorite;
   }
 
-  async delete(id: string): Promise<void> {
-    await this.favoriteRepository.delete(id);
+  async delete(userId: string, id: string): Promise<void> {
+    const result = await this.favoriteRepository.delete({
+      id,
+      user: { id: userId },
+    });
+
+    if (!result.affected) {
+      throw new NotFoundException('Favorite not found');
+    }
   }
 }

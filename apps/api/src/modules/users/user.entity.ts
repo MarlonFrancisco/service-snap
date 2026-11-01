@@ -27,11 +27,24 @@ export class User extends BaseEntity {
   @Column({ name: 'last_name', type: 'varchar', nullable: true, length: 60 })
   lastName: string;
 
-  @Column({ name: 'auth_code', type: 'char', length: 6, nullable: true })
+  // Fora das consultas por padrão: `User` é devolvido em várias respostas da API,
+  // e este código dá acesso à conta. Só `UsersService.findAuthCode` o lê.
+  @Column({
+    name: 'auth_code',
+    type: 'char',
+    length: 6,
+    nullable: true,
+    select: false,
+  })
   @Index()
   authCode: string;
 
-  @Column({ name: 'auth_code_expires_at', type: 'timestamp', nullable: true })
+  @Column({
+    name: 'auth_code_expires_at',
+    type: 'timestamp',
+    nullable: true,
+    select: false,
+  })
   authCodeExpiresAt: Date;
 
   @Column({ type: 'boolean', default: false, nullable: true })
