@@ -55,6 +55,20 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@repo/ui', 'lucide-react'],
   },
+  async headers() {
+    return [
+      {
+        // O nome do arquivo leva a versão: ao trocar o vídeo, publique com outro nome.
+        source: '/videos/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {
