@@ -1,3 +1,7 @@
+import {
+  isStorePlaceholderImage,
+  resolveStoreImageSrc,
+} from '@/components/ui/image-with-fallback/image-with-fallback.helpers';
 import { SearchService } from '@/service/search';
 import type { ISearchResult } from '@/types/api/search.types';
 import { SITE_URL } from '@/utils/constants/site.constants';
@@ -62,7 +66,10 @@ function toBusiness(result: ISearchResult): TCategoryCityBusiness {
             10,
         ) / 10
       : undefined;
-  const image = result.metadata?.gallery?.find((item) => item.url)?.url;
+  const gallery = (result.metadata?.gallery ?? []).filter((item) => item.url);
+  const image = resolveStoreImageSrc(
+    (gallery.find((item) => item.isMain) ?? gallery[0])?.url,
+  );
 
   return {
     name: result.content.name,
@@ -70,7 +77,7 @@ function toBusiness(result: ISearchResult): TCategoryCityBusiness {
     url: `${SITE_URL}/booking/${result.id}`,
     description: result.content.description || undefined,
     telephone: result.metadata?.telephone || undefined,
-    image: image?.startsWith('http') ? image : undefined,
+    image: isStorePlaceholderImage(image) ? undefined : image,
     address: result.content.address || undefined,
     city: result.content.city || undefined,
     state: result.content.state || undefined,

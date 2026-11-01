@@ -5,232 +5,136 @@ import {
   PUBLIC_CONTACT_EMAIL,
   SOCIAL_LINKS,
 } from '@/utils/constants/contact.constants';
-import { Button, Input, Textarea } from '@repo/ui';
-import { Mail } from 'lucide-react';
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
+import { useContact } from './contact.hook';
+
+const FOCUS_CLASS =
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+const LABEL_CLASS = 'grid gap-[7px] text-sm font-semibold';
+const FIELD_CLASS = `w-full rounded-[14px] border border-[#E3E1EA] bg-white px-4 text-[15px] font-medium text-[#0B0B0F] ${FOCUS_CLASS}`;
+const PANEL_TITLE_CLASS = 'mb-1.5 text-lg font-extrabold tracking-[-0.015em]';
+const PANEL_TEXT_CLASS = 'text-sm leading-[1.6] text-[#5F5C6E]';
+const PANEL_LINK_CLASS = `mt-1.5 inline-flex min-h-11 items-center text-[15px] font-bold underline ${FOCUS_CLASS}`;
+const PANEL_DIVIDER_CLASS = 'border-t border-[#F0EEF4] pt-[22px]';
 
 export default function ContactPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [subject, setSubject] = useState('');
-  const [message, setMessage] = useState('');
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    const lines = [
-      name && `Nome: ${name}`,
-      email && `E-mail: ${email}`,
-      phone && `Telefone: ${phone}`,
-      '',
-      message,
-    ].filter((line) => line !== undefined);
-
-    const mailto = new URL(`mailto:${PUBLIC_CONTACT_EMAIL}`);
-    mailto.searchParams.set(
-      'subject',
-      subject.trim() || 'Contato via ssnap.io',
-    );
-    mailto.searchParams.set('body', lines.join('\n'));
-
-    window.location.href = mailto.toString();
-  };
+  const { form, handleFieldChange, handleSubmit } = useContact();
 
   return (
     <Header>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div>
-            <h1 className="text-4xl text-[#1a2b4c] mb-4">Entre em Contato</h1>
-            <p className="text-gray-600 mb-8">
-              Tem alguma dúvida, sugestão ou precisa de ajuda? Escreva para nós
-              — abrimos seu cliente de e-mail com a mensagem pronta.
+      <main className="mx-auto max-w-[82.5rem] px-5 pb-10 md:px-10 md:pb-0">
+        <div className="mx-auto grid max-w-[67.5rem] grid-cols-[repeat(auto-fit,minmax(min(420px,100%),1fr))] items-start gap-x-16 gap-y-10 pt-4 md:pt-10">
+          <section>
+            <h1 className="text-[34px] leading-[1.08] font-extrabold tracking-[-0.035em] md:text-[44px]">
+              Entre em contato
+            </h1>
+            <p className="mt-3 mb-6 text-base leading-[1.6] text-[#5F5C6E]">
+              Tem alguma dúvida, sugestão ou precisa de ajuda? Escreva para nós.
+              Abrimos seu cliente de e-mail com a mensagem pronta.
             </p>
 
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Nome completo
-                </label>
-                <Input
-                  id="name"
+            <form className="grid gap-3.5" onSubmit={handleSubmit}>
+              <label className={LABEL_CLASS}>
+                Nome completo
+                <input
                   type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Digite seu nome completo"
-                  className="w-full"
+                  autoComplete="name"
+                  value={form.name}
+                  onChange={handleFieldChange('name')}
+                  className={`h-[52px] ${FIELD_CLASS}`}
                   required
                 />
-              </div>
+              </label>
 
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  E-mail
-                </label>
-                <Input
-                  id="email"
+              <label className={LABEL_CLASS}>
+                E-mail
+                <input
                   type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="Digite seu e-mail"
-                  className="w-full"
+                  autoComplete="email"
+                  value={form.email}
+                  onChange={handleFieldChange('email')}
+                  className={`h-[52px] ${FIELD_CLASS}`}
                   required
                 />
-              </div>
+              </label>
 
-              <div>
-                <label
-                  htmlFor="phone"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Telefone{' '}
-                  <span className="text-gray-400 font-normal">(opcional)</span>
-                </label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
-                  placeholder="Digite seu telefone"
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="subject"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Assunto
-                </label>
-                <Input
-                  id="subject"
+              <label className={LABEL_CLASS}>
+                Assunto
+                <input
                   type="text"
-                  value={subject}
-                  onChange={(event) => setSubject(event.target.value)}
-                  placeholder="Assunto da mensagem"
-                  className="w-full"
+                  value={form.subject}
+                  onChange={handleFieldChange('subject')}
+                  className={`h-[52px] ${FIELD_CLASS}`}
                 />
-              </div>
+              </label>
 
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Mensagem
-                </label>
-                <Textarea
-                  id="message"
+              <label className={LABEL_CLASS}>
+                Mensagem
+                <textarea
                   rows={5}
-                  value={message}
-                  onChange={(event) => setMessage(event.target.value)}
-                  placeholder="Digite sua mensagem..."
-                  className="w-full"
+                  value={form.message}
+                  onChange={handleFieldChange('message')}
+                  className={`min-h-[130px] resize-y pt-3.5 ${FIELD_CLASS}`}
                   required
                 />
-              </div>
+              </label>
 
-              <Button
+              <button
                 type="submit"
-                className="w-full bg-[#20b2aa] hover:bg-[#20b2aa]/90 text-white"
+                className={`h-[54px] cursor-pointer rounded-full bg-[#0B0B0F] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] ${FOCUS_CLASS}`}
               >
                 Abrir e-mail para enviar
-              </Button>
+              </button>
             </form>
-          </div>
+          </section>
 
-          <div>
-            <h2 className="text-2xl text-[#1a2b4c] mb-6">
-              Informações de Contato
-            </h2>
-
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-medium text-[#1a2b4c] mb-2">
-                  Atendimento
-                </h3>
-                <div className="space-y-3 text-gray-600">
-                  <p>
-                    <strong>E-mail:</strong>{' '}
-                    <a
-                      href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
-                      className="text-[#20b2aa] hover:underline"
-                    >
-                      {PUBLIC_CONTACT_EMAIL}
-                    </a>
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Respondemos por e-mail em dias úteis. Telefone, WhatsApp e
-                    endereço físico serão publicados quando estiverem
-                    disponíveis — não usamos números placeholder.
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <a
-                  href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
-                  className="inline-flex items-center gap-2 text-[#20b2aa] hover:underline"
-                >
-                  <Mail className="w-4 h-4" />
-                  Enviar e-mail direto
-                </a>
-              </div>
-
-              {SOCIAL_LINKS.length > 0 ? (
-                <div>
-                  <h3 className="text-lg font-medium text-[#1a2b4c] mb-3">
-                    Redes sociais
-                  </h3>
-                  <ul className="space-y-2">
-                    {SOCIAL_LINKS.map((link) => {
-                      const Icon = link.icon;
-                      return (
-                        <li key={link.href}>
-                          <a
-                            href={link.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-gray-700 hover:text-[#1a2b4c]"
-                          >
-                            <Icon className="h-4 w-4" />
-                            {link.label}
-                          </a>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ) : null}
-
-              <div>
-                <h3 className="text-lg font-medium text-[#1a2b4c] mb-2">
-                  Quer ser parceiro?
-                </h3>
-                <p className="text-gray-600 mb-3 text-sm">
-                  Conheça os planos e cadastre seu negócio no ServiceSnap.
-                </p>
-                <Link
-                  href="/pricing"
-                  className="text-sm font-medium text-[#20b2aa] hover:underline"
-                >
-                  Ver planos →
-                </Link>
-              </div>
+          <aside className="grid gap-[22px] rounded-[28px] p-7 shadow-[0_12px_40px_rgba(15,12,30,0.1)]">
+            <div>
+              <h2 className={PANEL_TITLE_CLASS}>Atendimento</h2>
+              <p className={PANEL_TEXT_CLASS}>
+                Respondemos por e-mail em dias úteis.
+              </p>
+              <a
+                href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
+                className={PANEL_LINK_CLASS}
+              >
+                {PUBLIC_CONTACT_EMAIL}
+              </a>
             </div>
-          </div>
+
+            {SOCIAL_LINKS.length > 0 ? (
+              <div className={PANEL_DIVIDER_CLASS}>
+                <h2 className={PANEL_TITLE_CLASS}>Redes sociais</h2>
+                <ul className="mt-2.5 flex flex-wrap gap-2">
+                  {SOCIAL_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex h-11 items-center rounded-full border border-[#E3E1EA] px-4 text-[13px] font-semibold transition-colors hover:border-[#0B0B0F] ${FOCUS_CLASS}`}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            <div className={PANEL_DIVIDER_CLASS}>
+              <h2 className={PANEL_TITLE_CLASS}>Quer ser parceiro?</h2>
+              <p className={PANEL_TEXT_CLASS}>
+                Conheça os planos e cadastre seu negócio no ServiceSnap.
+              </p>
+              <Link href="/pricing" className={PANEL_LINK_CLASS}>
+                Ver planos →
+              </Link>
+            </div>
+          </aside>
         </div>
-      </div>
-      <Footer />
+      </main>
+      <Footer compact />
     </Header>
   );
 }
