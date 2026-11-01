@@ -69,25 +69,35 @@ export function generateTimeSlots(
 }
 
 /**
- * Filtra horários disponíveis removendo bloqueados e já agendados
+ * Filtra horários disponíveis removendo bloqueados e já agendados.
+ * `durationMinutes` considera o atendimento inteiro; sem ele, só o início do slot.
  */
 export function filterAvailableTimeSlots(
   allSlots: string[],
   selectedDate: Date,
   blockedTimes: BlockedTime[],
   schedules: Schedule[],
+  durationMinutes: number = 1,
 ): string[] {
   const selectedDayOfWeek = new Date(selectedDate).getDay();
   const selectedDateStr = new Date(selectedDate).toISOString().split('T')[0];
 
   return allSlots.filter((slot) => {
+    const slotStart = timeToMinutes(slot);
+    const slotEnd = slotStart + durationMinutes;
+
+    const isWithinSlot = (time: string) => {
+      const minutes = timeToMinutes(time);
+      return minutes >= slotStart && minutes < slotEnd;
+    };
+
     // Verifica se está bloqueado para esta data específica
     const isBlockedForDate = blockedTimes.some(
       (blocked) =>
         !blocked.isRecurring &&
         new Date(blocked.date).toISOString().split('T')[0] ===
           selectedDateStr &&
-        blocked.time === slot,
+        isWithinSlot(blocked.time),
     );
 
     if (isBlockedForDate) return false;
@@ -97,7 +107,7 @@ export function filterAvailableTimeSlots(
       (blocked) =>
         blocked.isRecurring &&
         blocked.dayOfWeek === selectedDayOfWeek &&
-        blocked.time === slot,
+        isWithinSlot(blocked.time),
     );
 
     if (isBlockedRecurring) return false;
@@ -109,18 +119,165 @@ export function filterAvailableTimeSlots(
       const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
       if (scheduleDate !== selectedDateStr) return false;
 
-      const scheduleStartMinutes = timeToMinutes(schedule.startTime);
-      const scheduleEndMinutes = timeToMinutes(schedule.endTime);
-      const slotMinutes = timeToMinutes(slot);
-
-      // Verifica se o slot está dentro do intervalo do agendamento
+      // Verifica se o slot cruza o intervalo do agendamento
       return (
-        slotMinutes >= scheduleStartMinutes && slotMinutes < scheduleEndMinutes
+        timeToMinutes(schedule.startTime) < slotEnd &&
+        timeToMinutes(schedule.endTime) > slotStart
       );
     });
 
     return !hasSchedule;
   });
+}
+
+export interface AvailabilitySlot extends TimeSlot {
+  storeMemberId: string | null;
+}
+
+interface AvailabilityParams {
+  store: {
+    openTime: string;
+    closeTime: string;
+    lunchStartTime?: string;
+    lunchEndTime?: string;
+    timezone?: string;
+    businessDays?: Record<string, boolean>;
+  };
+  date: string; // formato YYYY-MM-DD
+  durationMinutes: number;
+  members: {
+    id: string;
+    blockedTimes: BlockedTime[];
+    schedules: Schedule[];
+  }[];
+  now?: Date;
+}
+
+const WEEK_DAYS = [
+  'sunday',
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+];
+
+/**
+ * Data e hora atuais no fuso da loja
+ */
+function getStoreNow(timezone: string, now: Date) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value;
+
+  return {
+    date: `${get('year')}-${get('month')}-${get('day')}`,
+    minutes: Number(get('hour')) * 60 + Number(get('minute')),
+  };
+}
+
+/**
+ * Monta os horários de um dia. Cada slot livre traz o primeiro membro, na ordem
+ * recebida, que está livre durante todo o atendimento.
+ */
+export function buildAvailabilitySlots({
+  store,
+  date,
+  durationMinutes,
+  members,
+  now = new Date(),
+}: AvailabilityParams): AvailabilitySlot[] {
+  // Meio-dia em UTC mantém o mesmo dia da semana em qualquer fuso do servidor
+  const selectedDate = new Date(`${date}T12:00:00Z`);
+  const storeNow = getStoreNow(store.timezone || 'America/Sao_Paulo', now);
+  const isClosedDay =
+    store.businessDays?.[WEEK_DAYS[selectedDate.getUTCDay()]] === false;
+
+  if (
+    date < storeNow.date ||
+    isClosedDay ||
+    !store.openTime ||
+    !store.closeTime
+  ) {
+    return [];
+  }
+
+  const lunchStart = store.lunchStartTime
+    ? timeToMinutes(store.lunchStartTime)
+    : null;
+  const lunchEnd = store.lunchEndTime
+    ? timeToMinutes(store.lunchEndTime)
+    : null;
+  const closeMinutes = timeToMinutes(store.closeTime);
+
+  return generateTimeSlots(
+    store.openTime,
+    store.closeTime,
+    store.lunchStartTime,
+    store.lunchEndTime,
+  ).map((time) => {
+    const start = timeToMinutes(time);
+    const end = start + durationMinutes;
+
+    const crossesLunch =
+      lunchStart !== null &&
+      lunchEnd !== null &&
+      start < lunchEnd &&
+      end > lunchStart;
+    const hasPassed = date === storeNow.date && start <= storeNow.minutes;
+    const fitsInDay = end <= closeMinutes && !crossesLunch && !hasPassed;
+
+    const member = fitsInDay
+      ? members.find(
+          ({ blockedTimes, schedules }) =>
+            filterAvailableTimeSlots(
+              [time],
+              selectedDate,
+              blockedTimes,
+              schedules,
+              durationMinutes,
+            ).length > 0,
+        )
+      : undefined;
+
+    return { time, available: !!member, storeMemberId: member?.id ?? null };
+  });
+}
+
+/**
+ * Dia YYYY-MM-DD como o TypeORM grava: um Date usa os campos locais
+ */
+export function toDateKey(date: Date | string): string {
+  if (typeof date === 'string') return date.slice(0, 10);
+
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/**
+ * Verifica se algum novo atendimento cruza um agendamento não cancelado
+ */
+export function hasScheduleConflict(
+  existing: Pick<Schedule, 'startTime' | 'endTime' | 'status'>[],
+  next: { startTime: string; endTime: string }[],
+): boolean {
+  return next.some((item) =>
+    existing.some(
+      (schedule) =>
+        schedule.status !== 'cancelled' &&
+        timeToMinutes(schedule.startTime) < timeToMinutes(item.endTime) &&
+        timeToMinutes(schedule.endTime) > timeToMinutes(item.startTime),
+    ),
+  );
 }
 
 /**

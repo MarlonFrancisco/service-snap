@@ -6,7 +6,10 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
+import { Public } from '../../../auth/decorators/public.decorator';
+import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { CreateSchedulesDto } from './dto/create-schedule.dto';
 import { ScheduleDto } from './dto/schedule.dto';
 import { ScheduleService } from './schedule.service';
@@ -18,6 +21,15 @@ export class ScheduleController {
   @Get()
   findAll(@Param('storeId') storeId: string) {
     return this.scheduleService.findAll(storeId);
+  }
+
+  @Public()
+  @Get('availability')
+  getAvailability(
+    @Param('storeId') storeId: string,
+    @Query() query: AvailabilityQueryDto,
+  ) {
+    return this.scheduleService.getAvailability(storeId, query);
   }
 
   @Post()
