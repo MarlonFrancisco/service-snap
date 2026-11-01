@@ -1,7 +1,8 @@
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import localFont from 'next/font/local';
 
-export const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700', '800'],
+// Fonte variável no repositório: o build não depende da resposta do Google Fonts.
+export const plusJakartaSans = localFont({
+  src: './PlusJakartaSans-latin.woff2',
+  weight: '200 800',
   display: 'swap',
 });
