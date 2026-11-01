@@ -4,13 +4,13 @@ import { createConnection } from 'typeorm';
 async function resetDatabase() {
   let connection;
   try {
+    if (!process.env.DB_URL) {
+      throw new Error('DB_URL is not set. Check apps/api/.env');
+    }
+
     connection = await createConnection({
       type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USERNAME || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      database: process.env.DB_DATABASE || 'service_snap',
+      url: process.env.DB_URL,
     });
 
     console.log('🗑️  Resetting database...\n');
@@ -54,5 +54,4 @@ async function resetDatabase() {
   }
 }
 
-// Run the reset
 void resetDatabase();
