@@ -1,4 +1,4 @@
-import { ConflictException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ScheduleService } from './schedule.service';
 
@@ -65,6 +65,40 @@ const DTO = {
   services: [{ id: 'a', duration: 30 }],
   user: { email: 'ana@example.com' },
 } as never;
+
+describe('ScheduleService with a store still in onboarding', () => {
+  const DRAFT = {
+    openTime: '09:00',
+    closeTime: '11:00',
+    timezone: 'America/Sao_Paulo',
+    onboarding: { completedAt: null },
+  };
+
+  it('does not offer availability', async () => {
+    const ctx = makeService();
+    ctx.storeRepository.findOne.mockResolvedValue(DRAFT);
+
+    await expect(
+      ctx.service.getAvailability(STORE_ID, {
+        date: '2026-11-10',
+        serviceIds: SERVICE_ID,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('does not accept a booking', async () => {
+    const ctx = makeService();
+    ctx.storeRepository.findOne.mockResolvedValue(DRAFT);
+
+    await expect(
+      ctx.service.create({
+        ...(DTO as object),
+        store: { id: STORE_ID },
+      } as never),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    expect(ctx.manager.save).not.toHaveBeenCalled();
+  });
+});
 
 describe('ScheduleService.create', () => {
   let ctx: ReturnType<typeof makeService>;

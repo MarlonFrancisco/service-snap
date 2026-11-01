@@ -16,6 +16,7 @@ import {
 } from '../../../../utils/helpers/schedule.helpers';
 import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
 import { UsersService } from '../../../users/users.service';
+import { isStoreDraft } from '../../onboarding/onboarding.helpers';
 import { Service } from '../category/service/service.entity';
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
@@ -54,7 +55,10 @@ export class ScheduleService {
     const uniqueIds = [...new Set(ids)];
 
     const [store, services, members] = await Promise.all([
-      this.storeRepository.findOne({ where: { id: storeId } }),
+      this.storeRepository.findOne({
+        where: { id: storeId },
+        relations: ['onboarding'],
+      }),
       this.serviceRepository.find({
         where: { id: In(uniqueIds), store: { id: storeId } },
       }),
@@ -69,7 +73,7 @@ export class ScheduleService {
       }),
     ]);
 
-    if (!store) {
+    if (!store || isStoreDraft(store)) {
       throw new NotFoundException('Store not found');
     }
 
@@ -125,6 +129,17 @@ export class ScheduleService {
   }
 
   async create(scheduleDto: CreateSchedulesDto): Promise<Schedule[]> {
+    if (scheduleDto.store?.id) {
+      const store = await this.storeRepository.findOne({
+        where: { id: scheduleDto.store.id },
+        relations: ['onboarding'],
+      });
+
+      if (store && isStoreDraft(store)) {
+        throw new NotFoundException('Store not found');
+      }
+    }
+
     let endTime = '';
 
     const schedules = scheduleDto.services.map((service) => {

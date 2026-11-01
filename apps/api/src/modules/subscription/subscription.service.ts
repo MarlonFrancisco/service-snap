@@ -28,7 +28,10 @@ import { CurrentPlanDto } from './dto/current-plan.dto';
 import { CustomerSubscriptionCreatedDto } from './dto/customer-subscription-created.dto';
 import { CustomerSubscriptionUpdateDto } from './dto/customer-subscription-update.dto';
 import { Subscription } from './subscription.entity';
-import { TSubscriptionStatus } from './subscription.types';
+import {
+  TCheckoutSessionStatus,
+  TSubscriptionStatus,
+} from './subscription.types';
 
 /** Stripe retenta webhooks por ~3 dias; TTL cobre retries sem acumular chaves. */
 const WEBHOOK_EVENT_TTL_MS = 72 * 60 * 60 * 1000;
@@ -254,6 +257,69 @@ export class SubscriptionService {
       url: session.url,
       currency: price.currency.toUpperCase(),
     };
+  }
+
+  /**
+   * Confere no Stripe o retorno do checkout, em vez de confiar no `session_id`
+   * da URL. `processing` é o intervalo até o webhook gravar a assinatura local,
+   * que é o que libera o painel.
+   */
+  async getCheckoutSessionStatus(
+    sessionId: string,
+    userId: string,
+    paymentCustomerId: string,
+  ): Promise<{ status: TCheckoutSessionStatus }> {
+    let session: Stripe.Checkout.Session;
+
+    try {
+      session = await this.stripeService.checkout.sessions.retrieve(sessionId);
+    } catch (error) {
+      if (
+        error instanceof Stripe.errors.StripeInvalidRequestError &&
+        error.code === 'resource_missing'
+      ) {
+        return { status: 'invalid' };
+      }
+      throw error;
+    }
+
+    const customerId =
+      typeof session.customer === 'string'
+        ? session.customer
+        : session.customer?.id;
+
+    // Sessão de outra pessoa responde igual à inexistente: não confirma nada.
+    if (
+      session.mode !== 'subscription' ||
+      !customerId ||
+      customerId !== paymentCustomerId ||
+      session.status === 'expired'
+    ) {
+      return { status: 'invalid' };
+    }
+
+    if (
+      session.status !== 'complete' ||
+      (session.payment_status !== 'paid' &&
+        session.payment_status !== 'no_payment_required')
+    ) {
+      return { status: 'pending' };
+    }
+
+    const subscriptionId =
+      typeof session.subscription === 'string'
+        ? session.subscription
+        : session.subscription?.id;
+
+    const subscription = await this.subscriptionRepository.findOne({
+      where: {
+        subscriptionId,
+        user: { id: userId },
+        status: In(['active', 'paid', 'trialing']),
+      },
+    });
+
+    return { status: subscription ? 'active' : 'processing' };
   }
 
   async handleCustomerSubscriptionCreated({

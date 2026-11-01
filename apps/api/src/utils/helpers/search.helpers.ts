@@ -1,12 +1,23 @@
+import {
+  isBookableProfessional,
+  isStoreDraft,
+} from '../../modules/partner/onboarding/onboarding.helpers';
 import type { Store } from '../../modules/partner/stores/store.entity';
 import type {
   IStoreSearchContent,
   IStoreSearchMetadata,
 } from '../../modules/search/search.types';
 
+/**
+ * Só entra na busca quem o cliente consegue agendar: serviço ativo e profissional
+ * que faça algum serviço. Fotos não contam, porque são opcionais no onboarding.
+ */
 export const availableToIndexStore = (store: Store): boolean => {
   return (
-    store.isActive && store.gallery.length > 0 && store.storeMembers.length > 0
+    Boolean(store.isActive) &&
+    !isStoreDraft(store) &&
+    store.services.some((service) => service.isActive) &&
+    store.storeMembers.some(isBookableProfessional)
   );
 };
 

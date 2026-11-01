@@ -65,7 +65,10 @@ export class StoreMemberService {
     storeMemberDto: CreateStoreMemberDto,
     ownerUserId: string,
   ): Promise<StoreMember> {
-    await this.assertWithinProfessionalLimit(ownerUserId);
+    await this.assertWithinProfessionalLimit(
+      ownerUserId,
+      storeMemberDto.store?.id,
+    );
 
     const user = await this.userService.findByOne({
       email: storeMemberDto.user?.email,
@@ -95,6 +98,38 @@ export class StoreMemberService {
       where: { id: storeMember.id },
       relations: ['user', 'services', 'store'],
     });
+  }
+
+  /** Para quem já se sabe o id: nem toda conta tem e-mail (login por telefone). */
+  async createForUser({
+    userId,
+    storeId,
+    ownerUserId,
+    role,
+    services,
+  }: {
+    userId: string;
+    storeId: string;
+    ownerUserId: string;
+    role: StoreMember['role'];
+    services: { id: string }[];
+  }): Promise<StoreMember> {
+    await this.assertWithinProfessionalLimit(ownerUserId, storeId);
+
+    const storeMember = await this.storeMemberRepository.save({
+      user: { id: userId },
+      store: { id: storeId },
+      role,
+      isActive: true,
+    });
+
+    await this.storeMemberRepository
+      .createQueryBuilder()
+      .relation(StoreMember, 'services')
+      .of(storeMember)
+      .add(services);
+
+    return storeMember as StoreMember;
   }
 
   async update(storeMemberDto: UpdateStoreMemberDto): Promise<StoreMember> {
@@ -130,8 +165,12 @@ export class StoreMemberService {
     return { id, store: { id: storeId } as Store };
   }
 
-  /** PRO_LIMIT === 0 means unlimited (matches partner UI). */
-  private async assertWithinProfessionalLimit(ownerUserId: string) {
+  /**
+   * PRO_LIMIT === 0 means unlimited (matches partner UI). `storeId` counts that
+   * store even while inactive: a draft has no active members otherwise, and the
+   * limit would only be noticed after it went live.
+   */
+  async getProfessionalUsage(ownerUserId: string, storeId?: string) {
     const subscription = await this.subscriptionRepository.findOne({
       where: {
         user: { id: ownerUserId },
@@ -140,20 +179,33 @@ export class StoreMemberService {
       },
     });
 
-    const proLimit = subscription?.features?.PRO_LIMIT ?? 0;
-    if (!proLimit) {
-      return;
-    }
+    const limit = subscription?.features?.PRO_LIMIT ?? 0;
 
-    const currentCount = await this.storeMemberRepository
+    const count = await this.storeMemberRepository
       .createQueryBuilder('member')
       .innerJoin('member.store', 'store')
       .innerJoin('store.owner', 'owner')
       .where('owner.id = :ownerUserId', { ownerUserId })
-      .andWhere('store.isActive = true')
+      .andWhere('(store.isActive = true OR store.id = :storeId)', {
+        storeId: storeId ?? null,
+      })
       .andWhere('store.isDeleted = false')
       .andWhere('member.isDeleted = false')
       .getCount();
+
+    return { count, limit };
+  }
+
+  private async assertWithinProfessionalLimit(
+    ownerUserId: string,
+    storeId?: string,
+  ) {
+    const { count: currentCount, limit: proLimit } =
+      await this.getProfessionalUsage(ownerUserId, storeId);
+
+    if (!proLimit) {
+      return;
+    }
 
     if (currentCount >= proLimit) {
       throw new ForbiddenException(

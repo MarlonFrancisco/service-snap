@@ -32,19 +32,17 @@ export class StoresController {
   async getStore(@Param('id') id: string) {
     // Public booking only needs member-scoped schedules/blockedTimes.
     // Top-level `schedules` duplicated the full history and inflated payload.
-    return this.storesService.findOne(id, {
-      relations: [
-        'gallery',
-        'storeMembers',
-        'storeMembers.user',
-        'storeMembers.services',
-        'storeMembers.blockedTimes',
-        'storeMembers.schedules',
-        'services',
-        'services.category',
-        'reviews',
-      ],
-    });
+    return this.storesService.findOnePublic(id, [
+      'gallery',
+      'storeMembers',
+      'storeMembers.user',
+      'storeMembers.services',
+      'storeMembers.blockedTimes',
+      'storeMembers.schedules',
+      'services',
+      'services.category',
+      'reviews',
+    ]);
   }
 
   @Post()

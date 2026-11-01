@@ -10,3 +10,9 @@ export type TSubscriptionStatus =
   | 'draft'
   | 'open'
   | 'paid';
+
+export type TCheckoutSessionStatus =
+  | 'active'
+  | 'processing'
+  | 'pending'
+  | 'invalid';

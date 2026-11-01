@@ -2,6 +2,7 @@ import { Column, Entity, Index, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from '../../database/base.entity';
 import { Favorite } from '../../users/favorites/favorite.entity';
 import { User } from '../../users/user.entity';
+import { StoreOnboarding } from '../onboarding/store-onboarding.entity';
 import { Category } from './category/category.entity';
 import { Service } from './category/service/service.entity';
 import { Gallery } from './gallery/gallery.entity';
@@ -141,6 +142,9 @@ export class Store extends BaseEntity {
 
   @OneToOne(() => WhatsappConfig, (whatsappConfig) => whatsappConfig.store)
   whatsappConfig: WhatsappConfig;
+
+  @OneToOne(() => StoreOnboarding, (onboarding) => onboarding.store)
+  onboarding: StoreOnboarding;
 
   @OneToMany(() => Review, (review) => review.store)
   reviews: Review[];

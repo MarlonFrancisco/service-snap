@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { FindOptionsSelect, Repository } from 'typeorm';
 import {
@@ -6,12 +11,15 @@ import {
   mountStoreSearchIndex,
 } from '../../../utils/helpers/search.helpers';
 import { SearchService } from '../../search/search.service';
+import { isStoreDraft } from '../onboarding/onboarding.helpers';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { Store } from './store.entity';
 
 @Injectable()
 export class StoresService {
+  private readonly logger = new Logger(StoresService.name);
+
   constructor(
     @InjectRepository(Store)
     private readonly storesRepository: Repository<Store>,
@@ -63,29 +71,68 @@ export class StoresService {
     return store;
   }
 
+  /** Mesma leitura de `findOne`, mas um rascunho do assistente não existe aqui. */
+  async findOnePublic(id: string, relations: string[]): Promise<Store> {
+    const { onboarding, ...store } = await this.findOne(id, {
+      relations: [...relations, 'onboarding'],
+    });
+
+    if (isStoreDraft({ onboarding })) {
+      throw new NotFoundException('Store not found');
+    }
+
+    return store as Store;
+  }
+
   async update(id: string, storeDto: UpdateStoreDto): Promise<UpdateStoreDto> {
+    if (storeDto.isActive) {
+      const store = await this.findOne(id, { relations: ['onboarding'] });
+
+      // Só `OnboardingService.complete` publica um rascunho, depois de checar
+      // serviço e profissional.
+      if (isStoreDraft(store)) {
+        throw new BadRequestException(
+          'Conclua a preparação do espaço antes de ativá-lo',
+        );
+      }
+    }
+
     await this.storesRepository.update(id, storeDto);
 
-    void this.findOne(id, {
-      relations: [
-        'gallery',
-        'storeMembers',
-        'services',
-        'reviews',
-        'owner',
-        'categories',
-      ],
-    }).then((store) => {
+    void this.syncSearchIndex(id);
+
+    return storeDto;
+  }
+
+  /**
+   * Coloca ou tira a loja da busca conforme o estado atual. Nunca rejeita: uma
+   * falha no índice não pode desfazer a ação do parceiro.
+   */
+  async syncSearchIndex(id: string): Promise<void> {
+    try {
+      const store = await this.findOne(id, {
+        relations: [
+          'gallery',
+          'storeMembers',
+          'storeMembers.services',
+          'services',
+          'reviews',
+          'owner',
+          'categories',
+          'onboarding',
+        ],
+      });
+
       if (availableToIndexStore(store)) {
         const { content, metadata } = mountStoreSearchIndex(store);
 
-        void this.searchService.indexStore(id, content, metadata);
+        await this.searchService.indexStore(id, content, metadata);
       } else {
-        void this.searchService.deleteStoreIndex(id);
+        await this.searchService.deleteStoreIndex(id);
       }
-    });
-
-    return storeDto;
+    } catch (error) {
+      this.logger.error(`Failed to sync search index for store ${id}:`, error);
+    }
   }
 
   async delete(id: string): Promise<void> {

@@ -6,6 +6,7 @@ import {
   Get,
   Headers,
   HttpCode,
+  Param,
   Patch,
   Post,
   Req,
@@ -39,6 +40,19 @@ export class SubscriptionController {
   @UseGuards(JwtAuthGuard)
   async getCurrentPlan(@CurrentUser() user: JwtPayload) {
     return this.subscriptionService.getCurrentPlan(user.sub);
+  }
+
+  @Get('checkout-session/:sessionId')
+  @UseGuards(JwtAuthGuard)
+  async getCheckoutSessionStatus(
+    @Param('sessionId') sessionId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.subscriptionService.getCheckoutSessionStatus(
+      sessionId,
+      user.sub,
+      user.paymentCustomerId,
+    );
   }
 
   @Post()
