@@ -1,3 +1,9 @@
+## 0.16.0 (2026-11-01)
+
+### Feat
+
+- **api**: enviar lembretes de agendamento por e-mail
+
 ## 0.15.2 (2026-11-01)
 
 ### Fix
