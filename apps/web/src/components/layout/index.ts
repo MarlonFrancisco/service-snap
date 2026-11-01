@@ -5,6 +5,7 @@ export {
   Header,
   HEADER_OFFSET_CLASS,
   HEADER_OFFSET_WITH_SEARCH_CLASS,
+  HEADER_STICKY_TOP_CLASS,
   MarketplaceHeader,
 } from './header';
 export type { THeaderConfig } from './header';

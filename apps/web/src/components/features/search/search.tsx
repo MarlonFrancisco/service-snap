@@ -1,5 +1,5 @@
 'use client';
-import { Footer, Header } from '@/components/layout';
+import { Footer, Header, HEADER_STICKY_TOP_CLASS } from '@/components/layout';
 import { NotFound } from '@/components/ui';
 import { useSearchQuery } from '@/hooks/use-query/use-search-query';
 import { cn } from '@repo/ui/index';
@@ -27,10 +27,10 @@ export function SearchResults() {
 
   return (
     <Header showSearchBar>
-      <div className="max-w-8xl h-full mx-auto px-4 sm:px-6 md:px-10 xl:px-12">
+      <div className="h-full w-full px-4 sm:px-6 lg:px-12">
         {isPending && (
-          <div className="grid grid-cols-12 gap-0 lg:gap-10 min-h-[calc(100vh-180px)]">
-            <div className="col-span-12 lg:col-span-7 xl:col-span-7 py-6">
+          <div className="grid min-h-[calc(100vh-180px)] grid-cols-12 gap-0 lg:gap-10">
+            <div className="col-span-12 py-6 lg:col-span-7 xl:col-span-7">
               <ResultsListSkeleton />
             </div>
           </div>
@@ -64,7 +64,7 @@ export function SearchResults() {
 
         <div
           className={cn(
-            'grid grid-cols-12 gap-0 lg:gap-10 min-h-[calc(100vh-180px)]',
+            'grid min-h-[calc(100vh-180px)] grid-cols-12 gap-0 lg:gap-10',
             showResults ? 'grid' : 'hidden',
           )}
         >
@@ -72,8 +72,8 @@ export function SearchResults() {
             <ResultsList />
           </div>
 
-          <div className="hidden lg:block col-span-5 xl:col-span-5">
-            <div className="sticky top-[12.5rem] md:top-[14.5rem]">
+          <div className="col-span-5 hidden lg:block xl:col-span-5">
+            <div className={cn('sticky', HEADER_STICKY_TOP_CLASS)}>
               <div className="slide-up">
                 <StorePreview />
               </div>

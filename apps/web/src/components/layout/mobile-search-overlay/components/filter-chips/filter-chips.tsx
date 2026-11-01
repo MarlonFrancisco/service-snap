@@ -33,7 +33,7 @@ export const FilterChips = ({
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-900 rounded-full text-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F5] text-[#0A0A0A] rounded-full text-xs"
           >
             <MapPin className="w-3 h-3" />
             <span>{location}</span>
@@ -42,7 +42,7 @@ export const FilterChips = ({
                 e.stopPropagation();
                 onClearLocation();
               }}
-              className="ml-1 hover:bg-gray-200 rounded-full p-0.5 transition-colors"
+              className="ml-1 hover:bg-[#E4E4E7] rounded-full p-0.5 transition-colors"
             >
               <X className="w-3 h-3" />
             </button>
@@ -53,7 +53,7 @@ export const FilterChips = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.05 }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-900 rounded-full text-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F5] text-[#0A0A0A] rounded-full text-xs"
           >
             <Search className="w-3 h-3" />
             <span>{query}</span>
@@ -62,7 +62,7 @@ export const FilterChips = ({
                 e.stopPropagation();
                 onClearQuery();
               }}
-              className="ml-1 hover:bg-gray-200 rounded-full p-0.5 transition-colors"
+              className="ml-1 hover:bg-[#E4E4E7] rounded-full p-0.5 transition-colors"
             >
               <X className="w-3 h-3" />
             </button>
@@ -73,7 +73,7 @@ export const FilterChips = ({
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-900 rounded-full text-xs"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F4F4F5] text-[#0A0A0A] rounded-full text-xs"
           >
             <CalendarIcon className="w-3 h-3" />
             <span>
@@ -87,7 +87,7 @@ export const FilterChips = ({
                 e.stopPropagation();
                 onClearDate();
               }}
-              className="ml-1 hover:bg-gray-200 rounded-full p-0.5 transition-colors"
+              className="ml-1 hover:bg-[#E4E4E7] rounded-full p-0.5 transition-colors"
             >
               <X className="w-3 h-3" />
             </button>

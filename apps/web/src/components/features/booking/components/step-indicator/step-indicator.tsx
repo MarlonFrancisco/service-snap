@@ -17,17 +17,17 @@ export function StepIndicator({
       {/* Progress Bar com percentual */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-[#71717A]">
             Passo {currentStepIndex + 1} de {steps.length}
           </span>
-          <span className="text-xs text-gray-900">
+          <span className="text-xs text-[#0A0A0A]">
             {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
             completo
           </span>
         </div>
-        <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-[#F4F4F5] rounded-full overflow-hidden">
           <div
-            className="h-full bg-black transition-all duration-500 ease-out rounded-full"
+            className="h-full bg-[#0A0A0A] transition-all duration-500 ease-out rounded-full"
             style={{
               width: `${((currentStepIndex + 1) / steps.length) * 100}%`,
             }}
@@ -51,10 +51,10 @@ export function StepIndicator({
                     transition-all duration-300 flex-shrink-0
                     ${
                       isCurrent
-                        ? 'bg-black text-white ring-4 ring-black/10'
+                        ? 'bg-[#0A0A0A] text-white ring-4 ring-black/10'
                         : isCompleted
-                          ? 'bg-black text-white'
-                          : 'bg-gray-100 text-gray-400'
+                          ? 'bg-[#0A0A0A] text-white'
+                          : 'bg-[#F4F4F5] text-[#A1A1AA]'
                     }
                   `}
                 >
@@ -73,10 +73,10 @@ export function StepIndicator({
                     text-sm transition-colors
                     ${
                       isCurrent
-                        ? 'text-gray-900 font-medium'
+                        ? 'text-[#0A0A0A] font-medium'
                         : isCompleted
-                          ? 'text-gray-600'
-                          : 'text-gray-400'
+                          ? 'text-[#2B2B2B]'
+                          : 'text-[#A1A1AA]'
                     }
                   `}
                 >

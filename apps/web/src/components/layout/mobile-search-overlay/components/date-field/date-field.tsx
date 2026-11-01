@@ -29,29 +29,29 @@ export const DateField = ({
         onClick={onToggleActive}
         className={`w-full p-5 border-2 rounded-2xl text-left transition-all ${
           isActive
-            ? 'border-gray-900 bg-white shadow-lg'
+            ? 'border-[#0A0A0A] bg-white shadow-lg'
             : value
               ? 'border-green-500 bg-white hover:border-green-600 hover:shadow-md'
-              : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+              : 'border-[#E4E4E7] bg-white hover:border-[#D4D4D8] hover:shadow-md'
         }`}
       >
         <div className="flex items-start gap-4">
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-              value ? 'bg-green-100' : 'bg-gray-100'
+              value ? 'bg-green-100' : 'bg-[#F4F4F5]'
             }`}
           >
             {value ? (
               <CheckCircle2 className="w-5 h-5 text-green-600" />
             ) : (
-              <CalendarIcon className="w-5 h-5 text-gray-600" />
+              <CalendarIcon className="w-5 h-5 text-[#2B2B2B]" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-[#71717A] mb-1 uppercase tracking-wide">
               Quando
             </div>
-            <div className="text-gray-900">
+            <div className="text-[#0A0A0A]">
               {value
                 ? value.toLocaleDateString('pt-BR', {
                     weekday: 'short',
@@ -67,9 +67,9 @@ export const DateField = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+              className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-[#F4F4F5] flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-[#71717A]" />
             </button>
           )}
         </div>
@@ -82,7 +82,7 @@ export const DateField = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mt-3 bg-white border border-gray-200 rounded-2xl p-4 shadow-lg"
+            className="mt-3 bg-white border border-[#E4E4E7] rounded-2xl p-4 shadow-lg"
           >
             <Calendar
               mode="single"

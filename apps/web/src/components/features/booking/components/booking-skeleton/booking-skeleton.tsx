@@ -7,7 +7,7 @@ export function BookingSkeleton() {
       <BusinessShowcaseSkeleton />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-24 md:pb-8">
+      <div className="max-w-[90rem] mx-auto px-4 md:px-6 py-4 md:py-8 pb-24 md:pb-8">
         <div className="grid grid-cols-12 gap-4 md:gap-6">
           {/* Main Content Column */}
           <div className="col-span-12 lg:col-span-8">
@@ -57,7 +57,7 @@ export function BookingSkeleton() {
 
 function BusinessShowcaseSkeleton() {
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <div className="max-w-[90rem] mx-auto px-4 md:px-6">
       {/* Business Name and Actions */}
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <div className="flex-1">
@@ -108,7 +108,7 @@ function BusinessShowcaseSkeleton() {
             </div>
 
             {/* Amenities */}
-            <div className="space-y-3 pb-4 border-b border-gray-200">
+            <div className="space-y-3 pb-4 border-b border-[#E4E4E7]">
               <div className="flex flex-wrap gap-2">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <Skeleton key={index} className="h-8 w-24" />
@@ -123,14 +123,14 @@ function BusinessShowcaseSkeleton() {
 
         {/* Right Column - Opening Hours */}
         <div className="lg:col-span-1">
-          <Card className="p-4 border border-gray-200 space-y-3">
+          <Card className="p-4 border border-[#E4E4E7] space-y-3">
             <div className="flex items-center gap-2">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-5 w-40" />
             </div>
             <Skeleton className="h-4 w-full" />
 
-            <div className="space-y-2 pt-4 border-t border-gray-200">
+            <div className="space-y-2 pt-4 border-t border-[#E4E4E7]">
               <Skeleton className="h-4 w-4" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
@@ -209,7 +209,7 @@ function BookingSidebarSkeleton() {
           <Skeleton className="h-4 w-36" />
         </div>
 
-        <hr className="border-gray-200" />
+        <hr className="border-[#E4E4E7]" />
 
         {/* Resume Section */}
         <div className="space-y-4">
@@ -231,7 +231,7 @@ function BookingSidebarSkeleton() {
             ))}
           </div>
 
-          <hr className="border-gray-200" />
+          <hr className="border-[#E4E4E7]" />
 
           {/* Total */}
           <div className="flex justify-between items-center pt-2">

@@ -125,10 +125,10 @@ export function ProfessionalSelectionStep() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg sm:text-2xl text-[#1a2b4c] mb-1">
+        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
           Escolha o profissional
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-sm sm:text-base text-[#2B2B2B]">
           Selecione um profissional ou deixe o sistema escolher automaticamente
         </p>
       </div>
@@ -136,15 +136,15 @@ export function ProfessionalSelectionStep() {
       {/* Informações de compatibilidade */}
       {!compatibilityStatus.canUseAny &&
         !compatibilityStatus.hasIncompatibleCombination && (
-          <Card className="p-4 bg-gray-50 shadow-sm">
-            <div className="flex items-start gap-3 text-gray-800">
-              <Info className="h-5 w-5 text-gray-600 mt-0.5" />
+          <Card className="p-4 bg-[#F4F4F5] shadow-sm">
+            <div className="flex items-start gap-3 text-[#2B2B2B]">
+              <Info className="h-5 w-5 text-[#2B2B2B] mt-0.5" />
               <div>
                 <p className="text-sm mb-1">
                   <strong>Atenção:</strong> A combinação de serviços
                   selecionados exige profissionais específicos.
                 </p>
-                <p className="text-xs text-gray-700">
+                <p className="text-xs text-[#2B2B2B]">
                   Escolha um dos profissionais listados abaixo para continuar.
                 </p>
               </div>
@@ -171,14 +171,14 @@ export function ProfessionalSelectionStep() {
           <div className="flex items-center gap-3">
             <div
               className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                compatibilityStatus.canUseAny ? 'bg-gray-200' : 'bg-gray-200'
+                compatibilityStatus.canUseAny ? 'bg-[#E4E4E7]' : 'bg-[#E4E4E7]'
               }`}
             >
               <User
                 className={`h-5 w-5 ${
                   compatibilityStatus.canUseAny
-                    ? 'text-gray-700'
-                    : 'text-gray-400'
+                    ? 'text-[#2B2B2B]'
+                    : 'text-[#A1A1AA]'
                 }`}
               />
             </div>
@@ -187,8 +187,8 @@ export function ProfessionalSelectionStep() {
               <h4
                 className={`${
                   compatibilityStatus.canUseAny
-                    ? 'text-[#1a2b4c]'
-                    : 'text-gray-400'
+                    ? 'text-[#0A0A0A]'
+                    : 'text-[#A1A1AA]'
                 }`}
               >
                 Qualquer Profissional
@@ -196,8 +196,8 @@ export function ProfessionalSelectionStep() {
               <p
                 className={`text-sm ${
                   compatibilityStatus.canUseAny
-                    ? 'text-gray-600'
-                    : 'text-gray-400'
+                    ? 'text-[#2B2B2B]'
+                    : 'text-[#A1A1AA]'
                 }`}
               >
                 {compatibilityStatus.canUseAny
@@ -208,7 +208,7 @@ export function ProfessionalSelectionStep() {
           </div>
 
           {isAnyProfessional && compatibilityStatus.canUseAny && (
-            <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
+            <div className="w-6 h-6 bg-[#0A0A0A] rounded-full flex items-center justify-center">
               <Check className="h-4 w-4 text-white" />
             </div>
           )}
@@ -217,7 +217,7 @@ export function ProfessionalSelectionStep() {
 
       {/* Lista de Profissionais */}
       <div className="space-y-3">
-        <h3 className="text-sm text-gray-700">
+        <h3 className="text-sm text-[#2B2B2B]">
           Ou escolha um profissional específico:
         </h3>
 
@@ -238,13 +238,13 @@ export function ProfessionalSelectionStep() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#1a2b4c]/10 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-[#1a2b4c]" />
+                  <div className="w-10 h-10 bg-[#0A0A0A]/10 rounded-full flex items-center justify-center">
+                    <User className="h-5 w-5 text-[#0A0A0A]" />
                   </div>
 
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="text-[#1a2b4c]">
+                      <h4 className="text-[#0A0A0A]">
                         {professional.user.firstName}{' '}
                         {professional.user.lastName}
                       </h4>
@@ -255,12 +255,12 @@ export function ProfessionalSelectionStep() {
                       )}
                     </div>
 
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-[#2B2B2B] mb-2">
                       {professional.services?.map((s) => s.name).join(' • ')}
                     </p>
 
                     {!canDoAll && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-[#71717A]">
                         Pode realizar:{' '}
                         {availableServices.map((s) => s.name).join(', ')}
                       </p>
@@ -269,7 +269,7 @@ export function ProfessionalSelectionStep() {
                 </div>
 
                 {isSelected && (
-                  <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                  <div className="w-6 h-6 bg-[#0A0A0A] rounded-full flex items-center justify-center">
                     <Check className="h-4 w-4 text-white" />
                   </div>
                 )}

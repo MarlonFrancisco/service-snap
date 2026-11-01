@@ -152,7 +152,7 @@ export function BookingFlow() {
         <BusinessShowcase />
 
         {/* Main Content */}
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 md:py-8 pb-24 md:pb-8">
+        <div className="mx-auto max-w-[90rem] px-4 py-4 pb-24 sm:px-6 md:py-8 md:pb-8 lg:px-12">
           <div className="grid grid-cols-12 gap-4 md:gap-6">
             {/* Main Content Column */}
             <div className="col-span-12 lg:col-span-8">
@@ -197,7 +197,7 @@ export function BookingFlow() {
                       <Button
                         variant="outline"
                         onClick={handlePrevStep}
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className="rounded-2xl border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]"
                       >
                         Voltar
                       </Button>
@@ -211,7 +211,7 @@ export function BookingFlow() {
                         disabled={
                           !canProceedToNext || !!form.formState.errors.root
                         }
-                        className="bg-black hover:bg-gray-800 text-white px-8"
+                        className="rounded-2xl bg-[#0A0A0A] px-8 text-white hover:bg-[#2B2B2B]"
                       >
                         {nextButtonText}
                       </Button>
@@ -233,17 +233,17 @@ export function BookingFlow() {
         </div>
 
         {/* Mobile Bottom Navigation */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white p-4 z-20 shadow-lg">
+        <div className="fixed right-0 bottom-0 left-0 z-20 border-t border-[#EDEDED] bg-white p-4 shadow-lg md:hidden">
           <div className="flex items-center justify-between gap-3">
             {/* Summary Info */}
             <div className="flex-1 min-w-0">
               {selectedServices.length > 0 ? (
                 <div>
-                  <div className="text-sm text-gray-600 truncate">
+                  <div className="text-sm text-[#2B2B2B] truncate">
                     {selectedServices.length}{' '}
                     {selectedServices.length === 1 ? 'serviço' : 'serviços'}
                   </div>
-                  <div className="text-lg font-semibold text-gray-900">
+                  <div className="text-lg font-semibold text-[#0A0A0A]">
                     {new Intl.NumberFormat('pt-BR', {
                       style: 'currency',
                       currency: 'BRL',
@@ -251,7 +251,7 @@ export function BookingFlow() {
                   </div>
                 </div>
               ) : (
-                <div className="text-sm text-gray-500">
+                <div className="text-sm text-[#71717A]">
                   Nenhum serviço selecionado
                 </div>
               )}
@@ -263,7 +263,7 @@ export function BookingFlow() {
                 <Button
                   variant="outline"
                   onClick={handlePrevStep}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="rounded-2xl border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]"
                 >
                   Voltar
                 </Button>
@@ -273,7 +273,7 @@ export function BookingFlow() {
                 <Button
                   onClick={handleNextStep}
                   disabled={!canProceedToNext || !!form.formState.errors.root}
-                  className="bg-black hover:bg-gray-800 text-white"
+                  className="rounded-2xl bg-[#0A0A0A] text-white hover:bg-[#2B2B2B]"
                 >
                   {nextButtonText}
                 </Button>

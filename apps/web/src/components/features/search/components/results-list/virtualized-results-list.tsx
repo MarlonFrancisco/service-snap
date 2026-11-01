@@ -20,27 +20,23 @@ export function VirtualizedResultsList({
   const query = useSearchParams().get('query');
 
   return (
-    <div className="space-y-6">
-      {/* Results Header - Estilo Airbnb */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-2">
+    <div className="space-y-6 py-6">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm text-gray-600 mb-1">
+          <p className="mb-1 text-sm text-[#71717A]">
             {stores.length > 100 ? 'Mais de 100' : stores.length} lojas
           </p>
-          <h1 className="text-2xl font-semibold text-gray-900 leading-tight">
-            Resultados para "{query}"
+          <h1 className="text-2xl leading-tight font-bold tracking-tight text-[#0A0A0A]">
+            Resultados para &ldquo;{query}&rdquo;
           </h1>
         </div>
       </div>
 
-      {/* Grid de Cards - Estilo Airbnb */}
       <motion.div
         role="list"
         aria-label="Lista de serviços encontrados"
         className={cn(
-          'grid gap-x-6 gap-y-10',
-          // Responsivo: 1 coluna mobile, 2 colunas tablet/desktop (com preview lateral)
-          'grid-cols-2 sm:grid-cols-3',
+          'grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 sm:gap-y-10 lg:grid-cols-3',
         )}
         initial="hidden"
         animate="visible"
@@ -54,7 +50,7 @@ export function VirtualizedResultsList({
           },
         }}
       >
-        {stores.map((store, index) => (
+        {stores.map((store) => (
           <motion.div
             key={store.id}
             role="listitem"
@@ -73,10 +69,9 @@ export function VirtualizedResultsList({
         ))}
       </motion.div>
 
-      {/* Mensagem de fim da lista */}
       {stores.length > 0 && (
-        <div className="text-center py-8 border-t border-gray-100">
-          <p className="text-sm text-gray-500">
+        <div className="border-t border-[#EDEDED] py-8 text-center">
+          <p className="text-sm text-[#71717A]">
             Mostrando todos os {stores.length} resultados
           </p>
         </div>

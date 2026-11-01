@@ -135,10 +135,10 @@ export function DateTimeSelectionStep() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg sm:text-2xl text-[#1a2b4c] mb-1">
+        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
           Escolha data e horário
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-sm sm:text-base text-[#2B2B2B]">
           Selecione quando deseja realizar{' '}
           {selectedServices.length > 1 ? 'os serviços' : 'o serviço'}
         </p>
@@ -147,8 +147,8 @@ export function DateTimeSelectionStep() {
       <div className="md:hidden space-y-4">
         <Card className="p-5 bg-white shadow-card">
           <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-gray-600" />
-            <h3 className="text-[#1a2b4c]">Selecione a data</h3>
+            <Calendar className="h-5 w-5 text-[#2B2B2B]" />
+            <h3 className="text-[#0A0A0A]">Selecione a data</h3>
           </div>
 
           <DatePickerHorizontal
@@ -159,18 +159,18 @@ export function DateTimeSelectionStep() {
           />
         </Card>
 
-        <Card className="p-5 border-gray-200">
+        <Card className="p-5 border-[#E4E4E7]">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-gray-600" />
-            <h3 className="text-[#1a2b4c]">Selecione o horário</h3>
+            <Clock className="h-5 w-5 text-[#2B2B2B]" />
+            <h3 className="text-[#0A0A0A]">Selecione o horário</h3>
           </div>
 
           {!selectedDate && (
             <div className="text-center py-12">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Calendar className="h-6 w-6 text-gray-400" />
+              <div className="w-12 h-12 bg-[#F4F4F5] rounded-full flex items-center justify-center mx-auto mb-3">
+                <Calendar className="h-6 w-6 text-[#A1A1AA]" />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#71717A]">
                 Selecione uma data primeiro
               </p>
             </div>
@@ -184,16 +184,16 @@ export function DateTimeSelectionStep() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3"
             >
-              <div className="text-sm text-gray-600 mb-3">
+              <div className="text-sm text-[#2B2B2B] mb-3">
                 {formatDate(selectedDate)}
               </div>
 
               {availableSlots.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Clock className="h-6 w-6 text-gray-400" />
+                  <div className="w-12 h-12 bg-[#F4F4F5] rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Clock className="h-6 w-6 text-[#A1A1AA]" />
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[#71717A]">
                     Nenhum horário disponível nesta data
                   </p>
                 </div>
@@ -215,10 +215,10 @@ export function DateTimeSelectionStep() {
                           onClick={() => handleTimeSelect(slot.time)}
                           className={`p-3 h-auto flex flex-col w-full transition-all ${
                             selectedTime === slot.time
-                              ? 'bg-black hover:bg-gray-800 text-white'
+                              ? 'bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white'
                               : slot.available
-                                ? 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-                                : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5] hover:border-[#A1A1AA]'
+                                : 'border-[#E4E4E7] text-[#A1A1AA] cursor-not-allowed'
                           }`}
                           aria-label={`Selecionar horário ${slot.time}`}
                         >
@@ -240,10 +240,10 @@ export function DateTimeSelectionStep() {
       </div>
 
       <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-5 border-gray-200">
+        <Card className="p-5 border-[#E4E4E7]">
           <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-gray-600" />
-            <h3 className="text-[#1a2b4c]">Selecione a data</h3>
+            <Calendar className="h-5 w-5 text-[#2B2B2B]" />
+            <h3 className="text-[#0A0A0A]">Selecione a data</h3>
           </div>
 
           <CalendarComponent
@@ -255,18 +255,18 @@ export function DateTimeSelectionStep() {
           />
         </Card>
 
-        <Card className="p-5 border-gray-200">
+        <Card className="p-5 border-[#E4E4E7]">
           <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-gray-600" />
-            <h3 className="text-[#1a2b4c]">Selecione o horário</h3>
+            <Clock className="h-5 w-5 text-[#2B2B2B]" />
+            <h3 className="text-[#0A0A0A]">Selecione o horário</h3>
           </div>
 
           {!selectedDate && (
             <div className="text-center py-12">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Calendar className="h-6 w-6 text-gray-400" />
+              <div className="w-12 h-12 bg-[#F4F4F5] rounded-full flex items-center justify-center mx-auto mb-3">
+                <Calendar className="h-6 w-6 text-[#A1A1AA]" />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[#71717A]">
                 Selecione uma data primeiro
               </p>
             </div>
@@ -280,16 +280,16 @@ export function DateTimeSelectionStep() {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3"
             >
-              <div className="text-sm text-gray-600 mb-3">
+              <div className="text-sm text-[#2B2B2B] mb-3">
                 {formatDate(selectedDate)}
               </div>
 
               {availableSlots.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Clock className="h-6 w-6 text-gray-400" />
+                  <div className="w-12 h-12 bg-[#F4F4F5] rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Clock className="h-6 w-6 text-[#A1A1AA]" />
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[#71717A]">
                     Nenhum horário disponível nesta data
                   </p>
                 </div>
@@ -311,10 +311,10 @@ export function DateTimeSelectionStep() {
                           onClick={() => handleTimeSelect(slot.time)}
                           className={`p-3 h-auto flex flex-col w-full transition-all ${
                             selectedTime === slot.time
-                              ? 'bg-black hover:bg-gray-800 text-white'
+                              ? 'bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white'
                               : slot.available
-                                ? 'border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
-                                : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                                ? 'border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5] hover:border-[#A1A1AA]'
+                                : 'border-[#E4E4E7] text-[#A1A1AA] cursor-not-allowed'
                           }`}
                         >
                           <span className="font-medium">{slot.time}</span>

@@ -87,10 +87,10 @@ export function CheckoutStep() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-lg sm:text-2xl text-[#1a2b4c] mb-1">
+        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
           Finalize seu agendamento
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-sm sm:text-base text-[#2B2B2B]">
           Informe seus dados para confirmar a reserva
         </p>
       </div>
@@ -99,30 +99,30 @@ export function CheckoutStep() {
       {isLoggedIn ? (
         /* Estado Logado - Confirmação */
         <div className="space-y-6">
-          <div className="bg-green-50 rounded-lg p-6 shadow-sm">
+          <div className="rounded-2xl border border-[#E4E4E7] bg-[#F4F4F5] p-6 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#047857]">
                 <CheckCircle2 className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-[#1a2b4c] mb-1">Você está autenticado</h3>
-                <p className="text-sm text-gray-700 mb-4">
+                <h3 className="text-[#0A0A0A] mb-1">Você está autenticado</h3>
+                <p className="text-sm text-[#2B2B2B] mb-4">
                   Suas informações estão prontas para o agendamento
                 </p>
                 <div className="grid sm:grid-cols-2 gap-3 text-sm">
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-900">
+                    <User className="h-4 w-4 text-[#71717A]" />
+                    <span className="text-[#0A0A0A]">
                       {user?.firstName} {user?.lastName}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-900">{user?.email}</span>
+                    <Mail className="h-4 w-4 text-[#71717A]" />
+                    <span className="text-[#0A0A0A]">{user?.email}</span>
                   </div>
                   <div className="flex items-center gap-2 sm:col-span-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
-                    <span className="text-gray-900">{user?.telephone}</span>
+                    <Phone className="h-4 w-4 text-[#71717A]" />
+                    <span className="text-[#0A0A0A]">{user?.telephone}</span>
                   </div>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export function CheckoutStep() {
           <>
             <Button
               onClick={handleSchedule}
-              className="w-full h-14"
+              className="h-14 w-full rounded-2xl bg-[#0A0A0A] text-white hover:bg-[#2B2B2B]"
               disabled={isCreatingSchedule}
             >
               <div className="flex items-center justify-center gap-2">
@@ -157,19 +157,22 @@ export function CheckoutStep() {
               </div>
             </Button>
 
-            <p className="text-xs text-center text-gray-500 leading-relaxed">
+            <p className="text-xs text-center text-[#71717A] leading-relaxed">
               Ao confirmar, você concorda com nossos{' '}
-              <a href="/terms" className="underline hover:text-gray-700">
+              <a href="/terms" className="underline hover:text-[#2B2B2B]">
                 termos de serviço
               </a>{' '}
               e{' '}
-              <a href="/privacy" className="underline hover:text-gray-700">
+              <a href="/privacy" className="underline hover:text-[#2B2B2B]">
                 política de cancelamento
               </a>
             </p>
           </>
         ) : (
-          <Button onClick={handleLoginClick} className="w-full h-14">
+          <Button
+            onClick={handleLoginClick}
+            className="h-14 w-full rounded-2xl bg-[#0A0A0A] text-white hover:bg-[#2B2B2B]"
+          >
             <div className="flex items-center justify-center gap-2">
               <span>Fazer login para confirmar</span>
               <LogIn />

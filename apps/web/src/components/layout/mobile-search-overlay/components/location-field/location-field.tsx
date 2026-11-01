@@ -32,26 +32,26 @@ export const LocationField = ({
         onClick={onToggleActive}
         className={`w-full p-5 border-2 rounded-2xl text-left transition-all relative ${
           isActive
-            ? 'border-gray-900 bg-white shadow-lg'
+            ? 'border-[#0A0A0A] bg-white shadow-lg'
             : value
               ? 'border-green-500 bg-white hover:border-green-600 hover:shadow-md'
-              : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+              : 'border-[#E4E4E7] bg-white hover:border-[#D4D4D8] hover:shadow-md'
         }`}
       >
         <div className="flex items-start gap-4">
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-              value ? 'bg-green-100' : 'bg-gray-100'
+              value ? 'bg-green-100' : 'bg-[#F4F4F5]'
             }`}
           >
             {value ? (
               <CheckCircle2 className="w-5 h-5 text-green-600" />
             ) : (
-              <MapPin className="w-5 h-5 text-gray-600" />
+              <MapPin className="w-5 h-5 text-[#2B2B2B]" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-[#71717A] mb-1 uppercase tracking-wide">
               Onde
             </div>
             {isActive ? (
@@ -62,10 +62,10 @@ export const LocationField = ({
                 onChange={(e) => onChange(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 autoFocus
-                className="w-full text-gray-900 placeholder-gray-400 bg-transparent border-none outline-none"
+                className="w-full text-[#0A0A0A] placeholder:text-[#A1A1AA] bg-transparent border-none outline-none"
               />
             ) : (
-              <div className="text-gray-900 truncate">
+              <div className="text-[#0A0A0A] truncate">
                 {value || 'Buscar destinos'}
               </div>
             )}
@@ -76,9 +76,9 @@ export const LocationField = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+              className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-[#F4F4F5] flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-[#71717A]" />
             </button>
           )}
         </div>
@@ -101,17 +101,17 @@ export const LocationField = ({
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => onSelect(location)}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-left text-sm hover:bg-gray-50 hover:border-gray-900 transition-all flex items-center gap-3 group"
+                  className="w-full px-4 py-3 bg-white border border-[#E4E4E7] rounded-xl text-left text-sm hover:bg-[#FAFAFA] hover:border-[#0A0A0A] transition-all flex items-center gap-3 group"
                 >
-                  <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-900 transition-colors flex-shrink-0">
-                    <MapPin className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
+                  <div className="w-8 h-8 bg-[#F4F4F5] rounded-lg flex items-center justify-center group-hover:bg-[#0A0A0A] transition-colors flex-shrink-0">
+                    <MapPin className="w-4 h-4 text-[#A1A1AA] group-hover:text-white transition-colors" />
                   </div>
-                  <span className="text-gray-900 flex-1">{location}</span>
-                  <ArrowLeft className="w-4 h-4 text-gray-300 group-hover:text-gray-900 rotate-180 transition-colors" />
+                  <span className="text-[#0A0A0A] flex-1">{location}</span>
+                  <ArrowLeft className="w-4 h-4 text-[#D4D4D8] group-hover:text-[#0A0A0A] rotate-180 transition-colors" />
                 </motion.button>
               ))
             ) : (
-              <div className="px-4 py-8 text-center text-gray-500 text-sm">
+              <div className="px-4 py-8 text-center text-[#71717A] text-sm">
                 Nenhuma localização encontrada
               </div>
             )}

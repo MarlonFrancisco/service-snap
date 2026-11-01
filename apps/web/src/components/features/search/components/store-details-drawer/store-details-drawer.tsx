@@ -3,13 +3,10 @@
 import useSearchStore from '@/store/search/search.store';
 import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
 import {
-  Badge,
-  Button,
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-  Separator,
 } from '@repo/ui';
 import { Calendar, Clock, MapPin, Phone, Star } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -31,15 +28,13 @@ export function StoreDetailsDrawer() {
 
   return (
     <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-      <DrawerContent className="p-0">
+      <DrawerContent className="border-[#EDEDED] p-0">
         <DrawerHeader className="sr-only">
           <DrawerTitle>Detalhes da Loja</DrawerTitle>
         </DrawerHeader>
 
-        {/* Scrollable content */}
         <div className="overflow-y-auto">
           <div className="space-y-4 pb-6">
-            {/* Images */}
             <ImageCarousel
               images={selectedStore.gallery}
               alt={selectedStore.name}
@@ -49,98 +44,92 @@ export function StoreDetailsDrawer() {
               aspectRatio={16 / 9}
             />
 
-            {/* Header */}
             <div className="space-y-3 px-4">
               <div className="flex items-start justify-between gap-3">
-                <h2 className="text-xl font-semibold text-gray-900 leading-tight">
+                <h2 className="text-xl leading-tight font-semibold tracking-tight text-[#0A0A0A]">
                   {selectedStore.name}
                 </h2>
-                <Badge className="bg-black text-white shrink-0 text-xs font-medium">
+                <span className="shrink-0 rounded-full bg-[#0A0A0A] px-2.5 py-1 text-xs font-semibold text-white">
                   {selectedStore.price}
-                </Badge>
+                </span>
               </div>
 
-              {/* Rating */}
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-md">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-semibold text-sm">
+                <div className="flex items-center gap-1 rounded-md bg-[#F4F4F5] px-2 py-1">
+                  <Star className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]" />
+                  <span className="text-sm font-semibold text-[#0A0A0A]">
                     {selectedStore.rating}
                   </span>
                 </div>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-[#71717A]">
                   ({selectedStore.reviewCount} avaliações)
                 </span>
               </div>
             </div>
 
-            <Separator />
+            <div className="mx-4 h-px bg-[#EDEDED]" />
 
-            {/* Description */}
             <div className="space-y-2 px-4">
-              <h3 className="text-sm font-semibold text-gray-900">Sobre</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">Sobre</h3>
+              <p className="text-sm leading-relaxed text-[#2B2B2B]">
                 {selectedStore.description}
               </p>
             </div>
 
-            <Separator />
+            <div className="mx-4 h-px bg-[#EDEDED]" />
 
-            {/* Services */}
             {selectedStore.services && selectedStore.services.length > 0 && (
               <>
                 <div className="space-y-3 px-4">
-                  <h3 className="text-sm font-semibold text-gray-900">
+                  <h3 className="text-sm font-semibold text-[#0A0A0A]">
                     Serviços
                   </h3>
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex flex-wrap gap-2">
                     {selectedStore.services.map((service) => (
-                      <Badge
+                      <span
                         key={service.id}
-                        variant="secondary"
-                        className="bg-blue-50 text-blue-700 border-blue-200 font-normal text-xs"
+                        className="rounded-full bg-[#F4F4F5] px-2.5 py-1 text-xs font-medium text-[#2B2B2B]"
                       >
                         {service.name}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
                 </div>
-                <Separator />
+                <div className="mx-4 h-px bg-[#EDEDED]" />
               </>
             )}
 
-            {/* Contact Info */}
             <div className="space-y-3 px-4">
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">
                 Informações
               </h3>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 text-gray-400 shrink-0" />
+                  <Phone className="h-4 w-4 shrink-0 text-[#A1A1AA]" />
                   <a
                     href={`tel:${selectedStore.telephone}`}
-                    className="text-blue-600 hover:underline font-normal"
+                    className="font-medium text-[#0A0A0A] hover:underline"
                   >
                     {selectedStore.telephone}
                   </a>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm">
-                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 shrink-0" />
-                  <div className="text-gray-600">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#A1A1AA]" />
+                  <div className="text-[#2B2B2B]">
                     <p>
                       {selectedStore.address}, {selectedStore.city} -{' '}
                       {selectedStore.state}
                     </p>
-                    <p className="text-gray-500 text-xs mt-0.5">
+                    <p className="mt-0.5 text-xs text-[#71717A]">
                       {selectedStore.zipCode}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-sm text-gray-600">
-                  <Clock className="h-4 w-4 text-gray-400 shrink-0" />
+                <div className="flex items-center gap-3 text-sm text-[#2B2B2B]">
+                  <Clock className="h-4 w-4 shrink-0 text-[#A1A1AA]" />
                   <span>
                     {formatBusinessHours(
                       selectedStore.openTime,
@@ -152,39 +141,41 @@ export function StoreDetailsDrawer() {
               </div>
             </div>
 
-            <Separator />
+            <div className="mx-4 h-px bg-[#EDEDED]" />
 
-            {/* Reviews */}
             <div className="space-y-3 px-4">
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">
                 Avaliações Recentes
               </h3>
 
               <div className="space-y-2.5">
                 {selectedStore.reviews && selectedStore.reviews.length > 0 ? (
                   selectedStore.reviews.slice(0, 3).map((review) => (
-                    <div key={review.id} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1.5">
+                    <div
+                      key={review.id}
+                      className="rounded-xl bg-[#F4F4F5] p-3"
+                    >
+                      <div className="mb-1.5 flex items-center gap-2">
                         <div className="flex">
                           {Array.from({ length: review.rating }).map((_, i) => (
                             <Star
                               key={i}
-                              className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400"
+                              className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]"
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-500 font-medium">
+                        <span className="text-xs font-medium text-[#71717A]">
                           Usuário Anônimo
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 leading-relaxed">
+                      <p className="text-sm leading-relaxed text-[#2B2B2B]">
                         {review.comment}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <div className="p-4 bg-gray-50 rounded-lg text-center">
-                    <p className="text-sm text-gray-500">
+                  <div className="rounded-xl bg-[#F4F4F5] p-4 text-center">
+                    <p className="text-sm text-[#71717A]">
                       Nenhuma avaliação disponível
                     </p>
                   </div>
@@ -194,16 +185,15 @@ export function StoreDetailsDrawer() {
           </div>
         </div>
 
-        {/* Fixed bottom CTA */}
-        <div className="border-t bg-white p-4 shadow-lg">
-          <Button
-            className="w-full bg-black hover:bg-gray-800 text-white font-medium"
-            size="lg"
+        <div className="border-t border-[#EDEDED] bg-white p-4 shadow-lg">
+          <button
+            type="button"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#0A0A0A] text-sm font-semibold text-white transition-all active:scale-[0.98] hover:bg-[#2B2B2B]"
             onClick={handleBooking}
           >
-            <Calendar className="h-5 w-5 mr-2" />
+            <Calendar className="h-5 w-5" />
             Ver Agenda e Agendar
-          </Button>
+          </button>
         </div>
       </DrawerContent>
     </Drawer>

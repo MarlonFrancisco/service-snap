@@ -63,11 +63,11 @@ export function BusinessShowcase() {
 
   return (
     <div>
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <div className="mx-auto max-w-[90rem] px-4 pt-4 sm:px-6 md:pt-6 lg:px-12">
         {/* Business Name and Actions */}
         <div className="flex items-center justify-between mb-4 md:mb-6">
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl md:text-2xl text-[#1a2b4c] truncate">
+            <h1 className="text-xl md:text-2xl text-[#0A0A0A] truncate">
               {businessName}
             </h1>
           </div>
@@ -78,7 +78,7 @@ export function BusinessShowcase() {
                 variant="outline"
                 size="sm"
                 onClick={handleShare}
-                className="flex items-center gap-2 rounded-lg border-gray-300 hover:bg-gray-50"
+                className="flex items-center gap-2 rounded-lg border-[#D4D4D8] hover:bg-[#F4F4F5]"
               >
                 <Share className="h-4 w-4" />
                 Compartilhar
@@ -90,7 +90,7 @@ export function BusinessShowcase() {
                 variant="outline"
                 size="sm"
                 onClick={handleSave}
-                className="flex items-center gap-2 rounded-lg border-gray-300 hover:bg-gray-50"
+                className="flex items-center gap-2 rounded-lg border-[#D4D4D8] hover:bg-[#F4F4F5]"
               >
                 {isFavorite ? (
                   <Heart className="h-4 w-4 fill-red-500 text-red-500" />
@@ -171,7 +171,7 @@ export function BusinessShowcase() {
                   <CarouselNext className="right-2 bg-white/90 hover:bg-white border-0 shadow-lg" />
 
                   {/* Photo Counter */}
-                  <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm pointer-events-none">
+                  <div className="absolute bottom-3 right-3 bg-[#0A0A0A]/70 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-sm pointer-events-none">
                     1 / {allImages.length}
                   </div>
 
@@ -194,7 +194,7 @@ export function BusinessShowcase() {
           {!showAllPhotos && allImages.length > 0 && (
             <Button
               variant="outline"
-              className="hidden md:flex absolute bottom-4 right-4 bg-white text-black border-black hover:bg-gray-100 rounded-lg shadow-lg"
+              className="hidden md:flex absolute bottom-4 right-4 bg-white text-black border-black hover:bg-[#F4F4F5] rounded-lg shadow-lg"
               onClick={() => handleImageClick(0)}
             >
               <Images className="h-4 w-4 mr-2" />
@@ -208,17 +208,17 @@ export function BusinessShowcase() {
           {/* Left Column - Main Info */}
           <div className="lg:col-span-2">
             <div className="mb-4 md:mb-6">
-              <p className="text-gray-600 mb-4">{description}</p>
+              <p className="text-[#2B2B2B] mb-4">{description}</p>
 
               {/* Amenities - Above Reviews */}
               {amenities.length > 0 && (
-                <div className="mb-4 pb-4 border-b border-gray-200">
+                <div className="mb-4 pb-4 border-b border-[#E4E4E7]">
                   <div className="flex flex-wrap gap-2">
                     {amenities.map((amenity: string, index: number) => (
                       <Badge
                         key={index}
                         variant="outline"
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className="border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]"
                       >
                         {amenity}
                       </Badge>
@@ -240,7 +240,7 @@ export function BusinessShowcase() {
                       isOpen: true,
                     })
                   }
-                  className="underline cursor-pointer hover:text-gray-700 transition-colors"
+                  className="underline cursor-pointer hover:text-[#2B2B2B] transition-colors"
                 >
                   {reviewCount} avaliações
                 </button>
@@ -250,24 +250,24 @@ export function BusinessShowcase() {
 
           {/* Right Column - Opening Hours */}
           <div className="lg:col-span-1">
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+            <div className="bg-[#F4F4F5] rounded-lg p-4 border border-[#E4E4E7]">
               <div className="flex items-center gap-2 mb-3">
-                <Clock className="h-4 w-4 text-[#20b2aa]" />
-                <h3 className="text-[#1a2b4c]">Horário de Funcionamento</h3>
+                <Clock className="h-4 w-4 text-[#0A0A0A]" />
+                <h3 className="text-[#0A0A0A]">Horário de Funcionamento</h3>
               </div>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-[#2B2B2B]">
                 {formatBusinessHours(openTime, closeTime, businessDays)}
               </p>
-              <div className="flex items-start gap-2 mt-4 pt-4 border-t border-gray-200">
-                <MapPinIcon className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-gray-600">{businessAddress}</p>
+              <div className="flex items-start gap-2 mt-4 pt-4 border-t border-[#E4E4E7]">
+                <MapPinIcon className="h-4 w-4 text-[#71717A] mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-[#2B2B2B]">{businessAddress}</p>
               </div>
               {instagramUrl && instagramLabel ? (
                 <a
                   href={instagramUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200 text-sm text-gray-700 hover:text-gray-900"
+                  className="flex items-center gap-2 mt-4 pt-4 border-t border-[#E4E4E7] text-sm text-[#2B2B2B] hover:text-[#0A0A0A]"
                 >
                   <Instagram className="h-4 w-4 flex-shrink-0" />
                   {instagramLabel}

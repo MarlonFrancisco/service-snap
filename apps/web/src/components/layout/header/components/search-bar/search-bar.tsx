@@ -1,8 +1,7 @@
 'use client';
 
-import useSearchStore from '@/store/search/search.store';
+import { cn } from '@repo/ui';
 import { Search, Sparkles } from 'lucide-react';
-import { AnimatePresence, motion } from 'motion/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -13,18 +12,14 @@ const AI_SUGGESTIONS = [
   'Busca inteligente de beleza...',
 ];
 
+/** Desktop-only search field for the marketplace header center. */
 export const SearchBar = () => {
   const params = useSearchParams();
-  const setIsMobileSearchOpen = useSearchStore(
-    (state) => state.setIsMobileSearchOpen,
-  );
   const [query, setQuery] = useState(params.get('query') || '');
   const [isFocused, setIsFocused] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
-
   const router = useRouter();
 
-  // Rotate placeholder suggestions
   useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholderIndex((prev) => (prev + 1) % AI_SUGGESTIONS.length);
@@ -32,11 +27,21 @@ export const SearchBar = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    setQuery(params.get('query') || '');
+  }, [params]);
+
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (query.trim()) {
-      router.push(`/booking?${new URLSearchParams({ query }).toString()}`);
-    }
+    if (!query.trim()) return;
+
+    const next = new URLSearchParams();
+    next.set('query', query.trim());
+    const location = params.get('location');
+    const category = params.get('category');
+    if (location) next.set('location', location);
+    if (category) next.set('category', category);
+    router.push(`/booking?${next.toString()}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -46,175 +51,51 @@ export const SearchBar = () => {
   };
 
   return (
-    <div className="w-full relative flex mr-5 md:mx-12 max-w-xl">
-      {/* Desktop AI-Powered Search */}
-      <div className="hidden md:block w-full relative group">
-        {/* Animated gradient border effect */}
-        <AnimatePresence>
-          {isFocused && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 0.4, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="absolute -inset-[2px] bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400 rounded-2xl blur-sm"
-            >
-              <motion.div
-                animate={{
-                  opacity: [0.4, 0.6, 0.4],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-                className="absolute inset-0 bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400 rounded-2xl"
-              />
-            </motion.div>
+    <form onSubmit={handleSearch} className="hidden w-full md:block">
+      <label
+        className={cn(
+          'flex items-center gap-2 rounded-full border bg-white px-3 py-2 shadow-sm transition-colors sm:gap-2.5 sm:px-4',
+          isFocused
+            ? 'border-[#0A0A0A] shadow-md'
+            : 'border-[#E4E4E7] hover:border-[#D4D4D8]',
+        )}
+      >
+        <Search
+          className={cn(
+            'h-4 w-4 shrink-0',
+            isFocused ? 'text-[#0A0A0A]' : 'text-[#71717A]',
           )}
-        </AnimatePresence>
-
-        <motion.div
-          animate={{
-            borderColor: isFocused ? 'rgb(167 139 250)' : 'rgb(229 231 235)',
-            boxShadow: isFocused
-              ? '0 4px 12px -2px rgba(167, 139, 250, 0.15), 0 2px 4px -1px rgba(167, 139, 250, 0.1)'
-              : '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-          }}
-          whileHover={{
-            borderColor: isFocused ? 'rgb(167 139 250)' : 'rgb(209 213 219)',
-            boxShadow: isFocused
-              ? '0 4px 12px -2px rgba(167, 139, 250, 0.15), 0 2px 4px -1px rgba(167, 139, 250, 0.1)'
-              : '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-          }}
-          transition={{ duration: 0.3, ease: 'easeOut' }}
-          className="w-full relative bg-white rounded-2xl border-2"
+        />
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          placeholder={AI_SUGGESTIONS[placeholderIndex]}
+          className="min-w-0 flex-1 bg-transparent text-sm text-[#0A0A0A] outline-none placeholder:text-[#A1A1AA]"
+          aria-label="Buscar serviços com IA"
+        />
+        <span
+          className={cn(
+            'inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold tracking-wide uppercase transition-colors',
+            isFocused
+              ? 'bg-[#0A0A0A] text-white'
+              : 'bg-[#F4F4F5] text-[#2B2B2B]',
+          )}
+          title="Busca integrada com inteligência artificial"
         >
-          {/* Shimmer effect overlay */}
-          <AnimatePresence>
-            {isFocused && (
-              <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                <motion.div
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '200%' }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-                />
-              </div>
-            )}
-          </AnimatePresence>
-
-          <div className="w-full relative flex items-center gap-3 px-5 py-3">
-            {/* Search Icon with animation */}
-            <motion.div
-              animate={{
-                scale: isFocused ? 1.1 : 1,
-                color: isFocused ? 'rgb(139 92 246)' : 'rgb(156 163 175)',
-              }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-            >
-              <Search className="h-5 w-5 flex-shrink-0" />
-            </motion.div>
-
-            {/* Input */}
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              placeholder={AI_SUGGESTIONS[placeholderIndex]}
-              className="flex-1 bg-transparent outline-none text-gray-900 placeholder:text-gray-400 text-sm min-w-0"
-            />
-
-            {/* AI Badge - Animated */}
-            <motion.div
-              animate={{
-                background: isFocused
-                  ? 'linear-gradient(to right, rgb(139 92 246), rgb(147 51 234))'
-                  : 'rgb(243 244 246)',
-              }}
-              whileHover={{
-                background: isFocused
-                  ? 'linear-gradient(to right, rgb(139 92 246), rgb(147 51 234))'
-                  : 'rgb(229 231 235)',
-              }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg flex-shrink-0"
-              style={{
-                boxShadow: isFocused
-                  ? '0 2px 4px -1px rgba(139, 92, 246, 0.2)'
-                  : 'none',
-              }}
-            >
-              <motion.div
-                animate={{
-                  scale: isFocused ? [1, 1.2, 1] : 1,
-                  rotate: isFocused ? [0, 5, -5, 0] : 0,
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: isFocused ? Infinity : 0,
-                  ease: 'easeInOut',
-                }}
-              >
-                <Sparkles
-                  className="h-3.5 w-3.5"
-                  style={{
-                    color: isFocused ? 'white' : 'rgb(107 114 128)',
-                  }}
-                />
-              </motion.div>
-              <motion.span
-                animate={{
-                  color: isFocused ? 'white' : 'rgb(75 85 99)',
-                }}
-                className="text-xs font-medium hidden sm:inline"
-              >
-                IA
-              </motion.span>
-            </motion.div>
-          </div>
-
-          {/* Bottom glow effect when focused */}
-          <AnimatePresence>
-            {isFocused && (
-              <motion.div
-                initial={{ opacity: 0, scaleX: 0.5 }}
-                animate={{ opacity: 0.6, scaleX: 1 }}
-                exit={{ opacity: 0, scaleX: 0.5 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-                className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-violet-300 to-transparent blur-sm"
-              />
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
-
-      {/* Mobile Search Button */}
-      <div className="md:hidden flex-1 flex-row flex items-center gap-6">
+          <Sparkles className="h-3 w-3" aria-hidden />
+          IA
+        </span>
         <button
-          onClick={() => setIsMobileSearchOpen(true)}
-          className="relative flex w-full bg-white border border-gray-200 rounded-full shadow-sm px-4 py-3 hover:shadow-md transition-shadow"
+          type="submit"
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#0A0A0A] px-3.5 py-1.5 text-xs font-semibold text-white transition-colors active:scale-[0.98] hover:bg-[#2B2B2B] sm:text-sm"
         >
-          <div className="flex items-center gap-3">
-            <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-            <div className="text-left flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900">
-                {query ? 'Buscar' : 'Para onde?'}
-              </div>
-              <div className="text-xs text-gray-500 line-clamp-2">
-                {query || 'Qualquer serviço'}
-              </div>
-            </div>
-          </div>
+          Buscar
         </button>
-      </div>
-    </div>
+      </label>
+    </form>
   );
 };

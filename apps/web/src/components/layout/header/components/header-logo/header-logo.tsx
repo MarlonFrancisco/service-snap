@@ -23,7 +23,7 @@ export const HeaderLogo = ({
         alt="ServiceSnap logo"
         width={width}
         height={height}
-        className="block h-11 w-auto"
+        className="block h-auto w-auto max-h-11"
         unoptimized
         preload
       />

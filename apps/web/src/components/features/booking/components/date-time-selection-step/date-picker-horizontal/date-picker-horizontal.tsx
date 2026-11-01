@@ -136,14 +136,14 @@ export function DatePickerHorizontal({
                   onClick={() => !isDisabled && onSelect(date)}
                   disabled={isDisabled}
                   className={cn(
-                    'flex-1 min-w-[60px] flex flex-col items-center gap-1 p-3 rounded-lg border-2 transition-all',
+                    'flex min-w-[60px] flex-1 flex-col items-center gap-1 rounded-2xl border-2 p-3 transition-all',
                     isSelected &&
-                      'border-[#20b2aa] bg-[#20b2aa] text-white shadow-md',
+                      'border-[#0A0A0A] bg-[#0A0A0A] text-white shadow-md',
                     !isSelected &&
                       !isDisabled &&
-                      'border-gray-200 hover:border-gray-300 hover:bg-gray-50',
+                      'border-[#E4E4E7] hover:border-[#D4D4D8] hover:bg-[#F4F4F5]',
                     isDisabled &&
-                      'border-gray-100 bg-gray-50 text-gray-400 cursor-not-allowed opacity-50',
+                      'border-[#F4F4F5] bg-[#F4F4F5] text-[#A1A1AA] cursor-not-allowed opacity-50',
                   )}
                   aria-label={`Selecionar ${formatDayName(date)}, ${formatDate(date)} de ${formatMonth(date)}`}
                   aria-pressed={isSelected}
@@ -151,7 +151,7 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'text-xs uppercase',
-                      isSelected ? 'text-white' : 'text-gray-500',
+                      isSelected ? 'text-white' : 'text-[#71717A]',
                     )}
                   >
                     {formatDayName(date)}
@@ -159,7 +159,7 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'font-medium',
-                      isSelected ? 'text-white' : 'text-gray-900',
+                      isSelected ? 'text-white' : 'text-[#0A0A0A]',
                     )}
                   >
                     {formatDate(date)}
@@ -167,13 +167,13 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'text-xs',
-                      isSelected ? 'text-white/90' : 'text-gray-500',
+                      isSelected ? 'text-white/90' : 'text-[#71717A]',
                     )}
                   >
                     {formatMonth(date)}
                   </span>
                   {isToday && !isSelected && (
-                    <div className="w-1 h-1 rounded-full bg-[#20b2aa] mt-0.5" />
+                    <div className="w-1 h-1 rounded-full bg-[#0A0A0A] mt-0.5" />
                   )}
                 </button>
               );

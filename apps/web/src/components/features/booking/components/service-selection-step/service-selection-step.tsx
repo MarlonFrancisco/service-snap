@@ -101,17 +101,17 @@ export function ServiceSelectionStep() {
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-lg sm:text-2xl text-[#1a2b4c] mb-1">
+        <h2 className="text-lg sm:text-2xl text-[#0A0A0A] mb-1">
           Selecione os serviços
         </h2>
-        <p className="text-sm sm:text-base text-gray-600">
+        <p className="text-sm sm:text-base text-[#2B2B2B]">
           Escolha um ou mais serviços que deseja agendar
         </p>
       </div>
 
       {/* Category Filter */}
       <div className="space-y-3">
-        <h3 className="text-sm text-gray-700">Filtrar por categoria:</h3>
+        <h3 className="text-sm text-[#2B2B2B]">Filtrar por categoria:</h3>
         <div className="flex flex-wrap gap-2">
           <Button
             variant={selectedCategory ? 'outline' : 'default'}
@@ -119,8 +119,8 @@ export function ServiceSelectionStep() {
             onClick={() => setSelectedCategory(undefined)}
             className={
               !selectedCategory
-                ? 'bg-black hover:bg-gray-800 text-white'
-                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                ? 'bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white'
+                : 'border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]'
             }
           >
             Todos
@@ -135,8 +135,8 @@ export function ServiceSelectionStep() {
               onClick={() => setSelectedCategory(category)}
               className={
                 selectedCategory?.id === category.id
-                  ? 'bg-black hover:bg-gray-800 text-white'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ? 'bg-[#0A0A0A] hover:bg-[#2B2B2B] text-white'
+                  : 'border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]'
               }
             >
               {category.name}
@@ -150,7 +150,7 @@ export function ServiceSelectionStep() {
         {filteredServices.map((service) => (
           <div
             key={service.id}
-            className={`rounded-lg p-3 sm:p-4 transition-all bg-white cursor-pointer ${
+            className={`cursor-pointer rounded-2xl bg-white p-3 transition-all sm:p-4 ${
               isSelected(service.id)
                 ? 'shadow-md ring-1 ring-black/5'
                 : 'shadow-sm hover:shadow-md'
@@ -161,28 +161,28 @@ export function ServiceSelectionStep() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <h4 className="text-sm sm:text-base text-[#1a2b4c]">
+                    <h4 className="text-sm sm:text-base text-[#0A0A0A]">
                       {service.name}
                     </h4>
                     {isSelected(service.id) && (
-                      <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-5 h-5 bg-[#0A0A0A] rounded-full flex items-center justify-center flex-shrink-0">
                         <Check className="h-3 w-3 text-white" />
                       </div>
                     )}
                   </div>
 
-                  <p className="text-xs sm:text-sm text-gray-600 mb-2">
+                  <p className="text-xs sm:text-sm text-[#2B2B2B] mb-2">
                     {service.description}
                   </p>
 
                   <div className="flex items-center gap-3">
                     <Badge
                       variant="secondary"
-                      className="bg-gray-100 text-gray-700 text-xs"
+                      className="bg-[#F4F4F5] text-[#2B2B2B] text-xs"
                     >
                       {service.category?.name}
                     </Badge>
-                    <span className="text-xs sm:text-sm text-gray-500">
+                    <span className="text-xs sm:text-sm text-[#71717A]">
                       {formatDuration(service.duration)}
                     </span>
                   </div>
@@ -190,7 +190,7 @@ export function ServiceSelectionStep() {
 
                 {/* Preço - sempre visível */}
                 <div className="text-right flex-shrink-0">
-                  <div className="text-base sm:text-lg text-[#1a2b4c]">
+                  <div className="text-base sm:text-lg text-[#0A0A0A]">
                     {formatPrice(service.price)}
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export function ServiceSelectionStep() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-8 h-8 sm:w-9 sm:h-9 p-0 border-gray-300 text-gray-700 hover:bg-gray-50"
+                      className="w-8 h-8 sm:w-9 sm:h-9 p-0 border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5]"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleQuantityChange(
@@ -215,14 +215,14 @@ export function ServiceSelectionStep() {
                       <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
 
-                    <span className="mx-1 sm:mx-2 min-w-[20px] sm:min-w-[24px] text-center text-sm sm:text-base text-[#1a2b4c] font-medium">
+                    <span className="mx-1 sm:mx-2 min-w-[20px] sm:min-w-[24px] text-center text-sm sm:text-base text-[#0A0A0A] font-medium">
                       {getServiceQuantity(service.id)}
                     </span>
 
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-8 h-8 sm:w-9 sm:h-9 p-0 border-black text-black hover:bg-gray-50"
+                      className="w-8 h-8 sm:w-9 sm:h-9 p-0 border-black text-black hover:bg-[#F4F4F5]"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleQuantityChange(
@@ -238,7 +238,7 @@ export function ServiceSelectionStep() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50 h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
+                    className="border-[#D4D4D8] text-[#2B2B2B] hover:bg-[#F4F4F5] h-8 sm:h-9 px-3 sm:px-4 text-xs sm:text-sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleServiceToggle(service);

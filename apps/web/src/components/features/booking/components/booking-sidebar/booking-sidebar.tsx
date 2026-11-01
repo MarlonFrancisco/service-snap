@@ -47,14 +47,14 @@ export function BookingSidebar({
         <div className="space-y-4">
           {/* Header do estabelecimento */}
           <div>
-            <h3 className="text-base sm:text-lg text-[#1a2b4c] mb-1">
+            <h3 className="text-base sm:text-lg text-[#0A0A0A] mb-1">
               {businessName}
             </h3>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-2">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-[#2B2B2B] mb-2">
               <MapPin className="h-4 w-4" aria-hidden="true" />
               <span>{businessAddress}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-[#2B2B2B]">
               <Phone className="h-4 w-4" aria-hidden="true" />
               <span>{businessPhone}</span>
             </div>
@@ -64,12 +64,12 @@ export function BookingSidebar({
 
           {/* Resumo do Agendamento */}
           <div>
-            <h4 className="text-[#1a2b4c] mb-3">Resumo da Reserva</h4>
+            <h4 className="text-[#0A0A0A] mb-3">Resumo da Reserva</h4>
 
             {/* Serviços */}
             {selectedServices.length > 0 && (
               <div className="space-y-3 mb-4">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-[#2B2B2B]">
                   <span>Serviços selecionados:</span>
                 </div>
                 <div className="space-y-2">
@@ -80,11 +80,11 @@ export function BookingSidebar({
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm text-gray-900">
+                          <p className="text-sm text-[#0A0A0A]">
                             {service.name}
                           </p>
                           {service.quantity > 1 && (
-                            <span className="bg-black text-white px-1.5 py-0.5 rounded-full text-xs">
+                            <span className="bg-[#0A0A0A] text-white px-1.5 py-0.5 rounded-full text-xs">
                               {service.quantity}x
                             </span>
                           )}
@@ -93,14 +93,14 @@ export function BookingSidebar({
                           <Badge variant="secondary" className="text-xs">
                             {service.category?.name}
                           </Badge>
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-[#71717A]">
                             {formatDuration(
                               service.duration * service.quantity,
                             )}
                           </span>
                         </div>
                       </div>
-                      <span className="text-sm text-[#1a2b4c] ml-2">
+                      <span className="text-sm text-[#0A0A0A] ml-2">
                         {formatStorePrice(
                           service.price * service.quantity,
                           store!.currency,
@@ -112,9 +112,9 @@ export function BookingSidebar({
                 </div>
 
                 {selectedServices.length > 1 && (
-                  <div className="border-t border-gray-200 pt-2 flex justify-between items-center">
+                  <div className="border-t border-[#E4E4E7] pt-2 flex justify-between items-center">
                     <span className="text-sm">Duração total:</span>
-                    <span className="text-sm text-[#1a2b4c]">
+                    <span className="text-sm text-[#0A0A0A]">
                       {formatDuration(totalDuration)}
                     </span>
                   </div>
@@ -126,10 +126,10 @@ export function BookingSidebar({
             {(selectedProfessional || isAnyProfessional) && (
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <User className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Profissional:</span>
+                  <User className="h-4 w-4 text-[#71717A]" />
+                  <span className="text-sm text-[#2B2B2B]">Profissional:</span>
                 </div>
-                <p className="text-sm text-gray-900 ml-6">
+                <p className="text-sm text-[#0A0A0A] ml-6">
                   {isAnyProfessional
                     ? 'Qualquer profissional'
                     : selectedProfessional?.user.firstName +
@@ -137,7 +137,7 @@ export function BookingSidebar({
                       selectedProfessional?.user.lastName}
                 </p>
                 {selectedProfessional && (
-                  <p className="text-xs text-gray-500 ml-6">
+                  <p className="text-xs text-[#71717A] ml-6">
                     {selectedProfessional.services
                       ?.map((s) => s.name)
                       .join(' • ')}
@@ -150,16 +150,16 @@ export function BookingSidebar({
             {selectedDate && selectedTime && (
               <div className="mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm text-gray-600">Agendado para:</span>
+                  <Calendar className="h-4 w-4 text-[#71717A]" />
+                  <span className="text-sm text-[#2B2B2B]">Agendado para:</span>
                 </div>
                 <div className="ml-6">
-                  <p className="text-sm text-gray-900">
+                  <p className="text-sm text-[#0A0A0A]">
                     {formatFullDate(selectedDate)}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Clock className="h-3 w-3 text-gray-500" />
-                    <span className="text-sm text-gray-700">
+                    <Clock className="h-3 w-3 text-[#71717A]" />
+                    <span className="text-sm text-[#2B2B2B]">
                       {selectedTime}
                     </span>
                   </div>
@@ -173,14 +173,14 @@ export function BookingSidebar({
                 <Separator />
                 <div className="pt-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-[#1a2b4c]">Total:</span>
-                    <span className="text-lg text-[#1a2b4c]">
+                    <span className="text-[#0A0A0A]">Total:</span>
+                    <span className="text-lg text-[#0A0A0A]">
                       {formatPrice(totalPrice)}
                     </span>
                   </div>
 
                   {currentStep !== 'checkout' && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-[#71717A] mt-1">
                       Pagamento no local
                     </p>
                   )}
@@ -191,8 +191,8 @@ export function BookingSidebar({
 
           {/* Status do progresso */}
           {showEmptyState && (
-            <div className="text-center py-6 text-gray-500">
-              <Calendar className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+            <div className="text-center py-6 text-[#71717A]">
+              <Calendar className="h-8 w-8 mx-auto mb-2 text-[#D4D4D8]" />
               <p className="text-sm">Selecione um serviço para começar</p>
             </div>
           )}
@@ -205,7 +205,7 @@ export function BookingSidebar({
           )}
 
           {showDateTimeWarning && (
-            <div className="text-center py-4 text-gray-600 bg-gray-100 rounded-lg">
+            <div className="text-center py-4 text-[#2B2B2B] bg-[#F4F4F5] rounded-lg">
               <Clock className="h-6 w-6 mx-auto mb-1" />
               <p className="text-sm">Selecione data e horário</p>
             </div>

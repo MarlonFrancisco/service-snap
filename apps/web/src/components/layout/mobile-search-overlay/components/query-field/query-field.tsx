@@ -35,26 +35,26 @@ export const QueryField = ({
         onClick={onToggleActive}
         className={`w-full p-5 border-2 rounded-2xl text-left transition-all ${
           isActive
-            ? 'border-gray-900 bg-white shadow-lg'
+            ? 'border-[#0A0A0A] bg-white shadow-lg'
             : value
               ? 'border-green-500 bg-white hover:border-green-600 hover:shadow-md'
-              : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+              : 'border-[#E4E4E7] bg-white hover:border-[#D4D4D8] hover:shadow-md'
         }`}
       >
         <div className="flex items-start gap-4">
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
-              value ? 'bg-green-100' : 'bg-gray-100'
+              value ? 'bg-green-100' : 'bg-[#F4F4F5]'
             }`}
           >
             {value ? (
               <CheckCircle2 className="w-5 h-5 text-green-600" />
             ) : (
-              <Search className="w-5 h-5 text-gray-600" />
+              <Search className="w-5 h-5 text-[#2B2B2B]" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">
+            <div className="text-xs font-semibold text-[#71717A] mb-1 uppercase tracking-wide">
               O que
             </div>
             {isActive ? (
@@ -65,10 +65,10 @@ export const QueryField = ({
                 onChange={(e) => onChange(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
                 autoFocus
-                className="w-full text-gray-900 placeholder-gray-400 bg-transparent border-none outline-none"
+                className="w-full text-[#0A0A0A] placeholder:text-[#A1A1AA] bg-transparent border-none outline-none"
               />
             ) : (
-              <div className="text-gray-900 truncate">
+              <div className="text-[#0A0A0A] truncate">
                 {value || 'Tipo de serviço'}
               </div>
             )}
@@ -79,9 +79,9 @@ export const QueryField = ({
                 e.stopPropagation();
                 onClear();
               }}
-              className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors"
+              className="flex-shrink-0 w-6 h-6 rounded-full hover:bg-[#F4F4F5] flex items-center justify-center transition-colors"
             >
-              <X className="w-4 h-4 text-gray-500" />
+              <X className="w-4 h-4 text-[#71717A]" />
             </button>
           )}
         </div>
@@ -99,7 +99,7 @@ export const QueryField = ({
             {/* Popular Services */}
             {value === '' && (
               <div className="mb-3">
-                <p className="text-xs font-semibold text-gray-500 mb-2 px-1 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-[#71717A] mb-2 px-1 uppercase tracking-wide">
                   Populares
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -110,11 +110,11 @@ export const QueryField = ({
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => onSelect(query.name)}
-                      className="px-4 py-3 bg-white border border-gray-200 rounded-xl text-left hover:bg-gray-50 hover:border-gray-900 transition-all group"
+                      className="px-4 py-3 bg-white border border-[#E4E4E7] rounded-xl text-left hover:bg-[#FAFAFA] hover:border-[#0A0A0A] transition-all group"
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{query.icon}</span>
-                        <span className="text-sm text-gray-900">
+                        <span className="text-sm text-[#0A0A0A]">
                           {query.name}
                         </span>
                       </div>
@@ -127,7 +127,7 @@ export const QueryField = ({
             {/* Service Suggestions */}
             <div className="space-y-2">
               {value && (
-                <p className="text-xs font-semibold text-gray-500 mb-2 px-1 uppercase tracking-wide">
+                <p className="text-xs font-semibold text-[#71717A] mb-2 px-1 uppercase tracking-wide">
                   Sugestões
                 </p>
               )}
@@ -139,14 +139,14 @@ export const QueryField = ({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => onSelect(query)}
-                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-left text-sm hover:bg-gray-50 hover:border-gray-900 transition-all flex items-center justify-between group"
+                      className="w-full px-4 py-3 bg-white border border-[#E4E4E7] rounded-xl text-left text-sm hover:bg-[#FAFAFA] hover:border-[#0A0A0A] transition-all flex items-center justify-between group"
                     >
-                      <span className="text-gray-900">{query}</span>
-                      <ArrowLeft className="w-4 h-4 text-gray-300 group-hover:text-gray-900 rotate-180 transition-colors" />
+                      <span className="text-[#0A0A0A]">{query}</span>
+                      <ArrowLeft className="w-4 h-4 text-[#D4D4D8] group-hover:text-[#0A0A0A] rotate-180 transition-colors" />
                     </motion.button>
                   ))
                 : value && (
-                    <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                    <div className="px-4 py-8 text-center text-[#71717A] text-sm">
                       Nenhum serviço encontrado
                     </div>
                   )}

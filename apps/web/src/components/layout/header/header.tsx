@@ -16,11 +16,12 @@ export const Header = ({
   className,
   ...props
 }: THeaderConfig) => {
-  const contentOffset = showSearchBar
-    ? HEADER_OFFSET_WITH_SEARCH_CLASS
-    : showCategories
-      ? HEADER_OFFSET_CLASS
-      : HEADER_OFFSET_BARE_CLASS;
+  // Search lives in the logo row, so it does not add extra offset height.
+  const contentOffset = showCategories
+    ? showSearchBar
+      ? HEADER_OFFSET_WITH_SEARCH_CLASS
+      : HEADER_OFFSET_CLASS
+    : HEADER_OFFSET_BARE_CLASS;
 
   return (
     <div
