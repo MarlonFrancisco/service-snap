@@ -386,6 +386,59 @@ describe('idempotência', () => {
   });
 });
 
+describe('falhas nos eventos de invoice', () => {
+  const cases = [
+    ['paid', 'invoicePaid'],
+    ['payment_failed', 'paymentFailed'],
+  ] as const;
+
+  it.each(cases)(
+    'invoice.%s: e-mail que falha é reenviado pelo retry da Stripe',
+    async (type, method) => {
+      const { post, repo, state, notification } = await boot();
+      state.set('sub_new', stripeSubscription('sub_new', 'active'));
+      notification[method].mockRejectedValueOnce(new Error('resend-down'));
+      vi.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+      const event = invoiceEvent(`evt_mail_${type}`, type);
+
+      expect((await post(event)).status).toBe(500);
+      // O estado já foi salvo; só o e-mail ficou pendente
+      expect(repo.rows[0].status).toBe('active');
+
+      expect(await (await post(event)).json()).toEqual({ received: true });
+      expect(notification[method]).toHaveBeenCalledTimes(2);
+      expect(repo.rows).toHaveLength(1);
+
+      expect(await (await post(event)).json()).toEqual({
+        received: true,
+        duplicate: true,
+      });
+      expect(notification[method]).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it.each(cases)(
+    'invoice.%s: erro inesperado gera log e não expõe detalhes',
+    async (type) => {
+      const { post, stripe, state } = await boot();
+      state.set('sub_new', stripeSubscription('sub_new', 'active'));
+      stripe.products.retrieve.mockRejectedValueOnce(new Error('boom'));
+      const errorSpy = vi
+        .spyOn(Logger.prototype, 'error')
+        .mockImplementation(() => undefined);
+
+      const res = await post(invoiceEvent(`evt_log_${type}`, type));
+
+      expect(res.status).toBe(500);
+      expect(await res.json()).toEqual({
+        statusCode: 500,
+        message: 'Internal server error',
+      });
+      expect(errorSpy).toHaveBeenCalled();
+    },
+  );
+});
+
 describe('eventos fora de ordem', () => {
   it('updated antes de created já grava o estado atual', async () => {
     const { post, repo, state } = await boot();

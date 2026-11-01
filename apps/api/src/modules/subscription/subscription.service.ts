@@ -498,61 +498,54 @@ export class SubscriptionService {
   }
 
   async handleInvoicePaid(invoiceData: Stripe.InvoicePaidEvent.Data) {
-    try {
-      const subscriptionId = getSubscriptionIdFromInvoice(invoiceData.object);
+    const subscriptionId = getSubscriptionIdFromInvoice(invoiceData.object);
 
-      if (!subscriptionId) {
-        this.logger.warn(
-          `[handleInvoicePaid] Invoice ${invoiceData.object.id} has no subscription parent; skipping`,
-        );
-        return;
-      }
-
-      const subscription = await this.syncSubscription(subscriptionId);
-
-      if (!subscription) {
-        return;
-      }
-
-      void this.notificationService.invoicePaid(
-        subscription.user.email,
-        invoiceData.object.id,
-        subscription.currentPeriodEnd.toISOString(),
+    if (!subscriptionId) {
+      this.logger.warn(
+        `[handleInvoicePaid] Invoice ${invoiceData.object.id} has no subscription parent; skipping`,
       );
-    } catch (error) {
-      throw new InternalServerErrorException(error);
+      return;
     }
+
+    const subscription = await this.syncSubscription(subscriptionId);
+
+    if (!subscription) {
+      return;
+    }
+
+    // Com await, uma falha no e-mail vira erro e a Stripe reenvia o evento
+    await this.notificationService.invoicePaid(
+      subscription.user.email,
+      invoiceData.object.id,
+      subscription.currentPeriodEnd.toISOString(),
+    );
   }
 
   async handleInvoicePaymentFailed(
     event: Stripe.InvoicePaymentFailedEvent.Data,
   ) {
-    try {
-      const invoice = event.object;
-      const subscriptionId = getSubscriptionIdFromInvoice(invoice);
-      const { attempt_count } = invoice;
+    const invoice = event.object;
+    const subscriptionId = getSubscriptionIdFromInvoice(invoice);
+    const { attempt_count } = invoice;
 
-      if (!subscriptionId) {
-        this.logger.warn(
-          `[handleInvoicePaymentFailed] Invoice ${invoice.id} has no subscription parent; skipping`,
-        );
-        return;
-      }
-
-      const subscription = await this.syncSubscription(subscriptionId);
-
-      if (!subscription) {
-        return;
-      }
-
-      await this.notificationService.paymentFailed(
-        subscription.user.email,
-        invoice.id,
-        attempt_count,
+    if (!subscriptionId) {
+      this.logger.warn(
+        `[handleInvoicePaymentFailed] Invoice ${invoice.id} has no subscription parent; skipping`,
       );
-    } catch (error) {
-      throw new InternalServerErrorException(error);
+      return;
     }
+
+    const subscription = await this.syncSubscription(subscriptionId);
+
+    if (!subscription) {
+      return;
+    }
+
+    await this.notificationService.paymentFailed(
+      subscription.user.email,
+      invoice.id,
+      attempt_count,
+    );
   }
 
   async webhook(rawBody: Buffer | undefined, signature: string) {
