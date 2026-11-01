@@ -1,5 +1,6 @@
 'use client';
 
+import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui/index';
 import { MarketplaceHeader } from './components/marketplace-header';
 import { HEADER_OFFSET_CLASS } from './header.constants';
@@ -15,7 +16,8 @@ export const Header = ({
   return (
     <div
       className={cn(
-        'min-h-screen bg-[#FAFAFA] font-[family-name:var(--font-mona-sans)] text-[#0A0A0A] antialiased',
+        plusJakartaSans.className,
+        'min-h-screen bg-white text-[#0B0B0F] antialiased',
         className,
       )}
       {...props}

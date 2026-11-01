@@ -7,7 +7,6 @@ import {
 } from '@/components/layout';
 import { NotFound } from '@/components/ui';
 import { useSearchQuery } from '@/hooks/use-query/use-search-query';
-import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui/index';
 import { Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -33,11 +32,7 @@ export function SearchResults() {
   const showResults = !isPending && hasResults;
 
   return (
-    <Header
-      showSearchBar
-      hideMobileSearchIcon
-      className={cn(plusJakartaSans.className, 'bg-white')}
-    >
+    <Header showSearchBar hideMobileSearchIcon>
       <MobileSearchPill />
 
       <div className="mx-auto h-full w-full max-w-[82.5rem] px-5 md:px-10 lg:pt-4">
