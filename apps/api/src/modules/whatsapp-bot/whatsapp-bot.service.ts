@@ -1,12 +1,12 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
+import { isUUID } from 'class-validator';
 import {
   extractNumberFromText,
-  filterAvailableTimeSlots,
   formatTimeSlotsForMessage,
-  generateTimeSlots,
   getTimeSlotByIndex,
+  toDateKey,
 } from '../../utils/helpers/schedule.helpers';
 import { getUserFullName } from '../../utils/helpers/user.helpers';
 import {
@@ -137,11 +137,11 @@ export class WhatsappBotService {
 
       await this.cacheManager.set(
         `whatsapp:session:${from}:service`,
-        JSON.stringify({
+        {
           id: service.id,
           name: service.name,
           duration: service.duration,
-        }),
+        },
         SESSION_TTL_MS,
       );
 
@@ -197,11 +197,13 @@ export class WhatsappBotService {
   }
 
   private async handleStoreMemberState(from: string, text: string) {
-    const storeMember =
-      await this.storeMemberService.findStoreMemberWithSchedules(
-        this.config.store.id,
-        text,
-      );
+    // Texto livre nesta etapa não é um id: o Postgres recusaria a consulta
+    const storeMember = isUUID(text)
+      ? await this.storeMemberService.findStoreMemberWithSchedules(
+          this.config.store.id,
+          text,
+        )
+      : null;
 
     if (!storeMember) {
       return await this.whatsappService.sendText(
@@ -214,15 +216,13 @@ export class WhatsappBotService {
 
     await this.cacheManager.set(
       `whatsapp:session:${from}:storeMember`,
-      JSON.stringify({
+         {
         id: storeMember.id,
         user: {
           firstName: storeMember.user.firstName,
           lastName: storeMember.user.lastName,
         },
-        blockedTimes: storeMember.blockedTimes,
-        schedules: storeMember.schedules,
-      }),
+      },
       SESSION_TTL_MS,
     );
 
@@ -253,52 +253,52 @@ export class WhatsappBotService {
       return;
     }
 
+    const service = await this.cacheManager.get<Service>(
+      `whatsapp:session:${from}:service`,
+    );
+    const storeMember = await this.cacheManager.get<StoreMember>(
+      `whatsapp:session:${from}:storeMember`,
+    );
+
+    if (!service || !storeMember) {
+      return await this.restartSession(
+        from,
+        'Sua sessão expirou. Por favor, reinicie o processo.',
+      );
+    }
+
     await this.cacheManager.set(
       `whatsapp:session:${from}:date`,
       result.date.toISOString(),
       SESSION_TTL_MS,
     );
 
-    // Busca storeMember selecionado do Redis (já contém schedules e blockedTimes)
-    const storeMember = await this.cacheManager.get<StoreMember>(
-      `whatsapp:session:${from}:storeMember`,
+    // Mesma regra do site: considera duração, almoço, fechamento e horários já passados
+    const slots = await this.scheduleService.getAvailability(
+      this.config.store.id,
+      {
+        date: toDateKey(result.date),
+        serviceIds: service.id,
+        memberId: storeMember.id,
+      },
     );
+    const availableSlots = slots
+      .filter((slot) => slot.available)
+      .map((slot) => slot.time);
 
-    if (!storeMember) {
-      await this.whatsappService.sendText(
+    if (availableSlots.length === 0) {
+      return await this.whatsappService.sendText(
         this.config.phoneNumberId,
         from,
-        'Erro ao recuperar profissional. Por favor, reinicie o processo.',
+        'Não há horários disponíveis nessa data.\n\nPor favor, escolha uma nova data no formato DD/MM/AAAA',
         this.config.accessToken,
       );
-
-      await this.clearSession(from);
-
-      await this.sendMenu(from);
-
-      return;
     }
-
-    // Gera todos os slots possíveis
-    const allSlots = generateTimeSlots(
-      this.config.store.openTime,
-      this.config.store.closeTime,
-      this.config.store.lunchStartTime,
-      this.config.store.lunchEndTime,
-    );
-
-    // Filtra slots disponíveis usando dados do Redis
-    const availableSlots = filterAvailableTimeSlots(
-      allSlots,
-      result.date,
-      storeMember.blockedTimes || [],
-      storeMember.schedules || [],
-    );
 
     // Armazena os slots disponíveis no Redis para validação posterior
     await this.cacheManager.set(
       `whatsapp:session:${from}:availableSlots`,
-      JSON.stringify(availableSlots),
+      availableSlots,
       SESSION_TTL_MS,
     );
 
@@ -323,19 +323,11 @@ export class WhatsappBotService {
       `whatsapp:session:${from}:availableSlots`,
     );
 
-    if (availableSlots.length === 0) {
-      await this.whatsappService.sendText(
-        this.config.phoneNumberId,
+    if (!availableSlots?.length) {
+      return await this.restartSession(
         from,
         'Erro ao recuperar horários disponíveis. Por favor, reinicie o processo.',
-        this.config.accessToken,
       );
-
-      await this.clearSession(from);
-
-      await this.sendMenu(from);
-
-      return;
     }
 
     // Extrai número do texto (permite "1", "número 1", "quero o 3", etc)
@@ -363,6 +355,24 @@ export class WhatsappBotService {
       return;
     }
 
+    // Recupera informações para resumo
+    const service = await this.cacheManager.get<Service>(
+      `whatsapp:session:${from}:service`,
+    );
+    const storeMember = await this.cacheManager.get<StoreMember>(
+      `whatsapp:session:${from}:storeMember`,
+    );
+    const dateData = await this.cacheManager.get<string>(
+      `whatsapp:session:${from}:date`,
+    );
+
+    if (!service || !storeMember || !dateData) {
+      return await this.restartSession(
+        from,
+        'Sua sessão expirou. Por favor, reinicie o processo.',
+      );
+    }
+
     // Salva o horário no Redis
     await this.cacheManager.set(
       `whatsapp:session:${from}:time`,
@@ -376,33 +386,18 @@ export class WhatsappBotService {
       SESSION_TTL_MS,
     );
 
-    // Recupera informações para resumo
-    const service = await this.cacheManager.get<Service>(
-      `whatsapp:session:${from}:service`,
-    );
-    const storeMember = await this.cacheManager.get<StoreMember>(
-      `whatsapp:session:${from}:storeMember`,
-    );
-    const dateData = await this.cacheManager.get<string>(
-      `whatsapp:session:${from}:date`,
-    );
-
-    const date = dateData ? new Date(dateData) : null;
-
     // Formata a data para exibição
-    const formattedDate = date
-      ? date.toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        })
-      : '';
+    const formattedDate = new Date(dateData).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
 
     // Envia resumo com botões de confirmação
     const summary =
       `📋 *Resumo do Agendamento*\n\n` +
-      `📌 Serviço: ${service?.name || 'N/A'}\n` +
-      `👤 Profissional: ${getUserFullName(storeMember?.user)}\n` +
+      `📌 Serviço: ${service.name}\n` +
+      `👤 Profissional: ${getUserFullName(storeMember.user)}\n` +
       `📅 Data: ${formattedDate}\n` +
       `🕐 Horário: ${selectedTime}\n\n` +
       `Confirmar agendamento?`;
@@ -548,6 +543,19 @@ export class WhatsappBotService {
     void this.cacheManager.del(`whatsapp:session:${from}:date`);
     void this.cacheManager.del(`whatsapp:session:${from}:time`);
     void this.cacheManager.del(`whatsapp:session:${from}:availableSlots`);
+  }
+
+  private async restartSession(from: string, message: string) {
+    await this.whatsappService.sendText(
+      this.config.phoneNumberId,
+      from,
+      message,
+      this.config.accessToken,
+    );
+
+    await this.clearSession(from);
+
+    await this.sendMenu(from);
   }
 
   private async sendMenu(from: string) {
