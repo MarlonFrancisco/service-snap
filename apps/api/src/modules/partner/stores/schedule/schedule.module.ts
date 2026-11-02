@@ -8,10 +8,10 @@ import { NotificationsHistoryModule } from '../notifications/history/history.mod
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
+import { ScheduleNotificationsService } from './schedule-notifications.service';
 import { ScheduleController } from './schedule.controller';
 import { Schedule } from './schedule.entity';
 import { ScheduleService } from './schedule.service';
-import { ScheduleSubscriber } from './schedule.subscriber';
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { ScheduleSubscriber } from './schedule.subscriber';
     NotificationModule,
   ],
   controllers: [ScheduleController],
-  providers: [ScheduleService, ScheduleSubscriber],
+  providers: [ScheduleService, ScheduleNotificationsService],
   exports: [ScheduleService],
 })
 export class ScheduleModule {}

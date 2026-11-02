@@ -138,6 +138,12 @@ describe('store-scoped services with an id from another store', () => {
         {} as never,
         {} as never,
         { upsert: vi.fn().mockResolvedValue({ id: 'user-1' }) } as never,
+        {
+          load: vi.fn().mockResolvedValue({ status: 'scheduled' }),
+          notifyBookingCreated: vi.fn(),
+          notifyCancellation: vi.fn(),
+          notifyUpdate: vi.fn(),
+        } as never,
       );
 
     it('update filters by store and returns 404', async () => {
@@ -148,9 +154,9 @@ describe('store-scoped services with an id from another store', () => {
     });
 
     it('delete filters by store and returns 404', async () => {
-      await expect(create().delete(STORE, 'foreign-id')).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(
+        create().delete(STORE, 'foreign-id', 'user-1'),
+      ).rejects.toBeInstanceOf(NotFoundException);
       expect(repository.update).toHaveBeenCalledWith(scoped, {
         status: 'cancelled',
       });
@@ -159,9 +165,9 @@ describe('store-scoped services with an id from another store', () => {
     it('delete cancels a schedule from the URL store', async () => {
       repository.update.mockResolvedValue({ affected: 1 });
 
-      await expect(create().delete(STORE, 'schedule-1')).resolves.toEqual({
-        id: 'schedule-1',
-      });
+      await expect(
+        create().delete(STORE, 'schedule-1', 'user-1'),
+      ).resolves.toEqual({ id: 'schedule-1' });
     });
 
     it('create ignores an id sent in the body', async () => {

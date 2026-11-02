@@ -53,6 +53,7 @@ const makeService = () => {
     storeMemberRepository as never,
     blockedTimeRepository as never,
     usersService as never,
+    { notifyBookingCreated: vi.fn() } as never,
   );
 
   return { service, manager, usersService, serviceRepository, storeRepository };

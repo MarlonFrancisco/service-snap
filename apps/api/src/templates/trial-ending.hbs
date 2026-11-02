@@ -1,0 +1,15 @@
+<h1 style='margin: 0; font-size: 28px; line-height: 32px; font-weight: bold; color: #0b0b0f;'>Seu teste termina em {{daysLeftLabel}}</h1>
+<p style='margin: 12px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>Depois disso, sua assinatura continua sem você precisar fazer nada.</p>
+<table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='margin-top: 20px; background-color: #f7f6fa; border-radius: 14px; font-size: 14px;'>
+  <tr><td style='padding: 18px 20px 5px 20px; color: #5f5c6e;'>Plano</td><td align='right' style='padding: 18px 20px 5px 20px; font-weight: bold;'>{{planName}}</td></tr>
+  <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Primeira cobrança</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>{{chargeDate}}</td></tr>
+  <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Valor</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>{{amount}}</td></tr>
+  {{#if cardLast4}}
+    <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Forma de pagamento</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>Cartão final {{cardLast4}}</td></tr>
+  {{/if}}
+  <tr><td colspan='2' style='padding: 0 0 13px 0; font-size: 0; line-height: 0;'>&nbsp;</td></tr>
+</table>
+<p style='margin: 24px 0 0 0;'>
+  <a href='{{manageLink}}' target='_blank' class='btn' style='display: inline-block; margin: 0 10px 10px 0; padding: 15px 24px; border-radius: 999px; background-color: #0b0b0f; color: #ffffff; font-size: 14px; font-weight: bold; text-decoration: none;'>Ver minha assinatura</a>
+</p>
+<p style='margin: 12px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>Não quer continuar? Cancele até {{chargeDate}} e nada será cobrado.</p>

@@ -8,6 +8,7 @@ import {
   generateTimeSlots,
   getTimeSlotByIndex,
 } from '../../utils/helpers/schedule.helpers';
+import { getUserFullName } from '../../utils/helpers/user.helpers';
 import {
   mapCategoryToWhatsappInteractiveList,
   mapStoreMemberToWhatsappInteractiveList,
@@ -401,7 +402,7 @@ export class WhatsappBotService {
     const summary =
       `📋 *Resumo do Agendamento*\n\n` +
       `📌 Serviço: ${service?.name || 'N/A'}\n` +
-      `👤 Profissional: ${storeMember?.user.firstName} ${storeMember?.user.lastName}\n` +
+      `👤 Profissional: ${getUserFullName(storeMember?.user)}\n` +
       `📅 Data: ${formattedDate}\n` +
       `🕐 Horário: ${selectedTime}\n\n` +
       `Confirmar agendamento?`;
@@ -514,7 +515,7 @@ export class WhatsappBotService {
         from,
         `✅ *Agendamento Confirmado!*\n\n` +
           `📌 Serviço: ${service.name}\n` +
-          `👤 Profissional: ${storeMember.user.firstName} ${storeMember.user.lastName}\n` +
+          `👤 Profissional: ${getUserFullName(storeMember.user)}\n` +
           `📅 Data: ${formattedDate}\n` +
           `🕐 Horário: ${time}\n\n` +
           `Aguardamos você! 😊`,

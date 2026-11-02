@@ -1,5 +1,6 @@
 import type { Schedule } from '../../modules/partner/stores/schedule/schedule.entity';
 import type { BlockedTime } from '../../modules/partner/stores/store-member/blocked-time/blocked-time.entity';
+import type { TCalendarEvent } from './schedule.types';
 
 export const calculateEndTime = (
   startTime: string,
@@ -284,6 +285,37 @@ export function toDateKey(date: Date | string): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
+}
+
+/** "Quarta-feira, 4 de novembro": a data não tem fuso, então fixa UTC nos dois lados. */
+export function formatLongDate(date: Date | string): string {
+  const label = new Intl.DateTimeFormat('pt-BR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'UTC',
+  }).format(new Date(`${toDateKey(date)}T00:00:00Z`));
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+export const formatScheduleMoment = (
+  schedule: Pick<Schedule, 'date' | 'startTime'>,
+): string => `${formatLongDate(schedule.date)} às ${schedule.startTime}`;
+
+const compactDateTime = (date: Date | string, time: string) =>
+  `${toDateKey(date).replace(/-/g, '')}T${time.replace(':', '')}00`;
+
+export function buildGoogleCalendarLink(event: TCalendarEvent): string {
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates: `${compactDateTime(event.date, event.startTime)}/${compactDateTime(event.date, event.endTime)}`,
+    ctz: event.timezone,
+    location: event.location,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params}`;
 }
 
 /**

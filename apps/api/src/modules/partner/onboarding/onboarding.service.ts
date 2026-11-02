@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
+import { getUserFullName } from '../../../utils/helpers/user.helpers';
 import { Subscription } from '../../subscription/subscription.entity';
 import { UsersService } from '../../users/users.service';
 import { Category } from '../stores/category/category.entity';
@@ -137,9 +138,7 @@ export class OnboardingService {
       members: members.map((member) => ({
         id: member.id,
         isOwner: member.user?.id === userId,
-        name: [member.user?.firstName, member.user?.lastName]
-          .filter(Boolean)
-          .join(' '),
+        name: getUserFullName(member.user),
         email: member.user?.email ?? null,
         serviceIds: member.services.map((service) => service.id),
       })),

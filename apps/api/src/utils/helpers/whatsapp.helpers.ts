@@ -1,5 +1,6 @@
 import type { Category } from '../../modules/partner/stores/category/category.entity';
 import type { StoreMember } from '../../modules/partner/stores/store-member/store-member.entity';
+import { getUserFullName } from './user.helpers';
 
 export const mapCategoryToWhatsappInteractiveList = (category: Category) => ({
   title: category.name,
@@ -14,7 +15,7 @@ export const mapStoreMemberToWhatsappInteractiveList = (
   storeMember: StoreMember,
 ) => ({
   id: storeMember.id,
-  title: storeMember.user.firstName + ' ' + storeMember.user.lastName,
+  title: getUserFullName(storeMember.user),
 });
 
 // Date validation helpers

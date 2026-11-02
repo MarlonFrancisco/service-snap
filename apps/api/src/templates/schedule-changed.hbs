@@ -1,0 +1,29 @@
+<span style='display: inline-block; margin-bottom: 12px; padding: 4px 11px; border-radius: 999px; background-color: #fff1e0; color: #6e3b00; font-size: 12px; font-weight: bold;'>Alterado</span>
+<h1 style='margin: 0; font-size: 28px; line-height: 32px; font-weight: bold; color: #0b0b0f;'>{{title}}</h1>
+<p style='margin: 12px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>Olá, {{customerName}}. {{storeName}} alterou seu agendamento. Confira como ficou.</p>
+{{#if previousSchedule}}
+  <table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='margin-top: 20px; border: 1px solid #e3e1ea; border-radius: 14px; font-size: 14px; color: #5f5c6e;'>
+    <tr>
+      <td style='padding: 14px 20px;'>Antes</td>
+      <td align='right' style='padding: 14px 20px; font-weight: bold;'><s>{{previousSchedule}}</s></td>
+    </tr>
+  </table>
+{{/if}}
+<table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='margin-top: 10px; background-color: #0b0b0f; border-radius: 14px; color: #ffffff;'>
+  <tr>
+    <td style='padding: 18px 20px; font-size: 15px; font-weight: bold;'>{{scheduleDay}}</td>
+    <td align='right' style='padding: 18px 20px; font-size: 26px; font-weight: bold;'>{{scheduleTime}}</td>
+  </tr>
+</table>
+<table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='margin-top: 10px; background-color: #f7f6fa; border-radius: 14px; font-size: 14px;'>
+  <tr><td style='padding: 18px 20px 5px 20px; color: #5f5c6e;'>Serviço</td><td align='right' style='padding: 18px 20px 5px 20px; font-weight: bold;'>{{serviceName}}</td></tr>
+  <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Profissional</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>{{professionalName}}</td></tr>
+  <tr><td style='padding: 5px 20px 18px 20px; color: #5f5c6e;'>Local</td><td align='right' style='padding: 5px 20px 18px 20px; font-weight: bold;'>{{storeAddress}}</td></tr>
+</table>
+<p style='margin: 24px 0 0 0;'>
+  <a href='{{calendarLink}}' target='_blank' class='btn' style='display: inline-block; margin: 0 10px 10px 0; padding: 15px 24px; border-radius: 999px; background-color: #0b0b0f; color: #ffffff; font-size: 14px; font-weight: bold; text-decoration: none;'>Adicionar à agenda</a>
+  <a href='{{manageLink}}' target='_blank' class='btn' style='display: inline-block; margin: 0 10px 10px 0; padding: 14px 24px; border: 1px solid #e3e1ea; border-radius: 999px; color: #0b0b0f; font-size: 14px; font-weight: bold; text-decoration: none;'>Gerenciar agendamento</a>
+</p>
+{{#if storePhone}}
+  <p style='margin: 12px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>Esse horário não dá para você? Fale com a loja: {{storePhone}}</p>
+{{/if}}

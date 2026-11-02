@@ -66,7 +66,11 @@ export class ScheduleController {
 
   @Delete(':id')
   @UseGuards(ScheduleCancelGuard)
-  delete(@Param('storeId') storeId: string, @Param('id') id: string) {
-    return this.scheduleService.delete(storeId, id);
+  delete(
+    @Param('storeId') storeId: string,
+    @Param('id') id: string,
+    @CurrentUser('sub') requesterId: string,
+  ) {
+    return this.scheduleService.delete(storeId, id, requesterId);
   }
 }

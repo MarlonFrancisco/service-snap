@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import sharp from 'sharp';
 import type { Repository } from 'typeorm';
 import { generateReferralCode } from '../../utils';
+import { getUserFullName } from '../../utils/helpers/user.helpers';
 import { StorageService } from '../storage/storage.service';
 import { StripeService } from '../stripe';
 import { User } from './user.entity';
@@ -70,7 +71,7 @@ export class UsersService {
   async createStripeCustomer(userData: Partial<User>): Promise<string> {
     const customer = await this.stripeService.customers.create({
       email: userData.email,
-      name: `${userData.firstName} ${userData.lastName}`,
+      name: getUserFullName(userData) || undefined,
       phone: userData.telephone,
     });
     return customer.id;
@@ -79,7 +80,7 @@ export class UsersService {
   async create(userData: Partial<User>): Promise<User> {
     const customer = await this.stripeService.customers.create({
       email: userData.email,
-      name: `${userData.firstName} ${userData.lastName}`,
+      name: getUserFullName(userData) || undefined,
       phone: userData.telephone,
     });
 
@@ -187,7 +188,7 @@ export class UsersService {
 
     await this.stripeService.customers.update(user.paymentCustomerId, {
       email: user.email,
-      name: `${user.firstName} ${user.lastName}`,
+      name: getUserFullName(user) || undefined,
       phone: user.telephone,
     });
 

@@ -25,6 +25,7 @@ import { Store } from '../store.entity';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { CreateSchedulesDto } from './dto/create-schedule.dto';
 import { ScheduleDto } from './dto/schedule.dto';
+import { ScheduleNotificationsService } from './schedule-notifications.service';
 import { Schedule } from './schedule.entity';
 
 /**
@@ -64,6 +65,7 @@ export class ScheduleService {
     @InjectRepository(BlockedTime)
     private readonly blockedTimeRepository: Repository<BlockedTime>,
     private readonly usersService: UsersService,
+    private readonly scheduleNotifications: ScheduleNotificationsService,
   ) {}
 
   async getAvailability(
@@ -154,8 +156,10 @@ export class ScheduleService {
 
   /** Para quem não tem login, como o bot de WhatsApp: o contato vem da conversa. */
   async create(scheduleDto: CreateSchedulesDto): Promise<Schedule[]> {
-    return this.createSchedules(scheduleDto, () =>
-      this.upsertCustomer(scheduleDto.user),
+    return this.createSchedules(
+      scheduleDto,
+      () => this.upsertCustomer(scheduleDto.user),
+      false,
     );
   }
 
@@ -166,10 +170,13 @@ export class ScheduleService {
   ): Promise<Schedule[]> {
     const isStaff = await this.isStoreStaff(scheduleDto.store?.id, requesterId);
 
-    return this.createSchedules(scheduleDto, () =>
-      isStaff
-        ? this.upsertCustomer(scheduleDto.user)
-        : this.usersService.findById(requesterId),
+    return this.createSchedules(
+      scheduleDto,
+      () =>
+        isStaff
+          ? this.upsertCustomer(scheduleDto.user)
+          : this.usersService.findById(requesterId),
+      isStaff,
     );
   }
 
@@ -213,6 +220,7 @@ export class ScheduleService {
   private async createSchedules(
     scheduleDto: CreateSchedulesDto,
     resolveCustomer: () => Promise<User>,
+    createdByStore: boolean,
   ): Promise<Schedule[]> {
     const storeId = scheduleDto.store?.id;
     const store =
@@ -307,10 +315,16 @@ export class ScheduleService {
       },
     );
 
+    const savedIds = savedSchedules.map((schedule) => schedule.id);
     const created = await this.scheduleRepository.find({
-      where: { id: In(savedSchedules.map((schedule) => schedule.id)) },
+      where: { id: In(savedIds) },
       relations: ['storeMember', 'storeMember.user', 'user', 'service'],
     });
+
+    await this.scheduleNotifications.notifyBookingCreated(
+      savedIds,
+      createdByStore,
+    );
 
     return created.map(toScheduleResponse);
   }
@@ -329,6 +343,7 @@ export class ScheduleService {
   }
 
   async update(schedule: ScheduleDto): Promise<Schedule> {
+    const before = await this.scheduleNotifications.load(schedule.id);
     const result = await this.scheduleRepository.update(
       { id: schedule.id, store: { id: schedule.store.id } },
       schedule,
@@ -338,10 +353,20 @@ export class ScheduleService {
       throw new NotFoundException('Schedule not found');
     }
 
+    await this.scheduleNotifications.notifyUpdate(
+      before,
+      await this.scheduleNotifications.load(schedule.id),
+    );
+
     return this.findOne(schedule.id);
   }
 
-  async delete(storeId: string, id: string): Promise<{ id: string }> {
+  async delete(
+    storeId: string,
+    id: string,
+    requesterId: string,
+  ): Promise<{ id: string }> {
+    const schedule = await this.scheduleNotifications.load(id);
     const result = await this.scheduleRepository.update(
       { id, store: { id: storeId } },
       { status: 'cancelled' },
@@ -349,6 +374,14 @@ export class ScheduleService {
 
     if (!result.affected) {
       throw new NotFoundException('Schedule not found');
+    }
+
+    // Repetir o cancelamento não pode reenviar os avisos
+    if (schedule.status !== 'cancelled') {
+      await this.scheduleNotifications.notifyCancellation(
+        schedule,
+        schedule.user?.id === requesterId,
+      );
     }
 
     return { id };

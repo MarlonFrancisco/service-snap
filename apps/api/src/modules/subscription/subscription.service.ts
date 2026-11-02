@@ -24,6 +24,7 @@ import {
   getSubscriptionIdFromInvoice,
   normalizeSubscriptionMetadata,
 } from '../../utils';
+import { formatCurrency } from '../../utils/helpers/format.helpers';
 import { NotificationService } from '../notification';
 import { ScheduleService } from '../partner/stores/schedule/schedule.service';
 import { StoresService } from '../partner/stores/stores.services';
@@ -548,6 +549,55 @@ export class SubscriptionService {
     );
   }
 
+  /** A Stripe avisa 3 dias antes do fim do teste. */
+  async handleTrialWillEnd({ id }: Stripe.Subscription) {
+    const subscription = await this.syncSubscription(id);
+
+    if (!subscription) {
+      return;
+    }
+
+    const stripeSubscription = await this.stripeService.subscriptions.retrieve(
+      id,
+      { expand: ['default_payment_method'] },
+    );
+    const { trial_end: trialEnd, default_payment_method: paymentMethod } =
+      stripeSubscription;
+
+    // Sem próxima cobrança, o aviso prometeria algo que não vai acontecer
+    if (
+      stripeSubscription.status !== 'trialing' ||
+      stripeSubscription.cancel_at_period_end ||
+      !trialEnd
+    ) {
+      return;
+    }
+
+    const [preview, product] = await Promise.all([
+      // A prévia já considera cupons, que o preço de tabela não mostra
+      this.stripeService.invoices.createPreview({ subscription: id }),
+      this.stripeService.products.retrieve(subscription.productId),
+    ]);
+    const daysLeft = Math.max(
+      1,
+      Math.ceil((trialEnd * 1000 - Date.now()) / (24 * 60 * 60 * 1000)),
+    );
+
+    await this.notificationService.trialEnding(subscription.user.email, {
+      planName: product.name,
+      chargeDate: new Date(trialEnd * 1000).toLocaleDateString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+      }),
+      amount: formatCurrency(preview.amount_due / 100, preview.currency),
+      cardLast4:
+        typeof paymentMethod === 'object'
+          ? paymentMethod?.card?.last4
+          : undefined,
+      daysLeftLabel: daysLeft === 1 ? '1 dia' : `${daysLeft} dias`,
+      manageLink: `${this.configService.get<string>('FRONTEND_URL')}/partner/plans/me`,
+    });
+  }
+
   async webhook(rawBody: Buffer | undefined, signature: string) {
     const webhookSecret = this.configService.get<string>(
       'STRIPE_WEBHOOK_SECRET',
@@ -610,6 +660,8 @@ export class SubscriptionService {
       'customer.subscription.created': syncFromEvent,
       'customer.subscription.updated': syncFromEvent,
       'customer.subscription.deleted': syncFromEvent,
+      'customer.subscription.trial_will_end': () =>
+        this.handleTrialWillEnd(event.data.object as Stripe.Subscription),
     };
 
     const handler = handlers[event.type];
