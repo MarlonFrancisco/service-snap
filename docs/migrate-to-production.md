@@ -85,6 +85,7 @@ Certifique-se de que os webhooks estão configurados para produção:
    - `customer.subscription.created`
    - `customer.subscription.updated`
    - `customer.subscription.deleted`
+   - `customer.subscription.trial_will_end`
    - `invoice.paid`
    - `invoice.payment_failed`
    - `checkout.session.completed`
