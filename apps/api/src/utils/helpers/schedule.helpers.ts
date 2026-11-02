@@ -21,7 +21,7 @@ export interface TimeSlot {
 /**
  * Converte string de tempo HH:MM em minutos desde meia-noite
  */
-function timeToMinutes(time: string): number {
+export function timeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
 }
@@ -167,7 +167,7 @@ const WEEK_DAYS = [
 /**
  * Data e hora atuais no fuso da loja
  */
-function getStoreNow(timezone: string, now: Date) {
+export function getStoreNow(timezone: string, now: Date) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: timezone,
     year: 'numeric',
@@ -333,38 +333,4 @@ export function hasScheduleConflict(
         timeToMinutes(schedule.endTime) > timeToMinutes(item.startTime),
     ),
   );
-}
-
-/**
- * Formata lista de horários para mensagem do WhatsApp
- */
-export function formatTimeSlotsForMessage(slots: string[]): string {
-  const header = 'Horários disponíveis:\n\n';
-  const times = slots.map((slot, index) => `${index + 1}. ${slot}`).join('\n');
-  const footer = '\n\nDigite o número do horário desejado.';
-
-  return header + times + footer;
-}
-
-/**
- * Extrai o primeiro número de uma string
- * Exemplos: "1" -> 1, "número 1" -> 1, "quero o 3" -> 3
- */
-export function extractNumberFromText(text: string): number | null {
-  const match = text.match(/\d+/);
-  return match ? parseInt(match[0]) : null;
-}
-
-/**
- * Obtém o horário selecionado pelo índice
- */
-export function getTimeSlotByIndex(
-  slots: string[],
-  index: number,
-): string | null {
-  const arrayIndex = index - 1; // Usuário digita 1-based, array é 0-based
-  if (arrayIndex >= 0 && arrayIndex < slots.length) {
-    return slots[arrayIndex];
-  }
-  return null;
 }

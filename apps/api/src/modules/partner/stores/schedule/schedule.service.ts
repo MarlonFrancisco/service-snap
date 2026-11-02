@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
-import { Between, In, Repository } from 'typeorm';
+import { Between, In, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import {
   AvailabilitySlot,
   buildAvailabilitySlots,
@@ -385,6 +385,106 @@ export class ScheduleService {
     }
 
     return { id };
+  }
+
+  /** Próximos atendimentos marcados de um cliente na loja, achado pelo telefone. */
+  async findUpcomingForCustomer(
+    storeId: string,
+    telephone: string,
+    fromDate: string,
+  ): Promise<Schedule[]> {
+    const phone = normalizePhoneNumber(telephone);
+
+    // Sem telefone o filtro some e a busca traria clientes de outras pessoas
+    if (!phone) return [];
+
+    const schedules = await this.scheduleRepository.find({
+      where: {
+        store: { id: storeId },
+        user: { telephone: phone },
+        status: 'scheduled',
+        date: MoreThanOrEqual(fromDate as unknown as Date),
+      },
+      relations: ['service', 'storeMember', 'storeMember.user', 'user'],
+      order: { date: 'ASC', startTime: 'ASC' },
+      take: 20,
+    });
+
+    return schedules.map(toScheduleResponse);
+  }
+
+  /**
+   * Muda dia, horário e profissional de um atendimento marcado. Mesma trava e
+   * checagem de conflito da reserva, sem contar o próprio atendimento.
+   */
+  async reschedule(
+    storeId: string,
+    scheduleId: string,
+    {
+      date,
+      startTime,
+      storeMemberId,
+    }: { date: string; startTime: string; storeMemberId: string },
+  ): Promise<Schedule> {
+    const before = await this.scheduleNotifications.load(scheduleId);
+
+    if (
+      !before ||
+      before.store?.id !== storeId ||
+      before.status !== 'scheduled'
+    ) {
+      throw new NotFoundException('Schedule not found');
+    }
+
+    const memberExists = await this.storeMemberRepository.exists({
+      where: { id: storeMemberId, store: { id: storeId }, isDeleted: false },
+    });
+
+    if (!memberExists) {
+      throw new BadRequestException('Professional not found in this store');
+    }
+
+    const next = {
+      startTime,
+      endTime: calculateEndTime(startTime, before.service?.duration ?? 0),
+    };
+
+    await this.scheduleRepository.manager.transaction(async (manager) => {
+      await manager.findOne(StoreMember, {
+        where: { id: storeMemberId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      const existing = await manager.find(Schedule, {
+        where: {
+          id: Not(scheduleId),
+          storeMember: { id: storeMemberId },
+          date: date as unknown as Date,
+        },
+      });
+
+      if (hasScheduleConflict(existing, [next])) {
+        throw new ConflictException(
+          'Professional already has a schedule at this time',
+        );
+      }
+
+      await manager.update(
+        Schedule,
+        { id: scheduleId },
+        {
+          ...next,
+          date: date as unknown as Date,
+          storeMember: { id: storeMemberId },
+        },
+      );
+    });
+
+    const after = await this.scheduleNotifications.load(scheduleId);
+
+    await this.scheduleNotifications.notifyUpdate(before, after);
+
+    return toScheduleResponse(after);
   }
 
   async getSchedulesByMonth(

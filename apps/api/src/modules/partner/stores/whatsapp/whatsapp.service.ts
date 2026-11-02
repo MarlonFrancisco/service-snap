@@ -183,6 +183,10 @@ export class WhatsappService {
       select: {
         store: {
           id: true,
+          name: true,
+          timezone: true,
+          address: true,
+          city: true,
           businessDays: true,
           openTime: true,
           closeTime: true,

@@ -62,3 +62,60 @@ export interface IWhatsappWebhook {
     }[];
   }[];
 }
+
+export enum BotState {
+  MENU = 'MENU',
+  SELECT_SERVICE = 'SELECT_SERVICE',
+  SELECT_PROFESSIONAL = 'SELECT_PROFESSIONAL',
+  SELECT_DAY = 'SELECT_DAY',
+  SELECT_TIME = 'SELECT_TIME',
+  CONFIRM_BOOKING = 'CONFIRM_BOOKING',
+  MY_APPOINTMENTS = 'MY_APPOINTMENTS',
+  APPOINTMENT_ACTIONS = 'APPOINTMENT_ACTIONS',
+  CONFIRM_CANCEL = 'CONFIRM_CANCEL',
+}
+
+export type TBotCommand = 'menu' | 'exit' | 'back' | 'book' | 'appointments';
+
+/** O que chegou: `reply` é o id da opção tocada; `text`, o que a pessoa vê. */
+export interface IBotInput {
+  reply?: string;
+  text: string;
+  command?: TBotCommand;
+}
+
+export interface IBotSlot {
+  time: string;
+  memberId: string;
+}
+
+export interface IBotPerson {
+  id: string;
+  name: string;
+}
+
+export interface IBotAppointment {
+  id: string;
+  customerId: string;
+  date: string;
+  time: string;
+  service: { id: string; name: string; duration: number; price?: number };
+  professional: IBotPerson;
+}
+
+/** Tudo numa chave só no Redis, para a conversa nunca ficar pela metade. */
+export interface IBotSession {
+  state: BotState;
+  offset?: number;
+  service?: { id: string; name: string; duration: number; price?: number };
+  /** `null` é "qualquer profissional": quem atende sai do horário escolhido. */
+  professionalId?: string | null;
+  professionalSkipped?: boolean;
+  professionals?: IBotPerson[];
+  date?: string;
+  slots?: IBotSlot[];
+  slot?: IBotSlot;
+  appointments?: IBotAppointment[];
+  appointmentId?: string;
+  rescheduleId?: string;
+}

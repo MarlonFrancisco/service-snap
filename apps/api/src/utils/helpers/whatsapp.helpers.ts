@@ -1,31 +1,70 @@
-import type { Category } from '../../modules/partner/stores/category/category.entity';
-import type { StoreMember } from '../../modules/partner/stores/store-member/store-member.entity';
-import { getUserFullName } from './user.helpers';
+/**
+ * Limites da Meta para mensagens interativas. Passar de qualquer um deles faz a
+ * API recusar a mensagem inteira, então todo texto de opção passa por `truncate`.
+ */
+export const WHATSAPP_LIMITS = {
+  listRows: 10,
+  rowTitle: 24,
+  rowDescription: 72,
+  sectionTitle: 24,
+  buttonTitle: 20,
+  header: 60,
+  footer: 60,
+} as const;
 
-export const mapCategoryToWhatsappInteractiveList = (category: Category) => ({
-  title: category.name,
-  rows: category.services.map((service) => ({
-    id: service.id,
-    title: service.name,
-    description: service.description,
-  })),
-});
-
-export const mapStoreMemberToWhatsappInteractiveList = (
-  storeMember: StoreMember,
-) => ({
-  id: storeMember.id,
-  title: getUserFullName(storeMember.user),
-});
-
-// Date validation helpers
-export type DateValidationResult = {
-  isValid: boolean;
-  date?: Date;
-  error?: string;
+export const truncate = (text: string, max: number): string => {
+  const value = (text ?? '').trim();
+  return value.length <= max ? value : `${value.slice(0, max - 1).trimEnd()}…`;
 };
 
-export const DAYS_OF_WEEK = [
+/** Minúsculas e sem acento, para comparar o que a pessoa digitou. */
+export const normalizeText = (text: string): string =>
+  (text ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+/**
+ * Fatia uma lista que cabe em `capacity` linhas. Se sobrar item, a última linha
+ * vira "ver mais", então a página leva um item a menos.
+ */
+export function paginate<T>(items: T[], offset: number, capacity: number) {
+  const start = Math.max(0, Math.min(offset, items.length));
+  const remaining = items.length - start;
+  const hasMore = remaining > capacity;
+  const size = hasMore ? capacity - 1 : remaining;
+
+  return {
+    items: items.slice(start, start + size),
+    hasMore,
+    nextOffset: start + size,
+  };
+}
+
+/** Agrupa linhas em seções na ordem em que cada título aparece. */
+export function groupIntoSections<T>(
+  items: T[],
+  titleOf: (item: T) => string,
+  rowOf: (item: T) => { id: string; title: string; description?: string },
+) {
+  const sections: {
+    title: string;
+    rows: { id: string; title: string; description?: string }[];
+  }[] = [];
+
+  for (const item of items) {
+    const title = truncate(titleOf(item), WHATSAPP_LIMITS.sectionTitle);
+    let section = sections.find((s) => s.title === title);
+
+    if (!section) {
+      section = { title, rows: [] };
+      sections.push(section);
+    }
+
+    section.rows.push(rowOf(item));
+  }
+
+  return sections;
+}
+
+const WEEK_DAYS = [
   'sunday',
   'monday',
   'tuesday',
@@ -35,114 +74,70 @@ export const DAYS_OF_WEEK = [
   'saturday',
 ] as const;
 
-export const DAYS_OF_WEEK_PT = {
-  sunday: 'Domingo',
-  monday: 'Segunda-feira',
-  tuesday: 'Terça-feira',
-  wednesday: 'Quarta-feira',
-  thursday: 'Quinta-feira',
-  friday: 'Sexta-feira',
-  saturday: 'Sábado',
-} as const;
+const SHORT_WEEK_DAYS_PT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-export function parseDateFromText(text: string): DateValidationResult {
-  const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  const match = text.match(dateRegex);
+/** Dia da semana de uma data YYYY-MM-DD, sem depender do fuso do servidor. */
+const weekDayOf = (dateKey: string) =>
+  new Date(`${dateKey}T12:00:00Z`).getUTCDay();
 
-  if (!match) {
-    return {
-      isValid: false,
-      error:
-        'Formato de data inválido. Por favor, use o formato DD/MM/AAAA\n\nExemplo: 25/12/2025',
-    };
-  }
+export const addDays = (dateKey: string, days: number): string => {
+  const date = new Date(`${dateKey}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+};
 
-  const [, day, month, year] = match;
-  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+export const isClosedDay = (
+  dateKey: string,
+  businessDays?: Record<string, boolean>,
+): boolean => businessDays?.[WEEK_DAYS[weekDayOf(dateKey)]] === false;
 
-  // Valida se a data é válida
-  if (
-    date.getDate() !== parseInt(day) ||
-    date.getMonth() !== parseInt(month) - 1 ||
-    date.getFullYear() !== parseInt(year)
-  ) {
-    return {
-      isValid: false,
-      error:
-        'Data inválida. Verifique o dia, mês e ano.\n\nPor favor, digite novamente no formato DD/MM/AAAA',
-    };
-  }
+/** "Qua, 05/11" */
+export const formatShortDate = (dateKey: string): string => {
+  const [, month, day] = dateKey.split('-');
+  return `${SHORT_WEEK_DAYS_PT[weekDayOf(dateKey)]}, ${day}/${month}`;
+};
 
-  return { isValid: true, date };
-}
+/** "Hoje · 8 horários", "Amanhã · 1 horário" ou só a contagem. */
+export const describeDay = (
+  dateKey: string,
+  today: string,
+  slotCount: number,
+): string => {
+  const count = `${slotCount} ${slotCount === 1 ? 'horário' : 'horários'}`;
 
-export function validateFutureDate(date: Date): DateValidationResult {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  if (dateKey === today) return `Hoje · ${count}`;
+  if (dateKey === addDays(today, 1)) return `Amanhã · ${count}`;
+  return count;
+};
 
-  if (date < today) {
-    return {
-      isValid: false,
-      error:
-        'A data deve ser hoje ou uma data futura.\n\nPor favor, escolha uma nova data no formato DD/MM/AAAA',
-    };
-  }
+export const periodOfDay = (time: string): string => {
+  const hour = Number(time.slice(0, 2));
+  if (hour < 12) return '☀️ Manhã';
+  if (hour < 18) return '🌤️ Tarde';
+  return '🌙 Noite';
+};
 
-  return { isValid: true, date };
-}
+/** "30 min", "1h", "1h30" */
+export const formatDuration = (minutes: number): string => {
+  if (!minutes) return '';
+  if (minutes < 60) return `${minutes} min`;
+  const rest = minutes % 60;
+  return `${Math.floor(minutes / 60)}h${rest ? String(rest).padStart(2, '0') : ''}`;
+};
 
-export function validateBusinessDay(
-  date: Date,
-  businessDays?: {
-    monday: boolean;
-    tuesday: boolean;
-    wednesday: boolean;
-    thursday: boolean;
-    friday: boolean;
-    saturday: boolean;
-    sunday: boolean;
-  },
-): DateValidationResult {
-  const dayOfWeek = DAYS_OF_WEEK[date.getDay()];
+/**
+ * Horário digitado em vez de tocado: "14", "14h", "14:30", "14h30".
+ * Devolve HH:MM ou null.
+ */
+export const parseTypedTime = (text: string): string | null => {
+  const match = normalizeText(text).match(
+    /^(\d{1,2})\s*(?:h|:)?\s*(\d{2})?\s*h?$/,
+  );
+  if (!match) return null;
 
-  if (!businessDays || !businessDays[dayOfWeek]) {
-    const availableDays = Object.entries(businessDays || {})
-      .filter(([, isOpen]) => isOpen)
-      .map(([day]) => DAYS_OF_WEEK_PT[day])
-      .join(', ');
+  const hours = Number(match[1]);
+  const minutes = Number(match[2] ?? 0);
+  if (hours > 23 || minutes > 59) return null;
 
-    return {
-      isValid: false,
-      error: `Desculpe, não funcionamos às ${DAYS_OF_WEEK_PT[dayOfWeek]}.\n\nDias disponíveis: ${availableDays}\n\nPor favor, escolha uma nova data no formato DD/MM/AAAA`,
-    };
-  }
-
-  return { isValid: true, date };
-}
-
-export function validateDateForBooking(
-  text: string,
-  businessDays?: {
-    monday: boolean;
-    tuesday: boolean;
-    wednesday: boolean;
-    thursday: boolean;
-    friday: boolean;
-    saturday: boolean;
-    sunday: boolean;
-  },
-): DateValidationResult {
-  // Valida formato e parse
-  const parseResult = parseDateFromText(text);
-  if (!parseResult.isValid) return parseResult;
-
-  // Valida se é data futura
-  const futureResult = validateFutureDate(parseResult.date);
-  if (!futureResult.isValid) return futureResult;
-
-  // Valida dia de funcionamento
-  const businessDayResult = validateBusinessDay(parseResult.date, businessDays);
-  if (!businessDayResult.isValid) return businessDayResult;
-
-  return { isValid: true, date: parseResult.date };
-}
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+};
