@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { StoreSearchSyncService } from '../search-sync/store-search-sync.service';
 import { CategoryDto } from './category.dto';
 import { Category } from './category.entity';
 
@@ -9,11 +10,19 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly storeSearchSync: StoreSearchSyncService,
   ) {}
 
   async create(category: CategoryDto): Promise<Category> {
     // Com `id` no corpo, o save sobrescreveria uma categoria existente
-    return this.categoryRepository.save({ ...category, id: undefined });
+    const created = await this.categoryRepository.save({
+      ...category,
+      id: undefined,
+    });
+
+    await this.storeSearchSync.sync(category.store.id);
+
+    return created;
   }
 
   async findAll(storeId: string): Promise<Category[]> {
@@ -52,6 +61,8 @@ export class CategoryService {
       throw new NotFoundException('Category not found');
     }
 
+    await this.storeSearchSync.sync(category.store.id);
+
     return category;
   }
 
@@ -64,6 +75,8 @@ export class CategoryService {
     if (!result.affected) {
       throw new NotFoundException('Category not found');
     }
+
+    await this.storeSearchSync.sync(storeId);
 
     return { id };
   }

@@ -9,6 +9,7 @@ import { In, MoreThanOrEqual, Repository } from 'typeorm';
 import { Subscription } from '../../../subscription/subscription.entity';
 import { UsersService } from '../../../users/users.service';
 import { Service } from '../category/service/service.entity';
+import { StoreSearchSyncService } from '../search-sync/store-search-sync.service';
 import { Store } from '../store.entity';
 import { CreateStoreMemberDto } from './dto/create-store-member.dto';
 import { UpdateStoreMemberDto } from './dto/update-store-member.dto';
@@ -26,6 +27,7 @@ export class StoreMemberService {
     private readonly storeRepository: Repository<Store>,
     @InjectRepository(Service)
     private readonly serviceRepository: Repository<Service>,
+    private readonly storeSearchSync: StoreSearchSyncService,
   ) {}
 
   async findStoreMember(storeId: string, userId: string): Promise<StoreMember> {
@@ -101,6 +103,8 @@ export class StoreMemberService {
         .add(storeMemberDto.services.map((s) => ({ id: s.id })));
     }
 
+    await this.storeSearchSync.sync(storeId);
+
     return this.storeMemberRepository.findOne({
       where: { id: storeMember.id },
       relations: ['user', 'services', 'store'],
@@ -136,6 +140,8 @@ export class StoreMemberService {
       .of(storeMember)
       .add(services);
 
+    await this.storeSearchSync.sync(storeId);
+
     return storeMember as StoreMember;
   }
 
@@ -166,7 +172,11 @@ export class StoreMemberService {
       storeMember.isActive = storeMemberDto.isActive;
     }
 
-    return this.storeMemberRepository.save(storeMember);
+    const saved = await this.storeMemberRepository.save(storeMember);
+
+    await this.storeSearchSync.sync(storeMemberDto.store.id);
+
+    return saved;
   }
 
   async delete(
@@ -181,6 +191,8 @@ export class StoreMemberService {
     if (!result.affected) {
       throw new NotFoundException('Store member not found');
     }
+
+    await this.storeSearchSync.sync(storeId);
 
     return { id, store: { id: storeId } as Store };
   }

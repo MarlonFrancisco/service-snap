@@ -1,19 +1,14 @@
 import {
   BadRequestException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { FindOptionsSelect, Repository } from 'typeorm';
-import {
-  availableToIndexStore,
-  mountStoreSearchIndex,
-} from '../../../utils/helpers/search.helpers';
-import { SearchService } from '../../search/search.service';
 import { isStoreDraft } from '../onboarding/onboarding.helpers';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { StoreSearchSyncService } from './search-sync/store-search-sync.service';
 import type { StoreMember } from './store-member/store-member.entity';
 import { Store } from './store.entity';
 
@@ -42,12 +37,10 @@ const toPublicStoreMember = ({
 
 @Injectable()
 export class StoresService {
-  private readonly logger = new Logger(StoresService.name);
-
   constructor(
     @InjectRepository(Store)
     private readonly storesRepository: Repository<Store>,
-    private readonly searchService: SearchService,
+    private readonly storeSearchSync: StoreSearchSyncService,
   ) {}
 
   async create(storeDto: CreateStoreDto): Promise<Store> {
@@ -126,45 +119,20 @@ export class StoresService {
 
     await this.storesRepository.update(id, storeDto);
 
-    void this.syncSearchIndex(id);
+    await this.syncSearchIndex(id);
 
     return storeDto;
   }
 
-  /**
-   * Coloca ou tira a loja da busca conforme o estado atual. Nunca rejeita: uma
-   * falha no índice não pode desfazer a ação do parceiro.
-   */
+  /** Ver `StoreSearchSyncService.sync`: nunca rejeita. */
   async syncSearchIndex(id: string): Promise<void> {
-    try {
-      const store = await this.findOne(id, {
-        relations: [
-          'gallery',
-          'storeMembers',
-          'storeMembers.services',
-          'services',
-          'reviews',
-          'owner',
-          'categories',
-          'onboarding',
-        ],
-      });
-
-      if (availableToIndexStore(store)) {
-        const { content, metadata } = mountStoreSearchIndex(store);
-
-        await this.searchService.indexStore(id, content, metadata);
-      } else {
-        await this.searchService.deleteStoreIndex(id);
-      }
-    } catch (error) {
-      this.logger.error(`Failed to sync search index for store ${id}:`, error);
-    }
+    await this.storeSearchSync.sync(id);
   }
 
   async delete(id: string): Promise<void> {
-    void this.searchService.deleteStoreIndex(id);
+    // Só depois do banco: se a exclusão falhar, a loja continua existindo e na busca.
     await this.storesRepository.delete(id);
+    await this.storeSearchSync.remove(id);
   }
 
   async getActiveStores(userId: string): Promise<Store[]> {

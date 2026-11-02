@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { StoreSearchSyncService } from '../../search-sync/store-search-sync.service';
 import { Category } from '../category.entity';
 import { ServiceDto } from './service.dto';
 import { Service } from './service.entity';
@@ -12,13 +13,21 @@ export class ServiceService {
     private readonly serviceRepository: Repository<Service>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    private readonly storeSearchSync: StoreSearchSyncService,
   ) {}
 
   async create(service: ServiceDto): Promise<Service> {
     await this.assertCategoryInStore(service);
 
     // Com `id` no corpo, o save sobrescreveria um serviço existente
-    return this.serviceRepository.save({ ...service, id: undefined });
+    const created = await this.serviceRepository.save({
+      ...service,
+      id: undefined,
+    });
+
+    await this.storeSearchSync.sync(service.store.id);
+
+    return created;
   }
 
   async findAll(storeId: string): Promise<Service[]> {
@@ -55,6 +64,8 @@ export class ServiceService {
       throw new NotFoundException('Service not found');
     }
 
+    await this.storeSearchSync.sync(service.store.id);
+
     return service;
   }
 
@@ -67,6 +78,8 @@ export class ServiceService {
     if (!result.affected) {
       throw new NotFoundException('Service not found');
     }
+
+    await this.storeSearchSync.sync(storeId);
   }
 
   private async assertCategoryInStore(service: ServiceDto): Promise<void> {

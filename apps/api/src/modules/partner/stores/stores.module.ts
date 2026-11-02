@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../auth';
-import { SearchModule } from '../../search/search.module';
 import { CategoryModule } from './category';
 import { GalleryModule } from './gallery';
 import { StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard } from './guards';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReviewModule } from './review';
+import { StoreSearchSyncModule } from './search-sync/store-search-sync.module';
 import { ScheduleModule } from './schedule';
 import { BlockedTimeModule } from './store-member/blocked-time/blocked-time.module';
 import { StoreMemberModule } from './store-member/store-member.module';
@@ -25,7 +25,7 @@ import { StoresService } from './stores.services';
     ScheduleModule,
     NotificationsModule,
     ReviewModule,
-    SearchModule,
+    StoreSearchSyncModule,
   ],
   controllers: [StoresController],
   providers: [StoresService, StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard],

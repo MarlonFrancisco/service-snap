@@ -16,16 +16,20 @@ const scoped = { id: 'foreign-id', store: { id: STORE } };
 const createRepository = () => ({
   update: vi.fn().mockResolvedValue({ affected: 0 }),
   delete: vi.fn().mockResolvedValue({ affected: 0 }),
-  save: vi.fn().mockImplementation(async (value) =>
-    Array.isArray(value)
-      ? value.map((item) => ({ ...item, id: 'new' }))
-      : { ...value, id: 'new' },
-  ),
+  save: vi
+    .fn()
+    .mockImplementation(async (value) =>
+      Array.isArray(value)
+        ? value.map((item) => ({ ...item, id: 'new' }))
+        : { ...value, id: 'new' },
+    ),
   create: vi.fn().mockImplementation((value) => value),
   find: vi.fn().mockResolvedValue([]),
   findOne: vi.fn().mockResolvedValue(null),
   exists: vi.fn().mockResolvedValue(true),
 });
+
+const storeSearchSync = { sync: vi.fn(), remove: vi.fn() };
 
 describe('store-scoped services with an id from another store', () => {
   let repository: ReturnType<typeof createRepository>;
@@ -37,12 +41,13 @@ describe('store-scoped services with an id from another store', () => {
   });
 
   describe('CategoryService', () => {
-    const create = () => new CategoryService(repository as never);
+    const create = () =>
+      new CategoryService(repository as never, storeSearchSync as never);
 
     it('findOne filters by store and returns 404', async () => {
-      await expect(create().findOne(STORE, 'foreign-id')).rejects.toBeInstanceOf(
-        NotFoundException,
-      );
+      await expect(
+        create().findOne(STORE, 'foreign-id'),
+      ).rejects.toBeInstanceOf(NotFoundException);
       expect(repository.findOne.mock.calls[0][0].where).toEqual(scoped);
     });
 
@@ -68,7 +73,11 @@ describe('store-scoped services with an id from another store', () => {
 
   describe('ServiceService', () => {
     const create = () =>
-      new ServiceService(repository as never, related as never);
+      new ServiceService(
+        repository as never,
+        related as never,
+        storeSearchSync as never,
+      );
     const dto = { ...scoped, category: { id: 'category-1' } } as never;
 
     it('findOneInStore filters by store and returns 404', async () => {
@@ -176,6 +185,9 @@ describe('store-scoped services with an id from another store', () => {
         repository as never,
         related as never,
         {} as never,
+        related as never,
+        related as never,
+        storeSearchSync as never,
       );
 
     it('update filters by store and returns 404', async () => {

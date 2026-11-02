@@ -9,17 +9,14 @@ const makeService = () => {
     findOne: vi.fn(),
     update: vi.fn(),
   };
-  const searchService = {
-    indexStore: vi.fn(),
-    deleteStoreIndex: vi.fn(),
-  };
+  const storeSearchSync = { sync: vi.fn(), remove: vi.fn() };
 
   const service = new StoresService(
     storesRepository as never,
-    searchService as never,
+    storeSearchSync as never,
   );
 
-  return { service, storesRepository, searchService };
+  return { service, storesRepository, storeSearchSync };
 };
 
 describe('StoresService', () => {
@@ -79,17 +76,32 @@ describe('StoresService', () => {
     });
   });
 
-  describe('syncSearchIndex', () => {
-    it('never rejects when the index is down', async () => {
-      ctx.storesRepository.findOne.mockResolvedValue({
-        id: STORE_ID,
-        isActive: false,
-      });
-      ctx.searchService.deleteStoreIndex.mockRejectedValue(new Error('down'));
+  describe('search index', () => {
+    it('resyncs the store after an update', async () => {
+      await ctx.service.update(STORE_ID, { name: 'Novo nome' } as never);
 
-      await expect(
-        ctx.service.syncSearchIndex(STORE_ID),
-      ).resolves.toBeUndefined();
+      expect(ctx.storeSearchSync.sync).toHaveBeenCalledWith(STORE_ID);
+    });
+
+    it('removes the store from the index only after deleting it', async () => {
+      const order: string[] = [];
+      ctx.storesRepository.delete = vi.fn(async () => {
+        order.push('db');
+      });
+      ctx.storeSearchSync.remove.mockImplementation(async () => {
+        order.push('index');
+      });
+
+      await ctx.service.delete(STORE_ID);
+
+      expect(order).toEqual(['db', 'index']);
+    });
+
+    it('keeps the store in the index when the delete fails', async () => {
+      ctx.storesRepository.delete = vi.fn().mockRejectedValue(new Error('fk'));
+
+      await expect(ctx.service.delete(STORE_ID)).rejects.toThrow('fk');
+      expect(ctx.storeSearchSync.remove).not.toHaveBeenCalled();
     });
   });
 });
