@@ -23,9 +23,6 @@ export interface IStoreSearchListItem
 }
 
 export interface ISearchStore {
-  isMobileSearchOpen: boolean;
-  setIsMobileSearchOpen: (isOpen: boolean) => void;
-
   mobileDrawerOpen: boolean;
   setMobileDrawerOpen: (isOpen: boolean) => void;
 

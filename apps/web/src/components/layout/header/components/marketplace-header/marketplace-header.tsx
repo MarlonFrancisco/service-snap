@@ -1,7 +1,6 @@
 'use client';
 
 import { LocaleDialog } from '@/components/layout/locale-dialog';
-import useSearchStore from '@/store/search/search.store';
 import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui';
 import { Menu, Search, UserRound } from 'lucide-react';
@@ -21,21 +20,15 @@ import {
 
 type TMarketplaceHeaderConfig = {
   showSearchBar?: boolean;
-  /** Para páginas com busca própria no mobile. */
-  hideMobileSearchIcon?: boolean;
   /** Atalho para a busca da própria página, visível quando ela sai da tela. */
   compactSearch?: boolean;
 };
 
 export const MarketplaceHeader = ({
   showSearchBar = false,
-  hideMobileSearchIcon = false,
   compactSearch = false,
 }: TMarketplaceHeaderConfig = {}) => {
   const [isLocaleOpen, setIsLocaleOpen] = useState(false);
-  const setIsMobileSearchOpen = useSearchStore(
-    (state) => state.setIsMobileSearchOpen,
-  );
   const {
     menuRef,
     isMenuOpen,
@@ -106,16 +99,6 @@ export const MarketplaceHeader = ({
             >
               {partnerLabel}
             </Link>
-            {showSearchBar && !hideMobileSearchIcon ? (
-              <button
-                type="button"
-                aria-label="Abrir busca"
-                onClick={() => setIsMobileSearchOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-full text-[#2B2B2B] transition-colors hover:bg-[#e8e7f1] md:hidden"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-            ) : null}
             <div className="relative" ref={menuRef}>
               <button
                 type="button"

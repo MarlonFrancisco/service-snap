@@ -1,31 +1,5 @@
 import { ISearchResult } from '@/service/search';
-import { ISearchFilters } from '@/types/layout/search.types';
 import { formatStorePrice } from './price.helper';
-
-export const buildSearchUrl = (searchFilters: ISearchFilters) => {
-  const query =
-    searchFilters.query?.trim() || searchFilters.location?.trim() || '';
-
-  if (!query) {
-    return null;
-  }
-
-  const params = new URLSearchParams({ query });
-
-  if (searchFilters.location?.trim()) {
-    params.set('location', searchFilters.location.trim());
-  }
-
-  if (searchFilters.categories?.length) {
-    params.set('category', searchFilters.categories[0]!);
-  }
-
-  if (searchFilters.date) {
-    params.set('date', searchFilters.date.toISOString());
-  }
-
-  return `/booking?${params.toString()}`;
-};
 
 export const isSearchPage = (pathname: string) => {
   return pathname === '/booking';

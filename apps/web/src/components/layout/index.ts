@@ -10,6 +10,5 @@ export {
 } from './header';
 export type { THeaderConfig } from './header';
 export * from './locale-dialog';
-export * from './mobile-search-overlay';
 export * from './mobile-tab-bar';
 export * from './toaster';

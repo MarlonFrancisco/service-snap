@@ -32,7 +32,7 @@ export function SearchResults() {
   const showResults = !isPending && hasResults;
 
   return (
-    <Header showSearchBar hideMobileSearchIcon>
+    <Header showSearchBar>
       {/* A altura mínima mantém a barra inferior do mobile no fim da tela. */}
       <div className="flex min-h-[calc(100dvh-5rem)] flex-col md:min-h-[calc(100dvh-6rem)]">
         <MobileSearchPill />

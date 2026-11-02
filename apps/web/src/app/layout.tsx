@@ -1,5 +1,5 @@
 import { AuthModal } from '@/components/features/auth';
-import { Config, MobileSearchOverlay, Toaster } from '@/components/layout';
+import { Config, Toaster } from '@/components/layout';
 import { ReviewsModal } from '@/components/layout/reviews-modal';
 import { QueryProvider, UserIdentificationProvider } from '@/providers';
 import { UsersService } from '@/service/users';
@@ -205,7 +205,6 @@ export default async function RootLayout({
               <AuthModal />
               <Toaster />
               <ReviewsModal />
-              <MobileSearchOverlay />
             </HydrationBoundary>
           </QueryProvider>
         </UserIdentificationProvider>
