@@ -33,7 +33,13 @@ export const Partner = ({ children }: TPartnerConfig) => {
     : 'Recolher menu';
 
   return (
-    <div className={cn(PARTNER_SHELL_CLASS, 'flex h-dvh w-full overflow-hidden')}>
+    // Abaixo de lg o documento rola: no iOS o dvh não acompanha a barra do navegador
+    <div
+      className={cn(
+        PARTNER_SHELL_CLASS,
+        'flex min-h-dvh w-full lg:h-dvh lg:overflow-hidden',
+      )}
+    >
       <AdminSidebar isCollapsed={isSidebarCollapsed} className="hidden lg:flex" />
 
       <Sheet open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
@@ -106,7 +112,7 @@ export const Partner = ({ children }: TPartnerConfig) => {
           {showStoreSelector && <StoreSelector />}
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto">
+        <main className="flex-1 pb-[env(safe-area-inset-bottom,0px)] lg:min-h-0 lg:overflow-y-auto lg:pb-0">
           <div className="grid gap-3.5 px-5 pt-5 md:hidden">
             <h1 className={PARTNER_PAGE_TITLE_CLASS}>{currentModule.title}</h1>
             {showStoreSelector && <StoreSelector layout="block" />}
