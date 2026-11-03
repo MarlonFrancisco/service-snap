@@ -1,10 +1,17 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { FindOptionsSelect, Repository } from 'typeorm';
+import {
+  type FindOptionsSelect,
+  In,
+  MoreThanOrEqual,
+  type Repository,
+} from 'typeorm';
+import { Subscription } from '../../subscription/subscription.entity';
 import { isStoreDraft } from '../onboarding/onboarding.helpers';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
@@ -41,10 +48,19 @@ export class StoresService {
     @InjectRepository(Store)
     private readonly storesRepository: Repository<Store>,
     private readonly storeSearchSync: StoreSearchSyncService,
+    @InjectRepository(Subscription)
+    private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
 
-  async create(storeDto: CreateStoreDto): Promise<Store> {
-    const store = this.storesRepository.create(storeDto);
+  async create(storeDto: CreateStoreDto, ownerId: string): Promise<Store> {
+    if (storeDto.isActive) {
+      await this.assertWithinStoreLimit(ownerId);
+    }
+
+    const store = this.storesRepository.create({
+      ...storeDto,
+      owner: { id: ownerId },
+    });
     const savedStore = await this.storesRepository.save(store);
 
     return {
@@ -106,7 +122,9 @@ export class StoresService {
 
   async update(id: string, storeDto: UpdateStoreDto): Promise<UpdateStoreDto> {
     if (storeDto.isActive) {
-      const store = await this.findOne(id, { relations: ['onboarding'] });
+      const store = await this.findOne(id, {
+        relations: ['onboarding', 'owner'],
+      });
 
       // Só `OnboardingService.complete` publica um rascunho, depois de checar
       // serviço e profissional.
@@ -115,6 +133,10 @@ export class StoresService {
           'Conclua a preparação do espaço antes de ativá-lo',
         );
       }
+
+      if (!store.isActive) {
+        await this.assertWithinStoreLimit(store.owner.id);
+      }
     }
 
     await this.storesRepository.update(id, storeDto);
@@ -122,6 +144,36 @@ export class StoresService {
     await this.syncSearchIndex(id);
 
     return storeDto;
+  }
+
+  /**
+   * Conta só lojas ativas, como o painel. `UNIT_LIMIT` 0 (ou "UNLIMITED", que vira
+   * nulo) é ilimitado, igual a `StoreMemberService.getProfessionalUsage`.
+   */
+  private async assertWithinStoreLimit(ownerId: string) {
+    const subscription = await this.subscriptionRepository.findOne({
+      where: {
+        user: { id: ownerId },
+        status: In(['active', 'paid', 'trialing']),
+        currentPeriodEnd: MoreThanOrEqual(new Date()),
+      },
+    });
+
+    const limit = subscription?.features?.UNIT_LIMIT ?? 0;
+
+    if (!limit) {
+      return;
+    }
+
+    const count = await this.storesRepository.count({
+      where: { owner: { id: ownerId }, isActive: true, isDeleted: false },
+    });
+
+    if (count >= limit) {
+      throw new ForbiddenException(
+        `Limite de lojas do plano atingido (${count}/${limit}). Faça upgrade para ativar mais.`,
+      );
+    }
   }
 
   /** Ver `StoreSearchSyncService.sync`: nunca rejeita. */

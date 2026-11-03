@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../auth';
+import { Subscription } from '../../subscription/subscription.entity';
 import { CategoryModule } from './category';
 import { GalleryModule } from './gallery';
 import { StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard } from './guards';
@@ -16,7 +17,7 @@ import { StoresService } from './stores.services';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Store]),
+    TypeOrmModule.forFeature([Store, Subscription]),
     AuthModule,
     StoreMemberModule,
     BlockedTimeModule,
