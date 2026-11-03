@@ -36,8 +36,8 @@ const SECTIONS: TLegalSection[] = [
           </li>
           <li>
             <strong>Autenticação:</strong> Credenciais de login, códigos OTP
-            (One-Time Password) de 6 dígitos via SMS/email, tokens de acesso
-            Google OAuth
+            (One-Time Password) de 6 dígitos via e-mail, tokens de acesso Google
+            OAuth
           </li>
           <li>
             <strong>Perfil:</strong> Foto de perfil/avatar, preferências de
@@ -109,8 +109,8 @@ const SECTIONS: TLegalSection[] = [
           </li>
           <li>
             <strong>Comunicações Essenciais:</strong> Enviar códigos OTP de
-            verificação, confirmações de agendamento, lembretes automáticos via
-            SMS (AWS SNS) e email (AWS SES)
+            verificação, confirmações de agendamento e lembretes automáticos por
+            e-mail e, quando o estabelecimento ativar, por WhatsApp
           </li>
           <li>
             <strong>Melhorias do Serviço:</strong> Analisar padrões de uso,
@@ -158,8 +158,8 @@ const SECTIONS: TLegalSection[] = [
           </li>
           <li>
             <strong>Provedores de Infraestrutura:</strong> Supabase
-            (armazenamento de dados e arquivos), Vercel (hospedagem), AWS
-            (notificações via SES/SNS)
+            (armazenamento de dados e arquivos), Vercel (hospedagem), Resend
+            (envio de e-mails)
           </li>
           <li>
             <strong>Autoridades Legais:</strong> Quando exigido por lei, ordem
@@ -347,7 +347,7 @@ export default function PrivacyPage() {
     <LegalDocument
       activeTab="privacy"
       title="Política de Privacidade"
-      updatedAt="Última atualização: 15 de dezembro de 2024"
+      updatedAt="Última atualização: 3 de novembro de 2026"
       sections={SECTIONS}
     />
   );

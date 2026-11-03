@@ -43,7 +43,7 @@ const SECTIONS: TLegalSection[] = [
             por categoria, agendamento online em 4 etapas (serviço →
             profissional → data/hora → checkout), pagamento seguro via Stripe,
             sistema de avaliações com 1-5 estrelas, lembretes automáticos por
-            SMS/email, histórico de agendamentos e favoritos
+            e-mail e WhatsApp, histórico de agendamentos e favoritos
           </li>
           <li>
             <strong>Para Profissionais:</strong> Dashboard com métricas
@@ -54,11 +54,12 @@ const SECTIONS: TLegalSection[] = [
           </li>
           <li>
             <strong>Comunicações Automatizadas:</strong> Confirmações e
-            lembretes de agendamento via AWS SNS (SMS) e AWS SES (email)
+            lembretes de agendamento por e-mail e, quando o estabelecimento
+            ativar, por WhatsApp
           </li>
           <li>
             <strong>Autenticação:</strong> Login via Google OAuth ou código OTP
-            de 6 dígitos por SMS/email
+            de 6 dígitos por e-mail
           </li>
           <li>
             <strong>Verificação Profissional:</strong> Sistema de validação de
@@ -88,7 +89,7 @@ const SECTIONS: TLegalSection[] = [
             cadastro (nome, email, telefone, data de nascimento)
           </li>
           <li>
-            Possuir um número de telefone válido para receber códigos OTP de
+            Possuir um endereço de e-mail válido para receber códigos OTP de
             verificação
           </li>
           <li>
@@ -104,8 +105,8 @@ const SECTIONS: TLegalSection[] = [
             <strong>Google OAuth:</strong> Login social via sua conta Google
           </li>
           <li>
-            <strong>OTP via SMS/Email:</strong> Código de 6 dígitos enviado para
-            seu telefone ou email registrado
+            <strong>OTP via e-mail:</strong> Código de 6 dígitos enviado para o
+            seu e-mail registrado
           </li>
         </ul>
         <p>
@@ -203,8 +204,8 @@ const SECTIONS: TLegalSection[] = [
         </ul>
         <p>
           <strong>Sistema de Lembretes:</strong> Para reduzir no-shows, enviamos
-          lembretes automáticos via SMS e email antes do agendamento. Esses
-          lembretes reduziram faltas em até 80%.
+          lembretes automáticos por e-mail e WhatsApp antes do agendamento.
+          Esses lembretes reduziram faltas em até 80%.
         </p>
 
         <h3>5.3 Pagamentos e Taxas</h3>
@@ -450,7 +451,7 @@ export default function TermsPage() {
     <LegalDocument
       activeTab="terms"
       title="Termos de Serviço"
-      updatedAt="Última atualização: 15 de dezembro de 2024"
+      updatedAt="Última atualização: 3 de novembro de 2026"
       sections={SECTIONS}
     />
   );
