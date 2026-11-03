@@ -43,6 +43,20 @@ export interface IWhatsappTemplateSummary {
   category?: string;
 }
 
+/** `MISSING` quando a WABA ainda não tem o template; os outros vêm da Meta. */
+export type TWhatsappReminderTemplateStatus =
+  | 'MISSING'
+  | 'APPROVED'
+  | 'PENDING'
+  | 'REJECTED'
+  | (string & {});
+
+export interface IWhatsappReminderTemplate {
+  name: string;
+  status: TWhatsappReminderTemplateStatus;
+  rejectedReason?: string;
+}
+
 export interface IWhatsappTestPayload {
   to: string;
 }

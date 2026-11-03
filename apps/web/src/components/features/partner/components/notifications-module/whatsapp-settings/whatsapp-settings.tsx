@@ -6,6 +6,7 @@ import { FormProvider } from 'react-hook-form';
 import { PARTNER_FOCUS_CLASS } from '../../../partner.styles';
 import { ReminderChannelLayout } from '../components/reminder-channel-card';
 import { WhatsappRemindersSection } from './whatsapp-reminders-section';
+import { WhatsappTemplateStatus } from './whatsapp-template-status';
 import { useWhatsappSettings } from './whatsapp-settings.hook';
 
 export const WhatsappSettings = () => {
@@ -18,6 +19,8 @@ export const WhatsappSettings = () => {
     loadState,
     handleRetry,
     isRetrying,
+    storeId,
+    isConnected,
   } = useWhatsappSettings();
 
   return (
@@ -65,6 +68,8 @@ export const WhatsappSettings = () => {
           </Link>
         </section>
       ) : null}
+
+      <WhatsappTemplateStatus storeId={storeId} isConnected={isConnected} />
 
       <FormProvider {...form}>
         <WhatsappRemindersSection

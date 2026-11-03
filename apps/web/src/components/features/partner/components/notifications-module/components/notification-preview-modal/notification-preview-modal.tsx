@@ -97,17 +97,24 @@ const WhatsappPreview = ({
       <div className="rounded-[4px_16px_16px_16px] bg-white px-3.5 py-3 text-sm leading-normal break-words">
         <strong className="mb-1 block">Lembrete do seu horário</strong>
         <p>
-          Olá, [Nome do cliente]. Seu agendamento é [Dia, data] às [hh:mm], com
-          [Profissional].
+          Olá, [Nome do cliente]. Seu agendamento em {storeName} é [Dia, data]
+          às [hh:mm], com [Profissional].
         </p>
-        <p>Serviço: [Serviço]</p>
-        <p>Local: {storeAddress}</p>
-        {message ? <p className="mt-3">{message}</p> : null}
+        <p className="mt-3">Serviço: [Serviço]</p>
+        <p>Local: {storeAddress || storeName}</p>
+        {/* A Meta não aceita variável vazia: sem mensagem vai o texto padrão */}
+        <p className="mt-3">
+          {message.replace(/\s+/g, ' ').trim() || 'Até breve!'}
+        </p>
+        <p className="mt-3">
+          Se precisar remarcar ou cancelar, fale com a loja.
+        </p>
       </div>
       <p className={PREVIEW_COUNTER_CLASS}>{message.length}/300 caracteres</p>
     </div>
     <p className={PREVIEW_NOTE_CLASS}>
-      O texto final depende do template aprovado na Meta.
+      Este é o template enviado para aprovação da Meta. Quebras de linha da
+      mensagem viram espaço.
     </p>
   </div>
 );

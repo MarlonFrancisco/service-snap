@@ -1,6 +1,7 @@
 import type {
   IWhatsappConfigPayload,
   IWhatsappConfigResponse,
+  IWhatsappReminderTemplate,
   IWhatsappStatusResponse,
   IWhatsappTemplateSummary,
   IWhatsappTestPayload,
@@ -42,6 +43,22 @@ export class WhatsappService {
     >(`/partner/stores/${storeId}/whatsapp/templates`);
     assertApiOk(response);
     return response as IWhatsappTemplateSummary[];
+  }
+
+  public static async getReminderTemplate(storeId: string) {
+    const response = await this.apiClient.get<
+      IWhatsappReminderTemplate | { statusCode?: number; message?: string }
+    >(`/partner/stores/${storeId}/whatsapp/reminder-template`);
+    assertApiOk(response);
+    return response as IWhatsappReminderTemplate;
+  }
+
+  public static async createReminderTemplate(storeId: string) {
+    const response = await this.apiClient.post<
+      IWhatsappReminderTemplate | { statusCode?: number; message?: string }
+    >(`/partner/stores/${storeId}/whatsapp/reminder-template`, {});
+    assertApiOk(response);
+    return response as IWhatsappReminderTemplate;
   }
 
   public static async sendTest(storeId: string, payload: IWhatsappTestPayload) {

@@ -99,4 +99,7 @@ export const CACHE_QUERY_KEYS = {
   whatsappTemplates: (storeId: string) => [
     `partner/stores/${storeId}/whatsapp/templates`,
   ],
+  whatsappReminderTemplate: (storeId: string) => [
+    `partner/stores/${storeId}/whatsapp/reminder-template`,
+  ],
 };

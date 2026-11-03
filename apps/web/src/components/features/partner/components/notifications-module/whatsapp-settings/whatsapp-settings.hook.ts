@@ -1,7 +1,9 @@
 import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mutations/use-notifications-mutations.hook';
 import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query/use-whatsapp-query.hook';
 import { isNotFoundError } from '@/service/api';
+import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { useReminderSettingsLoad } from '../notifications-module.hook';
 import type { TNotificationsSettingsData } from '../notifications-module.types';
@@ -19,6 +21,7 @@ const getWhatsappFormValues = (
 });
 
 export const useWhatsappSettings = () => {
+  const queryClient = useQueryClient();
   const form = useForm<TWhatsappSettingsFormData>({
     resolver: zodResolver(whatsappSettingsSchema),
     defaultValues: getWhatsappFormValues(null),
@@ -41,10 +44,19 @@ export const useWhatsappSettings = () => {
   const handleSubmit = form.handleSubmit(async (data) => {
     if (!isConnected) return;
 
-    updateNotificationsSettingsMutation.mutate({
-      ...data,
-      id: notificationsSettings?.id,
-    });
+    updateNotificationsSettingsMutation.mutate(
+      {
+        ...data,
+        id: notificationsSettings?.id,
+      },
+      {
+        // Ativar cria o template na Meta: o status no painel precisa ser relido
+        onSuccess: () =>
+          queryClient.invalidateQueries({
+            queryKey: CACHE_QUERY_KEYS.whatsappReminderTemplate(storeId),
+          }),
+      },
+    );
   });
 
   // Não afirma que falta ativar enquanto carrega ou quando a leitura falhou.
@@ -72,5 +84,7 @@ export const useWhatsappSettings = () => {
     loadState,
     handleRetry,
     isRetrying,
+    storeId,
+    isConnected,
   };
 };
