@@ -30,7 +30,7 @@ const productsMetadata: ProductMetadata[] = [
       WHATSAPP_INTEGRATION: 'false',
       DISPLAY_ORDER: '1',
       IS_RECOMMENDED: 'false',
-      TRIAL_PERIOD_DAYS: '7',
+      TRIAL_PERIOD_DAYS: '30',
       DASHBOARD_GENERAL_ACCESS: 'false',
       DASHBOARD_SALES_ACCESS: 'false',
       DASHBOARD_OPERATIONAL_ACCESS: 'false',
