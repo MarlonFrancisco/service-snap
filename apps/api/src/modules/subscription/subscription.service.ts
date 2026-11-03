@@ -246,7 +246,11 @@ export class SubscriptionService {
       );
     }
 
-    const trialPeriodDays = parseInt(product.metadata.TRIAL_PERIOD_DAYS || '0');
+    // Trial só no mensal: quem escolhe o anual já decidiu pelo plano.
+    const trialPeriodDays =
+      price.recurring?.interval === 'month'
+        ? parseInt(product.metadata.TRIAL_PERIOD_DAYS || '0')
+        : 0;
 
     const session = await this.stripeService.checkout.sessions.create({
       mode: 'subscription',

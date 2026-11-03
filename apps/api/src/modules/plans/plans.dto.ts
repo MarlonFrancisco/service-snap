@@ -1,4 +1,10 @@
-import { IsArray, IsBoolean, IsEnum, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 import type Stripe from 'stripe';
 
 export class PlanDto {
@@ -50,9 +56,10 @@ export class PlanDto {
     dto.features = plan.marketing_features.map((feature) => feature.name);
     dto.interval = price.recurring?.interval as 'month' | 'year';
     dto.discount = parseInt(price.metadata.discount || '0');
-    dto.trialPeriodDays = hasSubscription
-      ? 0
-      : parseInt(plan.metadata.TRIAL_PERIOD_DAYS || '0');
+    dto.trialPeriodDays =
+      hasSubscription || dto.interval !== 'month'
+        ? 0
+        : parseInt(plan.metadata.TRIAL_PERIOD_DAYS || '0');
 
     return dto;
   }

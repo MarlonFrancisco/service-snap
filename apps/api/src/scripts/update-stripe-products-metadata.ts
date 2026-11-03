@@ -19,6 +19,7 @@ interface ProductMetadata {
   description: string;
 }
 
+// Espelha o que está no Stripe (live e teste). TRIAL_PERIOD_DAYS só vale no preço mensal.
 const productsMetadata: ProductMetadata[] = [
   {
     productName: 'Starter',
@@ -47,21 +48,24 @@ const productsMetadata: ProductMetadata[] = [
   {
     productName: 'Professional',
     metadata: {
-      UNIT_LIMIT: '2',
+      UNIT_LIMIT: '1',
       PRO_LIMIT: '5',
       RANK_TIER: 'TIER_2',
       SMS_REMINDER: 'false',
-      WHATSAPP_INTEGRATION: 'false',
+      WHATSAPP_INTEGRATION: 'true',
       DISPLAY_ORDER: '2',
-      IS_RECOMMENDED: 'false',
-      DASHBOARD_GENERAL_ACCESS: 'false',
+      IS_RECOMMENDED: 'true',
+      TRIAL_PERIOD_DAYS: '30',
+      DASHBOARD_GENERAL_ACCESS: 'true',
       DASHBOARD_SALES_ACCESS: 'false',
       DASHBOARD_OPERATIONAL_ACCESS: 'false',
       DASHBOARD_CUSTOMERS_ACCESS: 'false',
     },
     marketing_features: [
-      { name: 'Até 2 Lojas' },
+      { name: '1 Loja' },
       { name: 'Até 5 Profissionais' },
+      { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
+      { name: 'Dashboard Geral' },
       { name: 'Ranqueamento Prioritário' },
       { name: 'Suporte Chat/E-mail' },
     ],
@@ -74,20 +78,21 @@ const productsMetadata: ProductMetadata[] = [
       PRO_LIMIT: '20',
       RANK_TIER: 'TIER_1',
       SMS_REMINDER: 'false',
-      WHATSAPP_INTEGRATION: 'false',
+      WHATSAPP_INTEGRATION: 'true',
       DISPLAY_ORDER: '3',
-      IS_RECOMMENDED: 'true',
-
+      IS_RECOMMENDED: 'false',
+      TRIAL_PERIOD_DAYS: '30',
       DASHBOARD_GENERAL_ACCESS: 'true',
-      DASHBOARD_SALES_ACCESS: 'false',
-      DASHBOARD_OPERATIONAL_ACCESS: 'false',
-      DASHBOARD_CUSTOMERS_ACCESS: 'false',
+      DASHBOARD_SALES_ACCESS: 'true',
+      DASHBOARD_OPERATIONAL_ACCESS: 'true',
+      DASHBOARD_CUSTOMERS_ACCESS: 'true',
     },
     marketing_features: [
       { name: 'Até 5 Lojas' },
       { name: 'Até 20 Profissionais' },
+      { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
+      { name: 'Analytics Completo' },
       { name: 'Ranqueamento Máximo' },
-      { name: 'Analytics' },
       { name: 'Suporte Prioritário' },
     ],
     description: 'Para empresas estabelecidas',
@@ -102,7 +107,7 @@ const productsMetadata: ProductMetadata[] = [
       WHATSAPP_INTEGRATION: 'true',
       DISPLAY_ORDER: '4',
       IS_RECOMMENDED: 'false',
-
+      TRIAL_PERIOD_DAYS: '30',
       DASHBOARD_GENERAL_ACCESS: 'true',
       DASHBOARD_SALES_ACCESS: 'true',
       DASHBOARD_OPERATIONAL_ACCESS: 'true',
@@ -111,17 +116,14 @@ const productsMetadata: ProductMetadata[] = [
     marketing_features: [
       { name: 'Lojas Ilimitadas' },
       { name: 'Profissionais Ilimitados' },
+      { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
+      { name: 'Analytics Completo + API' },
       { name: 'Ranqueamento Máximo + Destaque' },
-      { name: 'Integração WhatsApp' },
-      {
-        name: 'Analytics Completo + API',
-      },
       { name: 'Suporte Dedicado' },
     ],
     description: 'Solução completa para empresas',
   },
 ];
-
 async function updateProductsMetadata() {
   console.log(
     '🚀 Iniciando atualização de metadata dos produtos no Stripe...\n',

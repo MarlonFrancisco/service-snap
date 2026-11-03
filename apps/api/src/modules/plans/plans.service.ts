@@ -33,11 +33,14 @@ export class PlansService {
       limit: 1,
     });
 
+    // O padrão da Stripe é 10 itens: preços a mais sumiriam da página de planos.
     const responseProducts = await this.stripe.products.list({
       active: true,
+      limit: 100,
     });
     const responsePrices = await this.stripe.prices.list({
       active: true,
+      limit: 100,
       ...(SUPPORTED_CURRENCIES.includes(normalizedCurrency) && {
         currency: normalizedCurrency.toLowerCase(),
       }),
