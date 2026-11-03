@@ -69,11 +69,6 @@ export const MODULE_CONFIG: Record<string, TModuleConfig> = {
     description: 'Configure as notificações por e-mail',
     showStoreSelector: true,
   },
-  '/partner/notifications/sms-settings': {
-    title: 'Configurações de SMS',
-    description: 'Configure as notificações por SMS',
-    showStoreSelector: true,
-  },
   '/partner/notifications/whatsapp-settings': {
     title: 'Configurações de WhatsApp',
     description: 'Configure as notificações por WhatsApp',

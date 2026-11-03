@@ -5,7 +5,7 @@ const FAQ_ITEMS = [
   {
     question: 'Como funciona o agendamento?',
     answer:
-      'O agendamento é simples: escolha o serviço desejado, selecione um profissional disponível, escolha data e horário, e confirme seu agendamento. Você receberá uma confirmação por e-mail e SMS.',
+      'O agendamento é simples: escolha o serviço desejado, selecione um profissional disponível, escolha data e horário, e confirme seu agendamento. Você receberá uma confirmação por e-mail.',
   },
   {
     question: 'Como posso cancelar um agendamento?',

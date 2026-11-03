@@ -85,11 +85,6 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         href: '/partner/notifications/email-settings',
       },
       {
-        id: 'notifications-sms',
-        label: 'SMS',
-        href: '/partner/notifications/sms-settings',
-      },
-      {
         id: 'notifications-whatsapp',
         label: 'WhatsApp',
         href: '/partner/notifications/whatsapp-settings',
