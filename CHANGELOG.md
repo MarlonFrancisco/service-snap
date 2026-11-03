@@ -1,3 +1,20 @@
+## 0.18.0 (2026-11-03)
+
+### Feat
+
+- **api**: lembrete por e-mail no template do ServiceSnap
+- **api**: usar o template do ServiceSnap nos e-mails de código
+- **api**: pedir e confirmar e-mail do cliente no bot de WhatsApp
+- **api**: redesenhar fluxo de agendamento do bot de WhatsApp
+- **api**: registrar status de entrega do webhook do WhatsApp
+- **api**: redesenhar e ampliar notificações por e-mail
+- **web**: busca mobile como campo de texto
+
+### Fix
+
+- **api**: corrigir fluxo de agendamento do bot de WhatsApp
+- **api**: manter loja sincronizada no índice de busca
+
 ## 0.17.1 (2026-11-01)
 
 ### Fix
