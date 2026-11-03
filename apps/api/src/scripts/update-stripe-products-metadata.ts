@@ -98,7 +98,7 @@ const productsMetadata: ProductMetadata[] = [
       UNIT_LIMIT: 'UNLIMITED',
       PRO_LIMIT: 'UNLIMITED',
       RANK_TIER: 'TIER_1',
-      SMS_REMINDER: 'true',
+      SMS_REMINDER: 'false',
       WHATSAPP_INTEGRATION: 'true',
       DISPLAY_ORDER: '4',
       IS_RECOMMENDED: 'false',

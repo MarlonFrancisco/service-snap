@@ -79,13 +79,7 @@ export class AuthService {
       });
     }
 
-    if (body.telephone) {
-      await this.notificationService.sendSMSOTP(body.telephone, authCode.code);
-    }
-
-    if (body.email) {
-      await this.notificationService.sendEmailOTP(body.email, authCode.code);
-    }
+    await this.notificationService.sendEmailOTP(body.email, authCode.code);
 
     return { isNewUser };
   }

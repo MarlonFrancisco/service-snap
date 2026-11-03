@@ -40,15 +40,6 @@ export class NotificationService {
     this.resend = new Resend(configService.get<string>('RESEND_API_KEY'));
   }
 
-  async sendSMS(phoneNumber: string, _message: string) {
-    this.logger.warn(
-      `SMS não configurado (Resend é só e-mail). Destino: ${phoneNumber}`,
-    );
-    throw new ServiceUnavailableException(
-      'Envio de SMS ainda não está disponível. Use e-mail ou WhatsApp.',
-    );
-  }
-
   async sendEmail(to: string | string[], subject: string, body: string) {
     const recipients = [to].flat();
     const { data, error } = await this.resend.emails.send({
@@ -132,11 +123,6 @@ export class NotificationService {
     );
 
     return this.sendEmail(to, 'Seu código para confirmar o e-mail', body);
-  }
-
-  async sendSMSOTP(phoneNumber: string, code: string) {
-    const message = `Seu código de verificação é: ${code}`;
-    return this.sendSMS(phoneNumber, message);
   }
 
   async invoicePaid(to: string, invoiceId: string, currentPeriodEnd: string) {
