@@ -567,6 +567,16 @@ export class WhatsappBotService {
     if (body.object === 'whatsapp_business_account') {
       for (const entry of body.entry) {
         for (const change of entry.changes) {
+          for (const { id, status, errors } of change.value.statuses ?? []) {
+            const statusLog = JSON.stringify({ id, status, errors });
+
+            if (status === 'failed') {
+              this.logger.warn(`Message status: ${statusLog}`);
+            } else {
+              this.logger.log(`Message status: ${statusLog}`);
+            }
+          }
+
           if (change.value.messages) {
             const message = change.value.messages[0];
             const userName = change.value.contacts[0].profile.name;

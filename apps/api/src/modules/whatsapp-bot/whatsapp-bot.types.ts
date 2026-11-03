@@ -21,6 +21,21 @@ export interface IWhatsappWebhookMessage {
   };
 }
 
+export interface IWhatsappWebhookStatus {
+  id: string;
+  status: string;
+  timestamp: string;
+  recipient_id: string;
+  errors?: {
+    code: number;
+    title: string;
+    message?: string;
+    error_data?: {
+      details: string;
+    };
+  }[];
+}
+
 export interface IWhatsappWebhook {
   object: string;
   entry: {
@@ -41,6 +56,7 @@ export interface IWhatsappWebhook {
           },
         ];
         messages: IWhatsappWebhookMessage[];
+        statuses?: IWhatsappWebhookStatus[];
       };
       field: string;
     }[];
