@@ -38,28 +38,32 @@ export const PlanFeatureGate = ({
   return (
     <section
       aria-labelledby={titleId}
-      className="relative min-h-[640px] overflow-hidden rounded-[24px] border border-[#EBE9F0] bg-white"
+      className="relative sm:min-h-[640px] sm:overflow-hidden sm:rounded-[24px] sm:border sm:border-[#EBE9F0] sm:bg-white"
     >
-      <div aria-hidden="true" className="p-7 opacity-45 blur-[3px]">
+      {/* Celular: faixa curta atrás do topo do cartão. Desktop: o módulo inteiro por trás. */}
+      <div
+        aria-hidden="true"
+        className="max-h-[150px] overflow-hidden opacity-45 blur-[2px] sm:max-h-none sm:p-7 sm:blur-[3px]"
+      >
         <LockedModulePreview variant={lockedModule.preview} />
       </div>
 
-      <div className="absolute inset-0 flex items-center justify-center bg-white/55 p-4 sm:p-6">
-        <div className="flex w-full max-w-[480px] flex-col items-center gap-3.5 rounded-[28px] border border-[#EBE9F0] bg-white px-6 py-9 text-center shadow-[0_24px_60px_rgba(11,11,15,0.10)] sm:px-8">
+      <div className="relative -mt-12 sm:absolute sm:inset-0 sm:mt-0 sm:flex sm:items-center sm:justify-center sm:bg-white/55 sm:p-6">
+        <div className="mx-auto flex w-full max-w-[480px] flex-col items-center gap-3 rounded-[24px] border border-[#EBE9F0] bg-white px-5 pt-7 pb-6 text-center shadow-[0_16px_40px_rgba(11,11,15,0.10)] sm:gap-3.5 sm:rounded-[28px] sm:px-8 sm:py-9 sm:shadow-[0_24px_60px_rgba(11,11,15,0.10)]">
           <span
             aria-hidden="true"
-            className="grid size-14 place-items-center rounded-full bg-[#F3E8FF] text-[#7A0BC8]"
+            className="grid size-12 place-items-center rounded-full bg-[#F3E8FF] text-[#7A0BC8] sm:size-14"
           >
-            <Lock className="size-6 stroke-[1.8]" />
+            <Lock className="size-[22px] stroke-[1.8] sm:size-6" />
           </span>
           {minPlanName ? (
-            <span className="text-xs font-extrabold tracking-[0.08em] text-[#7A0BC8] uppercase">
+            <span className="text-[11px] font-extrabold tracking-[0.08em] text-[#7A0BC8] uppercase sm:text-xs">
               Disponível no {minPlanName}
             </span>
           ) : null}
           <h2
             id={titleId}
-            className="text-[22px] font-extrabold tracking-[-0.02em]"
+            className="text-xl leading-tight font-extrabold tracking-[-0.02em] sm:text-[22px]"
           >
             {lockedModule.title}
           </h2>
@@ -81,12 +85,12 @@ export const PlanFeatureGate = ({
               </li>
             ))}
           </ul>
-          <div className="mt-2 flex flex-wrap justify-center gap-2.5">
+          <div className="mt-1.5 flex flex-col gap-2 self-stretch sm:mt-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-2.5 sm:self-auto">
             <Link
               href="/partner/plans/upgrade"
               className={cn(
                 ACTION_CLASS,
-                'bg-[#0B0B0F] text-white hover:bg-[#2B2B2B]',
+                'bg-[#0B0B0F] text-[15px] text-white hover:bg-[#2B2B2B] sm:text-sm',
               )}
             >
               {minPlanName
@@ -97,7 +101,7 @@ export const PlanFeatureGate = ({
               href="/pricing"
               className={cn(
                 ACTION_CLASS,
-                'bg-[#F4F3F7] px-5 text-[#0B0B0F] hover:bg-[#EBE9F0]',
+                'bg-[#F4F3F7] text-[15px] text-[#0B0B0F] hover:bg-[#EBE9F0] sm:px-5 sm:text-sm',
               )}
             >
               Comparar planos

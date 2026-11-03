@@ -31,11 +31,11 @@ export const WhatsappSettings = () => {
       {showActivationNotice ? (
         <section
           aria-labelledby="whatsapp-connect-title"
-          className="flex flex-wrap items-center gap-5 rounded-[24px] bg-[#FFF1E0] p-6 text-[#6E3B00]"
+          className="flex flex-col gap-3 rounded-[22px] bg-[#FFF1E0] p-5 text-[#6E3B00] sm:flex-row sm:flex-wrap sm:items-center sm:gap-5 sm:rounded-[24px] sm:p-6"
         >
           <span
             aria-hidden="true"
-            className="grid size-[52px] flex-none place-items-center rounded-full bg-white"
+            className="grid size-11 flex-none place-items-center rounded-full bg-white sm:size-[52px]"
           >
             <Plug className="size-6 stroke-[1.8]" />
           </span>
@@ -59,7 +59,7 @@ export const WhatsappSettings = () => {
           </div>
           <Link
             href="/partner/settings/whatsapp"
-            className={`inline-flex min-h-12 items-center justify-center rounded-full bg-[#0B0B0F] px-[22px] text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B] ${PARTNER_FOCUS_CLASS}`}
+            className={`inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#0B0B0F] px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] sm:w-auto sm:text-sm ${PARTNER_FOCUS_CLASS}`}
           >
             Conectar WhatsApp
           </Link>

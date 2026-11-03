@@ -178,11 +178,15 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
         </>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Celular: salvar em cima, os dois em largura total. */}
+      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
         <button
           type="button"
           onClick={onOpenPreview}
-          className={cn(MODULE_ACTION_CLASS, 'min-h-12 px-5 text-sm')}
+          className={cn(
+            MODULE_ACTION_CLASS,
+            'min-h-12 w-full px-5 text-sm sm:w-auto',
+          )}
         >
           {previewLabel}
         </button>
@@ -191,7 +195,7 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
           disabled={isSaving || isLocked}
           className={cn(
             MODULE_PRIMARY_ACTION_CLASS,
-            'min-h-12 px-5 text-sm disabled:cursor-not-allowed disabled:bg-[#EBE9F0] disabled:text-[#5F5C6E]',
+            'min-h-12 w-full px-5 text-sm disabled:cursor-not-allowed disabled:bg-[#EBE9F0] disabled:text-[#5F5C6E] sm:w-auto',
           )}
         >
           {isSaving ? (
