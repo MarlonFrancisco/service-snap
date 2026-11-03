@@ -9,13 +9,18 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { plainToInstance } from 'class-transformer';
-import { StoreAccessGuard } from '../guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  StoreAccessGuard,
+} from '../guards';
 import { SaveWhatsappConfigDto } from './dto/save-whatsapp-config.dto';
 import { TestWhatsappDto } from './dto/test-whatsapp.dto';
 import { WhatsappService } from './whatsapp.service';
 
 @Controller('partner/stores/:storeId/whatsapp')
-@UseGuards(StoreAccessGuard)
+@UseGuards(StoreAccessGuard, PlanFeatureGuard)
+@RequiresPlanFeatures('WHATSAPP_INTEGRATION')
 export class WhatsappController {
   constructor(
     private readonly whatsappService: WhatsappService,

@@ -1,16 +1,34 @@
+import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
-import { NotificationsSettingsDto } from './dto/settings.dto';
+import type { NotificationsSettingsDto } from './dto/settings.dto';
 import { NotificationsSettingsService } from './settings.service';
 
-const setup = (current: { id: string } | null) => {
+const setup = (
+  current: { id: string } | null,
+  {
+    missingFeatures = [] as string[],
+    isWhatsappConnected = true,
+  }: { missingFeatures?: string[]; isWhatsappConnected?: boolean } = {},
+) => {
   const repository = {
     findOne: vi.fn().mockResolvedValue(current),
     save: vi.fn().mockResolvedValue(undefined),
   };
+  const whatsappConfigRepository = {
+    exists: vi.fn().mockResolvedValue(isWhatsappConnected),
+  };
+  const planFeatureGuard = {
+    getMissingFeatures: vi.fn().mockResolvedValue(missingFeatures),
+  };
 
   return {
     repository,
-    service: new NotificationsSettingsService(repository as never),
+    planFeatureGuard,
+    service: new NotificationsSettingsService(
+      repository as never,
+      whatsappConfigRepository as never,
+      planFeatureGuard as never,
+    ),
   };
 };
 
@@ -38,5 +56,41 @@ describe('NotificationsSettingsService.update', () => {
     await service.update(dto({ smsReminderEnabled: true }));
 
     expect(repository.save.mock.calls[0][0].id).toBeUndefined();
+  });
+
+  it('blocks WhatsApp reminders when the plan does not include them', async () => {
+    const { service, repository } = setup(
+      { id: 'settings-1' },
+      { missingFeatures: ['WHATSAPP_INTEGRATION'] },
+    );
+
+    await expect(
+      service.update(dto({ whatsappReminderEnabled: true })),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('blocks WhatsApp reminders until the store connects WhatsApp', async () => {
+    const { service, repository } = setup(
+      { id: 'settings-1' },
+      { isWhatsappConnected: false },
+    );
+
+    await expect(
+      service.update(dto({ whatsappReminderEnabled: true })),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
+  it('always lets WhatsApp reminders be turned off', async () => {
+    const { service, repository, planFeatureGuard } = setup(
+      { id: 'settings-1' },
+      { missingFeatures: ['WHATSAPP_INTEGRATION'], isWhatsappConnected: false },
+    );
+
+    await service.update(dto({ whatsappReminderEnabled: false }));
+
+    expect(planFeatureGuard.getMissingFeatures).not.toHaveBeenCalled();
+    expect(repository.save).toHaveBeenCalled();
   });
 });

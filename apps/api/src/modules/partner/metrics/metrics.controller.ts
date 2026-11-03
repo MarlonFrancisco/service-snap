@@ -1,6 +1,10 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { StoreAccessGuard } from '../stores/guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  StoreAccessGuard,
+} from '../stores/guards';
 import { DashboardCustomersService } from './dashboard-customers/dashboard-customers.service';
 import { DashboardOperationalService } from './dashboard-operational/dashboard-operational.service';
 import { DashboardOverviewService } from './dashboard-overview/dashboard-overview.service';
@@ -12,7 +16,8 @@ type OperationalPeriodType = 'week' | 'month' | 'quarter';
 type CustomersPeriodType = 'week' | 'month' | 'quarter';
 
 @Controller('partner/stores/:storeId/metrics')
-@UseGuards(JwtAuthGuard, StoreAccessGuard)
+// A ordem importa: o plano só é lido depois de confirmar o acesso à loja.
+@UseGuards(JwtAuthGuard, StoreAccessGuard, PlanFeatureGuard)
 export class MetricsController {
   constructor(
     private readonly dashboardOverviewService: DashboardOverviewService,
@@ -28,6 +33,7 @@ export class MetricsController {
    * @param period - Período para análise: 'today' (hoje), 'week' (esta semana), 'month' (este mês). Padrão: 'week'
    */
   @Get('overview')
+  @RequiresPlanFeatures('DASHBOARD_GENERAL_ACCESS')
   async getDashboard1Overview(
     @Param('storeId') storeId: string,
     @Query('period') period: OverviewPeriodType = 'week',
@@ -49,6 +55,7 @@ export class MetricsController {
    * @param period - Período para análise: 'week' (esta semana), 'month' (este mês), 'quarter' (este trimestre). Padrão: 'month'
    */
   @Get('sales')
+  @RequiresPlanFeatures('DASHBOARD_GENERAL_ACCESS', 'DASHBOARD_SALES_ACCESS')
   async getDashboardSales(
     @Param('storeId') storeId: string,
     @Query('period') period: SalesPeriodType = 'month',
@@ -70,6 +77,10 @@ export class MetricsController {
    * @param period - Período para análise: 'week' (esta semana), 'month' (este mês), 'quarter' (este trimestre). Padrão: 'month'
    */
   @Get('operational')
+  @RequiresPlanFeatures(
+    'DASHBOARD_GENERAL_ACCESS',
+    'DASHBOARD_OPERATIONAL_ACCESS',
+  )
   async getDashboardOperational(
     @Param('storeId') storeId: string,
     @Query('period') period: OperationalPeriodType = 'month',
@@ -91,6 +102,10 @@ export class MetricsController {
    * @param period - Período para análise: 'week' (esta semana), 'month' (este mês), 'quarter' (este trimestre). Padrão: 'month'
    */
   @Get('customers')
+  @RequiresPlanFeatures(
+    'DASHBOARD_GENERAL_ACCESS',
+    'DASHBOARD_CUSTOMERS_ACCESS',
+  )
   async getDashboardCustomers(
     @Param('storeId') storeId: string,
     @Query('period') period: CustomersPeriodType = 'month',
