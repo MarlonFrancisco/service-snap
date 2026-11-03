@@ -21,6 +21,12 @@ export type TScheduleCustomerEmail = {
   storePhone: string;
 };
 
+export type TScheduleReminderEmail = TScheduleCustomerEmail & {
+  price: string;
+  customMessage?: string;
+  manageLink: string;
+};
+
 export type TScheduleConfirmedEmail = TScheduleCustomerEmail & {
   price: string;
   calendarLink: string;

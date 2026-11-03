@@ -1,105 +1,29 @@
-<html lang='pt-BR'>
-  <head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <title>Lembrete do seu agendamento</title>
-  </head>
-  <body style='margin: 0; padding: 0; background-color: #f4f4f4;'>
-    <table
-      role='presentation'
-      cellpadding='0'
-      cellspacing='0'
-      border='0'
-      width='100%'
-      style='background-color: #f4f4f4;'
-    >
-      <tr>
-        <td align='center' style='padding: 40px 20px;'>
-          <table
-            role='presentation'
-            cellpadding='0'
-            cellspacing='0'
-            border='0'
-            width='600'
-            style='max-width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden;'
-          >
-            <tr>
-              <td
-                align='center'
-                style='background-color: #1e293b; padding: 40px 20px;'
-              >
-                <h1
-                  style='margin: 0; font-family: Arial, sans-serif; font-size: 28px; font-weight: bold; color: #ffffff;'
-                >Seu atendimento está chegando!</h1>
-                <p
-                  style='margin: 10px 0 0 0; font-family: Arial, sans-serif; font-size: 16px; color: #5eead4;'
-                >{{storeName}}</p>
-              </td>
-            </tr>
-            <tr>
-              <td style='padding: 40px; font-family: Arial, sans-serif;'>
-                <p style='margin: 0 0 24px 0; font-size: 18px; color: #374151;'>
-                  Olá
-                  <strong style='color: #1e293b;'>{{customerName}}</strong>,
-                  este é um lembrete do seu agendamento.
-                </p>
-                {{#if customMessage}}
-                  <p style='margin: 0 0 24px 0; font-size: 16px; color: #374151;'>
-                    {{customMessage}}
-                  </p>
-                {{/if}}
-                <table
-                  role='presentation'
-                  cellpadding='0'
-                  cellspacing='0'
-                  border='0'
-                  width='100%'
-                  style='border: 1px solid #e5e7eb; border-radius: 8px;'
-                >
-                  <tr>
-                    <td style='padding: 24px; font-size: 16px; color: #1e293b;'>
-                      <p style='margin: 0 0 12px 0;'><strong>Data e hora:</strong>
-                        {{scheduleDate}}</p>
-                      <p style='margin: 0 0 12px 0;'><strong>Serviço:</strong>
-                        {{serviceName}}</p>
-                      <p style='margin: 0;'><strong>Profissional:</strong>
-                        {{professionalName}}</p>
-                      {{#if storeAddress}}
-                        <p style='margin: 12px 0 0 0;'><strong>Endereço:</strong>
-                          {{storeAddress}}</p>
-                      {{/if}}
-                      {{#if storePhone}}
-                        <p style='margin: 12px 0 0 0;'><strong>Telefone:</strong>
-                          {{storePhone}}</p>
-                      {{/if}}
-                    </td>
-                  </tr>
-                </table>
-                <p style='margin: 30px 0 0 0; text-align: center;'>
-                  <a
-                    href='{{rescheduleLink}}'
-                    target='_blank'
-                    style='display: inline-block; padding: 14px 24px; background-color: #ffffff; color: #374151; font-size: 14px; font-weight: bold; text-decoration: none; border-radius: 6px; border: 1px solid #d1d5db;'
-                  >Cancelar ou Reagendar</a>
-                </p>
-              </td>
-            </tr>
-            <tr>
-              <td
-                style='border-top: 1px solid #e5e7eb; padding: 30px 40px; text-align: center;'
-              >
-                <p
-                  style='margin: 0; font-family: Arial, sans-serif; font-size: 12px; color: #9ca3af;'
-                >
-                  &copy;
-                  {{currentYear}}
-                  ServiceSnap - Agendamentos Inteligentes
-                </p>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
+<h1 style='margin: 0; font-size: 28px; line-height: 32px; font-weight: bold; color: #0b0b0f;'>Seu horário está chegando</h1>
+<p style='margin: 12px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>Olá, {{customerName}}. Este é um lembrete do seu agendamento em {{storeName}}.</p>
+<table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='margin-top: 20px; background-color: #0b0b0f; border-radius: 14px; color: #ffffff;'>
+  <tr>
+    <td style='padding: 18px 20px; font-size: 15px; font-weight: bold;'>{{scheduleDay}}</td>
+    <td align='right' style='padding: 18px 20px; font-size: 26px; font-weight: bold;'>{{scheduleTime}}</td>
+  </tr>
+</table>
+<table role='presentation' cellpadding='0' cellspacing='0' border='0' width='100%' style='margin-top: 10px; background-color: #f7f6fa; border-radius: 14px; font-size: 14px;'>
+  <tr><td style='padding: 18px 20px 5px 20px; color: #5f5c6e;'>Serviço</td><td align='right' style='padding: 18px 20px 5px 20px; font-weight: bold;'>{{serviceName}}</td></tr>
+  <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Profissional</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>{{professionalName}}</td></tr>
+  <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Valor</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>{{price}}</td></tr>
+  {{#if storeAddress}}
+    <tr><td style='padding: 5px 20px; color: #5f5c6e;'>Local</td><td align='right' style='padding: 5px 20px; font-weight: bold;'>{{storeAddress}}</td></tr>
+  {{/if}}
+  <tr><td colspan='2' style='padding: 0 0 13px 0; font-size: 0; line-height: 0;'>&nbsp;</td></tr>
+</table>
+{{#if customMessage}}
+  <p style='margin: 16px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>
+    <span style='display: block; font-size: 13px; font-weight: bold; color: #5f5c6e;'>Recado de {{storeName}}</span>
+    {{customMessage}}
+  </p>
+{{/if}}
+<p style='margin: 24px 0 0 0;'>
+  <a href='{{manageLink}}' target='_blank' class='btn' style='display: inline-block; margin: 0 10px 10px 0; padding: 15px 24px; border-radius: 999px; background-color: #0b0b0f; color: #ffffff; font-size: 14px; font-weight: bold; text-decoration: none;'>Gerenciar agendamento</a>
+</p>
+{{#if storePhone}}
+  <p style='margin: 12px 0 0 0; font-size: 15px; line-height: 23px; color: #2c2a36;'>Precisa falar com a loja? {{storePhone}}</p>
+{{/if}}

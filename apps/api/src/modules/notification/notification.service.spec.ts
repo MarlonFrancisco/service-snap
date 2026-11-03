@@ -46,3 +46,33 @@ describe('NotificationService codes', () => {
     expect(html).toContain('vale por 10 minutos');
   });
 });
+
+describe('NotificationService.scheduleReminder', () => {
+  it('sends the reminder inside the ServiceSnap layout', async () => {
+    const { service, sendEmail } = makeService();
+
+    await service.scheduleReminder('ana@gmail.com', {
+      storeName: 'Barbearia Central',
+      customerName: 'Ana',
+      serviceName: 'Corte',
+      professionalName: 'Rafael Lima',
+      scheduleDay: 'Quarta-feira, 4 de novembro',
+      scheduleTime: '14:00',
+      storeAddress: 'Rua das Flores, 100',
+      storePhone: '',
+      price: 'R$ 50,00, no local',
+      customMessage: 'Chegue 5 minutos antes.',
+      manageLink: 'https://app.test/profile',
+    });
+
+    const [, subject, html] = sendEmail.mock.calls[0]!;
+    expect(subject).toBe('Lembrete do seu agendamento em Barbearia Central');
+    expect(html).toContain('servicesnap<span');
+    expect(html).toContain('Seu horário está chegando');
+    expect(html).toContain('R$ 50,00, no local');
+    expect(html).toContain('Recado de Barbearia Central');
+    expect(html).toContain('Chegue 5 minutos antes.');
+    expect(html).toContain('https://app.test/profile');
+    expect(html).not.toContain('Precisa falar com a loja');
+  });
+});

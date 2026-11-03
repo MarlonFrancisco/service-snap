@@ -22,6 +22,7 @@ import type {
   TScheduleChangedEmail,
   TScheduleConfirmedEmail,
   TScheduleNewBookingEmail,
+  TScheduleReminderEmail,
   TScheduleStoreEmail,
   TTrialEndingEmail,
 } from './notification.types';
@@ -186,31 +187,16 @@ export class NotificationService {
     );
   }
 
-  async scheduleReminder(
-    to: string,
-    data: {
-      storeName: string;
-      customerName: string;
-      serviceName: string;
-      professionalName: string;
-      scheduleDate: string;
-      storeAddress: string;
-      storePhone: string;
-      customMessage: string;
-      rescheduleLink: string;
-      currentYear: number;
-    },
-  ) {
-    const template = await fs.readFile(
-      path.join(__dirname, '../../templates', 'schedule-reminder.hbs'),
-      'utf8',
-    );
-
-    const body = handlebars.compile(template)(data);
+  async scheduleReminder(to: string, data: TScheduleReminderEmail) {
+    const body = await this.renderEmail('schedule-reminder', data, {
+      title: 'Seu horário está chegando',
+      preheader: `${data.scheduleDay} às ${data.scheduleTime}, com ${data.professionalName}.`,
+      footerNote: CUSTOMER_FOOTER,
+    });
 
     return this.sendEmail(
       to,
-      `Lembrete: atendimento em ${data.storeName}`,
+      `Lembrete do seu agendamento em ${data.storeName}`,
       body,
     );
   }

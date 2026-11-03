@@ -107,9 +107,11 @@ describe('RemindersService', () => {
     expect(scheduleReminder).toHaveBeenCalledWith(
       'cliente@teste.com',
       expect.objectContaining({
-        scheduleDate: '03/11/2026 às 09:30',
+        scheduleDay: 'Terça-feira, 3 de novembro',
+        scheduleTime: '09:30',
+        price: 'Sob consulta',
         customMessage: 'Até logo!',
-        rescheduleLink: 'https://app.test/profile',
+        manageLink: 'https://app.test/profile',
       }),
     );
     expect(createHistory).toHaveBeenCalledTimes(1);

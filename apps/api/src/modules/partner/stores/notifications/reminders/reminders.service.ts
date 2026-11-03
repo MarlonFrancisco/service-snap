@@ -8,6 +8,10 @@ import {
   toDateKey,
 } from '../../../../../utils/helpers/schedule.helpers';
 import { NotificationService } from '../../../../notification/notification.service';
+import {
+  buildCustomerEmailData,
+  getBookingPrice,
+} from '../../schedule/schedule.helpers';
 import { Schedule } from '../../schedule/schedule.entity';
 import { NotificationsHistory } from '../history/history.entity';
 import { NotificationsHistoryService } from '../history/history.service';
@@ -160,20 +164,13 @@ export class RemindersService {
   }
 
   private async send(schedule: Schedule): Promise<'sent' | 'failed'> {
-    const { store, user, service, storeMember } = schedule;
-
     try {
-      await this.notificationService.scheduleReminder(user.email, {
-        storeName: store.name || 'Loja',
-        customerName: user.firstName || 'Cliente',
-        serviceName: service?.name || 'Serviço',
-        professionalName: storeMember?.user?.firstName || 'Profissional',
-        scheduleDate: this.formatAppointment(schedule),
-        storeAddress: store.address || '',
-        storePhone: store.telephone || '',
-        customMessage: store.notificationsSettings.emailReminderCustomMessage,
-        rescheduleLink: `${this.configService.get<string>('FRONTEND_URL')}/profile`,
-        currentYear: new Date().getFullYear(),
+      await this.notificationService.scheduleReminder(schedule.user.email, {
+        ...buildCustomerEmailData(schedule),
+        price: this.formatPrice(schedule),
+        customMessage:
+          schedule.store.notificationsSettings?.emailReminderCustomMessage,
+        manageLink: `${this.configService.get<string>('FRONTEND_URL')}/profile`,
       });
 
       return 'sent';
@@ -185,6 +182,12 @@ export class RemindersService {
 
       return 'failed';
     }
+  }
+
+  /** "R$ 50,00, no local"; sem preço fica só "Sob consulta". */
+  private formatPrice(schedule: Schedule) {
+    const price = getBookingPrice([schedule]);
+    return Number(schedule.service?.price) > 0 ? `${price}, no local` : price;
   }
 
   private async recordHistory(
