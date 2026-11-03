@@ -1,3 +1,20 @@
+## 0.19.0 (2026-11-03)
+
+### Feat
+
+- **web**: versão mobile das telas de bloqueio
+- **api**: enviar e-mail ao agendar cancelamento da assinatura
+- **api**: bloquear rotas de métricas e WhatsApp pelo plano
+- **web**: mostrar módulos bloqueados com aviso de upgrade
+- **api**: nova tabela de planos, trial só no mensal
+- **api**: validar limite de lojas do plano no backend
+- **web**: ocultar configurações de SMS do painel do parceiro
+- **api**: desativar envio de SMS e exigir e-mail no login por código
+
+### Fix
+
+- **web**: evitar faixa vazia no rodapé do painel no mobile
+
 ## 0.18.0 (2026-11-03)
 
 ### Feat
