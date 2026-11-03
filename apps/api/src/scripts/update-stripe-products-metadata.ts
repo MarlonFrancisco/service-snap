@@ -40,6 +40,7 @@ const productsMetadata: ProductMetadata[] = [
     marketing_features: [
       { name: '1 Loja' },
       { name: '1 Profissional' },
+      { name: 'Lembretes automáticos por e-mail' },
       { name: 'Ranqueamento Padrão' },
       { name: 'Suporte E-mail/FAQ' },
     ],
@@ -64,6 +65,7 @@ const productsMetadata: ProductMetadata[] = [
     marketing_features: [
       { name: '1 Loja' },
       { name: 'Até 5 Profissionais' },
+      { name: 'Lembretes automáticos por e-mail' },
       { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
       { name: 'Dashboard Geral' },
       { name: 'Ranqueamento Prioritário' },
@@ -90,6 +92,7 @@ const productsMetadata: ProductMetadata[] = [
     marketing_features: [
       { name: 'Até 5 Lojas' },
       { name: 'Até 20 Profissionais' },
+      { name: 'Lembretes automáticos por e-mail' },
       { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
       { name: 'Analytics Completo' },
       { name: 'Ranqueamento Máximo' },
@@ -116,6 +119,7 @@ const productsMetadata: ProductMetadata[] = [
     marketing_features: [
       { name: 'Lojas Ilimitadas' },
       { name: 'Profissionais Ilimitados' },
+      { name: 'Lembretes automáticos por e-mail' },
       { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
       { name: 'Analytics Completo + API' },
       { name: 'Ranqueamento Máximo + Destaque' },
