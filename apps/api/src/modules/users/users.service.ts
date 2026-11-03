@@ -6,9 +6,12 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import sharp from 'sharp';
-import type { Repository } from 'typeorm';
+import { ILike, type Repository } from 'typeorm';
 import { generateReferralCode } from '../../utils';
-import { getUserFullName } from '../../utils/helpers/user.helpers';
+import {
+  getUserFullName,
+  normalizePhoneNumber,
+} from '../../utils/helpers/user.helpers';
 import { StorageService } from '../storage/storage.service';
 import { StripeService } from '../stripe';
 import { User } from './user.entity';
@@ -180,6 +183,60 @@ export class UsersService {
 
     // Se não existe, cria novo (com Stripe customer)
     return this.create(userData);
+  }
+
+  /**
+   * Liga um e-mail já confirmado por código ao cliente do telefone. Só junta
+   * quando não há duas contas diferentes em jogo: unir cadastros fica fora daqui.
+   */
+  async linkVerifiedEmail({
+    telephone,
+    email,
+    firstName,
+    lastName,
+  }: {
+    telephone: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+  }): Promise<'linked' | 'conflict'> {
+    const phone = normalizePhoneNumber(telephone);
+    const address = email?.trim().toLowerCase();
+
+    if (!phone || !address) {
+      throw new BadRequestException('Telephone and email are required');
+    }
+
+    // ILIKE para achar o e-mail salvo com outra caixa; `%` e `_` não são curinga
+    const emailPattern = address.replace(/[\\%_]/g, (char) => `\\${char}`);
+    const [byPhone, byEmail] = await Promise.all([
+      this.userRepository.findOne({ where: { telephone: phone } }),
+      this.userRepository.findOne({ where: { email: ILike(emailPattern) } }),
+    ]);
+
+    if (byPhone && byEmail) {
+      return byPhone.id === byEmail.id ? 'linked' : 'conflict';
+    }
+
+    if (byPhone) {
+      await this.update(byPhone.id, { email: address });
+      return 'linked';
+    }
+
+    if (byEmail) {
+      if (byEmail.telephone) return 'conflict';
+
+      await this.update(byEmail.id, { telephone: phone });
+      return 'linked';
+    }
+
+    await this.create({
+      telephone: phone,
+      email: address,
+      firstName,
+      lastName,
+    });
+    return 'linked';
   }
 
   async update(id: string, userData: Partial<User>): Promise<User> {

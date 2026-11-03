@@ -118,12 +118,22 @@ const makeBot = () => {
       },
     ]),
   };
+  const usersService = {
+    // Por padrão o cliente já tem e-mail: a etapa de e-mail não aparece
+    findByOne: vi.fn().mockResolvedValue({ email: 'ana@example.com' }),
+    linkVerifiedEmail: vi.fn().mockResolvedValue('linked'),
+  };
+  const notificationService = {
+    sendEmailOTP: vi.fn().mockResolvedValue(undefined),
+  };
   const cache = makeCache();
   const bot = new WhatsappBotService(
     whatsappService as never,
     categoryService as never,
     storeMemberService as never,
     scheduleService as never,
+    usersService as never,
+    notificationService as never,
     cache as never,
   );
 
@@ -174,6 +184,8 @@ const makeBot = () => {
     cache,
     categoryService,
     deliver,
+    notificationService,
+    usersService,
     lastButtons,
     lastList,
     lastText,
@@ -511,5 +523,152 @@ describe('WhatsappBotService', () => {
     } as never);
 
     expect(ctx.whatsappService.sendInteractiveButtons).not.toHaveBeenCalled();
+  });
+
+  describe('asking for the e-mail', () => {
+    const reachEmailStep = async () => {
+      ctx.usersService.findByOne.mockResolvedValue(null);
+      await ctx.say('agendar');
+      await ctx.tap(`svc:${SERVICE_ID}`);
+      await ctx.tap(`pro:${RAFAEL}`);
+      await ctx.tap(`day:${TODAY}`);
+      await ctx.tap('time:14:00');
+    };
+    const sentCode = () =>
+      ctx.notificationService.sendEmailOTP.mock.calls.at(-1)?.[1] as string;
+
+    it('does not ask when the customer already has an e-mail', async () => {
+      await ctx.say('agendar');
+      await ctx.tap(`svc:${SERVICE_ID}`);
+      await ctx.tap(`pro:${RAFAEL}`);
+      await ctx.tap(`day:${TODAY}`);
+      await ctx.tap('time:14:00');
+
+      expect(ctx.usersService.findByOne).toHaveBeenCalledWith({
+        telephone: `+${PHONE}`,
+      });
+      expect(ctx.lastButtons().body).toContain(
+        '📧 Confirmação para ana@example.com',
+      );
+    });
+
+    it('saves the e-mail only after the code sent to it is typed', async () => {
+      await reachEmailStep();
+      expect(ctx.lastButtons().ids).toEqual(['email:skip']);
+
+      await ctx.say(' Ana.Agendamentos@Gmail.com ');
+      expect(ctx.notificationService.sendEmailOTP).toHaveBeenCalledWith(
+        'ana.agendamentos@gmail.com',
+        expect.stringMatching(/^\d{6}$/),
+      );
+      expect(ctx.lastButtons().ids).toEqual([
+        'email:resend',
+        'email:change',
+        'email:skip',
+      ]);
+      // O código não fica guardado em texto na sessão
+      expect(JSON.stringify(ctx.session())).not.toContain(sentCode());
+      expect(ctx.usersService.linkVerifiedEmail).not.toHaveBeenCalled();
+
+      await ctx.say(sentCode().replace(/(\d{3})/, '$1 '));
+
+      expect(ctx.usersService.linkVerifiedEmail).toHaveBeenCalledWith({
+        telephone: PHONE,
+        email: 'ana.agendamentos@gmail.com',
+        firstName: 'Ana',
+        lastName: 'Ribeiro',
+      });
+      expect(ctx.lastText()).toContain('E-mail confirmado');
+      expect(ctx.lastButtons().body).toContain(
+        'Confirmação para ana.agendamentos@gmail.com',
+      );
+    });
+
+    it('rejects a malformed e-mail and a wrong code', async () => {
+      await reachEmailStep();
+
+      await ctx.say('ana@');
+      expect(ctx.lastText()).toContain('não parece certo');
+      expect(ctx.notificationService.sendEmailOTP).not.toHaveBeenCalled();
+
+      await ctx.say('ana@gmail.com');
+      const wrong = sentCode() === '000000' ? '111111' : '000000';
+      await ctx.say(wrong);
+
+      expect(ctx.lastText()).toContain('Código incorreto');
+      expect(ctx.usersService.linkVerifiedEmail).not.toHaveBeenCalled();
+      expect(ctx.session().state).toBe('VERIFY_EMAIL');
+    });
+
+    it('gives up on the e-mail after too many wrong codes', async () => {
+      await reachEmailStep();
+      await ctx.say('ana@gmail.com');
+      const wrong = sentCode() === '000000' ? '111111' : '000000';
+
+      for (let i = 0; i < 5; i++) await ctx.say(wrong);
+
+      expect(ctx.lastButtons().ids[0]).toBe('confirm:yes');
+      expect(ctx.usersService.linkVerifiedEmail).not.toHaveBeenCalled();
+    });
+
+    it('refuses an expired code', async () => {
+      await reachEmailStep();
+      await ctx.say('ana@gmail.com');
+      vi.setSystemTime(new Date(NOW.getTime() + 11 * 60 * 1000));
+
+      await ctx.say(sentCode());
+
+      expect(ctx.lastText()).toContain('expirou');
+      expect(ctx.usersService.linkVerifiedEmail).not.toHaveBeenCalled();
+    });
+
+    it('limits how many codes one conversation can send', async () => {
+      await reachEmailStep();
+      await ctx.say('ana@gmail.com');
+      await ctx.tap('email:resend');
+      await ctx.tap('email:resend');
+      await ctx.tap('email:resend');
+
+      expect(ctx.notificationService.sendEmailOTP).toHaveBeenCalledTimes(3);
+      expect(ctx.lastButtons().ids[0]).toBe('confirm:yes');
+    });
+
+    it('lets the customer skip and books without asking again', async () => {
+      await reachEmailStep();
+      await ctx.tap('email:skip');
+      expect(ctx.lastButtons().ids[0]).toBe('confirm:yes');
+
+      // Trocar o horário não pergunta de novo
+      await ctx.tap('confirm:change');
+      await ctx.tap('time:11:30');
+      expect(ctx.lastButtons().ids[0]).toBe('confirm:yes');
+
+      await ctx.tap('confirm:yes');
+      expect(ctx.scheduleService.create).toHaveBeenCalled();
+      expect(ctx.notificationService.sendEmailOTP).not.toHaveBeenCalled();
+    });
+
+    it('goes on without the e-mail when it belongs to another account', async () => {
+      ctx.usersService.linkVerifiedEmail.mockResolvedValue('conflict');
+      await reachEmailStep();
+      await ctx.say('ana@gmail.com');
+      await ctx.say(sentCode());
+
+      expect(ctx.lastText()).toContain('outro cadastro');
+      expect(ctx.lastButtons().body).not.toContain('📧');
+    });
+
+    it('does not ask when rescheduling', async () => {
+      ctx.usersService.findByOne.mockResolvedValue(null);
+      await ctx.tap('menu:appointments');
+      await ctx.tap(`appt:${SCHEDULE_ID}`);
+      await ctx.tap('appt:reschedule');
+      await ctx.tap(`pro:${JULIA}`);
+      await ctx.tap(`day:${TODAY}`);
+      await ctx.tap('time:11:30');
+
+      expect(ctx.lastButtons().ids[0]).toBe('confirm:yes');
+      expect(ctx.usersService.findByOne).not.toHaveBeenCalled();
+    });
   });
 });

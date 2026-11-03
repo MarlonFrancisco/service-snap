@@ -1,6 +1,9 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
 import type { Cache } from 'cache-manager';
+import { isEmail } from 'class-validator';
+import { createHash } from 'crypto';
+import { generateAuthCode } from '../../utils/helpers/auth.helpers';
 import { formatCurrency } from '../../utils/helpers/format.helpers';
 import {
   formatLongDate,
@@ -8,7 +11,11 @@ import {
   timeToMinutes,
   toDateKey,
 } from '../../utils/helpers/schedule.helpers';
-import { getUserFullName } from '../../utils/helpers/user.helpers';
+import {
+  getUserFullName,
+  normalizePhoneNumber,
+} from '../../utils/helpers/user.helpers';
+import { NotificationService } from '../notification/notification.service';
 import {
   WHATSAPP_LIMITS,
   addDays,
@@ -28,6 +35,7 @@ import { ScheduleService } from '../partner/stores/schedule/schedule.service';
 import { StoreMemberService } from '../partner/stores/store-member/store-member.service';
 import { WhatsappConfig } from '../partner/stores/whatsapp/whatsapp.entity';
 import { WhatsappService } from '../partner/stores/whatsapp/whatsapp.service';
+import { UsersService } from '../users/users.service';
 import {
   BotState,
   IBotAppointment,
@@ -49,6 +57,10 @@ const MESSAGE_DEDUP_TTL_MS = 60 * 60 * 1000;
 const DAY_SEARCH_HORIZON = 60;
 const DAY_SEARCH_BATCH = 7;
 const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
+// Código de confirmação do e-mail: validade, tentativas e reenvios por conversa
+const EMAIL_CODE_TTL_MS = 10 * 60 * 1000;
+const EMAIL_CODE_MAX_ATTEMPTS = 5;
+const EMAIL_CODE_MAX_SENDS = 3;
 
 const FOOTER = 'Envie "voltar" ou "menu" quando quiser';
 const LIST_BUTTON = 'Ver opções';
@@ -85,6 +97,8 @@ export class WhatsappBotService {
     private readonly categoryService: CategoryService,
     private readonly storeMemberService: StoreMemberService,
     private readonly scheduleService: ScheduleService,
+    private readonly usersService: UsersService,
+    private readonly notificationService: NotificationService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
@@ -202,6 +216,10 @@ export class WhatsappBotService {
         return this.onAppointmentAction(ctx, input);
       case BotState.CONFIRM_CANCEL:
         return this.onConfirmCancel(ctx, input);
+      case BotState.ASK_EMAIL:
+        return this.onAskEmail(ctx, input);
+      case BotState.VERIFY_EMAIL:
+        return this.onVerifyEmail(ctx, input);
       default:
         return this.enterMenu(ctx);
     }
@@ -246,7 +264,10 @@ export class WhatsappBotService {
       case BotState.SELECT_TIME:
         return this.enterDays(ctx);
       case BotState.CONFIRM_BOOKING:
+      case BotState.ASK_EMAIL:
         return this.enterTimes(ctx);
+      case BotState.VERIFY_EMAIL:
+        return this.enterAskEmail(ctx);
       case BotState.APPOINTMENT_ACTIONS:
         return this.enterAppointments(ctx);
       case BotState.CONFIRM_CANCEL:
@@ -274,6 +295,10 @@ export class WhatsappBotService {
         return this.enterTimes(ctx, { offset, refresh: false });
       case BotState.CONFIRM_BOOKING:
         return this.enterConfirm(ctx);
+      case BotState.ASK_EMAIL:
+        return this.enterAskEmail(ctx);
+      case BotState.VERIFY_EMAIL:
+        return this.promptEmailCode(ctx);
       case BotState.MY_APPOINTMENTS:
         return this.enterAppointments(ctx);
       case BotState.APPOINTMENT_ACTIONS:
@@ -692,7 +717,7 @@ export class WhatsappBotService {
     }
 
     ctx.session.slot = slot;
-    return this.enterConfirm(ctx);
+    return this.afterTimeChosen(ctx);
   }
 
   // ---------------------------------------------------------------------------
@@ -714,6 +739,9 @@ export class WhatsappBotService {
     ];
 
     if (service.price) lines.push(`💰 ${formatCurrency(service.price)}`);
+    if (ctx.session.customerEmail) {
+      lines.push(`📧 Confirmação para ${ctx.session.customerEmail}`);
+    }
     if (previous) {
       lines.push(
         '',
@@ -825,6 +853,188 @@ export class WhatsappBotService {
     );
 
     await this.sendText(ctx, lines.join('\n'));
+  }
+
+  // ---------------------------------------------------------------------------
+  // E-mail (confirmação, lembrete e avisos saem só por e-mail)
+  // ---------------------------------------------------------------------------
+
+  /** Pede o e-mail só a quem ainda não tem um, e nunca na remarcação. */
+  private async afterTimeChosen(ctx: IBotContext) {
+    const { session } = ctx;
+
+    if (session.rescheduleId || session.emailSkipped || session.customerEmail) {
+      return this.enterConfirm(ctx);
+    }
+
+    const telephone = normalizePhoneNumber(ctx.from);
+    const customer =
+      telephone && (await this.usersService.findByOne({ telephone }));
+
+    if (customer?.email) {
+      session.customerEmail = customer.email;
+      return this.enterConfirm(ctx);
+    }
+
+    return this.enterAskEmail(ctx);
+  }
+
+  private async enterAskEmail(ctx: IBotContext) {
+    await this.saveSession(ctx, {
+      ...ctx.session,
+      state: BotState.ASK_EMAIL,
+      emailVerification: undefined,
+    });
+
+    await this.sendButtons(
+      ctx,
+      '📧 Quer receber a confirmação e o lembrete do horário por e-mail?\n\nDigite seu e-mail aqui ou toque em *Pular*.',
+      [{ id: 'email:skip', title: 'Pular' }],
+    );
+  }
+
+  private async onAskEmail(ctx: IBotContext, input: IBotInput) {
+    if (input.reply === 'email:skip') return this.skipEmail(ctx);
+    if (input.reply) return this.repeatStep(ctx, 'Digite seu e-mail 👇');
+
+    const email = input.text.trim().toLowerCase();
+
+    if (!isEmail(email)) {
+      return this.repeatStep(
+        ctx,
+        'Esse e-mail não parece certo. Confira e digite de novo, por exemplo: ana@gmail.com',
+      );
+    }
+
+    return this.sendEmailCode(ctx, email);
+  }
+
+  private async sendEmailCode(ctx: IBotContext, email: string) {
+    const previous = ctx.session.emailVerification;
+    const sends = previous?.email === email ? previous.sends : 0;
+
+    if (sends >= EMAIL_CODE_MAX_SENDS) {
+      await this.sendText(
+        ctx,
+        'Já enviei o código algumas vezes. Vamos seguir sem e-mail por agora.',
+      );
+      return this.skipEmail(ctx);
+    }
+
+    const { code } = generateAuthCode();
+
+    try {
+      await this.notificationService.sendEmailOTP(email, code);
+    } catch (error) {
+      this.logger.error('Failed to send WhatsApp email code', error);
+      await this.sendText(
+        ctx,
+        'Não consegui enviar o e-mail agora 😕 Vamos seguir sem ele.',
+      );
+      return this.skipEmail(ctx);
+    }
+
+    await this.saveSession(ctx, {
+      ...ctx.session,
+      state: BotState.VERIFY_EMAIL,
+      emailVerification: {
+        email,
+        codeHash: this.hashCode(code),
+        expiresAt: Date.now() + EMAIL_CODE_TTL_MS,
+        attempts: 0,
+        sends: sends + 1,
+      },
+    });
+
+    return this.promptEmailCode(ctx);
+  }
+
+  private async promptEmailCode(ctx: IBotContext) {
+    const verification = ctx.session.emailVerification;
+    if (!verification) return this.enterAskEmail(ctx);
+
+    await this.sendButtons(
+      ctx,
+      `Enviei um código de 6 dígitos para *${verification.email}*.\n\nDigite o código aqui para confirmar que o e-mail é seu.`,
+      [
+        { id: 'email:resend', title: 'Reenviar código' },
+        { id: 'email:change', title: 'Trocar e-mail' },
+        { id: 'email:skip', title: 'Pular' },
+      ],
+    );
+  }
+
+  private async onVerifyEmail(ctx: IBotContext, input: IBotInput) {
+    const verification = ctx.session.emailVerification;
+    if (!verification) return this.enterAskEmail(ctx);
+
+    const action = this.replyValue(input, 'email');
+
+    if (action === 'skip') return this.skipEmail(ctx);
+    if (action === 'change') return this.enterAskEmail(ctx);
+    if (action === 'resend') return this.sendEmailCode(ctx, verification.email);
+
+    const code = input.reply ? '' : input.text.replace(/\D/g, '');
+
+    if (code.length !== 6) {
+      return this.repeatStep(ctx, 'Digite os 6 números do código 👇');
+    }
+
+    if (Date.now() > verification.expiresAt) {
+      return this.repeatStep(
+        ctx,
+        'Esse código expirou. Toque em *Reenviar código* para receber outro.',
+      );
+    }
+
+    if (this.hashCode(code) !== verification.codeHash) {
+      verification.attempts += 1;
+
+      if (verification.attempts >= EMAIL_CODE_MAX_ATTEMPTS) {
+        await this.sendText(
+          ctx,
+          'Código errado de novo. Vamos seguir sem e-mail por agora.',
+        );
+        return this.skipEmail(ctx);
+      }
+
+      await this.saveSession(ctx, ctx.session);
+      return this.repeatStep(
+        ctx,
+        'Código incorreto. Confira o e-mail e tente de novo.',
+      );
+    }
+
+    const [firstName, ...lastName] = ctx.userName.trim().split(/\s+/);
+    const result = await this.usersService.linkVerifiedEmail({
+      telephone: ctx.from,
+      email: verification.email,
+      firstName: firstName || undefined,
+      lastName: lastName.join(' ') || undefined,
+    });
+
+    if (result === 'conflict') {
+      await this.sendText(
+        ctx,
+        'Esse e-mail já está ligado a outro cadastro com outro telefone, então não consigo usá-lo por aqui. Seguimos sem e-mail. Para receber avisos nele, agende pelo site entrando com esse e-mail.',
+      );
+      return this.skipEmail(ctx);
+    }
+
+    ctx.session.customerEmail = verification.email;
+    ctx.session.emailVerification = undefined;
+    await this.sendText(ctx, '✅ E-mail confirmado!');
+    return this.enterConfirm(ctx);
+  }
+
+  private async skipEmail(ctx: IBotContext) {
+    ctx.session.emailSkipped = true;
+    ctx.session.emailVerification = undefined;
+    return this.enterConfirm(ctx);
+  }
+
+  private hashCode(code: string) {
+    return createHash('sha256').update(code).digest('hex');
   }
 
   // ---------------------------------------------------------------------------
@@ -1044,6 +1254,9 @@ export class WhatsappBotService {
   }
 
   private detectCommand(text: string): TBotCommand | undefined {
+    // E-mail digitado ("ana.agendamentos@…") não é comando
+    if (text.includes('@')) return undefined;
+
     const normalized = normalizeText(text).replace(/[!?.,]+$/g, '');
 
     if (GREETINGS.includes(normalized)) return 'menu';

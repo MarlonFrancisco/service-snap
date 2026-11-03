@@ -73,6 +73,8 @@ export enum BotState {
   MY_APPOINTMENTS = 'MY_APPOINTMENTS',
   APPOINTMENT_ACTIONS = 'APPOINTMENT_ACTIONS',
   CONFIRM_CANCEL = 'CONFIRM_CANCEL',
+  ASK_EMAIL = 'ASK_EMAIL',
+  VERIFY_EMAIL = 'VERIFY_EMAIL',
 }
 
 export type TBotCommand = 'menu' | 'exit' | 'back' | 'book' | 'appointments';
@@ -103,6 +105,15 @@ export interface IBotAppointment {
   professional: IBotPerson;
 }
 
+/** Código enviado por e-mail: guarda só o hash, nunca o código. */
+export interface IBotEmailVerification {
+  email: string;
+  codeHash: string;
+  expiresAt: number;
+  attempts: number;
+  sends: number;
+}
+
 /** Tudo numa chave só no Redis, para a conversa nunca ficar pela metade. */
 export interface IBotSession {
   state: BotState;
@@ -115,6 +126,10 @@ export interface IBotSession {
   date?: string;
   slots?: IBotSlot[];
   slot?: IBotSlot;
+  /** E-mail já ligado ao cliente, para onde vão confirmação e lembrete. */
+  customerEmail?: string;
+  emailSkipped?: boolean;
+  emailVerification?: IBotEmailVerification;
   appointments?: IBotAppointment[];
   appointmentId?: string;
   rescheduleId?: string;
