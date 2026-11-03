@@ -602,6 +602,47 @@ export class SubscriptionService {
     });
   }
 
+  /** Avisa só na transição para cancelamento agendado, não a cada update. */
+  async handleSubscriptionUpdated({
+    object,
+    previous_attributes: previous,
+  }: Stripe.CustomerSubscriptionUpdatedEvent.Data) {
+    const subscription = await this.syncSubscription(object.id);
+
+    if (
+      !subscription ||
+      previous?.cancel_at_period_end !== false ||
+      !object.cancel_at_period_end
+    ) {
+      return;
+    }
+
+    // O evento pode chegar depois de uma reativação; vale o estado atual
+    const stripeSubscription = await this.stripeService.subscriptions.retrieve(
+      object.id,
+    );
+
+    if (!stripeSubscription.cancel_at_period_end) {
+      return;
+    }
+
+    const product = await this.stripeService.products.retrieve(
+      subscription.productId,
+    );
+
+    await this.notificationService.subscriptionCancelScheduled(
+      subscription.user.email,
+      {
+        planName: product.name,
+        accessUntil: new Date(subscription.currentPeriodEnd).toLocaleDateString(
+          'pt-BR',
+          { timeZone: 'America/Sao_Paulo' },
+        ),
+        manageLink: `${this.configService.get<string>('FRONTEND_URL')}/partner/plans/me`,
+      },
+    );
+  }
+
   async webhook(rawBody: Buffer | undefined, signature: string) {
     const webhookSecret = this.configService.get<string>(
       'STRIPE_WEBHOOK_SECRET',
@@ -662,7 +703,10 @@ export class SubscriptionService {
           event.data as Stripe.InvoicePaymentFailedEvent.Data,
         ),
       'customer.subscription.created': syncFromEvent,
-      'customer.subscription.updated': syncFromEvent,
+      'customer.subscription.updated': () =>
+        this.handleSubscriptionUpdated(
+          event.data as Stripe.CustomerSubscriptionUpdatedEvent.Data,
+        ),
       'customer.subscription.deleted': syncFromEvent,
       'customer.subscription.trial_will_end': () =>
         this.handleTrialWillEnd(event.data.object as Stripe.Subscription),

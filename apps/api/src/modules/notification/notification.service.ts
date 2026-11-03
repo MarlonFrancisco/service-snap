@@ -24,6 +24,7 @@ import type {
   TScheduleNewBookingEmail,
   TScheduleReminderEmail,
   TScheduleStoreEmail,
+  TSubscriptionCancelScheduledEmail,
   TTrialEndingEmail,
 } from './notification.types';
 
@@ -256,6 +257,24 @@ export class NotificationService {
     });
 
     return this.sendEmail(to, `Seu teste termina em ${data.chargeDate}`, body);
+  }
+
+  async subscriptionCancelScheduled(
+    to: string,
+    data: TSubscriptionCancelScheduledEmail,
+  ) {
+    const body = await this.renderEmail('subscription-cancel-scheduled', data, {
+      title: 'Cancelamento agendado',
+      preheader: `Seu acesso ao ${data.planName} continua até ${data.accessUntil}.`,
+      footerNote:
+        'Você recebeu este e-mail porque é responsável pela assinatura do ServiceSnap.',
+    });
+
+    return this.sendEmail(
+      to,
+      `Cancelamento agendado: acesso até ${data.accessUntil}`,
+      body,
+    );
   }
 
   /** O template traz só o miolo; cabeçalho e rodapé vêm do layout comum. */

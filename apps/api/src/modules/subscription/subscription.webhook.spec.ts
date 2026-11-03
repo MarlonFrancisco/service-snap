@@ -136,6 +136,7 @@ async function boot(shared?: {
   const notification = {
     invoicePaid: vi.fn(async () => undefined),
     paymentFailed: vi.fn(async () => undefined),
+    subscriptionCancelScheduled: vi.fn(async () => undefined),
   };
   // Um cache por instância, como lambdas distintas sem cache compartilhado
   const service = new (SubscriptionService as any)(
@@ -289,6 +290,43 @@ describe('ciclo de vida', () => {
     expect(repo.rows[0].currentPeriodEnd).toEqual(new Date(endedAt * 1000));
 
     expect(repo.rows).toHaveLength(1);
+  });
+
+  it('avisa por e-mail só na transição para cancelamento agendado', async () => {
+    const { post, state, notification } = await boot();
+    state.set('sub_new', stripeSubscription('sub_new', 'active'));
+    await post(subEvent('e1', 'created'));
+
+    const updated = (id: string, cancel: boolean, previous: object) =>
+      JSON.stringify({
+        id,
+        object: 'event',
+        type: 'customer.subscription.updated',
+        data: {
+          object: { id: 'sub_new', cancel_at_period_end: cancel },
+          previous_attributes: previous,
+        },
+      });
+
+    state.get('sub_new').cancel_at_period_end = true;
+    await post(updated('e2', true, { cancel_at_period_end: false }));
+    // Outro update com o cancelamento já agendado não repete o aviso
+    await post(updated('e3', true, { metadata: {} }));
+
+    expect(notification.subscriptionCancelScheduled).toHaveBeenCalledOnce();
+    expect(notification.subscriptionCancelScheduled).toHaveBeenCalledWith(
+      USER.email,
+      expect.objectContaining({
+        accessUntil: new Date(PERIOD_END * 1000).toLocaleDateString('pt-BR', {
+          timeZone: 'America/Sao_Paulo',
+        }),
+      }),
+    );
+
+    // Reativado antes de o evento chegar: o estado atual vale mais que o payload
+    state.get('sub_new').cancel_at_period_end = false;
+    await post(updated('e4', true, { cancel_at_period_end: false }));
+    expect(notification.subscriptionCancelScheduled).toHaveBeenCalledOnce();
   });
 
   it('marca como cancelada a assinatura que não existe mais na Stripe', async () => {

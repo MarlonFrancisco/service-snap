@@ -68,3 +68,9 @@ export type TTrialEndingEmail = {
   daysLeftLabel: string;
   manageLink: string;
 };
+
+export type TSubscriptionCancelScheduledEmail = {
+  planName: string;
+  accessUntil: string;
+  manageLink: string;
+};
