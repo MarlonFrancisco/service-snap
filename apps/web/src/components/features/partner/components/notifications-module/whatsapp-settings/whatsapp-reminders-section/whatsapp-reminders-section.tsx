@@ -10,6 +10,7 @@ import type { TWhatsappRemindersSectionConfig } from './whatsapp-reminders-secti
 export const WhatsappRemindersSection = ({
   isSaving,
   onSubmit,
+  lockedHint,
 }: TWhatsappRemindersSectionConfig) => {
   const {
     customMessage,
@@ -36,6 +37,7 @@ export const WhatsappRemindersSection = ({
         onOpenPreview={openPreview}
         isSaving={isSaving}
         onSubmit={onSubmit}
+        lockedHint={lockedHint}
       />
 
       <NotificationPreviewModal

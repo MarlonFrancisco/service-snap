@@ -1,5 +1,12 @@
-import { CustomerMetricsModule } from '@/components/features/partner';
+import {
+  CustomerMetricsModule,
+  PlanFeatureGate,
+} from '@/components/features/partner';
 
 export default function PartnerDashboardCustomersPage() {
-  return <CustomerMetricsModule />;
+  return (
+    <PlanFeatureGate module="customers">
+      <CustomerMetricsModule />
+    </PlanFeatureGate>
+  );
 }

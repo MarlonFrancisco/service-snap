@@ -16,6 +16,8 @@ import {
   Switch,
   Textarea,
 } from '@repo/ui';
+import { Lock } from 'lucide-react';
+import { useId } from 'react';
 import { Controller, type FieldValues } from 'react-hook-form';
 import { PARTNER_PORTAL_CLASS } from '../../../../partner.styles';
 import {
@@ -43,12 +45,22 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
   onOpenPreview,
   isSaving,
   onSubmit,
+  lockedHint,
 }: TReminderChannelCardConfig<TFormValues>) => {
-  const { control, isEnabled, messageLength, enabledLabel } =
-    useReminderChannelCard<TFormValues>({ enabledName, messageName });
+  const lockedHintId = useId();
+  const { control, isEnabled, messageLength, enabledLabel, isLocked } =
+    useReminderChannelCard<TFormValues>({
+      enabledName,
+      messageName,
+      lockedHint,
+    });
 
   return (
-    <form onSubmit={onSubmit} className={MODULE_RAISED_CARD_CLASS}>
+    <form
+      onSubmit={onSubmit}
+      aria-describedby={isLocked ? lockedHintId : undefined}
+      className={MODULE_RAISED_CARD_CLASS}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <span
@@ -66,10 +78,18 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
           control={control}
           name={enabledName}
           render={({ field }) => (
-            <label className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold">
+            <label
+              className={cn(
+                'flex min-h-11 items-center gap-2 text-sm font-semibold',
+                isLocked
+                  ? 'cursor-not-allowed text-[#5F5C6E]'
+                  : 'cursor-pointer',
+              )}
+            >
               <Switch
                 checked={Boolean(field.value)}
                 onCheckedChange={field.onChange}
+                disabled={isLocked}
                 aria-label={title}
               />
               {enabledLabel}
@@ -78,7 +98,17 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
         />
       </div>
 
-      {isEnabled ? (
+      {isLocked ? (
+        <p
+          id={lockedHintId}
+          className="flex items-center gap-2 rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] font-semibold text-[#5F5C6E]"
+        >
+          <Lock aria-hidden="true" className="size-4 flex-none stroke-2" />
+          {lockedHint}
+        </p>
+      ) : null}
+
+      {isEnabled && !isLocked ? (
         <>
           <FormField
             control={control}
@@ -158,8 +188,11 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
         </button>
         <button
           type="submit"
-          disabled={isSaving}
-          className={cn(MODULE_PRIMARY_ACTION_CLASS, 'min-h-12 px-5 text-sm')}
+          disabled={isSaving || isLocked}
+          className={cn(
+            MODULE_PRIMARY_ACTION_CLASS,
+            'min-h-12 px-5 text-sm disabled:cursor-not-allowed disabled:bg-[#EBE9F0] disabled:text-[#5F5C6E]',
+          )}
         >
           {isSaving ? (
             <>

@@ -12,6 +12,7 @@ import {
   PARTNER_PORTAL_CLASS,
 } from '../../../../partner.styles';
 import type { TNavGroupItem, TNavSubItem } from '../../admin-sidebar.types';
+import { AdminSidebarLock } from '../admin-sidebar-lock';
 
 type TAdminSidebarMenuItemWithSubmenuConfig = {
   item: TNavGroupItem;
@@ -53,6 +54,7 @@ const SubItemLink = ({
       )}
     >
       {subItem.label}
+      {subItem.isLocked ? <AdminSidebarLock /> : null}
     </Link>
   </li>
 );

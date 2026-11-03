@@ -12,6 +12,8 @@ export type TReminderTimingOption = {
 export type TReminderSectionConfig = {
   isSaving: boolean;
   onSubmit: FormEventHandler<HTMLFormElement>;
+  /** Canal indisponível (ex.: WhatsApp sem integração): nada se edita nem salva. */
+  lockedHint?: string;
 };
 
 export type TReminderChannelCardConfig<TFormValues extends FieldValues> =
@@ -31,7 +33,10 @@ export type TReminderChannelCardConfig<TFormValues extends FieldValues> =
   };
 
 export type TUseReminderChannelCardConfig<TFormValues extends FieldValues> =
-  Pick<TReminderChannelCardConfig<TFormValues>, 'enabledName' | 'messageName'>;
+  Pick<
+    TReminderChannelCardConfig<TFormValues>,
+    'enabledName' | 'messageName' | 'lockedHint'
+  >;
 
 export type TReminderChannelLayoutConfig = {
   title: string;

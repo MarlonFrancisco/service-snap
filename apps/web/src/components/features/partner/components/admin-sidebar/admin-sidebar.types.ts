@@ -1,22 +1,15 @@
-import type { IMySubscription } from '@/types/api';
 import type { LucideIcon } from 'lucide-react';
+import type { TPlanFeatureFlag } from '../plan-feature-gate';
 
-export type TPlanFeatures = IMySubscription['features'];
-
-export type TPlanFeatureFlag = keyof Pick<
-  TPlanFeatures,
-  | 'DASHBOARD_GENERAL_ACCESS'
-  | 'DASHBOARD_SALES_ACCESS'
-  | 'DASHBOARD_OPERATIONAL_ACCESS'
-  | 'DASHBOARD_CUSTOMERS_ACCESS'
-  | 'WHATSAPP_INTEGRATION'
->;
+export type { TPlanFeatureFlag, TPlanFeatures } from '../plan-feature-gate';
 
 export type TNavSubItem = {
   id: string;
   label: string;
   href: string;
   requires?: readonly TPlanFeatureFlag[];
+  /** Calculado em `useAdminSidebar`: o item aparece, mas o plano não libera. */
+  isLocked?: boolean;
 };
 
 export type TNavLinkItem = TNavSubItem & {
@@ -31,6 +24,7 @@ export type TNavGroupItem = {
   icon: LucideIcon;
   requires?: readonly TPlanFeatureFlag[];
   children: readonly TNavSubItem[];
+  isLocked?: boolean;
 };
 
 export type TNavItem = TNavLinkItem | TNavGroupItem;

@@ -5,28 +5,34 @@ import { findLongestPathMatch } from '@/utils/constants/partner.constants';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PARTNER_NAV_HREFS, PARTNER_NAV_ITEMS } from './admin-sidebar.config';
+import { hasPlanAccess } from '../plan-feature-gate';
 import type {
   TNavItem,
-  TPlanFeatureFlag,
   TPlanFeatures,
   TUseAdminSidebarConfig,
 } from './admin-sidebar.types';
 
-const hasPlanAccess = (
-  requires: readonly TPlanFeatureFlag[] | undefined,
+/**
+ * Todos os módulos aparecem; os que o plano não libera vêm com `isLocked` e a
+ * página mostra o aviso de upgrade (`PlanFeatureGate`).
+ */
+const getNavItemsWithAccess = (
   features: TPlanFeatures | undefined,
-) => !requires || requires.every((flag) => features?.[flag] === true);
+): TNavItem[] =>
+  PARTNER_NAV_ITEMS.map<TNavItem>((item) => {
+    const isLocked = !hasPlanAccess(item.requires, features);
+    if (item.kind === 'link') return { ...item, isLocked };
 
-const getVisibleNavItems = (features: TPlanFeatures | undefined): TNavItem[] =>
-  PARTNER_NAV_ITEMS.flatMap<TNavItem>((item) => {
-    if (!hasPlanAccess(item.requires, features)) return [];
-    if (item.kind === 'link') return [item];
+    const children = item.children.map((child) => ({
+      ...child,
+      isLocked: isLocked || !hasPlanAccess(child.requires, features),
+    }));
 
-    const children = item.children.filter((child) =>
-      hasPlanAccess(child.requires, features),
-    );
-
-    return children.length > 0 ? [{ ...item, children }] : [];
+    return {
+      ...item,
+      children,
+      isLocked: children.every((child) => child.isLocked),
+    };
   });
 
 // Usa a lista completa: em rota sem acesso pelo plano, o grupo segue ativo.
@@ -42,7 +48,7 @@ export const useAdminSidebar = ({ onNavigate }: TUseAdminSidebarConfig) => {
   const { currentPlan } = useSubscriptionQuery();
   const features = currentPlan?.features;
 
-  const items = useMemo(() => getVisibleNavItems(features), [features]);
+  const items = useMemo(() => getNavItemsWithAccess(features), [features]);
 
   const activeHref = findLongestPathMatch(pathname, PARTNER_NAV_HREFS);
   const activeGroupId = getGroupIdByHref(activeHref);

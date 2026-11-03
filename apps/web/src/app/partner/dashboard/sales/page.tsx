@@ -1,5 +1,12 @@
-import { SalesRevenueMetricsModule } from '@/components/features/partner';
+import {
+  SalesRevenueMetricsModule,
+  PlanFeatureGate,
+} from '@/components/features/partner';
 
 export default function PartnerDashboardSalesPage() {
-  return <SalesRevenueMetricsModule />;
+  return (
+    <PlanFeatureGate module="sales">
+      <SalesRevenueMetricsModule />
+    </PlanFeatureGate>
+  );
 }

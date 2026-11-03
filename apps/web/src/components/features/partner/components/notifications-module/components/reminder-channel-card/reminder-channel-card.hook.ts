@@ -6,7 +6,9 @@ import type { TUseReminderChannelCardConfig } from './reminder-channel-card.type
 export const useReminderChannelCard = <TFormValues extends FieldValues>({
   enabledName,
   messageName,
+  lockedHint,
 }: TUseReminderChannelCardConfig<TFormValues>) => {
+  const isLocked = Boolean(lockedHint);
   const { control, watch } = useFormContext<TFormValues>();
 
   const isEnabled = Boolean(watch(enabledName));
@@ -16,6 +18,7 @@ export const useReminderChannelCard = <TFormValues extends FieldValues>({
     control,
     isEnabled,
     messageLength,
-    enabledLabel: isEnabled ? 'Ativado' : 'Desativado',
+    isLocked,
+    enabledLabel: isLocked ? 'Bloqueado' : isEnabled ? 'Ativado' : 'Desativado',
   };
 };

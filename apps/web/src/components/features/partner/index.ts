@@ -6,6 +6,7 @@ export { AgendaModule } from './components/agenda-module';
 export * from './components/dashboard-module';
 export * from './components/notifications-module';
 export * from './components/plans-module';
+export { PlanFeatureGate } from './components/plan-feature-gate';
 export { ServicesModule } from './components/services-module';
 export { StoreSelector } from './components/store-selector';
 export { StoresModule } from './components/stores-module';

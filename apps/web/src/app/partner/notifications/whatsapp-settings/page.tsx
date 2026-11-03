@@ -1,5 +1,12 @@
-import { WhatsappSettings } from '@/components/features/partner';
+import {
+  WhatsappSettings,
+  PlanFeatureGate,
+} from '@/components/features/partner';
 
 export default function WhatsappSettingsPage() {
-  return <WhatsappSettings />;
+  return (
+    <PlanFeatureGate module="whatsappReminders">
+      <WhatsappSettings />
+    </PlanFeatureGate>
+  );
 }

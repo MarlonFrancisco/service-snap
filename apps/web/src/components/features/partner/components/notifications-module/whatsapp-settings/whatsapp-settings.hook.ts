@@ -39,6 +39,8 @@ export const useWhatsappSettings = () => {
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
+    if (!isConnected) return;
+
     updateNotificationsSettingsMutation.mutate({
       ...data,
       id: notificationsSettings?.id,
@@ -48,12 +50,24 @@ export const useWhatsappSettings = () => {
   // Não afirma que falta ativar enquanto carrega ou quando a leitura falhou.
   const isConfigUnknown =
     isWhatsappPending || (isWhatsappError && !isNotFoundError(whatsappError));
+  const isConnected = Boolean(whatsappConfig?.isActive);
+
+  // Sem integração ativa o lembrete não tem por onde sair: o canal fica bloqueado.
+  const getLockedHint = () => {
+    if (isConnected) return undefined;
+    if (isWhatsappPending) return 'Verificando a integração do WhatsApp...';
+    if (isConfigUnknown) {
+      return 'Não foi possível verificar a integração do WhatsApp. Recarregue a página para tentar de novo.';
+    }
+    return 'Disponível depois que o WhatsApp da loja estiver conectado.';
+  };
 
   return {
     form,
     isUpdatingNotificationsSettings:
       updateNotificationsSettingsMutation.isPending,
-    showActivationNotice: !isConfigUnknown && !whatsappConfig?.isActive,
+    showActivationNotice: !isConfigUnknown && !isConnected,
+    lockedHint: getLockedHint(),
     handleSubmit,
     loadState,
     handleRetry,
