@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
 import { Repository } from 'typeorm';
 import { SaveWhatsappConfigDto } from './dto/save-whatsapp-config.dto';
+import { WHATSAPP_REMINDER_TEMPLATE } from './whatsapp-reminder-template';
 import { WhatsappConfig } from './whatsapp.entity';
 import { IWhatsappInteractiveList } from './whatsapp.types';
 
@@ -30,6 +31,20 @@ export type TWhatsappTemplateSummary = {
   category?: string;
 };
 
+/** `MISSING` quando a WABA ainda não tem o template; os outros vêm da Meta. */
+export type TWhatsappReminderTemplateStatus = {
+  name: string;
+  status: 'MISSING' | 'APPROVED' | 'PENDING' | 'REJECTED' | (string & {});
+  rejectedReason?: string;
+};
+
+type TMetaTemplateRow = {
+  name?: string;
+  status?: string;
+  language?: string;
+  rejected_reason?: string;
+};
+
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
@@ -47,7 +62,10 @@ export class WhatsappService {
 
   private assertSendableConfig(
     config: WhatsappConfig | null,
-    action: 'testar o envio' | 'listar templates' = 'testar o envio',
+    action:
+      | 'testar o envio'
+      | 'listar templates'
+      | 'criar o template' = 'testar o envio',
   ): WhatsappConfig {
     if (
       !config?.phoneNumberId ||
@@ -103,6 +121,35 @@ export class WhatsappService {
       phoneNumberId,
       to,
       { type: 'text', text: { body: text } },
+      accessToken,
+    );
+  }
+
+  async sendTemplate(
+    phoneNumberId: string,
+    to: string,
+    template: { name: string; language: string; bodyParams: string[] },
+    accessToken: string,
+  ) {
+    return this.sendMessage(
+      phoneNumberId,
+      to,
+      {
+        type: 'template',
+        template: {
+          name: template.name,
+          language: { code: template.language },
+          components: [
+            {
+              type: 'body',
+              parameters: template.bodyParams.map((text) => ({
+                type: 'text',
+                text,
+              })),
+            },
+          ],
+        },
+      },
       accessToken,
     );
   }
@@ -292,12 +339,7 @@ export class WhatsappService {
       '✅ Teste ServiceSnap: sua integração WhatsApp está funcionando. Esta mensagem foi enviada pelo painel do parceiro.';
 
     try {
-      await this.sendText(
-        ready.phoneNumberId,
-        phone,
-        body,
-        ready.accessToken,
-      );
+      await this.sendText(ready.phoneNumberId, phone, body, ready.accessToken);
       return {
         ok: true,
         to: phone,
@@ -356,5 +398,102 @@ export class WhatsappService {
         metaMessage || 'Não foi possível listar templates da Meta.',
       );
     }
+  }
+
+  async getReminderTemplate(
+    storeId: string,
+  ): Promise<TWhatsappReminderTemplateStatus> {
+    const config = await this.whatsappConfigRepository.findOne({
+      where: { store: { id: storeId } },
+    });
+    const ready = this.assertSendableConfig(config, 'listar templates');
+
+    try {
+      return await this.findReminderTemplate(ready);
+    } catch (error: any) {
+      throw new BadRequestException(
+        this.metaErrorMessage(error) ||
+          'Não foi possível consultar o template do lembrete na Meta.',
+      );
+    }
+  }
+
+  /** Cria o template na WABA da loja só se ele ainda não existir. */
+  async ensureReminderTemplate(
+    storeId: string,
+  ): Promise<TWhatsappReminderTemplateStatus> {
+    const config = await this.whatsappConfigRepository.findOne({
+      where: { store: { id: storeId } },
+    });
+    const ready = this.assertSendableConfig(config, 'criar o template');
+
+    try {
+      const current = await this.findReminderTemplate(ready);
+      if (current.status !== 'MISSING') return current;
+
+      const { name, language, category, header, body, example } =
+        WHATSAPP_REMINDER_TEMPLATE;
+      const { data } = await axios.post(
+        `${this.baseUrl}/${ready.businessAccountId}/message_templates`,
+        {
+          name,
+          language,
+          category,
+          components: [
+            { type: 'HEADER', format: 'TEXT', text: header },
+            {
+              type: 'BODY',
+              text: body,
+              example: { body_text: [example] },
+            },
+          ],
+        },
+        { headers: { Authorization: `Bearer ${ready.accessToken}` } },
+      );
+
+      return { name, status: data?.status || 'PENDING' };
+    } catch (error: any) {
+      const metaMessage = this.metaErrorMessage(error);
+      this.logger.warn(
+        `WhatsApp reminder template failed for store ${storeId}: ${metaMessage}`,
+      );
+      throw new BadRequestException(
+        metaMessage || 'Não foi possível criar o template do lembrete na Meta.',
+      );
+    }
+  }
+
+  /** Lança o erro da Meta: quem chama decide se isso para a operação. */
+  async findReminderTemplate(
+    config: Pick<WhatsappConfig, 'businessAccountId' | 'accessToken'>,
+  ): Promise<TWhatsappReminderTemplateStatus> {
+    const { name, language } = WHATSAPP_REMINDER_TEMPLATE;
+    const { data } = await axios.get(
+      `${this.baseUrl}/${config.businessAccountId}/message_templates`,
+      {
+        params: { name, fields: 'name,status,language,rejected_reason' },
+        headers: { Authorization: `Bearer ${config.accessToken}` },
+      },
+    );
+
+    // O filtro por nome da Meta não é exato: confere nome e idioma aqui
+    const rows: TMetaTemplateRow[] = Array.isArray(data?.data) ? data.data : [];
+    const row = rows.find(
+      (item) => item.name === name && item.language === language,
+    );
+
+    if (!row) return { name, status: 'MISSING' };
+
+    return {
+      name,
+      status: row.status || 'PENDING',
+      ...(row.rejected_reason && row.rejected_reason !== 'NONE'
+        ? { rejectedReason: row.rejected_reason }
+        : {}),
+    };
+  }
+
+  private metaErrorMessage(error: any): string | undefined {
+    return error.response?.data?.error?.message || error.message;
   }
 }

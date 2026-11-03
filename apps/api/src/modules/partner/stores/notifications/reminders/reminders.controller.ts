@@ -10,6 +10,6 @@ export class RemindersController {
 
   @Get()
   run() {
-    return this.remindersService.sendDueEmailReminders();
+    return this.remindersService.sendDueReminders();
   }
 }

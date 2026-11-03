@@ -8,26 +8,50 @@ import {
   toDateKey,
 } from '../../../../../utils/helpers/schedule.helpers';
 import { NotificationService } from '../../../../notification/notification.service';
+import { PlanFeatureGuard } from '../../guards';
 import {
   buildCustomerEmailData,
   getBookingPrice,
 } from '../../schedule/schedule.helpers';
 import { Schedule } from '../../schedule/schedule.entity';
+import type { Store } from '../../store.entity';
+import {
+  WHATSAPP_REMINDER_TEMPLATE,
+  buildReminderTemplateParams,
+  toWhatsappRecipient,
+} from '../../whatsapp/whatsapp-reminder-template';
+import { WhatsappService } from '../../whatsapp/whatsapp.service';
 import { NotificationsHistory } from '../history/history.entity';
 import { NotificationsHistoryService } from '../history/history.service';
+import type { NotificationsSettings } from '../settings/settings.entity';
 import {
   SCHEDULE_REMINDER_ATTEMPTS,
   ScheduleReminder,
+  TScheduleReminderChannel,
 } from './schedule-reminder.entity';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const DEFAULT_ADVANCE_HOURS = 24;
-// Acima do maior valor do painel (48h): antecedência maior só encurta o aviso
+// Acima do maior valor do painel (72h): antecedência maior só encurta o aviso
 const SEARCH_HORIZON_HOURS = 72;
 // Limite do Resend e duração da função: o que sobrar sai na execução seguinte
 const MAX_SENDS_PER_RUN = 50;
-const SEND_INTERVAL_MS = 600;
+const EMAIL_SEND_INTERVAL_MS = 600;
+// A Meta aceita dezenas por segundo; o intervalo só evita rajada no mesmo número
+const WHATSAPP_SEND_INTERVAL_MS = 200;
+
+type TReminderResult = { sent: number; failed: number };
+
+type TReminderChannelConfig = {
+  channel: TScheduleReminderChannel;
+  sendIntervalMs: number;
+  historyLabel: string;
+  advanceOf: (settings: NotificationsSettings) => string | undefined;
+  recipientOf: (schedule: Schedule) => string | null;
+  isStoreReady?: (store: Store) => Promise<boolean>;
+  send: (schedule: Schedule, recipient: string) => Promise<unknown>;
+};
 
 const parseAdvanceHours = (value?: string) => {
   const match = value?.trim().match(/^(\d+)\s*h?$/i);
@@ -47,31 +71,95 @@ export class RemindersService {
     private readonly notificationsHistoryService: NotificationsHistoryService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+    private readonly whatsappService: WhatsappService,
+    private readonly planFeatureGuard: PlanFeatureGuard,
   ) {}
 
+  /** Um canal com erro não impede o outro de sair na mesma execução. */
+  async sendDueReminders(now = new Date()) {
+    const run = async (
+      channel: string,
+      task: () => Promise<TReminderResult>,
+    ) => {
+      try {
+        return await task();
+      } catch (error) {
+        this.logger.error(
+          `Lembretes por ${channel} não processados`,
+          error instanceof Error ? error.stack : undefined,
+        );
+        return null;
+      }
+    };
+
+    return {
+      email: await run('e-mail', () => this.sendDueEmailReminders(now)),
+      whatsapp: await run('WhatsApp', () => this.sendDueWhatsappReminders(now)),
+    };
+  }
+
   async sendDueEmailReminders(now = new Date()) {
-    const schedules = await this.findCandidates(now);
-    const result = { sent: 0, failed: 0 };
+    return this.deliver(now, await this.findCandidates(now, 'email'), {
+      channel: 'email',
+      sendIntervalMs: EMAIL_SEND_INTERVAL_MS,
+      historyLabel: 'Lembrete do agendamento',
+      advanceOf: (settings) => settings.emailReminderAdvanceHours,
+      recipientOf: (schedule) => schedule.user.email || null,
+      send: (schedule, email) => this.sendEmail(schedule, email),
+    });
+  }
+
+  async sendDueWhatsappReminders(now = new Date()) {
+    // Uma consulta de plano e de template por loja em cada execução
+    const readiness = new Map<string, Promise<boolean>>();
+
+    return this.deliver(now, await this.findCandidates(now, 'whatsapp'), {
+      channel: 'whatsapp',
+      sendIntervalMs: WHATSAPP_SEND_INTERVAL_MS,
+      historyLabel: 'Lembrete por WhatsApp do agendamento',
+      advanceOf: (settings) => settings.whatsappReminderAdvanceHours,
+      recipientOf: (schedule) => toWhatsappRecipient(schedule.user.telephone),
+      isStoreReady: (store) => {
+        if (!readiness.has(store.id)) {
+          readiness.set(store.id, this.isWhatsappStoreReady(store));
+        }
+        return readiness.get(store.id);
+      },
+      send: (schedule, phone) => this.sendWhatsapp(schedule, phone),
+    });
+  }
+
+  private async deliver(
+    now: Date,
+    schedules: Schedule[],
+    config: TReminderChannelConfig,
+  ) {
+    const result: TReminderResult = { sent: 0, failed: 0 };
     let attemptedSends = 0;
 
     for (const schedule of schedules) {
       if (attemptedSends === MAX_SENDS_PER_RUN) break;
-      if (!this.isDue(schedule, now)) continue;
 
-      const claim = await this.claim(schedule);
+      const recipient = config.recipientOf(schedule);
+      if (!recipient || !this.isDue(schedule, now, config)) continue;
+      if (config.isStoreReady && !(await config.isStoreReady(schedule.store))) {
+        continue;
+      }
+
+      const claim = await this.claim(schedule, config.channel);
       if (!claim) continue;
 
-      if (attemptedSends > 0) await sleep(SEND_INTERVAL_MS);
+      if (attemptedSends > 0) await sleep(config.sendIntervalMs);
       attemptedSends += 1;
 
-      const status = await this.send(schedule);
+      const status = await this.send(schedule, recipient, config);
       result[status] += 1;
 
-      // Marca antes do histórico: uma falha ao gravá-lo não pode reenviar o e-mail
+      // Marca antes do histórico: uma falha ao gravá-lo não pode reenviar o lembrete
       await this.reminderRepository.update({ id: claim.id }, { status });
 
       if (status === 'sent' || claim.attempts >= SCHEDULE_REMINDER_ATTEMPTS) {
-        await this.recordHistory(schedule, status, now);
+        await this.recordHistory(schedule, recipient, status, now, config);
       }
     }
 
@@ -79,21 +167,34 @@ export class RemindersService {
   }
 
   /** O filtro exato depende do fuso da loja, então a consulta só limita por dia. */
-  private findCandidates(now: Date) {
+  private findCandidates(now: Date, channel: TScheduleReminderChannel) {
     const from = new Date(now.getTime() - DAY_MS);
     const to = new Date(
       now.getTime() + SEARCH_HORIZON_HOURS * HOUR_MS + DAY_MS,
     );
 
-    return this.scheduleRepository
+    const query = this.scheduleRepository
       .createQueryBuilder('schedule')
       .innerJoinAndSelect('schedule.user', 'user')
       .innerJoinAndSelect('schedule.store', 'store')
       .innerJoinAndSelect('store.notificationsSettings', 'settings')
       .leftJoinAndSelect('schedule.service', 'service')
       .leftJoinAndSelect('schedule.storeMember', 'storeMember')
-      .leftJoinAndSelect('storeMember.user', 'memberUser')
-      .where('settings.emailReminderEnabled = true')
+      .leftJoinAndSelect('storeMember.user', 'memberUser');
+
+    if (channel === 'whatsapp') {
+      query
+        .innerJoinAndSelect(
+          'store.whatsappConfig',
+          'whatsapp',
+          'whatsapp.isActive = true',
+        )
+        .where('settings.whatsappReminderEnabled = true');
+    } else {
+      query.where('settings.emailReminderEnabled = true');
+    }
+
+    return query
       .andWhere('store.isDeleted IS NOT TRUE')
       .andWhere("schedule.status = 'scheduled'")
       .andWhere('schedule.date BETWEEN :from AND :to', {
@@ -105,10 +206,8 @@ export class RemindersService {
       .getMany();
   }
 
-  private isDue(schedule: Schedule, now: Date) {
-    if (!schedule.user.email || !schedule.date || !schedule.startTime) {
-      return false;
-    }
+  private isDue(schedule: Schedule, now: Date, config: TReminderChannelConfig) {
+    if (!schedule.date || !schedule.startTime) return false;
 
     try {
       const startsAt = storeTimeToDate(
@@ -117,7 +216,7 @@ export class RemindersService {
         schedule.store.timezone || 'America/Sao_Paulo',
       ).getTime();
       const advanceHours = parseAdvanceHours(
-        schedule.store.notificationsSettings.emailReminderAdvanceHours,
+        config.advanceOf(schedule.store.notificationsSettings),
       );
 
       return (
@@ -134,6 +233,37 @@ export class RemindersService {
   }
 
   /**
+   * O plano pode ter caído depois de o lembrete ser ligado, e a Meta só entrega
+   * com o template aprovado. Sem isso o lembrete nem é reservado: sai quando der.
+   */
+  private async isWhatsappStoreReady(store: Store) {
+    try {
+      const missing = await this.planFeatureGuard.getMissingFeatures(store.id, [
+        'WHATSAPP_INTEGRATION',
+      ]);
+      if (missing.length) return false;
+
+      const template = await this.whatsappService.findReminderTemplate(
+        store.whatsappConfig,
+      );
+      if (template.status !== 'APPROVED') {
+        this.logger.warn(
+          `Loja ${store.id} sem template de lembrete aprovado (${template.status})`,
+        );
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Lembretes por WhatsApp da loja ${store.id} não verificados`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      return false;
+    }
+  }
+
+  /**
    * Instrução única para duas execuções simultâneas não pegarem o mesmo lembrete.
    * Sem linha de retorno, outra execução já enviou ou está enviando. Se o processo
    * morrer durante o envio, a linha fica em `sending`: preferimos perder um
@@ -141,20 +271,22 @@ export class RemindersService {
    */
   private async claim(
     schedule: Schedule,
+    channel: TScheduleReminderChannel,
   ): Promise<Pick<ScheduleReminder, 'id' | 'attempts'> | undefined> {
     const [claim] = await this.reminderRepository.query(
       `INSERT INTO "schedule_reminders"
          ("scheduleId", "channel", "appointmentKey", "status", "attempts")
-       VALUES ($1, 'email', $2, 'sending', 1)
+       VALUES ($1, $2, $3, 'sending', 1)
        ON CONFLICT ("scheduleId", "channel", "appointmentKey") DO UPDATE
          SET "status" = 'sending',
              "attempts" = "schedule_reminders"."attempts" + 1,
              "updated_at" = now()
          WHERE "schedule_reminders"."status" = 'failed'
-           AND "schedule_reminders"."attempts" < $3
+           AND "schedule_reminders"."attempts" < $4
        RETURNING "id", "attempts"`,
       [
         schedule.id,
+        channel,
         `${toDateKey(schedule.date)}T${schedule.startTime}`,
         SCHEDULE_REMINDER_ATTEMPTS,
       ],
@@ -163,25 +295,52 @@ export class RemindersService {
     return claim;
   }
 
-  private async send(schedule: Schedule): Promise<'sent' | 'failed'> {
+  private async send(
+    schedule: Schedule,
+    recipient: string,
+    config: TReminderChannelConfig,
+  ): Promise<'sent' | 'failed'> {
     try {
-      await this.notificationService.scheduleReminder(schedule.user.email, {
-        ...buildCustomerEmailData(schedule),
-        price: this.formatPrice(schedule),
-        customMessage:
-          schedule.store.notificationsSettings?.emailReminderCustomMessage,
-        manageLink: `${this.configService.get<string>('FRONTEND_URL')}/profile`,
-      });
+      await config.send(schedule, recipient);
 
       return 'sent';
     } catch (error) {
       this.logger.error(
-        `Falha no lembrete do agendamento ${schedule.id}`,
+        `Falha no lembrete por ${config.channel} do agendamento ${schedule.id}`,
         error instanceof Error ? error.stack : undefined,
       );
 
       return 'failed';
     }
+  }
+
+  private sendEmail(schedule: Schedule, email: string) {
+    return this.notificationService.scheduleReminder(email, {
+      ...buildCustomerEmailData(schedule),
+      price: this.formatPrice(schedule),
+      customMessage:
+        schedule.store.notificationsSettings?.emailReminderCustomMessage,
+      manageLink: `${this.configService.get<string>('FRONTEND_URL')}/profile`,
+    });
+  }
+
+  private sendWhatsapp(schedule: Schedule, phone: string) {
+    const { phoneNumberId, accessToken } = schedule.store.whatsappConfig;
+
+    return this.whatsappService.sendTemplate(
+      phoneNumberId,
+      phone,
+      {
+        name: WHATSAPP_REMINDER_TEMPLATE.name,
+        language: WHATSAPP_REMINDER_TEMPLATE.language,
+        bodyParams: buildReminderTemplateParams({
+          ...buildCustomerEmailData(schedule),
+          customMessage:
+            schedule.store.notificationsSettings?.whatsappReminderCustomMessage,
+        }),
+      },
+      accessToken,
+    );
   }
 
   /** "R$ 50,00, no local"; sem preço fica só "Sob consulta". */
@@ -192,16 +351,18 @@ export class RemindersService {
 
   private async recordHistory(
     schedule: Schedule,
+    recipient: string,
     status: 'sent' | 'failed',
     now: Date,
+    config: TReminderChannelConfig,
   ) {
     const history = new NotificationsHistory();
     history.type = 'reminder';
     history.title = 'Lembrete de Agendamento';
-    history.message = `Lembrete do agendamento de ${this.formatAppointment(schedule)}`;
+    history.message = `${config.historyLabel} de ${this.formatAppointment(schedule)}`;
     history.timestamp = now;
     history.read = false;
-    history.recipient = schedule.user.email;
+    history.recipient = recipient;
     history.store = schedule.store;
     history.status = status;
 
@@ -209,7 +370,7 @@ export class RemindersService {
       await this.notificationsHistoryService.create(history);
     } catch (error) {
       this.logger.error(
-        `Lembrete do agendamento ${schedule.id} sem linha no histórico`,
+        `Lembrete por ${config.channel} do agendamento ${schedule.id} sem linha no histórico`,
         error instanceof Error ? error.stack : undefined,
       );
     }

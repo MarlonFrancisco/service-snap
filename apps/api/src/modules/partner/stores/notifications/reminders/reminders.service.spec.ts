@@ -48,22 +48,24 @@ const fakeReminderRepository = () => {
 
   return {
     rows,
-    query: vi.fn(async (_sql: string, [id, key, maxAttempts]: never[]) => {
-      const slot = `${id}|${key}`;
-      const row = rows.get(slot);
+    query: vi.fn(
+      async (_sql: string, [id, channel, key, maxAttempts]: never[]) => {
+        const slot = `${id}|${channel}|${key}`;
+        const row = rows.get(slot);
 
-      if (!row) {
-        const created = { id: slot, status: 'sending', attempts: 1 };
-        rows.set(slot, created);
-        return [{ id: created.id, attempts: created.attempts }];
-      }
+        if (!row) {
+          const created = { id: slot, status: 'sending', attempts: 1 };
+          rows.set(slot, created);
+          return [{ id: created.id, attempts: created.attempts }];
+        }
 
-      if (row.status !== 'failed' || row.attempts >= maxAttempts) return [];
+        if (row.status !== 'failed' || row.attempts >= maxAttempts) return [];
 
-      row.status = 'sending';
-      row.attempts += 1;
-      return [{ id: row.id, attempts: row.attempts }];
-    }),
+        row.status = 'sending';
+        row.attempts += 1;
+        return [{ id: row.id, attempts: row.attempts }];
+      },
+    ),
     update: vi.fn(async ({ id }: { id: string }, { status }) => {
       rows.get(id).status = status;
     }),
@@ -73,6 +75,10 @@ const fakeReminderRepository = () => {
 const setup = (
   schedules: unknown[],
   scheduleReminder = vi.fn().mockResolvedValue({}),
+  {
+    templateStatus = 'APPROVED',
+    missingFeatures = [] as string[],
+  }: { templateStatus?: string; missingFeatures?: string[] } = {},
 ) => {
   const builder = new Proxy(
     { getMany: vi.fn().mockResolvedValue(schedules) },
@@ -83,15 +89,50 @@ const setup = (
   );
   const reminders = fakeReminderRepository();
   const createHistory = vi.fn().mockResolvedValue(undefined);
+  const whatsapp = {
+    sendTemplate: vi.fn().mockResolvedValue(undefined),
+    findReminderTemplate: vi.fn().mockResolvedValue({ status: templateStatus }),
+  };
+  const planFeatureGuard = {
+    getMissingFeatures: vi.fn().mockResolvedValue(missingFeatures),
+  };
   const service = new RemindersService(
     { createQueryBuilder: () => builder } as never,
     reminders as never,
     { create: createHistory } as never,
     { scheduleReminder } as never,
     { get: () => 'https://app.test' } as never,
+    whatsapp as never,
+    planFeatureGuard as never,
   );
 
-  return { service, scheduleReminder, createHistory, reminders };
+  return {
+    service,
+    scheduleReminder,
+    createHistory,
+    reminders,
+    whatsapp,
+    planFeatureGuard,
+  };
+};
+
+const whatsappSchedule = (overrides: Record<string, unknown> = {}) => {
+  const base = schedule();
+
+  return schedule({
+    user: { firstName: 'Ana', telephone: '(11) 98888-7777' },
+    store: {
+      ...base.store,
+      address: 'Rua A, 1',
+      whatsappConfig: { phoneNumberId: 'phone-1', accessToken: 'token-1' },
+      notificationsSettings: {
+        whatsappReminderEnabled: true,
+        whatsappReminderAdvanceHours: '24h',
+        whatsappReminderCustomMessage: 'Traga\n o cartão.',
+      },
+    },
+    ...overrides,
+  });
 };
 
 describe('RemindersService', () => {
@@ -140,7 +181,7 @@ describe('RemindersService', () => {
     await service.sendDueEmailReminders(NOW);
 
     const moved = setup([schedule({ startTime: '10:00' })]);
-    moved.reminders.rows.set('schedule-1|2026-11-03T09:30', {
+    moved.reminders.rows.set('schedule-1|email|2026-11-03T09:30', {
       id: 'old',
       status: 'sent',
       attempts: 1,
@@ -262,5 +303,111 @@ describe('RemindersService', () => {
     await service.sendDueEmailReminders(NOW);
 
     expect(scheduleReminder).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('RemindersService WhatsApp', () => {
+  it('sends the approved template to the customer phone', async () => {
+    const { service, whatsapp, createHistory } = setup([whatsappSchedule()]);
+
+    await expect(service.sendDueWhatsappReminders(NOW)).resolves.toEqual({
+      sent: 1,
+      failed: 0,
+    });
+
+    expect(whatsapp.sendTemplate).toHaveBeenCalledWith(
+      'phone-1',
+      '5511988887777',
+      {
+        name: 'servicesnap_lembrete_agendamento',
+        language: 'pt_BR',
+        bodyParams: [
+          'Ana',
+          'Loja',
+          'Terça-feira, 3 de novembro',
+          '09:30',
+          'Bia',
+          'Corte',
+          'Rua A, 1',
+          'Traga o cartão.',
+        ],
+      },
+      'token-1',
+    );
+    expect(createHistory.mock.calls[0][0]).toMatchObject({
+      status: 'sent',
+      recipient: '5511988887777',
+      message: 'Lembrete por WhatsApp do agendamento de 03/11/2026 às 09:30',
+    });
+  });
+
+  it('keeps the email and WhatsApp reminders of one appointment apart', async () => {
+    const { service, scheduleReminder, whatsapp, reminders } = setup([
+      whatsappSchedule({
+        user: { email: 'a@a.com', telephone: '11988887777' },
+      }),
+    ]);
+    reminders.rows.set('schedule-1|email|2026-11-03T09:30', {
+      id: 'email',
+      status: 'sent',
+      attempts: 1,
+    });
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(scheduleReminder).not.toHaveBeenCalled();
+    expect(whatsapp.sendTemplate).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['the template is not approved yet', { templateStatus: 'PENDING' }],
+    ['the plan lost WhatsApp', { missingFeatures: ['WHATSAPP_INTEGRATION'] }],
+  ])('waits without claiming when %s', async (_name, options) => {
+    const { service, whatsapp, reminders } = setup(
+      [whatsappSchedule()],
+      undefined,
+      options,
+    );
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+    expect(reminders.rows.size).toBe(0);
+  });
+
+  it('checks each store once per run', async () => {
+    const { service, whatsapp, planFeatureGuard } = setup([
+      whatsappSchedule(),
+      whatsappSchedule({ id: 'schedule-2' }),
+    ]);
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(whatsapp.sendTemplate).toHaveBeenCalledTimes(2);
+    expect(whatsapp.findReminderTemplate).toHaveBeenCalledTimes(1);
+    expect(planFeatureGuard.getMissingFeatures).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips customers without a usable phone', async () => {
+    const { service, whatsapp } = setup([
+      whatsappSchedule({ user: { firstName: 'Ana', telephone: '1234' } }),
+    ]);
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+  });
+
+  it('still sends emails when the WhatsApp channel breaks', async () => {
+    const { service, whatsapp } = setup([schedule()]);
+    vi.spyOn(service, 'sendDueWhatsappReminders').mockRejectedValue(
+      new Error('db down'),
+    );
+
+    await expect(service.sendDueReminders(NOW)).resolves.toEqual({
+      email: { sent: 1, failed: 0 },
+      whatsapp: null,
+    });
+    expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
   });
 });

@@ -65,6 +65,16 @@ export class WhatsappController {
     return this.whatsappService.listTemplates(storeId);
   }
 
+  @Get('reminder-template')
+  async getReminderTemplate(@Param('storeId') storeId: string) {
+    return this.whatsappService.getReminderTemplate(storeId);
+  }
+
+  @Post('reminder-template')
+  async createReminderTemplate(@Param('storeId') storeId: string) {
+    return this.whatsappService.ensureReminderTemplate(storeId);
+  }
+
   @Post('test')
   async sendTest(
     @Param('storeId') storeId: string,

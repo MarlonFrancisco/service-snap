@@ -20,14 +20,19 @@ const setup = (
   const planFeatureGuard = {
     getMissingFeatures: vi.fn().mockResolvedValue(missingFeatures),
   };
+  const whatsappService = {
+    ensureReminderTemplate: vi.fn().mockResolvedValue({ status: 'PENDING' }),
+  };
 
   return {
     repository,
     planFeatureGuard,
+    whatsappService,
     service: new NotificationsSettingsService(
       repository as never,
       whatsappConfigRepository as never,
       planFeatureGuard as never,
+      whatsappService as never,
     ),
   };
 };
@@ -82,8 +87,35 @@ describe('NotificationsSettingsService.update', () => {
     expect(repository.save).not.toHaveBeenCalled();
   });
 
+  it('creates the reminder template when WhatsApp reminders are turned on', async () => {
+    const { service, repository, whatsappService } = setup({
+      id: 'settings-1',
+    });
+
+    await service.update(dto({ whatsappReminderEnabled: true }));
+
+    expect(whatsappService.ensureReminderTemplate).toHaveBeenCalledWith(
+      'store-1',
+    );
+    expect(repository.save).toHaveBeenCalled();
+  });
+
+  it('keeps WhatsApp reminders off when Meta refuses the template', async () => {
+    const { service, repository, whatsappService } = setup({
+      id: 'settings-1',
+    });
+    whatsappService.ensureReminderTemplate.mockRejectedValue(
+      new BadRequestException('Permissão insuficiente'),
+    );
+
+    await expect(
+      service.update(dto({ whatsappReminderEnabled: true })),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(repository.save).not.toHaveBeenCalled();
+  });
+
   it('always lets WhatsApp reminders be turned off', async () => {
-    const { service, repository, planFeatureGuard } = setup(
+    const { service, repository, planFeatureGuard, whatsappService } = setup(
       { id: 'settings-1' },
       { missingFeatures: ['WHATSAPP_INTEGRATION'], isWhatsappConnected: false },
     );
@@ -91,6 +123,7 @@ describe('NotificationsSettingsService.update', () => {
     await service.update(dto({ whatsappReminderEnabled: false }));
 
     expect(planFeatureGuard.getMissingFeatures).not.toHaveBeenCalled();
+    expect(whatsappService.ensureReminderTemplate).not.toHaveBeenCalled();
     expect(repository.save).toHaveBeenCalled();
   });
 });

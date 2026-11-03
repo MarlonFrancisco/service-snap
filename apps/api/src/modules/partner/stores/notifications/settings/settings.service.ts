@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PLAN_FEATURE_REQUIRED, PlanFeatureGuard } from '../../guards';
 import { WhatsappConfig } from '../../whatsapp/whatsapp.entity';
+import { WhatsappService } from '../../whatsapp/whatsapp.service';
 import { NotificationsSettingsDto } from './dto/settings.dto';
 import { NotificationsSettings } from './settings.entity';
 
@@ -18,6 +19,7 @@ export class NotificationsSettingsService {
     @InjectRepository(WhatsappConfig)
     private readonly whatsappConfigRepository: Repository<WhatsappConfig>,
     private readonly planFeatureGuard: PlanFeatureGuard,
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   async create(
@@ -79,6 +81,9 @@ export class NotificationsSettingsService {
         'Conecte o WhatsApp da loja antes de ativar os lembretes por WhatsApp.',
       );
     }
+
+    // Sem o template a Meta não entrega o lembrete; o cron espera a aprovação
+    await this.whatsappService.ensureReminderTemplate(storeId);
   }
 
   async delete(id: string): Promise<void> {
