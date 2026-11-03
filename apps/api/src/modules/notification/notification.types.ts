@@ -1,3 +1,9 @@
+export type TEmailConfirmationCode = {
+  code: string;
+  storeName?: string;
+  minutes: number;
+};
+
 export type TEmailLayout = {
   title: string;
   preheader: string;

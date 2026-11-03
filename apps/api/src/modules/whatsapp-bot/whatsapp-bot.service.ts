@@ -924,7 +924,11 @@ export class WhatsappBotService {
     const { code } = generateAuthCode();
 
     try {
-      await this.notificationService.sendEmailOTP(email, code);
+      await this.notificationService.sendEmailConfirmationCode(email, {
+        code,
+        storeName: ctx.config.store.name,
+        minutes: EMAIL_CODE_TTL_MS / 60_000,
+      });
     } catch (error) {
       this.logger.error('Failed to send WhatsApp email code', error);
       await this.sendText(

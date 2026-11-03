@@ -124,7 +124,7 @@ const makeBot = () => {
     linkVerifiedEmail: vi.fn().mockResolvedValue('linked'),
   };
   const notificationService = {
-    sendEmailOTP: vi.fn().mockResolvedValue(undefined),
+    sendEmailConfirmationCode: vi.fn().mockResolvedValue(undefined),
   };
   const cache = makeCache();
   const bot = new WhatsappBotService(
@@ -535,7 +535,13 @@ describe('WhatsappBotService', () => {
       await ctx.tap('time:14:00');
     };
     const sentCode = () =>
-      ctx.notificationService.sendEmailOTP.mock.calls.at(-1)?.[1] as string;
+      (
+        ctx.notificationService.sendEmailConfirmationCode.mock.calls.at(
+          -1,
+        )?.[1] as {
+          code: string;
+        }
+      )?.code;
 
     it('does not ask when the customer already has an e-mail', async () => {
       await ctx.say('agendar');
@@ -557,10 +563,13 @@ describe('WhatsappBotService', () => {
       expect(ctx.lastButtons().ids).toEqual(['email:skip']);
 
       await ctx.say(' Ana.Agendamentos@Gmail.com ');
-      expect(ctx.notificationService.sendEmailOTP).toHaveBeenCalledWith(
-        'ana.agendamentos@gmail.com',
-        expect.stringMatching(/^\d{6}$/),
-      );
+      expect(
+        ctx.notificationService.sendEmailConfirmationCode,
+      ).toHaveBeenCalledWith('ana.agendamentos@gmail.com', {
+        code: expect.stringMatching(/^\d{6}$/),
+        storeName: 'Barbearia Central',
+        minutes: 10,
+      });
       expect(ctx.lastButtons().ids).toEqual([
         'email:resend',
         'email:change',
@@ -589,7 +598,9 @@ describe('WhatsappBotService', () => {
 
       await ctx.say('ana@');
       expect(ctx.lastText()).toContain('não parece certo');
-      expect(ctx.notificationService.sendEmailOTP).not.toHaveBeenCalled();
+      expect(
+        ctx.notificationService.sendEmailConfirmationCode,
+      ).not.toHaveBeenCalled();
 
       await ctx.say('ana@gmail.com');
       const wrong = sentCode() === '000000' ? '111111' : '000000';
@@ -629,7 +640,9 @@ describe('WhatsappBotService', () => {
       await ctx.tap('email:resend');
       await ctx.tap('email:resend');
 
-      expect(ctx.notificationService.sendEmailOTP).toHaveBeenCalledTimes(3);
+      expect(
+        ctx.notificationService.sendEmailConfirmationCode,
+      ).toHaveBeenCalledTimes(3);
       expect(ctx.lastButtons().ids[0]).toBe('confirm:yes');
     });
 
@@ -645,7 +658,9 @@ describe('WhatsappBotService', () => {
 
       await ctx.tap('confirm:yes');
       expect(ctx.scheduleService.create).toHaveBeenCalled();
-      expect(ctx.notificationService.sendEmailOTP).not.toHaveBeenCalled();
+      expect(
+        ctx.notificationService.sendEmailConfirmationCode,
+      ).not.toHaveBeenCalled();
     });
 
     it('goes on without the e-mail when it belongs to another account', async () => {

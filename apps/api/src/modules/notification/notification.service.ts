@@ -9,8 +9,14 @@ import handlebars from 'handlebars';
 import path from 'path';
 import { Resend } from 'resend';
 import { WhatsappService } from '../partner/stores/whatsapp';
-import { CUSTOMER_FOOTER, storeFooter } from './notification.helpers';
+import {
+  CODE_FOOTER,
+  CUSTOMER_FOOTER,
+  LOGIN_CODE_MINUTES,
+  storeFooter,
+} from './notification.helpers';
 import type {
+  TEmailConfirmationCode,
   TEmailLayout,
   TScheduleCancelledEmail,
   TScheduleChangedEmail,
@@ -83,9 +89,48 @@ export class NotificationService {
   }
 
   async sendEmailOTP(to: string, code: string) {
-    const subject = 'Código de verificação';
-    const body = `Seu código de verificação é: ${code}`;
-    return this.sendEmail(to, subject, body);
+    const body = await this.renderEmail(
+      'auth-code',
+      {
+        title: 'Confirme sua identidade',
+        intro: `Use este código para entrar no ServiceSnap. Ele vale por ${LOGIN_CODE_MINUTES} minutos.`,
+        code,
+        ignoreNote:
+          'Se não foi você, ignore este e-mail. Ninguém entra na sua conta sem o código.',
+      },
+      {
+        title: 'Seu código de acesso',
+        preheader: `Use em até ${LOGIN_CODE_MINUTES} minutos.`,
+        footerNote: CODE_FOOTER,
+      },
+    );
+
+    return this.sendEmail(to, 'Seu código de acesso ao ServiceSnap', body);
+  }
+
+  /** Código para ligar o e-mail ao cliente que agenda pelo WhatsApp. */
+  async sendEmailConfirmationCode(
+    to: string,
+    { code, storeName, minutes }: TEmailConfirmationCode,
+  ) {
+    const where = storeName ? `na conversa com ${storeName}` : 'na conversa';
+    const body = await this.renderEmail(
+      'auth-code',
+      {
+        title: 'Confirme seu e-mail',
+        intro: `Digite este código ${where} no WhatsApp para receber a confirmação e o lembrete dos seus agendamentos. Ele vale por ${minutes} minutos.`,
+        code,
+        ignoreNote:
+          'Se não foi você, ignore este e-mail. Sem o código, nada muda.',
+      },
+      {
+        title: 'Confirme seu e-mail',
+        preheader: `Use em até ${minutes} minutos no WhatsApp.`,
+        footerNote: CODE_FOOTER,
+      },
+    );
+
+    return this.sendEmail(to, 'Seu código para confirmar o e-mail', body);
   }
 
   async sendSMSOTP(phoneNumber: string, code: string) {
