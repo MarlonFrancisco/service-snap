@@ -1,3 +1,7 @@
+import {
+  CATEGORY_GUIDES,
+  categoryGuidePath,
+} from '@/utils/constants/category-guides.constants';
 import { LEGAL_PAGES_UPDATED_AT } from '@/utils/constants/platform.constants';
 import { SITE_URL } from '@/utils/constants/site.constants';
 import type { MetadataRoute } from 'next';
@@ -53,7 +57,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
+  // Conteúdo editorial: não depende do índice de busca.
+  const categoryGuidePages: MetadataRoute.Sitemap = CATEGORY_GUIDES.map(
+    (guide) => ({
+      url: `${SITE_URL}${categoryGuidePath(guide.slug)}`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    }),
+  );
+
   // Lojas e categoria/cidade dependem do índice de busca; ficam de fora até ele
   // estar confiável. Busca (`/booking?query=`) nunca entra: é página de resultado.
-  return staticPages;
+  return [...staticPages, ...categoryGuidePages];
 }

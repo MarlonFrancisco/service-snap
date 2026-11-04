@@ -10,6 +10,10 @@ import {
   Scissors,
   Sparkles,
 } from 'lucide-react';
+import {
+  categoryGuidePath,
+  getCategoryGuideByName,
+} from '@/utils/constants/category-guides.constants';
 import Link from 'next/link';
 
 const TAB_CLASS =
@@ -29,7 +33,11 @@ const HOME_CATEGORIES = [
   { label: 'Fotografia', query: 'Fotografia', icon: Camera },
 ];
 
+/** Categoria com página própria (indexável) vai para ela; as outras, para a busca. */
 const getCategoryHref = (query: string) => {
+  const guide = getCategoryGuideByName(query);
+  if (guide) return categoryGuidePath(guide.slug);
+
   const params = new URLSearchParams({ query, category: query });
   return `/booking?${params.toString()}`;
 };
