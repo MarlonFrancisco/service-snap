@@ -1,4 +1,4 @@
-/** Category names used on the home grid, search filters and partner onboarding. */
+/** Category names used on the home grid, category/city pages and partner onboarding. */
 export const PUBLIC_CATEGORY_NAMES = [
   'Salão de Beleza',
   'Barbearia',
