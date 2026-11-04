@@ -43,6 +43,8 @@ export async function generateMetadata({
     description:
       'Busque profissionais e agende serviços perto de você no ServiceSnap.',
     path: `/booking?${qs.toString()}`,
+    // Resultados de busca não entram no índice; os links das lojas sim.
+    noindex: true,
   });
 }
 

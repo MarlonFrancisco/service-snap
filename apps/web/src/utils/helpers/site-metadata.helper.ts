@@ -5,7 +5,11 @@ import {
 } from '@/utils/constants/site.constants';
 import type { Metadata } from 'next';
 
-export { CONTACT_EMAIL, SITE_NAME, SITE_URL } from '@/utils/constants/site.constants';
+export {
+  CONTACT_EMAIL,
+  SITE_NAME,
+  SITE_URL,
+} from '@/utils/constants/site.constants';
 
 /** Index only production deployments (not Vercel preview / local / explicit opt-out). */
 export function shouldIndexSite(): boolean {
@@ -22,12 +26,15 @@ type CreatePageMetadataInput = {
   title: string;
   description: string;
   path: string;
+  /** Keep the page out of the index but let crawlers follow its links. */
+  noindex?: boolean;
 };
 
 export function createPageMetadata({
   title,
   description,
   path,
+  noindex = false,
 }: CreatePageMetadataInput): Metadata {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   const url = `${SITE_URL}${normalizedPath === '/' ? '' : normalizedPath}`;
@@ -63,7 +70,7 @@ export function createPageMetadata({
       images: [DEFAULT_OG_IMAGE],
     },
     robots: indexable
-      ? { index: true, follow: true }
+      ? { index: !noindex, follow: true }
       : { index: false, follow: false },
   };
 }

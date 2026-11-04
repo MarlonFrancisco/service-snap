@@ -1,4 +1,4 @@
-/** Category names used on the home grid and public sitemap. */
+/** Category names used on the home grid and category/city pages. */
 export const PUBLIC_CATEGORY_NAMES = [
   'Salão de Beleza',
   'Barbearia',

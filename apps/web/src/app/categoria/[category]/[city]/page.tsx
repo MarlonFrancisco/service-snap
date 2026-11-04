@@ -20,7 +20,8 @@ export async function generateMetadata({
 }: CategoryCityPageProps): Promise<Metadata> {
   const { category, city } = await params;
   const resolved = resolveCategoryCity(category, city);
-  if (!resolved) return {};
+  // A página vira 404; sem isso o robots do layout (index) entra junto.
+  if (!resolved) return { robots: { index: false, follow: true } };
 
   const loaded = await loadCategoryCity(resolved);
   const path = categoryCityPath(resolved.categorySlug, resolved.citySlug);
@@ -34,6 +35,8 @@ export async function generateMetadata({
     title: `${resolved.categoryName} em ${loaded.displayCity} | ServiceSnap`,
     description,
     path,
+    // Qualquer cidade gera uma URL válida; sem lojas a página é conteúdo raso.
+    noindex: loaded.status === 'ok' && count === 0,
   });
 }
 

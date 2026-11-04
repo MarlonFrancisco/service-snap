@@ -6,6 +6,14 @@ import {
 } from '@/app/terms/components/legal-document';
 import { PLATFORM_DESCRIPTION } from '@/utils/constants/platform.constants';
 import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
+import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
+
+export const metadata = createPageMetadata({
+  title: 'Política de Privacidade | ServiceSnap',
+  description:
+    'Saiba como o ServiceSnap coleta, usa, armazena e protege seus dados pessoais, em conformidade com a LGPD.',
+  path: '/privacy',
+});
 
 const SECTIONS: TLegalSection[] = [
   {

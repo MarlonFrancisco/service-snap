@@ -9,6 +9,14 @@ import {
   PLATFORM_SCOPE_SHORT,
 } from '@/utils/constants/platform.constants';
 import { CONTACT_EMAIL } from '@/utils/constants/site.constants';
+import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
+
+export const metadata = createPageMetadata({
+  title: 'Termos de Serviço | ServiceSnap',
+  description:
+    'Leia os termos e condições de uso da plataforma ServiceSnap para clientes e profissionais.',
+  path: '/terms',
+});
 
 const SECTIONS: TLegalSection[] = [
   {

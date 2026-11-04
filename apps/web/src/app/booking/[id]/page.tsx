@@ -1,15 +1,16 @@
 import { BookingFlow } from '@/components/features/booking';
-import { StoreService } from '@/service/store/store.service';
-import type { IStore } from '@/types/api/stores.types';
 import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
-import { withBudget } from '@/utils/helpers/promise.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import { buildStoreJsonLd } from '@/utils/helpers/social.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata } from 'next';
-
-const STORE_PREFETCH_MS = 4000;
+import { notFound } from 'next/navigation';
+import {
+  loadStorePage,
+  storePageDescription,
+  storePageTitle,
+} from './store-page.data';
 
 export async function generateMetadata({
   params,
@@ -17,12 +18,24 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
+  const path = `/booking/${id}`;
+  const loaded = await loadStorePage(id);
+
+  if (loaded.status !== 'ok') {
+    return createPageMetadata({
+      title: 'Agendar | ServiceSnap',
+      description: 'Veja o profissional e agende um horário no ServiceSnap.',
+      path,
+      noindex: loaded.status === 'missing',
+    });
+  }
 
   return createPageMetadata({
-    title: 'Agendar | ServiceSnap',
-    description:
-      'Veja o profissional e agende um horário no ServiceSnap.',
-    path: `/booking/${id}`,
+    title: storePageTitle(loaded.store),
+    description: storePageDescription(loaded.store),
+    path,
+    // Loja desativada continua acessível pelo link, mas fora do índice.
+    noindex: !loaded.store.isActive,
   });
 }
 
@@ -34,15 +47,11 @@ export default async function BookingPage({
   const { id } = await params;
   const queryClient = getQueryClient();
 
-  await withBudget(
-    queryClient.prefetchQuery({
-      queryKey: CACHE_QUERY_KEYS.store(id),
-      queryFn: () => StoreService.get(id),
-    }),
-    STORE_PREFETCH_MS,
-  );
+  const loaded = await loadStorePage(id);
+  if (loaded.status === 'missing') notFound();
 
-  const store = queryClient.getQueryData<IStore>(CACHE_QUERY_KEYS.store(id));
+  const store = loaded.status === 'ok' ? loaded.store : undefined;
+  if (store) queryClient.setQueryData(CACHE_QUERY_KEYS.store(id), store);
   const galleryImage = store?.gallery?.find((item) => item.url)?.url;
   const jsonLd = store
     ? buildStoreJsonLd({
