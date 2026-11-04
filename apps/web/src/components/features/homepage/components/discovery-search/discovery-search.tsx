@@ -22,7 +22,7 @@ export const DiscoverySearch = () => {
       className="sticky top-16 z-40 bg-white/97 pt-2 pb-3 md:static md:z-auto md:bg-transparent md:pt-10 md:pb-0"
     >
       <h1 className="sr-only text-center font-extrabold tracking-[-0.035em] text-[#0B0B0F] md:not-sr-only md:text-[44px]">
-        Agende cuidados perto de você
+        Agende serviços perto de você
       </h1>
       <form
         className="mx-5 md:mx-auto md:mt-7 md:max-w-[760px] md:px-5"
