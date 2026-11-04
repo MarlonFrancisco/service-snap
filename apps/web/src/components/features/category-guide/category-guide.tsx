@@ -4,6 +4,10 @@ import {
   categoryGuidePath,
   type TCategoryGuide,
 } from '@/utils/constants/category-guides.constants';
+import {
+  businessPagePath,
+  getBusinessSegment,
+} from '@/utils/constants/business-pages.constants';
 import { CalendarCheck, Search, UserRound } from 'lucide-react';
 import Link from 'next/link';
 
@@ -161,10 +165,12 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
             automáticos para os clientes.
           </p>
           <Link
-            href="/pricing"
+            href={businessPagePath(
+              getBusinessSegment(guide.slug) ? guide.slug : '',
+            )}
             className="mt-6 inline-flex h-11 items-center rounded-full bg-white px-5 text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#EBE9F0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Cadastrar meu espaço
+            Conhecer o sistema
           </Link>
         </section>
       </main>

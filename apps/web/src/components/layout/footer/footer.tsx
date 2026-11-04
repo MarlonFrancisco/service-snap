@@ -65,6 +65,12 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
 
             <div>
               <h3 className={COLUMN_TITLE_CLASS}>Parceiros</h3>
+              <Link
+                href="/sistema-de-agendamento"
+                className={COLUMN_LINK_CLASS}
+              >
+                Sistema de agendamento
+              </Link>
               <Link href="/pricing" className={COLUMN_LINK_CLASS}>
                 Planos
               </Link>
@@ -105,7 +111,10 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
 
           <div className="flex flex-wrap items-center gap-4">
             {SOCIAL_LINKS.length > 0 && !compact ? (
-              <ul className="flex items-center gap-1" aria-label="Redes sociais">
+              <ul
+                className="flex items-center gap-1"
+                aria-label="Redes sociais"
+              >
                 {SOCIAL_LINKS.map((link) => {
                   const Icon = link.icon;
                   return (

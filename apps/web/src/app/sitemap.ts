@@ -1,4 +1,9 @@
 import {
+  BUSINESS_HUB,
+  BUSINESS_SEGMENTS,
+  businessPagePath,
+} from '@/utils/constants/business-pages.constants';
+import {
   CATEGORY_GUIDES,
   categoryGuidePath,
 } from '@/utils/constants/category-guides.constants';
@@ -67,7 +72,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
+  const businessPages: MetadataRoute.Sitemap = [
+    BUSINESS_HUB,
+    ...BUSINESS_SEGMENTS,
+  ].map((page) => ({
+    url: `${SITE_URL}${businessPagePath(page.slug)}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: page.slug ? 0.8 : 0.9,
+  }));
+
   // Lojas dependem do índice de busca; ficam de fora até ele estar confiável.
   // Busca (`/booking?query=`) nunca entra: é página de resultado.
-  return [...staticPages, ...categoryGuidePages];
+  return [...staticPages, ...businessPages, ...categoryGuidePages];
 }
