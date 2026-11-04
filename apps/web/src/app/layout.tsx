@@ -7,6 +7,7 @@ import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { SOCIAL_PROFILE_URLS } from '@/utils/constants/social-profiles.constants';
 import { SITE_URL, THEME_COLOR } from '@/utils/constants/site.constants';
+import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
 import {
   createPageMetadata,
   shouldIndexSite,
@@ -225,28 +226,29 @@ export default async function RootLayout({
           async
         />
 
-        <Script
+        {/* <script> comum: o next/script só injeta via JS, fora do HTML inicial. */}
+        <script
           type="application/ld+json"
           id="json-ld"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
+            __html: serializeJsonLd({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: 'ServiceSnap — Agende serviços perto de você',
               description:
                 'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
-              url: 'https://ssnap.io',
+              url: SITE_URL,
               image: `${SITE_URL}/og-image.png`,
               publisher: {
                 '@type': 'Organization',
                 name: 'ServiceSnap',
-                url: 'https://ssnap.io',
+                url: SITE_URL,
                 sameAs: SOCIAL_PROFILE_URLS,
               },
               inLanguage: 'pt-BR',
               potentialAction: {
                 '@type': 'SearchAction',
-                target: 'https://ssnap.io?query={search_term_string}',
+                target: `${SITE_URL}/booking?query={search_term_string}`,
                 'query-input': 'required name=search_term_string',
               },
             }),
