@@ -1,3 +1,15 @@
+## 0.20.0 (2026-11-04)
+
+### Feat
+
+- **web**: mostrar status do template de lembrete do WhatsApp
+- **api**: enviar lembretes de agendamento por WhatsApp
+
+### Fix
+
+- **web**: renderizar JSON-LD no HTML inicial
+- **web**: corrigir sitemap e metadados de indexação
+
 ## 0.19.0 (2026-11-03)
 
 ### Feat
