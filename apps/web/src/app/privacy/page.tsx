@@ -11,7 +11,7 @@ import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 export const metadata = createPageMetadata({
   title: 'Política de Privacidade | ServiceSnap',
   description:
-    'Saiba como o ServiceSnap coleta, usa, armazena e protege seus dados pessoais, em conformidade com a LGPD.',
+    'Saiba como o ServiceSnap coleta, usa, armazena e protege seus dados pessoais, quais são os seus direitos e como exercê-los, conforme a LGPD.',
   path: '/privacy',
 });
 

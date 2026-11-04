@@ -3,7 +3,7 @@ import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 export const metadata = createPageMetadata({
   title: 'Central de Ajuda | ServiceSnap',
   description:
-    'Perguntas frequentes sobre agendamento, conta e uso do ServiceSnap.',
+    'Tire dúvidas sobre como agendar e cancelar horários, como funcionam as avaliações e como cadastrar o seu negócio como parceiro no ServiceSnap.',
   path: '/help',
 });
 

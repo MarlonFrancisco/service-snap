@@ -3,7 +3,7 @@ import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 export const metadata = createPageMetadata({
   title: 'Contato | ServiceSnap',
   description:
-    'Fale com o ServiceSnap por e-mail. Dúvidas, suporte ou interesse em ser parceiro.',
+    'Fale com o ServiceSnap por e-mail para tirar dúvidas, pedir suporte, indicar um profissional ou cadastrar o seu negócio como parceiro.',
   path: '/contact',
 });
 

@@ -8,9 +8,9 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 const PLANS_PREFETCH_MS = 4000;
 
 export const metadata = createPageMetadata({
-  title: 'Planos e preços | ServiceSnap',
+  title: 'Planos e preços do sistema de agendamento | ServiceSnap',
   description:
-    'Planos para profissionais e negócios gerenciarem agenda, WhatsApp e clientes no ServiceSnap.',
+    'Agenda online, lembretes automáticos por WhatsApp e gestão de clientes para o seu negócio. Compare os planos do ServiceSnap e teste grátis por 30 dias.',
   path: '/pricing',
 });
 

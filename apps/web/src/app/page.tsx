@@ -1,10 +1,10 @@
 import { Homepage } from '@/components/features/homepage';
+import { SITE_DESCRIPTION, SITE_TITLE } from '@/utils/constants/site.constants';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 
 export const metadata = createPageMetadata({
-  title: 'ServiceSnap — Agende cuidados perto de você',
-  description:
-    'Encontre barbearias, salões, spas e terapeutas com horário confirmado na hora.',
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   path: '/',
 });
 

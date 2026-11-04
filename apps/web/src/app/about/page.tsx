@@ -5,7 +5,7 @@ import Link from 'next/link';
 export const metadata = createPageMetadata({
   title: 'Sobre nós | ServiceSnap',
   description:
-    'Conheça o ServiceSnap: a plataforma que conecta pessoas a profissionais de serviços no Brasil.',
+    'Conheça o ServiceSnap, a plataforma brasileira que conecta clientes a barbearias, salões, spas e outros profissionais com agendamento online.',
   path: '/about',
 });
 

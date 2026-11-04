@@ -14,7 +14,7 @@ import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 export const metadata = createPageMetadata({
   title: 'Termos de Serviço | ServiceSnap',
   description:
-    'Leia os termos e condições de uso da plataforma ServiceSnap para clientes e profissionais.',
+    'Termos de uso do ServiceSnap para clientes e profissionais: cadastro, agendamentos, cancelamentos, pagamentos, avaliações e responsabilidades.',
   path: '/terms',
 });
 
