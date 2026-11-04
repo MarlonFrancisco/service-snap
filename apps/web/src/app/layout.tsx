@@ -6,156 +6,26 @@ import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { SOCIAL_PROFILE_URLS } from '@/utils/constants/social-profiles.constants';
-import { SITE_URL, THEME_COLOR } from '@/utils/constants/site.constants';
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_TITLE,
+  SITE_URL,
+  THEME_COLOR,
+} from '@/utils/constants/site.constants';
 import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
 import {
   createPageMetadata,
   shouldIndexSite,
 } from '@/utils/helpers/site-metadata.helper';
 import type { Metadata, Viewport } from 'next';
-import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
 import Script from 'next/script';
 import './globals.css';
 
-const geistSans = localFont({
-  src: './fonts/GeistVF.woff',
-  variable: '--font-geist-sans',
-});
-const geistMono = localFont({
-  src: './fonts/GeistMonoVF.woff',
-  variable: '--font-geist-mono',
-});
-const monaSans = localFont({
-  src: [
-    // Regular weights
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-Italic.ttf',
-      weight: '400',
-      style: 'italic',
-    },
-
-    // Medium weight
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-Medium.ttf',
-      weight: '500',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-MediumItalic.ttf',
-      weight: '500',
-      style: 'italic',
-    },
-
-    // SemiBold weight
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-SemiBold.ttf',
-      weight: '600',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-SemiBoldItalic.ttf',
-      weight: '600',
-      style: 'italic',
-    },
-
-    // Bold weight
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-Bold.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-BoldItalic.ttf',
-      weight: '700',
-      style: 'italic',
-    },
-
-    // ExtraBold weight
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-ExtraBold.ttf',
-      weight: '800',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-ExtraBoldItalic.ttf',
-      weight: '800',
-      style: 'italic',
-    },
-
-    // Black weight
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-Black.ttf',
-      weight: '900',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-BlackItalic.ttf',
-      weight: '900',
-      style: 'italic',
-    },
-
-    // Light weights
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-Light.ttf',
-      weight: '300',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-LightItalic.ttf',
-      weight: '300',
-      style: 'italic',
-    },
-
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-ExtraLight.ttf',
-      weight: '200',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans-ExtraLightItalic.ttf',
-      weight: '200',
-      style: 'italic',
-    },
-
-    // Condensed variations
-    {
-      path: './fonts/Mona_Sans/static/MonaSans_Condensed-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans_Condensed-Bold.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-
-    // Expanded variations
-    {
-      path: './fonts/Mona_Sans/static/MonaSans_Expanded-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './fonts/Mona_Sans/static/MonaSans_Expanded-Bold.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-  ],
-  variable: '--font-mona-sans',
-  display: 'swap',
-  fallback: ['system-ui', 'sans-serif'],
-});
-
 const rootMetadata = createPageMetadata({
-  title: 'ServiceSnap — Agende serviços perto de você',
-  description:
-    'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   path: '/',
 });
 
@@ -205,9 +75,7 @@ export default async function RootLayout({
 
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body
-        className={`${monaSans.variable} ${geistSans.variable} ${geistMono.variable}`}
-      >
+      <body>
         <UserIdentificationProvider value={userIdentification}>
           <QueryProvider>
             <HydrationBoundary state={dehydratedState}>
@@ -234,14 +102,15 @@ export default async function RootLayout({
             __html: serializeJsonLd({
               '@context': 'https://schema.org',
               '@type': 'WebSite',
-              name: 'ServiceSnap — Agende serviços perto de você',
-              description:
-                'Encontre e agende com profissionais perto de você. Simples, rápido e confiável.',
+              // O Google usa `name` como nome do site nos resultados.
+              name: SITE_NAME,
+              alternateName: SITE_TITLE,
+              description: SITE_DESCRIPTION,
               url: SITE_URL,
               image: `${SITE_URL}/og-image.png`,
               publisher: {
                 '@type': 'Organization',
-                name: 'ServiceSnap',
+                name: SITE_NAME,
                 url: SITE_URL,
                 sameAs: SOCIAL_PROFILE_URLS,
               },
