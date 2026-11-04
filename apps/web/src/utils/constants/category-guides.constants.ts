@@ -6,7 +6,7 @@ export type TCategoryGuideFaq = {
 };
 
 export type TCategoryGuide = {
-  /** Slug da URL: `/categoria/<slug>`. Igual a `slugifyPlace(name)`. */
+  /** Slug da URL: `/categoria/<slug>`. Igual a `slugify(name)`. */
   slug: string;
   /** Nome em `PUBLIC_CATEGORY_NAMES`, usado na busca. */
   name: (typeof PUBLIC_CATEGORY_NAMES)[number];

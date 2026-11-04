@@ -1,4 +1,4 @@
-import { slugifyPlace } from '@/utils/helpers/category-city.helper';
+import { slugify } from '@/utils/helpers/slug.helper';
 import { describe, expect, it } from 'vitest';
 import {
   CATEGORY_GUIDES,
@@ -10,7 +10,7 @@ import { PUBLIC_CATEGORY_NAMES } from './public-categories.constants';
 describe('CATEGORY_GUIDES', () => {
   it.each(CATEGORY_GUIDES)('$slug usa o mesmo slug da busca', (guide) => {
     expect(PUBLIC_CATEGORY_NAMES).toContain(guide.name);
-    expect(guide.slug).toBe(slugifyPlace(guide.name));
+    expect(guide.slug).toBe(slugify(guide.name));
   });
 
   it.each(CATEGORY_GUIDES)(

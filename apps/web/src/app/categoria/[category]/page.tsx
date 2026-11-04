@@ -6,7 +6,7 @@ import {
   type TCategoryGuide,
 } from '@/utils/constants/category-guides.constants';
 import { SITE_URL } from '@/utils/constants/site.constants';
-import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
+import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';

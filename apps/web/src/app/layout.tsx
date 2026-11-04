@@ -13,7 +13,7 @@ import {
   SITE_URL,
   THEME_COLOR,
 } from '@/utils/constants/site.constants';
-import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
+import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import {
   createPageMetadata,
   shouldIndexSite,

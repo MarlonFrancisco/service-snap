@@ -76,6 +76,13 @@ const nextConfig = {
         destination: '/',
         permanent: true,
       },
+      {
+        // A página categoria/cidade foi removida; a categoria tem página própria
+        // (as que não têm caem no 404 de lá).
+        source: '/categoria/:category/:city',
+        destination: '/categoria/:category',
+        permanent: true,
+      },
     ];
   },
   async rewrites() {

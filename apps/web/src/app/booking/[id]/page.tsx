@@ -1,5 +1,5 @@
 import { BookingFlow } from '@/components/features/booking';
-import { serializeJsonLd } from '@/utils/helpers/category-city.helper';
+import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import { buildStoreJsonLd } from '@/utils/helpers/social.helper';

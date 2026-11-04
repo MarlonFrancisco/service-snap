@@ -67,7 +67,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }),
   );
 
-  // Lojas e categoria/cidade dependem do índice de busca; ficam de fora até ele
-  // estar confiável. Busca (`/booking?query=`) nunca entra: é página de resultado.
+  // Lojas dependem do índice de busca; ficam de fora até ele estar confiável.
+  // Busca (`/booking?query=`) nunca entra: é página de resultado.
   return [...staticPages, ...categoryGuidePages];
 }
