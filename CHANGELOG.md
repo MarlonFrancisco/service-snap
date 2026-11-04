@@ -1,3 +1,24 @@
+## 0.21.0 (2026-11-04)
+
+### Feat
+
+- **web**: restaurar páginas de categoria por cidade
+- **web**: páginas de sistema de agendamento para negócios
+- **web**: páginas de categoria indexáveis
+
+### Fix
+
+- **web**: posicionar a home como agendamento de serviços em geral
+- **web**: ampliar títulos e descrições para a busca
+
+### Refactor
+
+- **web**: remover páginas de categoria por cidade
+
+### Perf
+
+- **web**: remover fontes não usadas do layout
+
 ## 0.20.0 (2026-11-04)
 
 ### Feat
