@@ -15,14 +15,6 @@ const SECONDARY_ACTION_CLASS = `inline-flex h-11 items-center rounded-full borde
 const SECTION_TITLE_CLASS =
   'text-[22px] leading-[1.15] font-extrabold tracking-[-0.025em] md:text-[28px]';
 
-/** Segmentos para o link "Também atendemos": rótulo curto, com maiúscula. */
-const SEGMENT_LABELS: Record<string, string> = {
-  barbearia: 'Barbearia',
-  'salao-de-beleza': 'Salão de beleza',
-  manicure: 'Manicure',
-  'spa-massagem': 'Spa e massagem',
-};
-
 export function BusinessLanding({ page }: { page: TBusinessPage }) {
   const isHub = !page.slug;
   const otherSegments = BUSINESS_SEGMENTS.filter(
@@ -56,7 +48,7 @@ export function BusinessLanding({ page }: { page: TBusinessPage }) {
                 </li>
                 <li aria-hidden="true">/</li>
                 <li aria-current="page" className="text-[#0B0B0F]">
-                  {SEGMENT_LABELS[page.slug] ?? page.audience}
+                  {page.label}
                 </li>
               </>
             )}
@@ -148,7 +140,7 @@ export function BusinessLanding({ page }: { page: TBusinessPage }) {
                   href={businessPagePath(segment.slug)}
                   className={SECONDARY_ACTION_CLASS}
                 >
-                  {SEGMENT_LABELS[segment.slug] ?? segment.audience}
+                  {segment.label}
                 </Link>
               </li>
             ))}

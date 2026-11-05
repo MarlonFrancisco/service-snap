@@ -5,7 +5,7 @@ import {
   businessPagePath,
   getBusinessSegment,
 } from './business-pages.constants';
-import { getCategoryGuide } from './category-guides.constants';
+import { CATEGORY_GUIDES, getCategoryGuide } from './category-guides.constants';
 
 const ALL_PAGES = [BUSINESS_HUB, ...BUSINESS_SEGMENTS];
 
@@ -27,11 +27,18 @@ describe('páginas para negócios', () => {
     },
   );
 
+  it('tem um segmento para cada categoria', () => {
+    expect(BUSINESS_SEGMENTS.map((segment) => segment.slug).sort()).toEqual(
+      CATEGORY_GUIDES.map((guide) => guide.slug).sort(),
+    );
+  });
+
   it('monta os caminhos', () => {
     expect(businessPagePath('')).toBe('/sistema-de-agendamento');
     expect(businessPagePath('barbearia')).toBe(
       '/sistema-de-agendamento/barbearia',
     );
-    expect(getBusinessSegment('yoga')).toBeUndefined();
+    expect(getBusinessSegment('yoga')?.label).toBe('Yoga');
+    expect(getBusinessSegment('xyz')).toBeUndefined();
   });
 });
