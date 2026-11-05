@@ -20,7 +20,6 @@ import {
 } from '@/utils/helpers/site-metadata.helper';
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
-import Script from 'next/script';
 import './globals.css';
 
 const rootMetadata = createPageMetadata({
@@ -87,12 +86,6 @@ export default async function RootLayout({
             </HydrationBoundary>
           </QueryProvider>
         </UserIdentificationProvider>
-
-        <Script
-          src="https://accounts.google.com/gsi/client"
-          strategy="lazyOnload"
-          async
-        />
 
         {/* <script> comum: o next/script só injeta via JS, fora do HTML inicial. */}
         <script
