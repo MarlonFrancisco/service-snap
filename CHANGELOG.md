@@ -1,3 +1,13 @@
+## 0.22.0 (2026-11-05)
+
+### Feat
+
+- **web**: páginas para todas as categorias
+
+### Fix
+
+- **web**: carregar vitrines da home sem deslocar o layout
+
 ## 0.21.0 (2026-11-04)
 
 ### Feat
