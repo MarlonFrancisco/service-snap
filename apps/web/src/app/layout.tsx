@@ -105,6 +105,8 @@ export default async function RootLayout({
                 '@type': 'Organization',
                 name: SITE_NAME,
                 url: SITE_URL,
+                // Quadrado e acima de 112 px, como o Google pede para o logo.
+                logo: `${SITE_URL}/icon-512.png`,
                 sameAs: SOCIAL_PROFILE_URLS,
               },
               inLanguage: 'pt-BR',

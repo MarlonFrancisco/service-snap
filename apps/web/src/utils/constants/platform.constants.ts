@@ -7,3 +7,10 @@ export const PLATFORM_SCOPE_SHORT =
 
 /** On-page “Última atualização” for legal pages — keep sitemap lastmod in sync. */
 export const LEGAL_PAGES_UPDATED_AT = new Date('2024-12-15T00:00:00.000Z');
+
+/**
+ * `lastmod` do sitemap para home, páginas institucionais, categorias e
+ * páginas para negócios. Atualize quando o texto dessas páginas mudar: o Google
+ * ignora o lastmod de sites em que ele muda sem o conteúdo mudar.
+ */
+export const MARKETING_PAGES_UPDATED_AT = new Date('2026-11-05T00:00:00.000Z');

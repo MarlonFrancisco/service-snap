@@ -7,44 +7,42 @@ import {
   CATEGORY_GUIDES,
   categoryGuidePath,
 } from '@/utils/constants/category-guides.constants';
-import { LEGAL_PAGES_UPDATED_AT } from '@/utils/constants/platform.constants';
+import {
+  LEGAL_PAGES_UPDATED_AT,
+  MARKETING_PAGES_UPDATED_AT,
+} from '@/utils/constants/platform.constants';
 import { SITE_URL } from '@/utils/constants/site.constants';
 import type { MetadataRoute } from 'next';
 
-/** Fresh lastmod at request time — avoid freezing the build date in prod. */
-export const dynamic = 'force-dynamic';
-
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
-
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${SITE_URL}/`,
-      lastModified: now,
+      lastModified: MARKETING_PAGES_UPDATED_AT,
       changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
       url: `${SITE_URL}/pricing`,
-      lastModified: now,
+      lastModified: MARKETING_PAGES_UPDATED_AT,
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
       url: `${SITE_URL}/about`,
-      lastModified: now,
+      lastModified: MARKETING_PAGES_UPDATED_AT,
       changeFrequency: 'monthly',
       priority: 0.7,
     },
     {
       url: `${SITE_URL}/help`,
-      lastModified: now,
+      lastModified: MARKETING_PAGES_UPDATED_AT,
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     {
       url: `${SITE_URL}/contact`,
-      lastModified: now,
+      lastModified: MARKETING_PAGES_UPDATED_AT,
       changeFrequency: 'monthly',
       priority: 0.6,
     },
@@ -66,7 +64,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const categoryGuidePages: MetadataRoute.Sitemap = CATEGORY_GUIDES.map(
     (guide) => ({
       url: `${SITE_URL}${categoryGuidePath(guide.slug)}`,
-      lastModified: now,
+      lastModified: MARKETING_PAGES_UPDATED_AT,
       changeFrequency: 'monthly',
       priority: 0.8,
     }),
@@ -77,7 +75,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...BUSINESS_SEGMENTS,
   ].map((page) => ({
     url: `${SITE_URL}${businessPagePath(page.slug)}`,
-    lastModified: now,
+    lastModified: MARKETING_PAGES_UPDATED_AT,
     changeFrequency: 'monthly',
     priority: page.slug ? 0.8 : 0.9,
   }));
