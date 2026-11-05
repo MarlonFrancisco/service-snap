@@ -6,11 +6,9 @@
 } from '@/components/layout';
 import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui';
-import { Suspense } from 'react';
 import { CategoryTabs } from './components/category-tabs';
 import { DiscoverySearch } from './components/discovery-search';
 import { ExperienceRows } from './components/experience-rows';
-import { ExperienceRowsSkeleton } from './components/experience-rows/experience-rows-skeleton';
 import { PartnerBanner } from './components/partner-banner';
 
 export const Homepage = () => {
@@ -25,9 +23,9 @@ export const Homepage = () => {
       <main className={cn('pb-12 md:pb-20', HEADER_OFFSET_BARE_CLASS)}>
         <DiscoverySearch />
         <CategoryTabs />
-        <Suspense fallback={<ExperienceRowsSkeleton />}>
-          <ExperienceRows />
-        </Suspense>
+        {/* Sem Suspense: as vitrines vêm no HTML inicial. Com streaming, o
+            esqueleto sumia quando não havia lojas e empurrava o resto (CLS). */}
+        <ExperienceRows />
         <PartnerBanner />
       </main>
       <Footer />
