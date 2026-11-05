@@ -97,7 +97,7 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
 
         <section aria-labelledby="como-funciona" className="mt-14 md:mt-20">
           <h2 id="como-funciona" className={SECTION_TITLE_CLASS}>
-            Como agendar {guide.name.toLowerCase()} no ServiceSnap
+            {guide.howToTitle}
           </h2>
           <ol className="mt-6 grid gap-6 md:grid-cols-3">
             {STEPS.map(({ icon: Icon, title, text }, index) => (
@@ -157,9 +157,7 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
         </section>
 
         <section className="mt-14 rounded-3xl bg-[#0B0B0F] px-6 py-10 text-white md:mt-20 md:px-10">
-          <h2 className={SECTION_TITLE_CLASS}>
-            Trabalha com {guide.name.toLowerCase()}?
-          </h2>
+          <h2 className={SECTION_TITLE_CLASS}>{guide.partnerTitle}</h2>
           <p className="mt-2 max-w-[36rem] text-sm leading-[1.6] text-white/70">
             Receba agendamentos online, organize sua equipe e envie lembretes
             automáticos para os clientes.
