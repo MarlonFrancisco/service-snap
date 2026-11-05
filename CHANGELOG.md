@@ -1,3 +1,13 @@
+## 0.24.0 (2026-11-05)
+
+### Feat
+
+- **web**: sistema de agendamento para todos os segmentos
+
+### Fix
+
+- **web**: logo no JSON-LD e lastmod real no sitemap
+
 ## 0.23.0 (2026-11-05)
 
 ### Feat
