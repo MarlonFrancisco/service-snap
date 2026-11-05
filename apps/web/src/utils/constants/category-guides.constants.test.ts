@@ -22,6 +22,18 @@ describe('CATEGORY_GUIDES', () => {
     },
   );
 
+  it('cobre todas as categorias públicas', () => {
+    const names = CATEGORY_GUIDES.map((guide) => guide.name);
+    expect([...names].sort()).toEqual([...PUBLIC_CATEGORY_NAMES].sort());
+  });
+
+  it.each(CATEGORY_GUIDES)('$slug tem conteúdo completo', (guide) => {
+    expect(guide.services.length).toBeGreaterThanOrEqual(4);
+    expect(guide.faq.length).toBeGreaterThanOrEqual(3);
+    expect(guide.howToTitle).toMatch(/ServiceSnap$/);
+    expect(guide.partnerTitle).toMatch(/\?$/);
+  });
+
   it('não repete slug', () => {
     const slugs = CATEGORY_GUIDES.map((guide) => guide.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
@@ -32,6 +44,7 @@ describe('CATEGORY_GUIDES', () => {
     expect(getCategoryGuideByName('Salão de Beleza')?.slug).toBe(
       'salao-de-beleza',
     );
-    expect(getCategoryGuide('yoga')).toBeUndefined();
+    expect(getCategoryGuide('yoga')?.name).toBe('Yoga');
+    expect(getCategoryGuide('xyz')).toBeUndefined();
   });
 });
