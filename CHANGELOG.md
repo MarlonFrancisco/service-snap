@@ -1,3 +1,14 @@
+## 0.23.0 (2026-11-05)
+
+### Feat
+
+- **web**: conteúdo fixo na home para busca
+
+### Perf
+
+- **web**: carregar o login do Google só ao abrir o login
+- **ui**: permitir tree-shaking dos componentes
+
 ## 0.22.0 (2026-11-05)
 
 ### Feat
