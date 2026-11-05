@@ -6,9 +6,12 @@
 } from '@/components/layout';
 import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import { cn } from '@repo/ui';
+import { CategoryDirectory } from './components/category-directory';
 import { CategoryTabs } from './components/category-tabs';
 import { DiscoverySearch } from './components/discovery-search';
 import { ExperienceRows } from './components/experience-rows';
+import { HomeFaq } from './components/home-faq';
+import { HowItWorks } from './components/how-it-works';
 import { PartnerBanner } from './components/partner-banner';
 
 export const Homepage = () => {
@@ -26,7 +29,10 @@ export const Homepage = () => {
         {/* Sem Suspense: as vitrines vêm no HTML inicial. Com streaming, o
             esqueleto sumia quando não havia lojas e empurrava o resto (CLS). */}
         <ExperienceRows />
+        <HowItWorks />
+        <CategoryDirectory />
         <PartnerBanner />
+        <HomeFaq />
       </main>
       <Footer />
       <MobileTabBar />

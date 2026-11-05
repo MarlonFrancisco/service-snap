@@ -19,15 +19,15 @@ export const PartnerBanner = () => {
           <div className="mt-6 flex flex-col items-stretch gap-4 md:mt-9 md:flex-row md:items-center md:gap-6">
             <Link
               href="/pricing"
-              className="rounded-full bg-[#0B0B0F] px-[30px] py-[18px] text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B]"
+              className="rounded-full bg-[#0B0B0F] px-[30px] py-[18px] text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] whitespace-nowrap"
             >
               Cadastrar meu espaço
             </Link>
             <Link
-              href="/help"
-              className="py-2 text-center text-sm font-semibold text-[#0B0B0F] hover:underline md:text-[15px]"
+              href="/sistema-de-agendamento"
+              className="py-2 text-center text-sm font-semibold text-[#0B0B0F] hover:underline md:text-[15px] whitespace-nowrap"
             >
-              Tirar dúvidas →
+              Conhecer o sistema →
             </Link>
           </div>
         </div>
