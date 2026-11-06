@@ -1,7 +1,11 @@
 import { AuthModal } from '@/components/features/auth';
 import { Config, Toaster } from '@/components/layout';
 import { ReviewsModal } from '@/components/layout/reviews-modal';
-import { QueryProvider, UserIdentificationProvider } from '@/providers';
+import {
+  AnalyticsProvider,
+  QueryProvider,
+  UserIdentificationProvider,
+} from '@/providers';
 import { UsersService } from '@/service/users';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
@@ -76,15 +80,17 @@ export default async function RootLayout({
     <html lang="pt-BR" suppressHydrationWarning>
       <body>
         <UserIdentificationProvider value={userIdentification}>
-          <QueryProvider>
-            <HydrationBoundary state={dehydratedState}>
-              {children}
-              <Config />
-              <AuthModal />
-              <Toaster />
-              <ReviewsModal />
-            </HydrationBoundary>
-          </QueryProvider>
+          <AnalyticsProvider>
+            <QueryProvider>
+              <HydrationBoundary state={dehydratedState}>
+                {children}
+                <Config />
+                <AuthModal />
+                <Toaster />
+                <ReviewsModal />
+              </HydrationBoundary>
+            </QueryProvider>
+          </AnalyticsProvider>
         </UserIdentificationProvider>
 
         {/* <script> comum: o next/script só injeta via JS, fora do HTML inicial. */}
