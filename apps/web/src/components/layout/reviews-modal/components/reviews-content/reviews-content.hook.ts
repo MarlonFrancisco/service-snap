@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useReviewsStore } from '@/store';
 import { useCallback, useMemo } from 'react';
 
@@ -6,6 +7,8 @@ const RATING_VALUES = [5, 4, 3, 2, 1];
 export const useReviewsContent = () => {
   const { reviews, showWriteReview, setReviewsAttributesAction } =
     useReviewsStore();
+  const storeId = useReviewsStore((state) => state.storeId);
+  const analytics = useAnalytics();
 
   const averageRating = useMemo(() => {
     if (reviews.length === 0) return 0;
@@ -37,7 +40,13 @@ export const useReviewsContent = () => {
 
   const handleShowWriteReview = useCallback(() => {
     setReviewsAttributesAction({ showWriteReview: true });
-  }, [setReviewsAttributesAction]);
+    if (storeId) {
+      analytics.track('review_started', {
+        store_id: storeId,
+        source: 'reviews_modal',
+      });
+    }
+  }, [analytics, setReviewsAttributesAction, storeId]);
 
   return {
     reviews,

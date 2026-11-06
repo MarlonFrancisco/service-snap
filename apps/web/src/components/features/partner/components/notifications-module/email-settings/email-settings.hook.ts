@@ -1,8 +1,10 @@
 import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mutations';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { useReminderSettingsLoad } from '../notifications-module.hook';
 import type { TNotificationsSettingsData } from '../notifications-module.types';
+import { parseAdvanceHours } from '../notifications-module.utils';
 import {
   emailSettingsSchema,
   TEmailSettingsFormData,
@@ -17,6 +19,7 @@ const getEmailFormValues = (
 });
 
 export const useSettings = () => {
+  const analytics = useAnalytics();
   const form = useForm<TEmailSettingsFormData>({
     resolver: zodResolver(emailSettingsSchema),
     defaultValues: getEmailFormValues(null),
@@ -34,10 +37,20 @@ export const useSettings = () => {
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    updateNotificationsSettingsMutation.mutate({
-      ...data,
-      id: notificationsSettings?.id,
-    });
+    updateNotificationsSettingsMutation.mutate(
+      {
+        ...data,
+        id: notificationsSettings?.id,
+      },
+      {
+        onSuccess: () =>
+          analytics.track('reminder_settings_updated', {
+            channel: 'email',
+            enabled: Boolean(data.emailReminderEnabled),
+            advance_hours: parseAdvanceHours(data.emailReminderAdvanceHours),
+          }),
+      },
+    );
   });
 
   return {

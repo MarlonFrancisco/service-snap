@@ -35,7 +35,7 @@ export function StoreCard({
     e.stopPropagation();
 
     if (!isLoggedIn) {
-      openAuthAction({});
+      openAuthAction({ source: 'favorite' });
       return;
     }
 

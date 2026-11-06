@@ -1,16 +1,21 @@
 ﻿import { ImageWithFallback } from '@/components/ui/image-with-fallback';
 import { Star } from 'lucide-react';
-import Link from 'next/link';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import type { TExperienceCard } from '../../homepage.types';
 import { ExperienceFavoriteButton } from './experience-favorite-button';
 
 type TExperienceCardConfig = {
   experience: TExperienceCard;
+  /** Lista de origem e posição do card, para o evento `select_item`. */
+  listName: string;
+  index: number;
   priority?: boolean;
 };
 
 export const ExperienceCard = ({
   experience,
+  listName,
+  index,
   priority = false,
 }: TExperienceCardConfig) => {
   const bookingHref = `/booking/${experience.id}`;
@@ -20,8 +25,10 @@ export const ExperienceCard = ({
 
   return (
     <article className="group relative flex h-full w-full min-w-0 flex-col">
-      <Link
+      <TrackedLink
         href={bookingHref}
+        event="select_item"
+        properties={{ item_id: experience.id, item_list_name: listName, index }}
         className="absolute inset-0 z-10 rounded-[20px] md:rounded-[22px]"
         aria-label={`Ver ${experience.name}`}
       />

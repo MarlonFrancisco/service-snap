@@ -1,6 +1,6 @@
 import { categoryGuidePath } from '@/utils/constants/category-guides.constants';
 import { ChevronDown } from 'lucide-react';
-import Link from 'next/link';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import { CATEGORY_DIRECTORY_GROUPS } from './category-directory.constants';
 
 const FOCUS_CLASS =
@@ -46,12 +46,18 @@ export const CategoryDirectory = () => {
             <ul className="flex flex-wrap gap-2 pb-4">
               {group.items.map((item) => (
                 <li key={item.slug}>
-                  <Link
+                  <TrackedLink
                     href={categoryGuidePath(item.slug)}
+                    event="select_content"
+                    properties={{
+                      content_type: 'category_directory',
+                      item_id: item.slug,
+                      destination: categoryGuidePath(item.slug),
+                    }}
                     className={`inline-flex h-11 items-center rounded-full border border-[#E3E1EA] px-4 text-sm font-semibold ${FOCUS_CLASS}`}
                   >
                     {item.label}
-                  </Link>
+                  </TrackedLink>
                 </li>
               ))}
             </ul>
@@ -69,15 +75,21 @@ export const CategoryDirectory = () => {
             <ul className="mt-3 grid gap-0.5">
               {group.items.map((item) => (
                 <li key={item.slug}>
-                  <Link
+                  <TrackedLink
                     href={categoryGuidePath(item.slug)}
+                    event="select_content"
+                    properties={{
+                      content_type: 'category_directory',
+                      item_id: item.slug,
+                      destination: categoryGuidePath(item.slug),
+                    }}
                     className={`flex min-h-10 items-center justify-between text-[15px] text-[#2C2A36] hover:text-[#0B0B0F] hover:underline ${FOCUS_CLASS}`}
                   >
                     {item.label}
                     <span aria-hidden="true" className="text-[#A6A3B4]">
                       →
                     </span>
-                  </Link>
+                  </TrackedLink>
                 </li>
               ))}
             </ul>

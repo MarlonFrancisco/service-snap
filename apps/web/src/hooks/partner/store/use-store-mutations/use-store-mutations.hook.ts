@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { StoreService } from '@/service/store';
 import { IStore } from '@/types/api/stores.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
@@ -6,6 +7,7 @@ import { toast } from 'sonner';
 
 export const useStoreMutations = () => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
 
   const updateStoreMutation = useMutation({
     mutationFn: (data: Partial<IStore>) => StoreService.update(data),
@@ -13,9 +15,14 @@ export const useStoreMutations = () => {
       queryClient.setQueryData(CACHE_QUERY_KEYS.stores(), (old: IStore[]) =>
         old.map((s) => (s.id === data.id ? { ...s, ...data } : s)),
       );
+      analytics.track('store_updated', { store_id: data.id });
       toast.success('Loja atualizada com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'store',
+        operation: 'update',
+      });
       toast.error('Erro ao atualizar loja');
     },
   });
@@ -31,9 +38,14 @@ export const useStoreMutations = () => {
         CACHE_QUERY_KEYS.store(data.id),
         () => undefined,
       );
+      analytics.track('store_deleted', { store_id: data.id });
       toast.success('Loja excluída com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'store',
+        operation: 'delete',
+      });
       toast.error('Erro ao excluir loja');
     },
   });
@@ -45,10 +57,15 @@ export const useStoreMutations = () => {
         ...old,
         data,
       ]);
+      analytics.track('store_created', { store_id: data.id });
       toast.success('Loja adicionada com sucesso');
     },
     onError: (error) => {
       console.error(error.message);
+      analytics.track('partner_mutation_failed', {
+        entity: 'store',
+        operation: 'create',
+      });
       toast.error('Erro ao adicionar loja');
     },
   });

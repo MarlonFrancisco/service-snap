@@ -9,13 +9,28 @@ const TAB_CLASS =
 const ICON_CLASS = 'h-6 w-6';
 
 const PROTECTED_TABS = [
-  { label: 'Favoritos', href: '/profile?tab=favorites', icon: Heart },
-  { label: 'Agenda', href: '/profile?tab=bookings', icon: CalendarDays },
-  { label: 'Perfil', href: '/profile?tab=settings', icon: UserRound },
+  {
+    id: 'favorites',
+    label: 'Favoritos',
+    href: '/profile?tab=favorites',
+    icon: Heart,
+  },
+  {
+    id: 'bookings',
+    label: 'Agenda',
+    href: '/profile?tab=bookings',
+    icon: CalendarDays,
+  },
+  {
+    id: 'settings',
+    label: 'Perfil',
+    href: '/profile?tab=settings',
+    icon: UserRound,
+  },
 ];
 
 export const MobileTabBar = () => {
-  const { isHome, handleProtectedClick } = useMobileTabBar();
+  const { isHome, handleTabClick, handleProtectedClick } = useMobileTabBar();
 
   return (
     <nav
@@ -24,17 +39,18 @@ export const MobileTabBar = () => {
     >
       <Link
         href="/"
+        onClick={() => handleTabClick('explore', '/')}
         aria-current={isHome ? 'page' : undefined}
         className={`${TAB_CLASS} text-[#9810FA]`}
       >
         <Search className={ICON_CLASS} strokeWidth={1.7} aria-hidden />
         Explorar
       </Link>
-      {PROTECTED_TABS.map(({ label, href, icon: Icon }) => (
+      {PROTECTED_TABS.map(({ id, label, href, icon: Icon }) => (
         <Link
           key={href}
           href={href}
-          onClick={handleProtectedClick}
+          onClick={(event) => handleProtectedClick(event, id, href)}
           className={`${TAB_CLASS} text-[#5F5C6E]`}
         >
           <Icon className={ICON_CLASS} strokeWidth={1.7} aria-hidden />

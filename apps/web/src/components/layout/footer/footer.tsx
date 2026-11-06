@@ -6,7 +6,7 @@ import { SOCIAL_LINKS } from '@/utils/constants/contact.constants';
 import { COUNTRIES, CURRENCIES } from '@repo/shared/constants';
 import { cn } from '@repo/ui';
 import Image from 'next/image';
-import Link from 'next/link';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import { useState } from 'react';
 import type { TFooterConfig } from './footer.types';
 
@@ -39,41 +39,78 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
           <div className="grid grid-cols-2 gap-6 md:grid-cols-[1fr_1fr_1fr_2fr] md:gap-8">
             <div>
               <h3 className={COLUMN_TITLE_CLASS}>Empresa</h3>
-              <Link href="/about" className={COLUMN_LINK_CLASS}>
+              <TrackedLink
+                href="/about"
+                event="footer_link_clicked"
+                properties={{ destination: '/about' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Sobre nós
-              </Link>
-              <Link href="/privacy" className={COLUMN_LINK_CLASS}>
+              </TrackedLink>
+              <TrackedLink
+                href="/privacy"
+                event="footer_link_clicked"
+                properties={{ destination: '/privacy' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Privacidade
-              </Link>
-              <Link href="/terms" className={COLUMN_LINK_CLASS}>
+              </TrackedLink>
+              <TrackedLink
+                href="/terms"
+                event="footer_link_clicked"
+                properties={{ destination: '/terms' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Termos
-              </Link>
+              </TrackedLink>
             </div>
 
             <div>
               <h3 className={COLUMN_TITLE_CLASS}>Suporte</h3>
-              <Link href="/help" className={COLUMN_LINK_CLASS}>
+              <TrackedLink
+                href="/help"
+                event="footer_link_clicked"
+                properties={{ destination: '/help' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Central de ajuda
-              </Link>
-              <Link href="/help" className={COLUMN_LINK_CLASS}>
+              </TrackedLink>
+              <TrackedLink
+                href="/help"
+                event="footer_link_clicked"
+                properties={{ destination: '/help' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Como funciona
-              </Link>
-              <Link href="/contact" className={COLUMN_LINK_CLASS}>
+              </TrackedLink>
+              <TrackedLink
+                href="/contact"
+                event="footer_link_clicked"
+                properties={{ destination: '/contact' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Contato
-              </Link>
+              </TrackedLink>
             </div>
 
             <div>
               <h3 className={COLUMN_TITLE_CLASS}>Parceiros</h3>
-              <Link
+              <TrackedLink
                 href="/sistema-de-agendamento"
+                event="footer_link_clicked"
+                properties={{ destination: '/sistema-de-agendamento' }}
                 className={COLUMN_LINK_CLASS}
               >
                 Sistema de agendamento
-              </Link>
-              <Link href="/pricing" className={COLUMN_LINK_CLASS}>
+              </TrackedLink>
+              <TrackedLink
+                href="/pricing"
+                event="footer_link_clicked"
+                properties={{ destination: '/pricing' }}
+                className={COLUMN_LINK_CLASS}
+              >
                 Planos
-              </Link>
+              </TrackedLink>
             </div>
 
             <div className="col-span-2 md:col-span-1">
@@ -82,12 +119,14 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
                 Dúvidas, indicação de profissionais ou interesse em ser parceiro
                 — estamos a um e-mail de distância.
               </p>
-              <Link
+              <TrackedLink
                 href="/contact"
+                event="footer_link_clicked"
+                properties={{ destination: '/contact' }}
                 className="inline-block rounded-full bg-[#0B0B0F] px-[22px] py-3 text-[13px] font-bold text-white transition-colors hover:bg-[#2B2B2B]"
               >
                 Ir para contato
-              </Link>
+              </TrackedLink>
             </div>
           </div>
         )}
@@ -98,7 +137,12 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
             !compact && 'mt-8 border-t border-[#EBE9F0] pt-6 md:mt-12',
           )}
         >
-          <Link href="/" className="self-start md:self-auto">
+          <TrackedLink
+            href="/"
+            event="footer_link_clicked"
+            properties={{ destination: '/' }}
+            className="self-start md:self-auto"
+          >
             <Image
               src="/d2-lockup-light.svg"
               alt="ServiceSnap"
@@ -107,7 +151,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
               className="h-9 w-auto"
               unoptimized
             />
-          </Link>
+          </TrackedLink>
 
           <div className="flex flex-wrap items-center gap-4">
             {SOCIAL_LINKS.length > 0 && !compact ? (
@@ -119,15 +163,17 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
                   const Icon = link.icon;
                   return (
                     <li key={link.href}>
-                      <a
+                      <TrackedLink
                         href={link.href}
+                        event="social_link_clicked"
+                        properties={{ network: link.label, page: 'footer' }}
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={link.label}
                         className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[#F4F3F7] hover:text-[#0B0B0F]"
                       >
                         <Icon className="h-4 w-4" />
-                      </a>
+                      </TrackedLink>
                     </li>
                   );
                 })}

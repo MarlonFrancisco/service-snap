@@ -8,7 +8,7 @@ import {
   CarouselPrevious,
   cn,
 } from '@repo/ui';
-import Link from 'next/link';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import type { TExperienceCard } from '../../homepage.types';
 import { ExperienceCard } from '../experience-card';
 import {
@@ -20,6 +20,8 @@ const arrowClassName =
   'static top-auto right-auto left-auto hidden size-9 translate-x-0 translate-y-0 border-[#E3E1EA] bg-white md:inline-flex';
 
 type TExperienceCarouselConfig = {
+  /** Identificador estável da lista nos eventos de analytics. */
+  listName: string;
   title: string;
   seeAllHref: string;
   items: TExperienceCard[];
@@ -27,6 +29,7 @@ type TExperienceCarouselConfig = {
 };
 
 export const ExperienceCarousel = ({
+  listName,
   title,
   seeAllHref,
   items,
@@ -46,12 +49,18 @@ export const ExperienceCarousel = ({
             {title}
           </h2>
           <div className="flex shrink-0 items-center gap-3">
-            <Link
+            <TrackedLink
               href={seeAllHref}
+              event="select_content"
+              properties={{
+                content_type: 'see_all',
+                item_id: listName,
+                destination: seeAllHref,
+              }}
               className="text-[13px] font-semibold text-[#0B0B0F] underline md:text-sm md:no-underline md:hover:underline"
             >
               Ver todos
-            </Link>
+            </TrackedLink>
             <CarouselPrevious className={arrowClassName} />
             <CarouselNext className={arrowClassName} />
           </div>
@@ -65,6 +74,8 @@ export const ExperienceCarousel = ({
               <div className="h-full min-h-0 w-full min-w-0">
                 <ExperienceCard
                   experience={experience}
+                  listName={listName}
+                  index={index}
                   priority={priorityFirstImage && index === 0}
                 />
               </div>

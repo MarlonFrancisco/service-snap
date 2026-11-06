@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth';
 import { Button } from '@repo/ui';
 import { ArrowRight, Store, User, Users } from 'lucide-react';
@@ -8,10 +9,14 @@ export function ProfileSelectionStep() {
   const [selectedType, setSelectedType] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const onAuth = useAuthStore((state) => state.onAuth);
+  const analytics = useAnalytics();
 
   const handleContinue = async () => {
     if (!selectedType) return;
 
+    analytics.track('profile_type_selected', {
+      profile_type: selectedType === 'provider' ? 'partner' : 'client',
+    });
     setIsLoading(true);
 
     // Simular finalização do processo

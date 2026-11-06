@@ -2,6 +2,8 @@
 
 import { usePlansQuery } from '@/hooks/use-query/use-plans-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
+import { useAnalytics } from '@/providers/analytics.provider';
+import { useCallback, useEffect, useRef } from 'react';
 import { formatPlanPrice } from '../plans-module/plans-module.utils';
 import {
   getMinPlanName,
@@ -22,10 +24,35 @@ export const usePlanFeatureGate = ({ module }: TUsePlanFeatureGateConfig) => {
   // Só busca preços quando o aviso aparece.
   const { data: plans } = usePlansQuery({ enabled: !hasAccess });
   const minPlan = plans?.month.find((plan) => plan.name === minPlanName);
+  const isLoading = isGettingCurrentPlan && !currentPlan;
+  const currentPlanId = currentPlan?.planId;
+
+  const analytics = useAnalytics();
+  const trackedModuleRef = useRef<string | null>(null);
+
+  // Uma vez por módulo exibido, só quando o bloqueio aparece de fato.
+  useEffect(() => {
+    if (isLoading || hasAccess || trackedModuleRef.current === module) return;
+    trackedModuleRef.current = module;
+
+    analytics.track('paywall_viewed', {
+      module,
+      current_plan: currentPlanId,
+      min_plan: minPlanName,
+    });
+  }, [isLoading, hasAccess, module, currentPlanId, minPlanName, analytics]);
+
+  const handleUpgradeClick = useCallback(
+    (destination: string) => {
+      analytics.track('paywall_upgrade_clicked', { module, destination });
+    },
+    [module, analytics],
+  );
 
   return {
     lockedModule,
-    isLoading: isGettingCurrentPlan && !currentPlan,
+    isLoading,
+    handleUpgradeClick,
     hasAccess,
     minPlanName,
     currentPlanName: currentPlan?.planName,

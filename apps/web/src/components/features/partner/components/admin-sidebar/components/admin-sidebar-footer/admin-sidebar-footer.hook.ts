@@ -1,6 +1,7 @@
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { usePathname } from 'next/navigation';
-import { useMemo } from 'react';
+import { useAnalytics } from '@/providers/analytics.provider';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 const PLAN_ROUTE = '/partner/plans';
 
@@ -18,6 +19,8 @@ const getUsage = (current: number, limit: number) => {
 export const useAdminSidebarFooter = () => {
   const { currentPlan } = useSubscriptionQuery();
   const pathname = usePathname();
+  const analytics = useAnalytics();
+  const hasTrackedWarningRef = useRef(false);
 
   const isHidden =
     pathname === PLAN_ROUTE || pathname.startsWith(`${PLAN_ROUTE}/`);
@@ -71,9 +74,29 @@ export const useAdminSidebarFooter = () => {
       ? { href: `${PLAN_ROUTE}/upgrade`, label: 'Fazer upgrade' }
       : { href: `${PLAN_ROUTE}/me`, label: 'Ver plano' };
 
+  const isWarningVisible = !isHidden && (isAtLimit || isNearLimit);
+
+  // Uma vez por sessão do painel: a sidebar fica montada entre as páginas.
+  useEffect(() => {
+    if (!isWarningVisible || hasTrackedWarningRef.current) return;
+    hasTrackedWarningRef.current = true;
+
+    analytics.track('plan_limit_warning_viewed', {
+      is_at_limit: isAtLimit,
+      is_near_limit: isNearLimit,
+    });
+  }, [isWarningVisible, isAtLimit, isNearLimit, analytics]);
+
+  // Só o "Fazer upgrade" conta como CTA; "Ver plano" é navegação.
+  const handlePlanActionClick = useCallback(() => {
+    if (!isAtLimit && !isNearLimit) return;
+    analytics.track('plan_upgrade_cta_clicked', { source: 'sidebar' });
+  }, [isAtLimit, isNearLimit, analytics]);
+
   return {
     currentPlan,
     isHidden,
+    handlePlanActionClick,
     usageRows,
     isNearLimit,
     isAtLimit,

@@ -1,10 +1,11 @@
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query/use-metrics-query.hook';
-import { useCallback, useState } from 'react';
-import { useMetricsStore, useMetricsView } from '../dashboard-module.hook';
-import type {
-  TMetricCardConfig,
-  TPeriodFilterValue,
-} from '../dashboard-module.types';
+import { useCallback } from 'react';
+import {
+  useMetricsPeriod,
+  useMetricsStore,
+  useMetricsView,
+} from '../dashboard-module.hook';
+import type { TMetricCardConfig } from '../dashboard-module.types';
 import { WEEK_FROM_SUNDAY } from '../utils/metrics.constants';
 import {
   formatHourRange,
@@ -18,7 +19,7 @@ import {
 const PROFITABLE_HOURS_LIMIT = 6;
 
 export const useSalesRevenueMetrics = () => {
-  const [period, setPeriod] = useState<TPeriodFilterValue>('month');
+  const { period, setPeriod } = useMetricsPeriod('sales', 'month');
   const { storeId, money } = useMetricsStore();
 
   const { sales, isPendingSales, isErrorSales, isFetchingSales, salesRefetch } =
@@ -36,6 +37,7 @@ export const useSalesRevenueMetrics = () => {
       sales.revenueEvolution.some((month) => month.revenue > 0));
 
   const viewState = useMetricsView({
+    section: 'sales',
     isPending: isPendingSales,
     isError: isErrorSales,
     isFetching: isFetchingSales,
@@ -44,7 +46,10 @@ export const useSalesRevenueMetrics = () => {
     refetch: salesRefetch,
   });
 
-  const handleSelectMonthly = useCallback(() => setPeriod('month'), []);
+  const handleSelectMonthly = useCallback(
+    () => setPeriod('month'),
+    [setPeriod],
+  );
 
   const summary = sales
     ? `${money.formatMoney(sales.revenue.value)} · ${

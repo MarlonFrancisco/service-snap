@@ -1,15 +1,19 @@
 'use client';
 
 import { useReferralQuery } from '@/hooks/use-query/use-referral-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { toast } from 'sonner';
 import type { TReferralShareCardConfig } from './referral-share-card.types';
 
+/** Retorna se a cópia deu certo, para registrar só o que aconteceu. */
 async function copyText(value: string, successMessage: string) {
   try {
     await navigator.clipboard.writeText(value);
     toast.success(successMessage);
+    return true;
   } catch {
     toast.error('Falha ao copiar. Tente novamente.');
+    return false;
   }
 }
 
@@ -24,6 +28,20 @@ const getReferredLabel = (count: number) => {
 export function useReferralShareCard({ variant }: TReferralShareCardConfig) {
   const { referral, isPendingReferral, isErrorReferral, refetchReferral } =
     useReferralQuery();
+  const analytics = useAnalytics();
+
+  const trackShared = (
+    action: 'copy_code' | 'copy_link' | 'share',
+    method: 'clipboard' | 'native_share',
+  ) => analytics.track('referral_shared', { action, variant, method });
+
+  const copyAndTrack = async (
+    value: string,
+    successMessage: string,
+    action: 'copy_code' | 'copy_link' | 'share',
+  ) => {
+    if (await copyText(value, successMessage)) trackShared(action, 'clipboard');
+  };
 
   const primaryUrl =
     variant === 'partner'
@@ -47,17 +65,17 @@ export function useReferralShareCard({ variant }: TReferralShareCardConfig) {
 
   const handleCopyCode = () => {
     if (!referral?.code) return;
-    void copyText(referral.code, 'Código copiado!');
+    void copyAndTrack(referral.code, 'Código copiado!', 'copy_code');
   };
 
   const handleCopyPrimary = () => {
     if (!primaryUrl) return;
-    void copyText(primaryUrl, 'Link copiado!');
+    void copyAndTrack(primaryUrl, 'Link copiado!', 'copy_link');
   };
 
   const handleCopySecondary = () => {
     if (!secondaryUrl) return;
-    void copyText(secondaryUrl, 'Link copiado!');
+    void copyAndTrack(secondaryUrl, 'Link copiado!', 'copy_link');
   };
 
   const handleShare = async () => {
@@ -70,13 +88,14 @@ export function useReferralShareCard({ variant }: TReferralShareCardConfig) {
           text: 'Te indico o ServiceSnap — agenda e serviços em um só lugar.',
           url: primaryUrl,
         });
+        trackShared('share', 'native_share');
         return;
       } catch {
         // user cancelled or share failed — fall through to clipboard
       }
     }
 
-    await copyText(primaryUrl, 'Link copiado!');
+    await copyAndTrack(primaryUrl, 'Link copiado!', 'share');
   };
 
   return {

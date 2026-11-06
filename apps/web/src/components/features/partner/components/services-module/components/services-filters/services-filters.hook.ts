@@ -1,8 +1,10 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useServicesStore } from '@/store';
 import type { ChangeEvent } from 'react';
 import { ALL_CATEGORIES_FILTER } from '../../utils/services-sections';
 
 export const useServicesFilters = () => {
+  const analytics = useAnalytics();
   const searchQuery = useServicesStore((state) => state.searchQuery);
   const categories = useServicesStore((state) => state.categories);
   const filterCategory = useServicesStore((state) => state.filterCategory);
@@ -20,8 +22,31 @@ export const useServicesFilters = () => {
   const hasActiveFilters =
     searchQuery !== '' || filterCategory !== ALL_CATEGORIES_FILTER;
 
+  const hasCategoryFilter = filterCategory !== ALL_CATEGORIES_FILTER;
+
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+    const { value } = event.target;
+
+    // Só a transição vazio → preenchido conta; cada tecla não é um evento.
+    if (searchQuery === '' && value !== '') {
+      analytics.track('services_filtered', {
+        has_query: true,
+        has_category: hasCategoryFilter,
+      });
+    }
+
+    setSearchQuery(value);
+  };
+
+  const handleFilterCategoryChange = (category: string) => {
+    if (category !== filterCategory) {
+      analytics.track('services_filtered', {
+        has_query: searchQuery !== '',
+        has_category: category !== ALL_CATEGORIES_FILTER,
+      });
+    }
+
+    setFilterCategory(category);
   };
 
   const handleClearFilters = () => {
@@ -42,7 +67,7 @@ export const useServicesFilters = () => {
     categories,
     filterCategory,
     hasActiveFilters,
-    setFilterCategory,
+    setFilterCategory: handleFilterCategoryChange,
     handleSearchChange,
     handleClearFilters,
     handleManageCategories,

@@ -1,4 +1,5 @@
 import { useStoreMutations } from '@/hooks/partner/store/use-store-mutations/use-store-mutations.hook';
+import { useAnalytics } from '@/providers/analytics.provider';
 import type { IStore } from '@/types/api/stores.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +7,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { parseMoneyInput } from '../utils/metrics.helpers';
-import { salesGoalSchema, type TSalesGoalFormData } from './sales-goal-card.schema';
+import {
+  salesGoalSchema,
+  type TSalesGoalFormData,
+} from './sales-goal-card.schema';
 import type { TUseSalesGoalCardConfig } from './sales-goal-card.types';
 
 const MAX_PROGRESS = 100;
@@ -16,6 +20,7 @@ export const useSalesGoalCard = ({
   period,
   goal,
 }: TUseSalesGoalCardConfig) => {
+  const analytics = useAnalytics();
   const queryClient = useQueryClient();
   const { updateStoreMutation } = useStoreMutations();
   const [isEditing, setIsEditing] = useState(false);
@@ -49,10 +54,18 @@ export const useSalesGoalCard = ({
       return;
     }
 
+    analytics.track('monthly_goal_set', {
+      store_id: storeId,
+      value: amount,
+      had_goal: hasGoal,
+      source: 'sales_dashboard',
+    });
+
     // Mantém o detalhe em cache coerente: quem editar a loja depois não reenvia
     // a meta antiga.
-    queryClient.setQueryData<IStore>(CACHE_QUERY_KEYS.store(storeId), (store) =>
-      store ? { ...store, monthlyGoal: amount } : store,
+    queryClient.setQueryData<IStore>(
+      CACHE_QUERY_KEYS.store(storeId),
+      (store) => (store ? { ...store, monthlyGoal: amount } : store),
     );
     await queryClient.invalidateQueries({
       queryKey: CACHE_QUERY_KEYS.metricsSales(storeId).slice(0, 1),

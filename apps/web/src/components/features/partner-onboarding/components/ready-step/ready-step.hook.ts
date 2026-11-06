@@ -1,4 +1,5 @@
 import type { IStoreCardData } from '@/components/ui/store-card/store-card.types';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import type { TOnboardingResult } from '@/types/api/onboarding.types';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,6 +10,7 @@ export const useReadyStep = ({ store, services, gallery }: TOnboardingResult) =>
   const bookingPath = `/booking/${store.id}`;
   // O link depende do domínio do navegador, que o servidor não conhece.
   const [origin, setOrigin] = useState('');
+  const analytics = useAnalytics();
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -45,6 +47,11 @@ export const useReadyStep = ({ store, services, gallery }: TOnboardingResult) =>
     try {
       await navigator.clipboard.writeText(bookingUrl);
       markShared();
+      analytics.track('booking_link_copied', {
+        store_id: store.id,
+        source: 'onboarding_ready',
+        method: 'clipboard',
+      });
       toast.success('Link copiado');
     } catch {
       toast.error('Não foi possível copiar. Selecione o link e copie.');
@@ -60,6 +67,11 @@ export const useReadyStep = ({ store, services, gallery }: TOnboardingResult) =>
     try {
       await navigator.share({ title: store.name, url: bookingUrl });
       markShared();
+      analytics.track('booking_link_copied', {
+        store_id: store.id,
+        source: 'onboarding_ready',
+        method: 'native_share',
+      });
     } catch {
       // Cancelar o menu de compartilhar não é erro.
     }

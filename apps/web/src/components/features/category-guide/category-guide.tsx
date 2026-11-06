@@ -9,6 +9,7 @@ import {
   getBusinessSegment,
 } from '@/utils/constants/business-pages.constants';
 import { CalendarCheck, Search, UserRound } from 'lucide-react';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import Link from 'next/link';
 
 const FOCUS_CLASS =
@@ -46,6 +47,9 @@ export function categorySearchHref(guide: TCategoryGuide): string {
 
 export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
   const searchHref = categorySearchHref(guide);
+  const partnerHref = businessPagePath(
+    getBusinessSegment(guide.slug) ? guide.slug : '',
+  );
   const otherGuides = CATEGORY_GUIDES.filter(
     (item) => item.slug !== guide.slug,
   );
@@ -74,9 +78,18 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
           {guide.intro}
         </p>
         <div className="mt-7">
-          <Link href={searchHref} className={PRIMARY_ACTION_CLASS}>
+          <TrackedLink
+            href={searchHref}
+            event="select_content"
+            properties={{
+              content_type: 'category_guide_cta',
+              item_id: guide.slug,
+              destination: searchHref,
+            }}
+            className={PRIMARY_ACTION_CLASS}
+          >
             Ver horários disponíveis
-          </Link>
+          </TrackedLink>
         </div>
 
         <section aria-labelledby="servicos" className="mt-14 md:mt-20">
@@ -145,12 +158,18 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
           <ul className="mt-5 flex flex-wrap gap-2.5">
             {otherGuides.map((item) => (
               <li key={item.slug}>
-                <Link
+                <TrackedLink
                   href={categoryGuidePath(item.slug)}
+                  event="select_content"
+                  properties={{
+                    content_type: 'category_guide_related',
+                    item_id: item.slug,
+                    destination: categoryGuidePath(item.slug),
+                  }}
                   className={SECONDARY_ACTION_CLASS}
                 >
                   {item.name}
-                </Link>
+                </TrackedLink>
               </li>
             ))}
           </ul>
@@ -162,14 +181,18 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
             Receba agendamentos online, organize sua equipe e envie lembretes
             automáticos para os clientes.
           </p>
-          <Link
-            href={businessPagePath(
-              getBusinessSegment(guide.slug) ? guide.slug : '',
-            )}
+          <TrackedLink
+            href={partnerHref}
+            event="partner_cta_clicked"
+            properties={{
+              placement: 'category_guide',
+              destination: partnerHref,
+              segment: guide.slug,
+            }}
             className="mt-6 inline-flex h-11 items-center rounded-full bg-white px-5 text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#EBE9F0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Conhecer o sistema
-          </Link>
+          </TrackedLink>
         </section>
       </main>
       <Footer />

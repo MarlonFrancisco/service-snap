@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import type {
   TAddServicePayload,
@@ -57,6 +58,7 @@ export const useServicesStep = ({
   const [duration, setDuration] = useState('');
   const [price, setPrice] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const analytics = useAnalytics();
 
   const addMutation = useOnboardingMutation(
     OnboardingService.addService.bind(OnboardingService),
@@ -112,7 +114,12 @@ export const useServicesStep = ({
     stepMutation.reset();
 
     try {
-      await addMutation.mutateAsync(payload);
+      const next = await addMutation.mutateAsync(payload);
+      analytics.track('onboarding_service_added', {
+        services_count: next.services.length,
+        is_new_category: isNewCategory,
+        from_suggestion: suggestions.includes(payload.name),
+      });
     } catch {
       return false;
     }
@@ -146,14 +153,27 @@ export const useServicesStep = ({
       setFormError(null);
 
       try {
-        await stepMutation.mutateAsync('team');
+        const next = await stepMutation.mutateAsync('team');
+        analytics.track('onboarding_step_completed', {
+          step: 'services',
+          services_count: next.services.length,
+        });
         onSaved();
       } catch {
         // A mensagem aparece via `stepMutation.error`.
       }
     });
 
-  const handleSaveAndExit = () => void advance(onExit);
+  const handleSaveAndExit = () => {
+    const hadChanges = hasPendingService;
+    void advance(() => {
+      analytics.track('onboarding_save_and_exit', {
+        step: 'services',
+        had_changes: hadChanges,
+      });
+      onExit();
+    });
+  };
 
   const apiError = addMutation.error ?? removeMutation.error ?? stepMutation.error;
 
@@ -186,7 +206,13 @@ export const useServicesStep = ({
     setDuration: (value: string) => setDuration(value.replace(/\D/g, '')),
     setPrice: (value: string) => setPrice(maskCurrency(value)),
     handleAdd: () => void addFromForm(),
-    handleRemove: (serviceId: string) => removeMutation.mutate(serviceId),
+    handleRemove: (serviceId: string) =>
+      removeMutation.mutate(serviceId, {
+        onSuccess: (next) =>
+          analytics.track('onboarding_service_removed', {
+            services_count: next.services.length,
+          }),
+      }),
     handleContinue,
     handleSaveAndExit,
   };

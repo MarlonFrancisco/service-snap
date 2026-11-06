@@ -1,10 +1,11 @@
 'use client';
 import { useAvailabilityQuery } from '@/hooks/use-query/use-availability-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { IAvailabilitySlot } from '@/types/api/schedule.types';
 import { TWorkingDays } from '@/types/api/stores.types';
 import { cn } from '@repo/ui';
 import { motion } from 'motion/react';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
   getLocalDateKey,
@@ -17,11 +18,24 @@ import { BookingCalendar } from './booking-calendar';
 import { DatePickerHorizontal } from './date-picker-horizontal';
 import { SkeletonTimeSlots } from './skeleton-time-slots';
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Dias inteiros entre hoje e a data escolhida (0 = hoje). */
+const getDaysAhead = (date: Date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+  return Math.round((target.getTime() - today.getTime()) / MS_PER_DAY);
+};
+
 const EMPTY_NOTICE_CLASS =
   'rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-center text-sm text-[#5F5C6E]';
 
 export function DateTimeSelectionStep() {
   const store = useGetStore();
+  const analytics = useAnalytics();
+  const reportedSlotsOutcomeRef = useRef<string | null>(null);
   const { watch, setValue } = useFormContext<TBookingFormData>();
   const selectedServices = watch('selectedServices');
   const selectedDate = watch('selectedDate');
@@ -36,6 +50,45 @@ export function DateTimeSelectionStep() {
     memberId: isAnyProfessional ? undefined : selectedProfessional?.id,
   });
   const availableSlots = slots ?? [];
+  const selectedDateKey = selectedDate ? getLocalDateKey(selectedDate) : null;
+  const memberId = isAnyProfessional ? undefined : selectedProfessional?.id;
+
+  // Um disparo por combinação de data/profissional, não a cada re-render
+  useEffect(() => {
+    if (!store?.id || !selectedDateKey || isLoadingSlots) return;
+
+    const outcome = isSlotsError
+      ? 'error'
+      : slots && slots.length === 0
+        ? 'empty'
+        : null;
+    if (!outcome) return;
+
+    const key = `${selectedDateKey}|${memberId ?? 'any'}|${outcome}`;
+    if (reportedSlotsOutcomeRef.current === key) return;
+    reportedSlotsOutcomeRef.current = key;
+
+    if (outcome === 'error') {
+      analytics.track('slots_load_failed', {
+        store_id: store.id,
+        date: selectedDateKey,
+      });
+    } else {
+      analytics.track('no_slots_available', {
+        store_id: store.id,
+        date: selectedDateKey,
+        professional_id: memberId,
+      });
+    }
+  }, [
+    analytics,
+    store?.id,
+    selectedDateKey,
+    memberId,
+    isLoadingSlots,
+    isSlotsError,
+    slots,
+  ]);
 
   // Ao voltar para a etapa, o horário escolhido pode ter deixado de valer
   useEffect(() => {
@@ -53,11 +106,24 @@ export function DateTimeSelectionStep() {
     setValue('selectedDate', date);
     setValue('selectedTime', null);
     setValue('assignedProfessionalId', null);
+
+    if (date) {
+      analytics.track('select_date', {
+        store_id: store?.id ?? '',
+        days_ahead: getDaysAhead(date),
+        weekday: date.getDay(),
+      });
+    }
   };
 
   const handleTimeSelect = (slot: IAvailabilitySlot) => {
     setValue('selectedTime', slot.time);
     setValue('assignedProfessionalId', slot.storeMemberId);
+    analytics.track('select_time_slot', {
+      store_id: store?.id ?? '',
+      time: slot.time,
+      professional_id: slot.storeMemberId ?? undefined,
+    });
   };
 
   const formatDate = (date: Date) => {

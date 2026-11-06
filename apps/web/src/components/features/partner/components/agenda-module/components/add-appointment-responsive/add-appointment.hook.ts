@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { isApiHttpError } from '@/service/api';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
@@ -23,6 +24,7 @@ const EMPTY_PROFESSIONALS: IProfessional[] = [];
 const EMPTY_SERVICES: IService[] = [];
 
 export const useAddAppointmentMutations = () => {
+  const analytics = useAnalytics();
   const setIsAddAppointmentOpen = useAgendaStore(
     (state) => state.setIsAddAppointmentOpen,
   );
@@ -39,10 +41,25 @@ export const useAddAppointmentMutations = () => {
           CACHE_QUERY_KEYS.schedules(storeId),
           (old: IAppointment[] | undefined) => [...(old ?? []), ...data],
         );
+        analytics.track('appointment_created', {
+          store_id: storeId,
+          service_ids: data.map((appointment) => appointment.service?.id),
+          value: data.reduce(
+            (total, appointment) => total + (appointment.service?.price ?? 0),
+            0,
+          ),
+          source: 'partner',
+        });
         toast.success('Agendamento criado com sucesso');
         setIsAddAppointmentOpen({ isAddAppointmentOpen: false });
       },
       onError: (error) => {
+        const httpStatus = isApiHttpError(error) ? error.status : undefined;
+        analytics.track('appointment_create_failed', {
+          store_id: storeId,
+          reason: httpStatus === 409 ? 'conflict' : 'other',
+          http_status: httpStatus,
+        });
         toast.error(
           isApiHttpError(error) && error.status === 409
             ? 'Este profissional já tem um agendamento neste horário'

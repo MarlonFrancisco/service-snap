@@ -24,6 +24,7 @@ export const PartnerOnboarding = () => {
     setBusinessType,
     goBack,
     goTo,
+    handleStart,
     handleExit,
     handleCompleted,
   } = usePartnerOnboarding();
@@ -62,7 +63,7 @@ export const PartnerOnboarding = () => {
         <WelcomeStep
           selected={businessType}
           onSelect={setBusinessType}
-          onStart={() => goTo('space')}
+          onStart={handleStart}
           onExit={handleExit}
         />
       )}

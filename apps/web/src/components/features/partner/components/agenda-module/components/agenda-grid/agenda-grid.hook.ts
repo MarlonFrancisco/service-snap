@@ -1,4 +1,5 @@
 import { useBlockedTimeMutations } from '@/hooks';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { usePartnerStore } from '@/store';
 import {
   INITIAL_APPOINTMENT_FORM,
@@ -76,6 +77,7 @@ const getSlotAriaLabel = (
  * Contém toda a lógica comum de manipulação de slots, appointments e blocked times
  */
 export const useAgendaGrid = () => {
+  const analytics = useAnalytics();
   const professionals = usePartnerStore(
     (state) => state.activeStore.storeMembers ?? EMPTY_PROFESSIONALS,
   );
@@ -273,6 +275,7 @@ export const useAgendaGrid = () => {
 
       if (blockedTime) return;
 
+      analytics.track('appointment_form_opened', { source: 'grid_slot' });
       setIsAddAppointmentOpen({
         isAddAppointmentOpen: true,
         selectedAppointment: {
@@ -284,6 +287,7 @@ export const useAgendaGrid = () => {
       });
     },
     [
+      analytics,
       isBlockMode,
       weekDates,
       createBlockedTime,
@@ -493,6 +497,8 @@ export const useAgendaGrid = () => {
 
   const handleQuickAdd = useCallback(
     (date?: Date) => {
+      analytics.track('appointment_form_opened', { source: 'quick_add' });
+
       if (!date) {
         setIsAddAppointmentOpen({ isAddAppointmentOpen: true });
         return;
@@ -510,7 +516,7 @@ export const useAgendaGrid = () => {
         },
       });
     },
-    [setIsAddAppointmentOpen, filteredProfessionals],
+    [analytics, setIsAddAppointmentOpen, filteredProfessionals],
   );
 
   const handleAppointmentClick = useCallback(

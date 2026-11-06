@@ -1,3 +1,4 @@
+import type { TDashboardSection } from '@repo/analytics';
 import type { ReactNode } from 'react';
 
 export type TPeriodFilterValue = 'week' | 'month' | 'quarter';
@@ -17,6 +18,7 @@ export type TResolveMetricsViewConfig = {
 };
 
 export type TUseMetricsViewConfig = {
+  section: TDashboardSection;
   isPending: boolean;
   isError: boolean;
   isFetching: boolean;

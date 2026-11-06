@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
 import { useAgendaStore } from '@/store/admin/agenda';
@@ -36,6 +37,14 @@ const calculateDuration = (startTime: string, endTime: string): string => {
   return `${duration}min`;
 };
 
+/** Horas entre agora e o início do agendamento (negativo se já passou). */
+const getHoursBeforeStart = (date: string, startTime: string): number => {
+  const start = new Date(`${date.split('T')[0]}T${startTime}`).getTime();
+  return Number.isNaN(start)
+    ? 0
+    : Math.round((start - Date.now()) / (60 * 60 * 1000));
+};
+
 /**
  * Formata a data textualmente: `new Date('YYYY-MM-DD')` é meia-noite em UTC e
  * exibiria o dia anterior no fuso do Brasil.
@@ -47,6 +56,7 @@ const formatAppointmentDate = (date: string): string => {
 
 // Mutations hook
 export const useAppointmentDetailsMutations = () => {
+  const analytics = useAnalytics();
   const storeId = usePartnerStore.getState().activeStore.id;
   const setDetailsAppointment = useAgendaStore(
     (state) => state.setDetailsAppointment,
@@ -61,10 +71,41 @@ export const useAppointmentDetailsMutations = () => {
       }: {
         scheduleId: string;
         status: TAppointmentStatus;
+        previousStatus?: TAppointmentStatus;
+        date?: string;
+        startTime?: string;
       }) => {
         return ScheduleService.update(storeId, scheduleId, { status });
       },
-      onSuccess: (data) => {
+      onSuccess: (data, variables) => {
+        const previousStatus = variables.previousStatus ?? 'scheduled';
+
+        if (variables.status !== previousStatus) {
+          if (variables.status === 'completed') {
+            analytics.track('appointment_completed', {
+              appointment_id: variables.scheduleId,
+              store_id: storeId,
+              previous_status: previousStatus,
+            });
+          } else if (variables.status === 'no-show') {
+            analytics.track('appointment_no_show', {
+              appointment_id: variables.scheduleId,
+              store_id: storeId,
+              previous_status: previousStatus,
+            });
+          } else if (variables.status === 'cancelled') {
+            analytics.track('appointment_cancelled', {
+              appointment_id: variables.scheduleId,
+              store_id: storeId,
+              source: 'partner',
+              hours_before:
+                variables.date && variables.startTime
+                  ? getHoursBeforeStart(variables.date, variables.startTime)
+                  : undefined,
+            });
+          }
+        }
+
         // Update cache with optimistic update
         queryClient.setQueryData(
           CACHE_QUERY_KEYS.schedules(storeId),
@@ -92,7 +133,10 @@ export const useAppointmentDetailsMutations = () => {
         // Close the details modal
         setDetailsAppointment();
       },
-      onError: () => {
+      onError: (_error, variables) => {
+        analytics.track('appointment_status_update_failed', {
+          status: variables.status,
+        });
         toast.error('Erro ao atualizar status do agendamento');
       },
     });
@@ -149,9 +193,20 @@ export const useAppointmentDetails = () => {
 
   const handleStatusChange = useCallback(
     (id: string, status: TAppointmentStatus) => {
-      updateAppointmentStatus({ scheduleId: id, status });
+      updateAppointmentStatus({
+        scheduleId: id,
+        status,
+        previousStatus: detailsAppointment.status,
+        date: detailsAppointment.date,
+        startTime: detailsAppointment.startTime,
+      });
     },
-    [updateAppointmentStatus],
+    [
+      updateAppointmentStatus,
+      detailsAppointment.status,
+      detailsAppointment.date,
+      detailsAppointment.startTime,
+    ],
   );
 
   const handleRequestCancel = useCallback(() => {

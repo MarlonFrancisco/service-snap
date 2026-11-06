@@ -1,11 +1,13 @@
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query/use-metrics-query.hook';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { downloadCsv, rowsToCsv } from '@/utils/helpers/csv.helper';
-import { useCallback, useState } from 'react';
-import { useMetricsStore, useMetricsView } from '../dashboard-module.hook';
-import type {
-  TMetricCardConfig,
-  TPeriodFilterValue,
-} from '../dashboard-module.types';
+import { useCallback } from 'react';
+import {
+  useMetricsPeriod,
+  useMetricsStore,
+  useMetricsView,
+} from '../dashboard-module.hook';
+import type { TMetricCardConfig } from '../dashboard-module.types';
 import {
   formatCount,
   formatPercent,
@@ -40,7 +42,8 @@ const formatLastVisit = (lastVisit: Date | string): string => {
 };
 
 export const useCustomerMetrics = () => {
-  const [period, setPeriod] = useState<TPeriodFilterValue>('month');
+  const analytics = useAnalytics();
+  const { period, setPeriod } = useMetricsPeriod('customers', 'month');
   const { activeStore, storeId, money } = useMetricsStore();
   const currency = activeStore.currency;
   const storeName = activeStore.name;
@@ -62,6 +65,7 @@ export const useCustomerMetrics = () => {
   const segments = customers?.ltvBySegment ?? [];
 
   const viewState = useMetricsView({
+    section: 'customers',
     isPending: isPendingCustomers,
     isError: isErrorCustomers,
     isFetching: isFetchingCustomers,
@@ -202,7 +206,15 @@ export const useCustomerMetrics = () => {
       .replace(/^-+|-+$/g, '');
 
     downloadCsv(`clientes-${storeSlug || 'loja'}-${stamp}.csv`, csv);
-  }, [customers, currency, storeName]);
+
+    if (storeId) {
+      analytics.track('customers_exported', {
+        store_id: storeId,
+        period,
+        rows: vipRows.length + csvSegmentRows.length,
+      });
+    }
+  }, [analytics, customers, currency, storeName, storeId, period]);
 
   return {
     ...viewState,

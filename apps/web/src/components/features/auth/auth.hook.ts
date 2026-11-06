@@ -1,6 +1,7 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
 import { useIsMobile } from '@repo/ui';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { TAuthStep, TAuthStepChange, TAuthUserData } from './auth.types';
 
 const INITIAL_USER_DATA: TAuthUserData = {
@@ -24,6 +25,17 @@ export const useAuthModal = () => {
   const isMobile = useIsMobile();
   const isOpen = useAuthStore((state) => state.isOpen);
   const closeAuthAction = useAuthStore((state) => state.closeAuthAction);
+  const authSource = useAuthStore((state) => state.authSource);
+  const analytics = useAnalytics();
+  const wasOpenRef = useRef(false);
+
+  // Só na transição fechado -> aberto, para não repetir a cada render
+  useEffect(() => {
+    if (isOpen && !wasOpenRef.current) {
+      analytics.track('login_modal_opened', { source: authSource });
+    }
+    wasOpenRef.current = isOpen;
+  }, [analytics, authSource, isOpen]);
 
   const handleStepChange: TAuthStepChange = async (step, data) => {
     setIsTransitioning(true);
@@ -34,11 +46,13 @@ export const useAuthModal = () => {
       setUserData((prev) => ({ ...prev, ...data }));
     }
     setCurrentStep(step);
+    analytics.track('auth_step_viewed', { step });
 
     setTimeout(() => setIsTransitioning(false), 100);
   };
 
   const handleClose = () => {
+    analytics.track('login_modal_closed', { step: currentStep });
     setCurrentStep('login');
     closeAuthAction();
     setUserData(INITIAL_USER_DATA);

@@ -1,7 +1,10 @@
 'use client';
 
 import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
-import { useBusinessData } from '../business-showcase.hook';
+import {
+  useBusinessData,
+  useBusinessInfoActions,
+} from '../business-showcase.hook';
 
 const INFO_ROW_CLASS =
   'flex justify-between gap-4 border-b border-[#EBE9F0] py-3 md:block md:border-0 md:p-0';
@@ -11,6 +14,7 @@ const INFO_VALUE_CLASS = 'text-right md:block md:text-left';
 
 export function BusinessInfo() {
   const data = useBusinessData();
+  const { handleInstagramClick } = useBusinessInfoActions();
 
   if (!data) {
     return null;
@@ -67,6 +71,7 @@ export function BusinessInfo() {
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={handleInstagramClick}
                 className="underline"
               >
                 {instagramLabel}

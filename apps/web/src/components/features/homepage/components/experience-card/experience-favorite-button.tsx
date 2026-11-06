@@ -15,14 +15,14 @@ export const ExperienceFavoriteButton = ({
 }: TExperienceFavoriteButtonConfig) => {
   const openAuthAction = useAuthStore((state) => state.openAuthAction);
   const { isLoggedIn, isFavorite, isAnimating, toggleFavorite } =
-    useStoreCardFavorite(storeId);
+    useStoreCardFavorite(storeId, 'home_card');
 
   const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     event.stopPropagation();
 
     if (!isLoggedIn) {
-      openAuthAction({});
+      openAuthAction({ source: 'favorite' });
       return;
     }
 

@@ -1,7 +1,11 @@
 import { FetchingStatus } from '@/types/api';
+import type { TLoginSource } from '@repo/analytics';
 
 interface IAuthActions {
-  openAuthAction: (params?: { onAuth?: () => void }) => Promise<void>;
+  openAuthAction: (params?: {
+    onAuth?: () => void;
+    source?: TLoginSource;
+  }) => Promise<void>;
   closeAuthAction: () => Promise<void>;
   createAuthSessionAction: (payload: {
     email?: string;
@@ -27,4 +31,6 @@ export interface IAuthState extends IAuthActions {
   fetchingStatus: FetchingStatus;
   isOpen: boolean;
   isNewUser: boolean;
+  /** De onde o login foi aberto, para a analytics. */
+  authSource: TLoginSource;
 }

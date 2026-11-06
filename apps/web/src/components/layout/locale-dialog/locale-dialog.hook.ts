@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useLocaleStore } from '@/store/locale';
 import {
   CURRENCIES,
@@ -9,6 +10,7 @@ import { useCallback, useMemo } from 'react';
 import type { TUseLocaleDialogConfig } from './locale-dialog.types';
 
 export const useLocaleDialog = ({ onOpenChange }: TUseLocaleDialogConfig) => {
+  const analytics = useAnalytics();
   const {
     country,
     currency,
@@ -33,27 +35,34 @@ export const useLocaleDialog = ({ onOpenChange }: TUseLocaleDialogConfig) => {
   const handleCountrySelect = useCallback(
     (code: TCountryCode) => {
       setCountry(code);
+      analytics.track('locale_changed', { setting: 'country', value: code });
     },
-    [setCountry],
+    [setCountry, analytics],
   );
 
   const handleCurrencySelect = useCallback(
     (code: TCurrencyCode) => {
       setCurrency(code);
+      analytics.track('locale_changed', { setting: 'currency', value: code });
     },
-    [setCurrency],
+    [setCurrency, analytics],
   );
 
   const handleAutoTranslateToggle = useCallback(
     (checked: boolean) => {
       setAutoTranslate(checked);
+      analytics.track('locale_changed', {
+        setting: 'auto_translate',
+        value: String(checked),
+      });
     },
-    [setAutoTranslate],
+    [setAutoTranslate, analytics],
   );
 
   const handleSave = useCallback(() => {
+    analytics.track('locale_changed', { setting: 'save' });
     onOpenChange(false);
-  }, [onOpenChange]);
+  }, [onOpenChange, analytics]);
 
   return {
     country,

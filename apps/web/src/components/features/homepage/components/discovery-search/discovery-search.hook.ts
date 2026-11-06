@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -10,6 +11,7 @@ const PLACEHOLDERS = [
 
 export const useDiscoverySearch = () => {
   const router = useRouter();
+  const analytics = useAnalytics();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -27,9 +29,11 @@ export const useDiscoverySearch = () => {
     const query = searchQuery.trim();
     if (!query) return;
 
+    analytics.track('search', { search_term: query, source: 'home_hero' });
+
     const params = new URLSearchParams({ query });
     router.push(`/booking?${params.toString()}`);
-  }, [router, searchQuery]);
+  }, [analytics, router, searchQuery]);
 
   const handleInputChange = useCallback((value: string) => {
     setSearchQuery(value);

@@ -1,5 +1,7 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
 import { loadGoogleIdentity } from '@/utils/helpers/google-identity.helper';
+import { getStoredReferralCode } from '@/utils/helpers/referral.helper';
 import { useCallback, useEffect, useRef } from 'react';
 
 const GOOGLE_BUTTON_MIN_WIDTH = 200;
@@ -9,13 +11,32 @@ export const useGoogleAuth = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const googleLoginAction = useAuthStore((state) => state.googleLoginAction);
   const onAuth = useAuthStore((state) => state.onAuth);
+  const analytics = useAnalytics();
 
   const handleAuth = useCallback(
     async (response: { credential: string }) => {
-      await googleLoginAction(response.credential);
+      // Lido antes do login: para usuário novo a action limpa o código salvo
+      const hasReferral = Boolean(getStoredReferralCode());
+
+      try {
+        await googleLoginAction(response.credential);
+      } catch (error) {
+        analytics.track('login_failed', { method: 'google', stage: 'google' });
+        throw error;
+      }
+
+      if (useAuthStore.getState().isNewUser) {
+        analytics.track('sign_up', {
+          method: 'google',
+          has_referral: hasReferral,
+        });
+      } else {
+        analytics.track('login', { method: 'google' });
+      }
+
       onAuth?.();
     },
-    [googleLoginAction, onAuth],
+    [analytics, googleLoginAction, onAuth],
   );
 
   useEffect(() => {

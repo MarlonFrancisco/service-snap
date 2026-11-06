@@ -4,7 +4,12 @@ import {
   GtmProvider,
   type IAnalytics,
   type IAnalyticsProvider,
+  type TBillingPeriod,
 } from '@repo/analytics';
+
+/** Os planos usam o intervalo do Stripe; o catálogo usa o nome do período. */
+export const toBillingPeriod = (interval: 'month' | 'year'): TBillingPeriod =>
+  interval === 'year' ? 'yearly' : 'monthly';
 
 type TAnalyticsEnv = {
   gtmId?: string;

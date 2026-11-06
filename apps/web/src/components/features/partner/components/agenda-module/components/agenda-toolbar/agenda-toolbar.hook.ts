@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { usePartnerStore } from '@/store';
 import type { TAgendaViewMode } from '@/store/admin/agenda';
 import {
@@ -17,6 +18,7 @@ const EMPTY_PROFESSIONALS: IProfessional[] = [];
 const LAST_DAY_INDEX = 6;
 
 export function useAgendaToolbar(variant: TAgendaToolbarVariant) {
+  const analytics = useAnalytics();
   const isMobile = useIsMobile();
   const weekDates = useAgendaStore(selectWeekDates);
   const currentWeek = useAgendaStore((state) => state.currentWeek);
@@ -73,7 +75,14 @@ export function useAgendaToolbar(variant: TAgendaToolbarVariant) {
     [setCurrentWeek, setSelectedDayIndex],
   );
 
+  const navigationUnit = isDayNavigation ? 'day' : 'week';
+
   const handlePrevious = useCallback(() => {
+    analytics.track('agenda_navigated', {
+      direction: 'previous',
+      unit: navigationUnit,
+    });
+
     if (!isDayNavigation) {
       goToWeek(currentWeek - 1);
       return;
@@ -87,6 +96,8 @@ export function useAgendaToolbar(variant: TAgendaToolbarVariant) {
     setCurrentWeek(currentWeek - 1);
     setSelectedDayIndex(LAST_DAY_INDEX);
   }, [
+    analytics,
+    navigationUnit,
     isDayNavigation,
     currentWeek,
     selectedDayIndex,
@@ -96,6 +107,11 @@ export function useAgendaToolbar(variant: TAgendaToolbarVariant) {
   ]);
 
   const handleNext = useCallback(() => {
+    analytics.track('agenda_navigated', {
+      direction: 'next',
+      unit: navigationUnit,
+    });
+
     if (!isDayNavigation) {
       goToWeek(currentWeek + 1);
       return;
@@ -109,6 +125,8 @@ export function useAgendaToolbar(variant: TAgendaToolbarVariant) {
     setCurrentWeek(currentWeek + 1);
     setSelectedDayIndex(0);
   }, [
+    analytics,
+    navigationUnit,
     isDayNavigation,
     currentWeek,
     selectedDayIndex,
@@ -118,49 +136,64 @@ export function useAgendaToolbar(variant: TAgendaToolbarVariant) {
   ]);
 
   const handleToday = useCallback(() => {
+    analytics.track('agenda_navigated', {
+      direction: 'today',
+      unit: navigationUnit,
+    });
     goToWeek(0);
-  }, [goToWeek]);
+  }, [analytics, navigationUnit, goToWeek]);
 
   const handleToggleBlockMode = useCallback(() => {
     const newBlockMode = !isBlockMode;
     setIsBlockMode(newBlockMode);
+    analytics.track('agenda_block_mode_toggled', { enabled: newBlockMode });
     toast.info(
       newBlockMode ? 'Modo de bloqueio ativado' : 'Modo de bloqueio desativado',
     );
-  }, [isBlockMode, setIsBlockMode]);
+  }, [analytics, isBlockMode, setIsBlockMode]);
 
   const handleEnterFocusMode = useCallback(() => {
     setIsFocusMode(true);
-  }, [setIsFocusMode]);
+    analytics.track('agenda_focus_mode_toggled', { enabled: true });
+  }, [analytics, setIsFocusMode]);
 
   const handleExitFocusMode = useCallback(() => {
     setIsFocusMode(false);
+    analytics.track('agenda_focus_mode_toggled', { enabled: false });
 
     if (isMobile) {
       setIsBlockMode(false);
     }
-  }, [isMobile, setIsFocusMode, setIsBlockMode]);
+  }, [analytics, isMobile, setIsFocusMode, setIsBlockMode]);
 
   const handleViewModeChange = useCallback(
     (mode: TAgendaViewMode) => {
+      if (mode !== viewMode) {
+        analytics.track('agenda_view_changed', { view_mode: mode });
+      }
+
       setViewMode(mode);
 
       if (mode === 'day' && currentWeek === 0) {
         setSelectedDayIndex(getTodayDayIndex());
       }
     },
-    [currentWeek, setViewMode, setSelectedDayIndex],
+    [analytics, viewMode, currentWeek, setViewMode, setSelectedDayIndex],
   );
 
   const handleOpenAddAppointment = useCallback(() => {
+    analytics.track('appointment_form_opened', { source: 'toolbar' });
     setIsAddAppointmentOpen({ isAddAppointmentOpen: true });
-  }, [setIsAddAppointmentOpen]);
+  }, [analytics, setIsAddAppointmentOpen]);
 
   const handleProfessionalChange = useCallback(
     (professionalId: string) => {
       setSelectedProfessional(professionalId);
+      analytics.track('agenda_professional_filtered', {
+        is_all: professionalId === 'all',
+      });
     },
-    [setSelectedProfessional],
+    [analytics, setSelectedProfessional],
   );
 
   return {

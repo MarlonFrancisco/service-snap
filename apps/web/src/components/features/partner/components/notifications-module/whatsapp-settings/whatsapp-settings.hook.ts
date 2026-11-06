@@ -2,11 +2,13 @@ import { useNotificationsMutations } from '@/hooks/partner/use-notifications-mut
 import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query/use-whatsapp-query.hook';
 import { isNotFoundError } from '@/service/api';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { useReminderSettingsLoad } from '../notifications-module.hook';
 import type { TNotificationsSettingsData } from '../notifications-module.types';
+import { parseAdvanceHours } from '../notifications-module.utils';
 import {
   TWhatsappSettingsFormData,
   whatsappSettingsSchema,
@@ -22,6 +24,7 @@ const getWhatsappFormValues = (
 
 export const useWhatsappSettings = () => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
   const form = useForm<TWhatsappSettingsFormData>({
     resolver: zodResolver(whatsappSettingsSchema),
     defaultValues: getWhatsappFormValues(null),
@@ -42,7 +45,12 @@ export const useWhatsappSettings = () => {
   });
 
   const handleSubmit = form.handleSubmit(async (data) => {
-    if (!isConnected) return;
+    if (!isConnected) {
+      analytics.track('reminder_settings_blocked', {
+        reason: 'whatsapp_not_connected',
+      });
+      return;
+    }
 
     updateNotificationsSettingsMutation.mutate(
       {
@@ -51,10 +59,17 @@ export const useWhatsappSettings = () => {
       },
       {
         // Ativar cria o template na Meta: o status no painel precisa ser relido
-        onSuccess: () =>
-          queryClient.invalidateQueries({
+        onSuccess: () => {
+          analytics.track('reminder_settings_updated', {
+            channel: 'whatsapp',
+            enabled: Boolean(data.whatsappReminderEnabled),
+            advance_hours: parseAdvanceHours(data.whatsappReminderAdvanceHours),
+          });
+
+          return queryClient.invalidateQueries({
             queryKey: CACHE_QUERY_KEYS.whatsappReminderTemplate(storeId),
-          }),
+          });
+        },
       },
     );
   });

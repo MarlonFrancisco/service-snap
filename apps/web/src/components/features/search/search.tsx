@@ -17,14 +17,26 @@ import {
   StorePreview,
 } from './components';
 import { MobileSearchPill } from './components/mobile-search-pill';
+import { useSearchResultsAnalytics } from './search.hook';
 
 export function SearchResults() {
   const router = useRouter();
   const params = useSearchParams();
+  const query = params.get('query')!;
+  const location = params.get('location');
+  const category = params.get('category');
   const { data, isPending, isError } = useSearchQuery({
-    query: params.get('query')!,
-    location: params.get('location'),
-    category: params.get('category'),
+    query,
+    location,
+    category,
+  });
+  useSearchResultsAnalytics({
+    query,
+    category,
+    location,
+    data,
+    isPending,
+    isError,
   });
 
   const hasResults = Boolean(data && data.length > 0);

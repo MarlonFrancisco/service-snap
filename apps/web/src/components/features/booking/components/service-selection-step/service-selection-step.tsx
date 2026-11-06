@@ -1,4 +1,5 @@
 'use client';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { ICategory, IService } from '@/types/api/service.types';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
 import { cn } from '@repo/ui';
@@ -18,6 +19,7 @@ const QUANTITY_BUTTON_CLASS =
 
 export function ServiceSelectionStep() {
   const store = useGetStore();
+  const analytics = useAnalytics();
   const [selectedCategory, setSelectedCategory] = useState<
     ICategory | undefined
   >(undefined);
@@ -54,6 +56,24 @@ export function ServiceSelectionStep() {
       (s) => s.id === service.id,
     );
     const oldQuantity = getServiceQuantity(service.id);
+    const storeId = store?.id ?? '';
+    const trackQuantityDelta = (quantity: number) => {
+      if (quantity > oldQuantity) {
+        analytics.track('add_to_cart', {
+          item_id: service.id,
+          store_id: storeId,
+          price: service.price,
+          quantity: quantity - oldQuantity,
+          duration: service.duration,
+        });
+      } else if (quantity < oldQuantity) {
+        analytics.track('remove_from_cart', {
+          item_id: service.id,
+          store_id: storeId,
+          price: service.price * (oldQuantity - quantity),
+        });
+      }
+    };
 
     if (newQuantity <= 0) {
       // Remove service if quantity is 0 or less
@@ -61,6 +81,7 @@ export function ServiceSelectionStep() {
         const newServices = selectedServices.filter((s) => s.id !== service.id);
         setValue('selectedServices', newServices);
         toast.info(`${service.name} removido`);
+        trackQuantityDelta(0);
       }
     } else {
       if (existingServiceIndex !== -1) {
@@ -69,6 +90,7 @@ export function ServiceSelectionStep() {
           s.id === service.id ? { ...s, quantity: newQuantity } : s,
         );
         setValue('selectedServices', newServices);
+        trackQuantityDelta(newQuantity);
 
         if (newQuantity > oldQuantity) {
           toast.success(`Quantidade atualizada`);
@@ -82,6 +104,14 @@ export function ServiceSelectionStep() {
 
         setValue('selectedServices', [...selectedServices, newService]);
         toast.success(`${service.name} adicionado`);
+
+        if (selectedServices.length === 0) {
+          analytics.track('booking_started', {
+            store_id: storeId,
+            service_id: service.id,
+          });
+        }
+        trackQuantityDelta(newQuantity);
       }
     }
   };
@@ -90,6 +120,14 @@ export function ServiceSelectionStep() {
     const currentQuantity = getServiceQuantity(service.id);
     const newQuantity = currentQuantity > 0 ? 0 : 1;
     handleQuantityChange(service, newQuantity);
+  };
+
+  const handleCategorySelect = (category: ICategory | undefined) => {
+    setSelectedCategory(category);
+    analytics.track('select_content', {
+      content_type: 'service_category',
+      item_id: category?.id ?? 'all',
+    });
   };
 
   const formatDuration = (minutes: number) => {
@@ -125,7 +163,7 @@ export function ServiceSelectionStep() {
         <button
           type="button"
           aria-pressed={!selectedCategory}
-          onClick={() => setSelectedCategory(undefined)}
+          onClick={() => handleCategorySelect(undefined)}
           className={cn(
             CHIP_CLASS,
             !selectedCategory ? CHIP_ON_CLASS : CHIP_OFF_CLASS,
@@ -141,7 +179,7 @@ export function ServiceSelectionStep() {
               key={category.id}
               type="button"
               aria-pressed={isCategorySelected}
-              onClick={() => setSelectedCategory(category)}
+              onClick={() => handleCategorySelect(category)}
               className={cn(
                 CHIP_CLASS,
                 isCategorySelected ? CHIP_ON_CLASS : CHIP_OFF_CLASS,

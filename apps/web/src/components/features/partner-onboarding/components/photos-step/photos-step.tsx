@@ -48,7 +48,8 @@ export const PhotosStep = ({
     handleRemove,
     handleSetMain,
     handleComplete,
-  } = usePhotosStep({ storeId, gallery, onCompleted, onGoToStep });
+    handleSaveAndExit,
+  } = usePhotosStep({ storeId, gallery, onCompleted, onGoToStep, onExit });
 
   const isBusy = isUploading || isCompleting;
 
@@ -63,7 +64,7 @@ export const PhotosStep = ({
       primaryLabel="Concluir"
       onBack={onBack}
       onPrimary={handleComplete}
-      onSaveAndExit={onExit}
+      onSaveAndExit={handleSaveAndExit}
       secondaryAction={
         <button
           type="button"

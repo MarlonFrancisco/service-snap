@@ -1,5 +1,8 @@
 import { usePlanCard } from '@/components/ui/plan-card/plan-card.hook';
+import { useAnalytics } from '@/providers/analytics.provider';
+import { toBillingPeriod } from '@/utils/helpers/analytics.helper';
 import { formatPrice } from '@/utils/helpers/price.helper';
+import { savePendingPurchase } from '../../../checkout/checkout.helpers';
 import type { TPricingPlanCardConfig } from './pricing-plan-card.types';
 
 const PRICE_LOCALE = 'pt-BR';
@@ -15,6 +18,7 @@ export const usePricingPlanCard = ({
   hideTrial = false,
 }: TPricingPlanCardConfig) => {
   const { handleCreateSubscription } = usePlanCard({ priceId: plan.priceId });
+  const analytics = useAnalytics();
 
   const formatPlanPrice = (value: number) =>
     formatPrice(value, {
@@ -30,9 +34,19 @@ export const usePricingPlanCard = ({
 
   const handleSubscribe = () => {
     if (onSelectPlan) {
+      // Quem assume o clique (upgrade no painel) registra o próprio checkout.
       onSelectPlan(plan.priceId);
       return;
     }
+
+    const checkout = {
+      plan_id: plan.id,
+      billing_period: toBillingPeriod(plan.interval),
+      value: price,
+      currency: plan.currency ?? DEFAULT_PLAN_CURRENCY,
+    };
+    analytics.track('begin_checkout', checkout);
+    savePendingPurchase(checkout);
 
     void handleCreateSubscription();
   };

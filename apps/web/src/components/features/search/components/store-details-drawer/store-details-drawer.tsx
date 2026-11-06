@@ -1,30 +1,21 @@
 'use client';
 
-import useSearchStore from '@/store/search/search.store';
 import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from '@repo/ui';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@repo/ui';
 import { Calendar, Clock, MapPin, Phone, Star } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { ImageCarousel } from '../image-carousel';
+import { useStoreDetailsDrawer } from './store-details-drawer.hook';
 
 export function StoreDetailsDrawer() {
-  const router = useRouter();
-  const selectedStore = useSearchStore((state) => state.selectedStore);
-  const mobileDrawerOpen = useSearchStore((state) => state.mobileDrawerOpen);
-  const setMobileDrawerOpen = useSearchStore(
-    (state) => state.setMobileDrawerOpen,
-  );
+  const {
+    selectedStore,
+    mobileDrawerOpen,
+    setMobileDrawerOpen,
+    handleBooking,
+    handlePhoneClick,
+  } = useStoreDetailsDrawer();
 
   if (!selectedStore) return null;
-
-  const handleBooking = () => {
-    router.push(`/booking/${selectedStore.id}`);
-  };
 
   return (
     <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
@@ -109,6 +100,7 @@ export function StoreDetailsDrawer() {
                   <Phone className="h-4 w-4 shrink-0 text-[#A1A1AA]" />
                   <a
                     href={`tel:${selectedStore.telephone}`}
+                    onClick={handlePhoneClick}
                     className="font-medium text-[#0A0A0A] hover:underline"
                   >
                     {selectedStore.telephone}

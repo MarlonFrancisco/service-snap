@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import type { TOnboardingStore } from '@/types/api/onboarding.types';
 import type { TWorkingDays } from '@/types/api/stores.types';
@@ -39,6 +40,7 @@ export const useHoursStep = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [exitBlocked, setExitBlocked] = useState(false);
+  const analytics = useAnalytics();
 
   const mutation = useOnboardingMutation(
     OnboardingService.saveHours.bind(OnboardingService),
@@ -131,13 +133,30 @@ export const useHoursStep = ({
     setLunchEndTime: touched((value: string) =>
       setLunchEndTime(maskTime(value)),
     ),
-    handleContinue: () => void save(onSaved, false),
+    handleContinue: () =>
+      void save(() => {
+        analytics.track('onboarding_step_completed', {
+          step: 'hours',
+          days_open_count: Object.values(businessDays).filter(Boolean).length,
+        });
+        onSaved();
+      }, false),
     handleSaveAndExit: () => {
       if (!isDirty) {
+        analytics.track('onboarding_save_and_exit', {
+          step: 'hours',
+          had_changes: false,
+        });
         onExit();
         return;
       }
-      void save(onExit, true);
+      void save(() => {
+        analytics.track('onboarding_save_and_exit', {
+          step: 'hours',
+          had_changes: true,
+        });
+        onExit();
+      }, true);
     },
   };
 };

@@ -9,6 +9,12 @@ import {
  * @param date - The date to format
  * @returns Formatted timestamp string
  */
+/** Converte a antecedência do formulário (`'24h'`) em horas; `undefined` se inválida. */
+export function parseAdvanceHours(value?: string): number | undefined {
+  const hours = Number.parseInt(value ?? '', 10);
+  return Number.isNaN(hours) ? undefined : hours;
+}
+
 export function formatTimestamp(date: Date): string {
   const now = new Date();
   const diff = now.getTime() - date.getTime();

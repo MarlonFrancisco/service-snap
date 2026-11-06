@@ -71,6 +71,7 @@ export const OnboardingHomeChecklist = () => {
     setGoal,
     openGoalEditor,
     handleCopyLink,
+    handleItemClick,
     handleSaveGoal,
     handleDismiss,
   } = useOnboardingHomeChecklist();
@@ -93,6 +94,7 @@ export const OnboardingHomeChecklist = () => {
         <Link
           href={`/booking/${storeId}`}
           target="_blank"
+          onClick={() => handleItemClick(id)}
           className={ROW_CLASS}
         >
           {rowContent}
@@ -110,7 +112,11 @@ export const OnboardingHomeChecklist = () => {
     }
 
     return (
-      <Link href={CHECKLIST_ITEM_CONTENT[id].href} className={ROW_CLASS}>
+      <Link
+        href={CHECKLIST_ITEM_CONTENT[id].href}
+        onClick={() => handleItemClick(id)}
+        className={ROW_CLASS}
+      >
         {rowContent}
       </Link>
     );

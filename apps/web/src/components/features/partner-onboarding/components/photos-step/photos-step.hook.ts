@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import { GalleryService } from '@/service/store/gallery.service';
 import type {
@@ -24,6 +25,7 @@ type TUsePhotosStepParams = {
   gallery: IStoreGallery[];
   onCompleted: (result: TOnboardingResult) => void;
   onGoToStep: (step: TOnboardingStep) => void;
+  onExit: () => void;
 };
 
 export const usePhotosStep = ({
@@ -31,8 +33,10 @@ export const usePhotosStep = ({
   gallery,
   onCompleted,
   onGoToStep,
+  onExit,
 }: TUsePhotosStepParams) => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
   const { refetch } = useOnboardingState();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -42,6 +46,11 @@ export const usePhotosStep = ({
   const completeMutation = useMutation({
     mutationFn: () => OnboardingService.complete(),
     onSuccess: (result) => {
+      analytics.track('partner_onboarding_completed', {
+        store_id: result.store.id,
+        services_count: result.services.length,
+        photos_count: result.gallery.length,
+      });
       void queryClient.invalidateQueries({
         queryKey: CACHE_QUERY_KEYS.stores(),
       });
@@ -49,6 +58,9 @@ export const usePhotosStep = ({
     },
     onError: (mutationError) => {
       const step = getApiErrorStep(mutationError) as TOnboardingStep | null;
+      analytics.track('onboarding_complete_failed', {
+        missing_step: step ?? undefined,
+      });
       setError(
         getApiErrorMessage(
           mutationError,
@@ -69,10 +81,13 @@ export const usePhotosStep = ({
 
     if (images.length !== files.length) {
       setError('Envie apenas arquivos de imagem.');
+      analytics.track('onboarding_photo_upload_failed', { reason: 'type' });
     } else if (valid.length !== images.length) {
       setError('Cada foto pode ter no máximo 5MB.');
+      analytics.track('onboarding_photo_upload_failed', { reason: 'size' });
     } else if (accepted.length !== valid.length) {
       setError(`Você pode enviar até ${MAX_PHOTOS} fotos.`);
+      analytics.track('onboarding_photo_upload_failed', { reason: 'max' });
     }
 
     if (!accepted.length) return;
@@ -89,7 +104,10 @@ export const usePhotosStep = ({
         await GalleryService.create(storeId, { url, isMain: !hasMain });
         hasMain = true;
       }
+
+      analytics.track('onboarding_photo_uploaded', { count: accepted.length });
     } catch (uploadError) {
+      analytics.track('onboarding_photo_upload_failed', { reason: 'api' });
       setError(
         getApiErrorMessage(
           uploadError,
@@ -167,5 +185,13 @@ export const usePhotosStep = ({
     handleRemove: (image: IStoreGallery) => void handleRemove(image),
     handleSetMain: (image: IStoreGallery) => void handleSetMain(image),
     handleComplete: () => completeMutation.mutate(),
+    // As fotos já sobem na hora: sair não tem nada pendente para salvar.
+    handleSaveAndExit: () => {
+      analytics.track('onboarding_save_and_exit', {
+        step: 'photos',
+        had_changes: false,
+      });
+      onExit();
+    },
   };
 };

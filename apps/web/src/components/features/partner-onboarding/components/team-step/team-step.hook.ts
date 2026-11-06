@@ -1,7 +1,8 @@
 import { isNotFoundError } from '@/service/api';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import type { TOnboardingState } from '@/types/api/onboarding.types';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { getApiErrorMessage } from '../../partner-onboarding.helpers';
 import { useOnboardingMutation } from '../../partner-onboarding.hook';
@@ -31,6 +32,8 @@ export const useTeamStep = ({ state, onSaved, onExit }: TUseTeamStepParams) => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [showSignupLink, setShowSignupLink] = useState(false);
   const [stepError, setStepError] = useState<string | null>(null);
+  const analytics = useAnalytics();
+  const hasTrackedLimitRef = useRef(false);
 
   const ownerMutation = useOnboardingMutation(
     OnboardingService.saveOwner.bind(OnboardingService),
@@ -55,6 +58,11 @@ export const useTeamStep = ({ state, onSaved, onExit }: TUseTeamStepParams) => {
     });
 
   const save = async (afterSave: () => void, advance: boolean) => {
+    const savedServiceIds = ownerMember?.serviceIds ?? [];
+    const hadChanges =
+      ownerEnabled !== Boolean(ownerMember) ||
+      (ownerEnabled && ownerServiceIds.join() !== savedServiceIds.join());
+
     if (ownerEnabled && !ownerServiceIds.length) {
       setStepError('Escolha pelo menos um serviço que você faz.');
       return;
@@ -70,7 +78,16 @@ export const useTeamStep = ({ state, onSaved, onExit }: TUseTeamStepParams) => {
       await saveOwner();
 
       if (advance) {
-        await stepMutation.mutateAsync('photos');
+        const next = await stepMutation.mutateAsync('photos');
+        analytics.track('onboarding_step_completed', {
+          step: 'team',
+          members_count: next.members.length,
+        });
+      } else {
+        analytics.track('onboarding_save_and_exit', {
+          step: 'team',
+          had_changes: hadChanges,
+        });
       }
 
       afterSave();
@@ -97,12 +114,19 @@ export const useTeamStep = ({ state, onSaved, onExit }: TUseTeamStepParams) => {
         await saveOwner();
       }
 
-      await addMemberMutation.mutateAsync({
+      const next = await addMemberMutation.mutateAsync({
         email: email.trim(),
         serviceIds: allServiceIds,
       });
+      analytics.track('onboarding_team_member_invited', {
+        members_count: next.members.length,
+        plan_limit: next.plan.limit || undefined,
+      });
       setEmail('');
     } catch (error) {
+      analytics.track('onboarding_team_member_invite_failed', {
+        error: isNotFoundError(error) ? 'not_found' : 'other',
+      });
       setEmailError(
         getApiErrorMessage(error, 'Não foi possível adicionar. Tente de novo.'),
       );
@@ -124,6 +148,23 @@ export const useTeamStep = ({ state, onSaved, onExit }: TUseTeamStepParams) => {
   // A conta usada pelo plano considera o dono que ainda vai ser salvo.
   const pendingOwner = ownerEnabled && !ownerMember ? 1 : 0;
   const removingOwner = !ownerEnabled && ownerMember ? 1 : 0;
+  const usedSlots = state.plan.count + pendingOwner - removingOwner;
+  const planLimit = state.plan.limit;
+
+  // Limite 0 é ilimitado. Conta uma vez, quando a equipe enche o plano.
+  useEffect(() => {
+    if (!planLimit || usedSlots < planLimit || hasTrackedLimitRef.current) {
+      return;
+    }
+    hasTrackedLimitRef.current = true;
+
+    analytics.track('plan_limit_reached', {
+      limit_type: 'professionals',
+      current: usedSlots,
+      limit: planLimit,
+      source: 'onboarding',
+    });
+  }, [usedSlots, planLimit, analytics]);
 
   return {
     services: state.services,
@@ -135,8 +176,8 @@ export const useTeamStep = ({ state, onSaved, onExit }: TUseTeamStepParams) => {
     showSignupLink,
     stepError,
     hasProfessional,
-    usedSlots: state.plan.count + pendingOwner - removingOwner,
-    planLimit: state.plan.limit,
+    usedSlots,
+    planLimit,
     isAdding: addMemberMutation.isPending,
     isSaving: ownerMutation.isPending || stepMutation.isPending,
     setOwnerEnabled,

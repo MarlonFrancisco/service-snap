@@ -1,6 +1,7 @@
 'use client';
 
 import { useStoresQuery } from '@/hooks/use-query/use-stores-query/use-stores-query.hook';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import { usePartnerStore } from '@/store/partner';
 import type {
@@ -9,7 +10,7 @@ import type {
 } from '@/types/api/onboarding.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 type TChecklistItemContent = {
@@ -74,6 +75,8 @@ export const useOnboardingHomeChecklist = () => {
   const [isEditingGoal, setIsEditingGoal] = useState(false);
   const [goal, setGoal] = useState('');
   const [goalError, setGoalError] = useState<string | null>(null);
+  const analytics = useAnalytics();
+  const trackedStoreRef = useRef<string | null>(null);
 
   const { data: checklist } = useQuery({
     queryKey,
@@ -87,7 +90,13 @@ export const useOnboardingHomeChecklist = () => {
 
   const dismissMutation = useMutation({
     mutationFn: () => OnboardingService.dismissChecklist(storeId),
-    onSuccess: updateCache,
+    onSuccess: (next) => {
+      analytics.track('onboarding_checklist_dismissed', {
+        store_id: storeId,
+        completed_count: completedCount,
+      });
+      updateCache(next);
+    },
     onError: () => toast.error('Não foi possível dispensar. Tente de novo.'),
   });
 
@@ -99,10 +108,17 @@ export const useOnboardingHomeChecklist = () => {
   const goalMutation = useMutation({
     mutationFn: (monthlyGoal: number) =>
       OnboardingService.setMonthlyGoal(storeId, monthlyGoal),
-    onSuccess: (next) => {
+    onSuccess: (next, monthlyGoal) => {
       updateCache(next);
       setIsEditingGoal(false);
       setGoal('');
+      // O checklist só oferece a meta enquanto ela ainda não foi definida.
+      analytics.track('monthly_goal_set', {
+        store_id: storeId,
+        value: monthlyGoal,
+        had_goal: false,
+        source: 'checklist',
+      });
     },
     onError: () => setGoalError('Não foi possível salvar. Tente de novo.'),
   });
@@ -110,12 +126,35 @@ export const useOnboardingHomeChecklist = () => {
   const items = checklist?.items ?? [];
   const completedCount = items.filter((item) => item.done).length;
 
+  const isVisible = Boolean(checklist?.visible);
+
+  // Uma vez por loja exibida.
+  useEffect(() => {
+    if (!isVisible || !storeId || trackedStoreRef.current === storeId) return;
+    trackedStoreRef.current = storeId;
+
+    analytics.track('onboarding_checklist_viewed', {
+      store_id: storeId,
+      completed_count: completedCount,
+      total: items.length,
+    });
+  }, [isVisible, storeId, completedCount, items.length, analytics]);
+
+  const handleItemClick = (itemId: TChecklistItemId) => {
+    analytics.track('onboarding_checklist_item_clicked', { item_id: itemId });
+  };
+
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(
         `${window.location.origin}/booking/${storeId}`,
       );
       shareMutation.mutate();
+      analytics.track('booking_link_copied', {
+        store_id: storeId,
+        source: 'home_checklist',
+        method: 'clipboard',
+      });
       toast.success('Link copiado');
     } catch {
       toast.error('Não foi possível copiar o link.');
@@ -135,7 +174,7 @@ export const useOnboardingHomeChecklist = () => {
   };
 
   return {
-    isVisible: Boolean(checklist?.visible),
+    isVisible,
     storeId,
     items,
     completedCount,
@@ -144,8 +183,15 @@ export const useOnboardingHomeChecklist = () => {
     goalError,
     isSavingGoal: goalMutation.isPending,
     setGoal: (value: string) => setGoal(value.replace(/\D/g, '')),
-    openGoalEditor: () => setIsEditingGoal(true),
-    handleCopyLink: () => void handleCopyLink(),
+    openGoalEditor: () => {
+      handleItemClick('monthly_goal');
+      setIsEditingGoal(true);
+    },
+    handleItemClick,
+    handleCopyLink: () => {
+      handleItemClick('share_link');
+      void handleCopyLink();
+    },
     handleSaveGoal,
     handleDismiss: () => dismissMutation.mutate(),
   };

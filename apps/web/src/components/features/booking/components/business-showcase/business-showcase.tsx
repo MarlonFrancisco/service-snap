@@ -2,7 +2,6 @@
 
 import { ImageGallery } from '@/components/layout/image-gallery';
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
-import { useReviewsStore } from '@/store';
 import { formatRating } from '@/utils/helpers/search.helper';
 import { Carousel, CarouselContent, CarouselItem, cn } from '@repo/ui';
 import { Heart, Share, Star } from 'lucide-react';
@@ -18,8 +17,6 @@ const GALLERY_IMAGE_CLASS =
   'object-cover transition-transform duration-300 group-enabled:group-hover:scale-105';
 
 export function BusinessShowcase() {
-  const { setReviewsAttributesAction } = useReviewsStore();
-
   const {
     data,
     showAllPhotos,
@@ -27,7 +24,6 @@ export function BusinessShowcase() {
     visibleImageIndex,
     isFavorite,
     isLoggedIn,
-    selectedStore,
     rightSideGalleryImages,
     mainGalleryImage,
     allImages,
@@ -36,6 +32,7 @@ export function BusinessShowcase() {
     handleShare,
     handleCloseGallery,
     handleSave,
+    handleOpenReviews,
   } = useBusinessShowcase();
 
   if (!data) {
@@ -72,13 +69,7 @@ export function BusinessShowcase() {
               <span aria-hidden>·</span>
               <button
                 type="button"
-                onClick={() =>
-                  setReviewsAttributesAction({
-                    storeId: selectedStore?.id,
-                    businessName: selectedStore?.name,
-                    isOpen: true,
-                  })
-                }
+                onClick={handleOpenReviews}
                 className="underline transition-colors hover:text-[#0B0B0F]"
               >
                 {reviewCount} {reviewCount === 1 ? 'avaliação' : 'avaliações'}

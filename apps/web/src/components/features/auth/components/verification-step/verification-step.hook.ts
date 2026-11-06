@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
 import type { ClipboardEvent, KeyboardEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
@@ -20,6 +21,7 @@ export const useVerificationStep = ({
     (state) => state.validateAuthSessionAction,
   );
   const onAuth = useAuthStore((state) => state.onAuth);
+  const analytics = useAnalytics();
 
   const isEmail = contact.includes('@');
   const maskedContact = isEmail
@@ -40,17 +42,23 @@ export const useVerificationStep = ({
 
     setIsLoading(true);
 
-    await validateAuthSessionAction({
-      code: fullCode,
-      email: isEmail ? contact : undefined,
-      telephone: isEmail ? undefined : contact,
-    });
+    try {
+      await validateAuthSessionAction({
+        code: fullCode,
+        email: isEmail ? contact : undefined,
+        telephone: isEmail ? undefined : contact,
+      });
+    } catch (error) {
+      analytics.track('login_failed', { method: 'email', stage: 'verify' });
+      throw error;
+    }
 
     setIsLoading(false);
 
     if (isNewUser) {
       onNext('signup');
     } else {
+      analytics.track('login', { method: 'email' });
       onAuth?.();
     }
   };
@@ -66,6 +74,7 @@ export const useVerificationStep = ({
     setCountdown(60);
     setCode(EMPTY_CODE);
     inputRefs.current[0]?.focus();
+    analytics.track('login_code_resent', { method: 'email' });
   };
 
   const handleCodeChange = (index: number, value: string) => {

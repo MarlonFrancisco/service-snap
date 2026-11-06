@@ -25,8 +25,15 @@ const getUsageBarClass = (percentage: number) => {
 export const AdminSidebarFooter = ({
   isCollapsed,
 }: TAdminSidebarFooterConfig) => {
-  const { currentPlan, isHidden, usageRows, isNearLimit, isAtLimit, planAction } =
-    useAdminSidebarFooter();
+  const {
+    currentPlan,
+    isHidden,
+    usageRows,
+    isNearLimit,
+    isAtLimit,
+    planAction,
+    handlePlanActionClick,
+  } = useAdminSidebarFooter();
 
   if (!currentPlan || isHidden) {
     return null;
@@ -36,6 +43,7 @@ export const AdminSidebarFooter = ({
     return (
       <Link
         href={planAction.href}
+        onClick={handlePlanActionClick}
         aria-label={`${currentPlan.planName}: ${planAction.label}`}
         title={currentPlan.planName}
         className={cn(PARTNER_ICON_BUTTON_CLASS, 'mt-auto')}
@@ -110,6 +118,7 @@ export const AdminSidebarFooter = ({
 
       <Link
         href={planAction.href}
+        onClick={handlePlanActionClick}
         className={cn(PARTNER_PRIMARY_ACTION_CLASS, 'mt-3')}
       >
         {planAction.label}

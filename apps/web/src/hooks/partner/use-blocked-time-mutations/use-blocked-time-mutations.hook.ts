@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { BlockedTimesService } from '@/service/partner/blocked-times/blocked-times.service';
 import { IBlockedTime } from '@/types/api/blocked-times.types';
 import { IStore } from '@/types/api/stores.types';
@@ -7,6 +8,7 @@ import { toast } from 'sonner';
 
 export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
   const queryClient = getQueryClient();
+  const analytics = useAnalytics();
   const { mutate: createBlockedTime, isPending: isCreatingBlockedTime } =
     useMutation({
       mutationFn: (blockedTime: Partial<IBlockedTime>) =>
@@ -27,9 +29,18 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
           }),
         );
 
+        analytics.track('time_blocked', {
+          store_id: storeId,
+          slots_count: 1,
+          is_bulk: false,
+        });
         toast.success('Horário bloqueado criado com sucesso');
       },
       onError: () => {
+        analytics.track('partner_mutation_failed', {
+          entity: 'blocked_time',
+          operation: 'create',
+        });
         toast.error('Erro ao criar horário bloqueado');
       },
     });
@@ -59,9 +70,18 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
             ),
           }),
         );
+        analytics.track('time_unblocked', {
+          store_id: storeId,
+          slots_count: 1,
+          is_bulk: false,
+        });
         toast.success('Horário bloqueado deletado com sucesso');
       },
       onError: () => {
+        analytics.track('partner_mutation_failed', {
+          entity: 'blocked_time',
+          operation: 'delete',
+        });
         toast.error('Erro ao deletar horário bloqueado');
       },
     });
@@ -100,12 +120,21 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
         }),
       );
 
+      analytics.track('time_blocked', {
+        store_id: storeId,
+        slots_count: data.length,
+        is_bulk: true,
+      });
       toast.success(
         `${data.length} ${data.length === 1 ? 'horário bloqueado' : 'horários bloqueados'} ${data.length === 1 ? 'criado' : 'criados'} com sucesso`,
       );
     },
     onError: (error) => {
       console.error(error);
+      analytics.track('partner_mutation_failed', {
+        entity: 'blocked_time',
+        operation: 'create',
+      });
       toast.error('Erro ao criar horários bloqueados');
     },
   });
@@ -144,11 +173,20 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
         }),
       );
 
+      analytics.track('time_unblocked', {
+        store_id: storeId,
+        slots_count: data.length,
+        is_bulk: true,
+      });
       toast.success(
         `${data.length} ${data.length === 1 ? 'horário desbloqueado' : 'horários desbloqueados'} ${data.length === 1 ? 'desbloqueado' : 'desbloqueados'} com sucesso`,
       );
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'blocked_time',
+        operation: 'delete',
+      });
       toast.error('Erro ao desbloquear horários');
     },
   });

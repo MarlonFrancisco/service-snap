@@ -21,6 +21,7 @@ export function StorePreview() {
     hasReviews,
     displayReviews,
     handleBookingClick,
+    handleWhatsAppClick,
   } = useStorePreview();
 
   if (!selectedStore) return null;
@@ -81,6 +82,7 @@ export function StorePreview() {
           <h3 className={SECTION_TITLE_CLASS}>Informações</h3>
           <a
             href={whatsAppLink}
+            onClick={handleWhatsAppClick}
             target="_blank"
             rel="noopener noreferrer"
             className={`${INFO_ROW_CLASS} hover:underline`}

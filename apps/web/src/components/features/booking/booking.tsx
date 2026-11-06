@@ -1,6 +1,7 @@
 'use client';
 import { Footer, Header } from '@/components/layout';
 import { useStoreQuery } from '@/hooks/use-query/use-store-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { cn } from '@repo/ui';
 import { AlertTriangle } from 'lucide-react';
@@ -14,6 +15,7 @@ import {
   getBookingTotals,
   splitServicesByProfessional,
 } from './booking.helpers';
+import { useStoreViewTracking } from './booking.hook';
 import { BookingFormSchema, TBookingFormData } from './booking.schema';
 import { TBookingStep } from './booking.types';
 import { BookingNotFound } from './components/booking-not-found';
@@ -29,10 +31,11 @@ import { StepIndicator } from './components/step-indicator';
 
 export function BookingFlow() {
   const params = useParams();
+  const storeId = params.id as string;
+  const analytics = useAnalytics();
 
-  const { isPendingStore, isError } = useStoreQuery({
-    storeId: params.id as string,
-  });
+  const { isPendingStore, isError } = useStoreQuery({ storeId });
+  useStoreViewTracking(storeId);
 
   // Initialize form with React Hook Form
   const form = useForm<TBookingFormData>({
@@ -95,7 +98,9 @@ export function BookingFlow() {
 
   // A reserva tem um único profissional: o pedido fica só com o que ele realiza.
   const removeServicesUnavailableForProfessional = () => {
-    if (currentStep !== 'professional' || !selectedProfessional) return;
+    if (currentStep !== 'professional' || !selectedProfessional) {
+      return selectedServices;
+    }
 
     const { performable, unavailable } = splitServicesByProfessional(
       selectedServices,
@@ -107,16 +112,34 @@ export function BookingFlow() {
       toast.info(
         `Removido do pedido: ${unavailable.map((s) => s.name).join(', ')}. O profissional escolhido não realiza.`,
       );
+      analytics.track('booking_services_pruned', {
+        store_id: storeId,
+        removed_count: unavailable.length,
+        professional_id: selectedProfessional.id,
+      });
+      return performable;
     }
+
+    return selectedServices;
   };
 
   const handleNextStep = () => {
-    removeServicesUnavailableForProfessional();
+    const bookedServices = removeServicesUnavailableForProfessional();
 
     const stepIndex = steps.findIndex((step) => step.id === currentStep);
     if (stepIndex < steps.length - 1) {
-      setCurrentStep(steps[stepIndex + 1]!.id);
+      const nextStep = steps[stepIndex + 1]!.id;
+      const totals = getBookingTotals(bookedServices);
+      setCurrentStep(nextStep);
       window.scrollTo({ top: 0 });
+      analytics.track('booking_step_completed', {
+        store_id: storeId,
+        from_step: currentStep,
+        to_step: nextStep,
+        services_count: bookedServices.length,
+        total_price: totals.totalPrice,
+        total_duration: totals.totalDuration,
+      });
     }
   };
 
@@ -124,6 +147,10 @@ export function BookingFlow() {
     const stepIndex = steps.findIndex((step) => step.id === currentStep);
     form.clearErrors('root');
     if (stepIndex > 0) {
+      analytics.track('booking_step_back', {
+        store_id: storeId,
+        from_step: currentStep,
+      });
       setCurrentStep(steps[stepIndex - 1]!.id);
       window.scrollTo({ top: 0 });
     }

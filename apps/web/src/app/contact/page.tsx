@@ -18,7 +18,13 @@ const PANEL_LINK_CLASS = `mt-1.5 inline-flex min-h-11 items-center text-[15px] f
 const PANEL_DIVIDER_CLASS = 'border-t border-[#F0EEF4] pt-[22px]';
 
 export default function ContactPage() {
-  const { form, handleFieldChange, handleSubmit } = useContact();
+  const {
+    form,
+    handleFieldChange,
+    handleSubmit,
+    handleEmailClick,
+    handleSocialClick,
+  } = useContact();
 
   return (
     <Header>
@@ -96,6 +102,7 @@ export default function ContactPage() {
               </p>
               <a
                 href={`mailto:${PUBLIC_CONTACT_EMAIL}`}
+                onClick={handleEmailClick}
                 className={PANEL_LINK_CLASS}
               >
                 {PUBLIC_CONTACT_EMAIL}
@@ -110,6 +117,7 @@ export default function ContactPage() {
                     <li key={link.href}>
                       <a
                         href={link.href}
+                        onClick={() => handleSocialClick(link.label)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`inline-flex h-11 items-center rounded-full border border-[#E3E1EA] px-4 text-[13px] font-semibold transition-colors hover:border-[#0B0B0F] ${FOCUS_CLASS}`}

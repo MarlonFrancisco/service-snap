@@ -15,6 +15,7 @@ export const useAuthStore = create<IAuthState>((set, get) => {
     isOpen: false,
     fetchingStatus: 'idle',
     isNewUser: false,
+    authSource: 'other',
     onAuth: onAuthDefaultAction(set, get),
     googleLoginAction: googleLoginAction(set, get),
     openAuthAction: openAuthAction(set, get),

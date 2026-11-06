@@ -17,6 +17,7 @@ export const ExperienceRows = async () => {
       {rows.map((row, rowIndex) => (
         <ExperienceCarousel
           key={row.id}
+          listName={`home_${row.id}`}
           title={row.title}
           seeAllHref={getSeeAllHref(row.query, row.category)}
           items={row.items}

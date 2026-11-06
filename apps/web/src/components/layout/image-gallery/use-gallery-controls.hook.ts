@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -20,6 +21,7 @@ export const useGalleryControls = ({
   onClose,
   isOpen,
 }: TUseGalleryControlsConfig) => {
+  const analytics = useAnalytics();
   const [showThumbnails, setShowThumbnails] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [touchStart, setTouchStart] = useState(0);
@@ -58,11 +60,15 @@ export const useGalleryControls = ({
         text: shareText,
         url: shareUrl,
       });
+      analytics.track('share', {
+        method: 'native_share',
+        content_type: 'gallery',
+      });
     } catch (err) {
       console.error('Share error:', err);
       toast.error('Erro ao compartilhar');
     }
-  }, [businessName]);
+  }, [analytics, businessName]);
 
   const handleDownload = useCallback(async () => {
     try {
@@ -80,10 +86,11 @@ export const useGalleryControls = ({
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       toast.success('Imagem baixada com sucesso!');
+      analytics.track('gallery_image_downloaded', { image_index: activeIndex });
     } catch {
       toast.error('Erro ao baixar imagem');
     }
-  }, [images, activeIndex, businessName]);
+  }, [analytics, images, activeIndex, businessName]);
 
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev * 1.5, 3));

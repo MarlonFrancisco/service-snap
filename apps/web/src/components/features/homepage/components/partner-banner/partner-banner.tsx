@@ -1,4 +1,4 @@
-﻿import Link from 'next/link';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import { PartnerVideo } from './partner-video';
 
 export const PartnerBanner = () => {
@@ -17,18 +17,25 @@ export const PartnerBanner = () => {
             sua equipe e acompanhe tudo em uma agenda só.
           </p>
           <div className="mt-6 flex flex-col items-stretch gap-4 md:mt-9 md:flex-row md:items-center md:gap-6">
-            <Link
+            <TrackedLink
               href="/pricing"
+              event="partner_cta_clicked"
+              properties={{ placement: 'home_banner', destination: '/pricing' }}
               className="rounded-full bg-[#0B0B0F] px-[30px] py-[18px] text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] whitespace-nowrap"
             >
               Cadastrar meu espaço
-            </Link>
-            <Link
+            </TrackedLink>
+            <TrackedLink
               href="/sistema-de-agendamento"
+              event="partner_cta_clicked"
+              properties={{
+                placement: 'home_banner',
+                destination: '/sistema-de-agendamento',
+              }}
               className="py-2 text-center text-sm font-semibold text-[#0B0B0F] hover:underline md:text-[15px] whitespace-nowrap"
             >
               Conhecer o sistema →
-            </Link>
+            </TrackedLink>
           </div>
         </div>
         {/* O vídeo com display: none nunca entra na tela, então não é baixado. */}

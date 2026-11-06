@@ -1,4 +1,5 @@
 import { Footer, Header } from '@/components/layout';
+import { TrackedSummary } from '@/components/ui/tracked-summary';
 import Link from 'next/link';
 
 const FAQ_ITEMS = [
@@ -42,9 +43,13 @@ export default function HelpPage() {
               open={index === 0}
               className="group border-b border-[#EBE9F0] first-of-type:border-t"
             >
-              <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[17px] font-bold after:text-2xl after:font-medium after:content-['+'] group-open:after:content-['−'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F] [&::-webkit-details-marker]:hidden">
+              <TrackedSummary
+                event="faq_opened"
+                properties={{ page: 'help', question_index: index }}
+                className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[17px] font-bold after:text-2xl after:font-medium after:content-['+'] group-open:after:content-['−'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F] [&::-webkit-details-marker]:hidden"
+              >
                 {item.question}
-              </summary>
+              </TrackedSummary>
               <p className="pr-10 pb-5 text-[15px] leading-[1.65] text-[#5F5C6E]">
                 {item.answer}
               </p>

@@ -1,5 +1,6 @@
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -10,6 +11,7 @@ const HEADER_HEIGHT_PX = 80;
 
 /** Mostra a busca compacta do header quando a busca principal sai da tela. */
 export const useCompactSearch = (isEnabled: boolean) => {
+  const analytics = useAnalytics();
   const [isCompactSearchVisible, setIsCompactSearchVisible] = useState(false);
 
   useEffect(() => {
@@ -28,17 +30,17 @@ export const useCompactSearch = (isEnabled: boolean) => {
   }, [isEnabled]);
 
   const focusDiscoverySearch = useCallback(() => {
+    analytics.track('select_content', { content_type: 'compact_search' });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    document
-      .getElementById(DISCOVERY_INPUT_ID)
-      ?.focus({ preventScroll: true });
-  }, []);
+    document.getElementById(DISCOVERY_INPUT_ID)?.focus({ preventScroll: true });
+  }, [analytics]);
 
   return { isCompactSearchVisible, focusDiscoverySearch };
 };
 
 export const useMarketplaceHeader = () => {
   const router = useRouter();
+  const analytics = useAnalytics();
   const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const openAuthAction = useAuthStore((state) => state.openAuthAction);
@@ -57,6 +59,29 @@ export const useMarketplaceHeader = () => {
     ? 'Meu painel'
     : 'Torne-se um parceiro';
 
+  const isActivePartner = Boolean(currentPlan?.isActive);
+
+  /** `placement` separa o botão do header do item do menu da conta. */
+  const trackPartnerCta = useCallback(
+    (placement: 'header' | 'header_menu') => {
+      analytics.track('partner_cta_clicked', {
+        placement,
+        destination: partnerHref,
+        is_active_partner: isActivePartner,
+      });
+    },
+    [analytics, partnerHref, isActivePartner],
+  );
+
+  const handleHeaderPartnerClick = useCallback(() => {
+    trackPartnerCta('header');
+  }, [trackPartnerCta]);
+
+  const handleMenuPartnerClick = useCallback(() => {
+    trackPartnerCta('header_menu');
+    setIsMenuOpen(false);
+  }, [trackPartnerCta]);
+
   const toggleMenu = useCallback(() => {
     setIsMenuOpen((open) => !open);
   }, []);
@@ -71,7 +96,7 @@ export const useMarketplaceHeader = () => {
       router.push('/profile');
       return;
     }
-    openAuthAction({});
+    openAuthAction({ source: 'header' });
   }, [closeMenu, isLoggedIn, openAuthAction, router]);
 
   useEffect(() => {
@@ -97,5 +122,7 @@ export const useMarketplaceHeader = () => {
     toggleMenu,
     closeMenu,
     handleAuth,
+    handleHeaderPartnerClick,
+    handleMenuPartnerClick,
   };
 };

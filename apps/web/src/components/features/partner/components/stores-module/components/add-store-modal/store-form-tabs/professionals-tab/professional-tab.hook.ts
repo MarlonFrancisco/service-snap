@@ -1,10 +1,11 @@
 import { useStoreMemberMutations } from '@/hooks/partner/store/use-store-member-mutations/use-store-member-mutations.hook';
 import { useStoreMembersQuery } from '@/hooks/use-query/use-store-members-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useStoresStore } from '@/store';
 import type { IProfessional } from '@/types/api';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { PLAN_UPGRADE_ROUTE } from '../../../../utils/stores-module.constants';
 import {
@@ -44,6 +45,22 @@ export const useProfessionalTab = () => {
         : null,
     [currentPlan],
   );
+
+  const analytics = useAnalytics();
+  const hasTrackedLimitRef = useRef(false);
+
+  // No limite o botão de adicionar dá lugar ao upgrade: conta quando aparece.
+  useEffect(() => {
+    if (!professionalsUsage?.isAtLimit || hasTrackedLimitRef.current) return;
+    hasTrackedLimitRef.current = true;
+
+    analytics.track('plan_limit_reached', {
+      limit_type: 'professionals',
+      current: professionalsUsage.current,
+      limit: professionalsUsage.limit,
+      source: 'store_form',
+    });
+  }, [professionalsUsage, analytics]);
 
   const isLoadingProfessionals = !!storeId && isPendingStoreMembers;
 

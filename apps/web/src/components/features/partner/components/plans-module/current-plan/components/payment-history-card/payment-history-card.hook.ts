@@ -1,6 +1,7 @@
 'use client';
 
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useCallback, useMemo } from 'react';
 import {
   MODULE_BADGE_TONE_CLASS,
@@ -35,6 +36,7 @@ export const usePaymentHistoryCard = () => {
   const { currentPlan } = useSubscriptionQuery();
   const currency = currentPlan?.currency;
   const invoices = currentPlan?.invoices;
+  const analytics = useAnalytics();
 
   const paymentHistory = useMemo<TPaymentHistoryRow[]>(
     () =>
@@ -58,17 +60,23 @@ export const usePaymentHistoryCard = () => {
     [invoices, currency],
   );
 
-  const downloadPDF = useCallback((pdfUrl: string, invoiceNumber: string) => {
-    if (!pdfUrl) return;
+  const downloadPDF = useCallback(
+    (pdfUrl: string, invoiceNumber: string) => {
+      if (!pdfUrl) return;
 
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = `fatura-${invoiceNumber}.pdf`;
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }, []);
+      const invoice = invoices?.find((item) => item.pdfUrl === pdfUrl);
+      analytics.track('invoice_downloaded', { status: invoice?.status });
+
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `fatura-${invoiceNumber}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    [invoices, analytics],
+  );
 
   return { paymentHistory, downloadPDF };
 };

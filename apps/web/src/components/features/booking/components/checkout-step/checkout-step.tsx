@@ -2,6 +2,8 @@
 
 import { useScheduleMutations } from '@/hooks';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
+import { useAnalytics } from '@/providers/analytics.provider';
+import { isApiHttpError } from '@/service/api';
 import { useAuthStore } from '@/store/auth/auth.store';
 import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
 import { IUser } from '@/types/api/users.types';
@@ -11,7 +13,11 @@ import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useFormContext } from 'react-hook-form';
 import { toast } from 'sonner';
-import { buildSchedulePayload, getInitials } from '../../booking.helpers';
+import {
+  buildSchedulePayload,
+  getBookingTotals,
+  getInitials,
+} from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
 
@@ -30,12 +36,25 @@ export function CheckoutStep() {
   });
   const openAuthAction = useAuthStore((state) => state.openAuthAction);
   const form = useFormContext<TBookingFormData>();
+  const analytics = useAnalytics();
+
+  const getBookingSummary = (services: TBookingFormData['selectedServices']) => ({
+    store_id: store!.id,
+    service_ids: services.map((service) => service.id),
+    value: getBookingTotals(services).totalPrice,
+    currency: store!.currency,
+  });
 
   const handleLoginClick = () => {
-    openAuthAction();
+    openAuthAction({ source: 'checkout' });
   };
 
   const handleSchedule = () => {
+    analytics.track(
+      'booking_confirm_clicked',
+      getBookingSummary(form.getValues('selectedServices')),
+    );
+
     form.handleSubmit(
       (data) => {
         const startTime = data.selectedTime!;
@@ -47,11 +66,17 @@ export function CheckoutStep() {
           : data.selectedProfessional?.id;
 
         if (!professionalId) {
+          analytics.track('booking_failed', {
+            store_id: store!.id,
+            reason: 'no_professional',
+          });
           toast.error(
             'Nenhum profissional está disponível neste horário. Volte e escolha outro horário.',
           );
           return;
         }
+
+        const summary = getBookingSummary(data.selectedServices);
 
         createSchedule(
           {
@@ -65,6 +90,12 @@ export function CheckoutStep() {
           } as Partial<ICreateAppointment>,
           {
             onSuccess: (data: IAppointment[]) => {
+              analytics.track('booking_completed', {
+                ...summary,
+                appointment_ids: data.map((appointment) => appointment.id),
+                professional_id: professionalId,
+              });
+
               const queryClient = getQueryClient();
               queryClient.setQueryData(
                 CACHE_QUERY_KEYS.user(cookies.get('user_identification')!),
@@ -82,10 +113,24 @@ export function CheckoutStep() {
 
               router.push('/profile');
             },
+            onError: (error) => {
+              const httpStatus = isApiHttpError(error)
+                ? error.status
+                : undefined;
+              analytics.track('booking_failed', {
+                store_id: store!.id,
+                reason: httpStatus === 409 ? 'slot_taken' : 'api_error',
+                http_status: httpStatus,
+              });
+            },
           },
         );
       },
       (errors) => {
+        analytics.track('booking_failed', {
+          store_id: store!.id,
+          reason: 'validation',
+        });
         const firstError = Object.values(errors)[0]?.message;
         if (firstError) {
           toast.error(firstError);

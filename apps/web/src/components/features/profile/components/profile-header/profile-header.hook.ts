@@ -1,5 +1,6 @@
 import { useUsersMutations } from '@/hooks/use-mutations/use-users-mutations';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
@@ -11,6 +12,7 @@ const MEMBER_SINCE_FORMATTER = new Intl.DateTimeFormat('pt-BR', {
 
 export const useProfileHeader = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const analytics = useAnalytics();
 
   // API hooks
   const { user, isPendingUser } = useUserQuery();
@@ -27,13 +29,17 @@ export const useProfileHeader = () => {
       fileReader.readAsDataURL(file);
       fileReader.onload = () => {
         const base64 = fileReader.result as string;
-        updateAvatar(base64);
+        updateAvatar(base64, {
+          onSuccess: () => analytics.track('avatar_updated', {}),
+          onError: () => analytics.track('avatar_update_failed', {}),
+        });
       };
       fileReader.onerror = () => {
         toast.error('Erro ao ler arquivo');
+        analytics.track('avatar_update_failed', {});
       };
     },
-    [updateAvatar],
+    [analytics, updateAvatar],
   );
 
   const handleOpenFilePicker = useCallback(() => {

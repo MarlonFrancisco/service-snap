@@ -1,11 +1,11 @@
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query/use-metrics-query.hook';
-import { useState } from 'react';
-import { useMetricsStore, useMetricsView } from '../dashboard-module.hook';
+import {
+  useMetricsPeriod,
+  useMetricsStore,
+  useMetricsView,
+} from '../dashboard-module.hook';
 import { METRICS_RANK_COLORS } from '../dashboard-module.styles';
-import type {
-  TMetricCardConfig,
-  TPeriodFilterValue,
-} from '../dashboard-module.types';
+import type { TMetricCardConfig } from '../dashboard-module.types';
 import {
   PERIOD_COMPARISON_TEXT,
   PERIOD_CURRENT_TEXT,
@@ -25,7 +25,7 @@ import {
 const FALLBACK_RANK_COLOR = '#EBE9F0';
 
 export const useGeneralMetrics = () => {
-  const [period, setPeriod] = useState<TPeriodFilterValue>('week');
+  const { period, setPeriod } = useMetricsPeriod('overview', 'week');
   const { storeId, money } = useMetricsStore();
 
   const {
@@ -51,6 +51,7 @@ export const useGeneralMetrics = () => {
       ));
 
   const viewState = useMetricsView({
+    section: 'overview',
     isPending: isPendingOverview,
     isError: isErrorOverview,
     isFetching: isFetchingOverview,

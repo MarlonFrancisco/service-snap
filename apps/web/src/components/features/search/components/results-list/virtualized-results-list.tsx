@@ -15,8 +15,7 @@ export function VirtualizedResultsList({
   stores,
 }: VirtualizedResultsListProps) {
   const selectedStore = useSearchStore((state) => state.selectedStore);
-  const setSelectedStore = useSearchStore((state) => state.setSelectedStore);
-  const { visibleStores, hasMore, summary, showMore } =
+  const { visibleStores, hasMore, summary, showMore, selectStore } =
     useVirtualizedResultsList(stores);
 
   const query = useSearchParams().get('query');
@@ -48,7 +47,7 @@ export function VirtualizedResultsList({
           },
         }}
       >
-        {visibleStores.map((store) => (
+        {visibleStores.map((store, index) => (
           <motion.div
             key={store.id}
             role="listitem"
@@ -61,7 +60,7 @@ export function VirtualizedResultsList({
             <StoreCard
               store={store}
               isSelected={selectedStore?.id === store.id}
-              onClick={() => setSelectedStore(store)}
+              onClick={() => selectStore(store, index)}
             />
           </motion.div>
         ))}

@@ -1,4 +1,5 @@
 import { TUseNotificationsMutationsConfig } from '@/hooks/partner/use-notifications-mutations/use-notifications-mutations.types';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { NotificationsHistoryService } from '@/service/partner/notifications-history';
 import { NotificationsSettingsService } from '@/service/partner/notifications-settings';
 import {
@@ -15,6 +16,7 @@ export const useNotificationsMutations = ({
   notificationHistoryParams,
 }: TUseNotificationsMutationsConfig) => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
 
   const updateNotificationsSettingsMutation = useMutation({
     mutationFn: (notificationsSettings: Partial<INotificationsSettings>) =>
@@ -30,6 +32,10 @@ export const useNotificationsMutations = ({
       toast.success('Configurações de notificações atualizadas com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'notification',
+        operation: 'update',
+      });
       toast.error('Erro ao atualizar configurações de notificações');
     },
   });
@@ -37,7 +43,11 @@ export const useNotificationsMutations = ({
   const updateNotificationsHistoryMutation = useMutation({
     mutationFn: (notificationsHistory: Partial<INotificationsHistory>) =>
       NotificationsHistoryService.update(storeId, notificationsHistory),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
+      if (variables.read) {
+        analytics.track('notification_marked_read', { all: false });
+      }
+
       queryClient.setQueryData(
         CACHE_QUERY_KEYS.notificationsHistory(
           storeId,
@@ -51,6 +61,10 @@ export const useNotificationsMutations = ({
       toast.success('Histórico de notificações atualizado com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'notification',
+        operation: 'update',
+      });
       toast.error('Erro ao atualizar histórico de notificações');
     },
   });
@@ -58,6 +72,7 @@ export const useNotificationsMutations = ({
   const markAllAsReadNotificationsHistoryMutation = useMutation({
     mutationFn: () => NotificationsHistoryService.markAllAsRead(storeId),
     onSuccess: () => {
+      analytics.track('notification_marked_read', { all: true });
       queryClient.setQueryData(
         CACHE_QUERY_KEYS.notificationsHistory(
           storeId,
@@ -71,6 +86,10 @@ export const useNotificationsMutations = ({
       toast.success('Todas as notificações marcadas como lidas');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'notification',
+        operation: 'update',
+      });
       toast.error('Erro ao marcar todas as notificações como lidas');
     },
   });
@@ -89,9 +108,14 @@ export const useNotificationsMutations = ({
           data: old.data.filter((n) => n.id !== data.id),
         }),
       );
+      analytics.track('notification_deleted', {});
       toast.success('Histórico de notificações excluído com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'notification',
+        operation: 'delete',
+      });
       toast.error('Erro ao excluir histórico de notificações');
     },
   });

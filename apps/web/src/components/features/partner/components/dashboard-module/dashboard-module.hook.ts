@@ -1,9 +1,14 @@
 import { useStoresQuery } from '@/hooks/use-query/use-stores-query/use-stores-query.hook';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { usePartnerStore } from '@/store/partner/partner.store';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
-import type { TUseMetricsViewConfig } from './dashboard-module.types';
+import type { TDashboardSection } from '@repo/analytics';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type {
+  TPeriodFilterValue,
+  TUseMetricsViewConfig,
+} from './dashboard-module.types';
 import {
   createMoneyFormatters,
   resolveMetricsView,
@@ -31,7 +36,33 @@ export const useMetricsStore = () => {
   };
 };
 
+/** Período do filtro de cada seção; toda troca vira `dashboard_period_changed`. */
+export const useMetricsPeriod = (
+  section: TDashboardSection,
+  initialPeriod: TPeriodFilterValue,
+) => {
+  const analytics = useAnalytics();
+  const [period, setPeriodState] = useState<TPeriodFilterValue>(initialPeriod);
+
+  const setPeriod = useCallback(
+    (nextPeriod: TPeriodFilterValue) => {
+      if (nextPeriod !== period) {
+        analytics.track('dashboard_period_changed', {
+          section,
+          period: nextPeriod,
+        });
+      }
+
+      setPeriodState(nextPeriod);
+    },
+    [analytics, period, section],
+  );
+
+  return { period, setPeriod };
+};
+
 export const useMetricsView = ({
+  section,
   isPending,
   isError,
   isFetching,
@@ -39,9 +70,17 @@ export const useMetricsView = ({
   hasActivity,
   refetch,
 }: TUseMetricsViewConfig) => {
+  const analytics = useAnalytics();
   const queryClient = useQueryClient();
   const { storeId, isStoreLoading, hasStoreError, hasNoStore } =
     useMetricsStore();
+
+  // Dispara na transição para erro, não a cada render com erro.
+  useEffect(() => {
+    if (isError) {
+      analytics.track('dashboard_load_failed', { section });
+    }
+  }, [analytics, isError, section]);
 
   const view = resolveMetricsView({
     isStoreLoading,
@@ -54,8 +93,9 @@ export const useMetricsView = ({
   });
 
   const handleRefresh = useCallback(() => {
+    analytics.track('dashboard_refreshed', { section });
     void refetch();
-  }, [refetch]);
+  }, [analytics, refetch, section]);
 
   const handleRetry = useCallback(() => {
     if (storeId) {

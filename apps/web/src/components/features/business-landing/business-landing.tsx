@@ -6,6 +6,7 @@ import {
   type TBusinessPage,
 } from '@/utils/constants/business-pages.constants';
 import { Check } from 'lucide-react';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import Link from 'next/link';
 
 const FOCUS_CLASS =
@@ -17,6 +18,7 @@ const SECTION_TITLE_CLASS =
 
 export function BusinessLanding({ page }: { page: TBusinessPage }) {
   const isHub = !page.slug;
+  const segment = page.slug || 'hub';
   const otherSegments = BUSINESS_SEGMENTS.filter(
     (segment) => segment.slug !== page.slug,
   );
@@ -62,12 +64,30 @@ export function BusinessLanding({ page }: { page: TBusinessPage }) {
           {page.intro}
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-3">
-          <Link href="/pricing" className={PRIMARY_ACTION_CLASS}>
+          <TrackedLink
+            href="/pricing"
+            event="partner_cta_clicked"
+            properties={{
+              placement: 'business_hero',
+              destination: '/pricing',
+              segment,
+            }}
+            className={PRIMARY_ACTION_CLASS}
+          >
             Ver planos e testar grátis
-          </Link>
-          <Link href="/contact" className={SECONDARY_ACTION_CLASS}>
+          </TrackedLink>
+          <TrackedLink
+            href="/contact"
+            event="partner_cta_clicked"
+            properties={{
+              placement: 'business_hero',
+              destination: '/contact',
+              segment,
+            }}
+            className={SECONDARY_ACTION_CLASS}
+          >
             Falar com a gente
-          </Link>
+          </TrackedLink>
         </div>
 
         <section aria-labelledby="beneficios" className="mt-14 md:mt-20">
@@ -134,24 +154,36 @@ export function BusinessLanding({ page }: { page: TBusinessPage }) {
             {isHub ? 'Soluções por segmento' : 'Também atendemos'}
           </h2>
           <ul className="mt-5 flex flex-wrap gap-2.5">
-            {otherSegments.map((segment) => (
-              <li key={segment.slug}>
-                <Link
-                  href={businessPagePath(segment.slug)}
+            {otherSegments.map((otherSegment) => (
+              <li key={otherSegment.slug}>
+                <TrackedLink
+                  href={businessPagePath(otherSegment.slug)}
+                  event="partner_cta_clicked"
+                  properties={{
+                    placement: 'business_segments',
+                    destination: businessPagePath(otherSegment.slug),
+                    segment,
+                  }}
                   className={SECONDARY_ACTION_CLASS}
                 >
-                  {segment.label}
-                </Link>
+                  {otherSegment.label}
+                </TrackedLink>
               </li>
             ))}
             {isHub ? null : (
               <li>
-                <Link
+                <TrackedLink
                   href={businessPagePath('')}
+                  event="partner_cta_clicked"
+                  properties={{
+                    placement: 'business_segments',
+                    destination: businessPagePath(''),
+                    segment,
+                  }}
                   className={SECONDARY_ACTION_CLASS}
                 >
                   Outros negócios
-                </Link>
+                </TrackedLink>
               </li>
             )}
           </ul>
@@ -165,12 +197,18 @@ export function BusinessLanding({ page }: { page: TBusinessPage }) {
             Cadastre seu espaço, configure serviços e equipe e compartilhe sua
             página de agendamento com os clientes.
           </p>
-          <Link
+          <TrackedLink
             href="/pricing"
+            event="partner_cta_clicked"
+            properties={{
+              placement: 'business_final_cta',
+              destination: '/pricing',
+              segment,
+            }}
             className="mt-6 inline-flex h-11 items-center rounded-full bg-white px-5 text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#EBE9F0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Ver planos
-          </Link>
+          </TrackedLink>
         </section>
       </main>
       <Footer />

@@ -1,10 +1,10 @@
 import { useMetricsQuery } from '@/hooks/use-query/use-metrics-query';
-import { useState } from 'react';
-import { useMetricsStore, useMetricsView } from '../dashboard-module.hook';
-import type {
-  TMetricCardConfig,
-  TPeriodFilterValue,
-} from '../dashboard-module.types';
+import {
+  useMetricsPeriod,
+  useMetricsStore,
+  useMetricsView,
+} from '../dashboard-module.hook';
+import type { TMetricCardConfig } from '../dashboard-module.types';
 import { WEEK_FROM_MONDAY } from '../utils/metrics.constants';
 import {
   formatPercent,
@@ -21,7 +21,7 @@ const STATUS_LABELS = {
 } as const;
 
 export const useOperationalMetrics = () => {
-  const [period, setPeriod] = useState<TPeriodFilterValue>('month');
+  const { period, setPeriod } = useMetricsPeriod('operational', 'month');
   const { storeId, money } = useMetricsStore();
 
   const {
@@ -47,6 +47,7 @@ export const useOperationalMetrics = () => {
   );
 
   const viewState = useMetricsView({
+    section: 'operational',
     isPending: isPendingOperational,
     isError: isErrorOperational,
     isFetching: isFetchingOperational,

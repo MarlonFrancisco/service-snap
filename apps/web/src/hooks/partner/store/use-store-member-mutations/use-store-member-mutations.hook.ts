@@ -1,3 +1,5 @@
+import { useAnalytics } from '@/providers/analytics.provider';
+import { isApiHttpError } from '@/service/api';
 import { StoreMembersService } from '@/service/store/store-members.service';
 import { IProfessional } from '@/types/api';
 import { IStore } from '@/types/api/stores.types';
@@ -7,6 +9,7 @@ import { toast } from 'sonner';
 
 export const useStoreMemberMutations = () => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
 
   const invalidateCurrentPlan = () => {
     void queryClient.invalidateQueries({
@@ -49,7 +52,17 @@ export const useStoreMemberMutations = () => {
       updateStoreMembersCache(storeId, (members) =>
         members.map((m) => (m.id === data.id ? { ...m, ...data } : m)),
       );
+      analytics.track('team_member_updated', {
+        store_id: storeId,
+        is_active: data.isActive,
+      });
       toast.success('Membro da loja atualizado com sucesso');
+    },
+    onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'team_member',
+        operation: 'update',
+      });
     },
   });
 
@@ -62,9 +75,14 @@ export const useStoreMemberMutations = () => {
         members.filter((m) => m.id !== data.id),
       );
       invalidateCurrentPlan();
+      analytics.track('team_member_removed', { store_id: storeId });
       toast.success('Membro da loja excluído com sucesso');
     },
     onError: (error: unknown) => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'team_member',
+        operation: 'delete',
+      });
       const message =
         error instanceof Error
           ? error.message
@@ -82,9 +100,17 @@ export const useStoreMemberMutations = () => {
       const storeId = data.store?.id || variables.storeId;
       updateStoreMembersCache(storeId, (members) => [...members, data]);
       invalidateCurrentPlan();
+      analytics.track('team_member_invited', {
+        store_id: storeId,
+        role: data.role,
+      });
       toast.success('Membro da loja adicionado com sucesso');
     },
-    onError: (error: unknown) => {
+    onError: (error: unknown, variables) => {
+      analytics.track('team_member_invite_failed', {
+        store_id: variables.storeId,
+        http_status: isApiHttpError(error) ? error.status : undefined,
+      });
       const message =
         error instanceof Error
           ? error.message

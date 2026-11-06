@@ -6,16 +6,18 @@ import {
   clearStoredReferralCode,
   getStoredReferralCode,
 } from '@/utils/helpers/referral.helper';
+import type { TLoginSource } from '@repo/analytics';
 import { IAuthState } from './auth.types';
 
 export const openAuthAction: TStoreAction<
   IAuthState,
-  { onAuth?: () => void }
+  { onAuth?: () => void; source?: TLoginSource }
 > =
   (set, get) =>
-  async ({ onAuth } = {}) => {
+  async ({ onAuth, source = 'other' } = {}) => {
     set({
       isOpen: true,
+      authSource: source,
       onAuth: async () => {
         get().closeAuthAction();
         onAuth?.();

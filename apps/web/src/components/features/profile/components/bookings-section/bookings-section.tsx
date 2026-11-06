@@ -56,6 +56,9 @@ export const BookingsSection = () => {
     setBookingToCancel,
     handleCancelBooking,
     handleReview,
+    handleOpenDetails,
+    handleStartCancel,
+    handleRebook,
   } = useBookingsSection();
 
   if (upcomingBookings.length === 0 && pastBookings.length === 0) {
@@ -136,14 +139,14 @@ export const BookingsSection = () => {
                   <div className={PROFILE_ACTIONS_CLASS}>
                     <button
                       type="button"
-                      onClick={() => setSelectedBooking(booking)}
+                      onClick={() => handleOpenDetails(booking)}
                       className={PROFILE_ACTION_PRIMARY_CLASS}
                     >
                       Ver detalhes
                     </button>
                     <button
                       type="button"
-                      onClick={() => setBookingToCancel(booking)}
+                      onClick={() => handleStartCancel(booking)}
                       className={PROFILE_ACTION_CLASS}
                     >
                       Cancelar
@@ -193,6 +196,7 @@ export const BookingsSection = () => {
                 <div className={PROFILE_ACTIONS_CLASS}>
                   <Link
                     href={`/booking/${booking.store.id}`}
+                    onClick={() => handleRebook(booking.store.id)}
                     className={PROFILE_ACTION_PRIMARY_CLASS}
                   >
                     Reservar novamente

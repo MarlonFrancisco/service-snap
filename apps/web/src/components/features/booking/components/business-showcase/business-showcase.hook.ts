@@ -2,6 +2,8 @@
 
 import { useFavoritesMutations } from '@/hooks/use-mutations/use-favorites-mutations/use-favorites-mutations.hook';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
+import { useAnalytics } from '@/providers/analytics.provider';
+import { useReviewsStore } from '@/store';
 import { TWorkingDays } from '@/types/api/stores.types';
 import { orderGalleryByMainImage } from '@/utils/helpers/gallery.helper';
 import { instagramLabel, toInstagramUrl } from '@/utils/helpers/social.helper';
@@ -61,9 +63,27 @@ export const useBusinessData = () => {
   return data;
 };
 
+/** Ações do bloco de informações (links externos da loja). */
+export const useBusinessInfoActions = () => {
+  const selectedStore = useGetStore();
+  const analytics = useAnalytics();
+
+  const handleInstagramClick = useCallback(() => {
+    analytics.track('social_link_clicked', {
+      network: 'instagram',
+      store_id: selectedStore?.id,
+      page: 'store',
+    });
+  }, [analytics, selectedStore?.id]);
+
+  return { handleInstagramClick };
+};
+
 export const useBusinessShowcase = () => {
   const selectedStore = useGetStore();
   const data = useBusinessData();
+  const analytics = useAnalytics();
+  const { setReviewsAttributesAction } = useReviewsStore();
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [visibleImageIndex, setVisibleImageIndex] = useState(0);
@@ -84,10 +104,33 @@ export const useBusinessShowcase = () => {
     api?.on('select', () => setVisibleImageIndex(api.selectedScrollSnap()));
   }, []);
 
-  const handleImageClick = useCallback((index: number) => {
-    setSelectedImageIndex(index);
-    setShowAllPhotos(true);
-  }, []);
+  const galleryTotal = selectedStore?.gallery?.length ?? 0;
+
+  const handleImageClick = useCallback(
+    (index: number) => {
+      setSelectedImageIndex(index);
+      setShowAllPhotos(true);
+      analytics.track('gallery_opened', {
+        image_index: index,
+        total: galleryTotal,
+      });
+    },
+    [analytics, galleryTotal],
+  );
+
+  const handleOpenReviews = useCallback(() => {
+    setReviewsAttributesAction({
+      storeId: selectedStore?.id,
+      businessName: selectedStore?.name,
+      isOpen: true,
+    });
+    if (selectedStore) {
+      analytics.track('reviews_opened', {
+        store_id: selectedStore.id,
+        review_count: selectedStore.reviews?.length ?? 0,
+      });
+    }
+  }, [analytics, selectedStore, setReviewsAttributesAction]);
 
   const handleCloseGallery = useCallback(() => {
     setShowAllPhotos(false);
@@ -96,11 +139,20 @@ export const useBusinessShowcase = () => {
   const handleShare = useCallback(() => {
     if (typeof window === 'undefined') return;
 
+    const storeId = selectedStore?.id;
+
     if (navigator.share) {
       navigator
         .share({
           title: 'Compartilhar negócio',
           url: window.location.href,
+        })
+        .then(() => {
+          analytics.track('share', {
+            method: 'native_share',
+            content_type: 'store',
+            item_id: storeId,
+          });
         })
         .catch(() => {
           // Silently fail if user cancels
@@ -111,26 +163,43 @@ export const useBusinessShowcase = () => {
         .writeText(window.location.href)
         .then(() => {
           toast.success('Link copiado para a área de transferência');
+          analytics.track('share', {
+            method: 'clipboard',
+            content_type: 'store',
+            item_id: storeId,
+          });
         })
         .catch(() => {
           toast.error('Falha ao copiar link');
         });
     }
-  }, []);
+  }, [analytics, selectedStore?.id]);
 
   const handleSave = useCallback(() => {
+    const storeId = selectedStore!.id;
+    const trackWishlist = (
+      event: 'add_to_wishlist' | 'remove_from_wishlist',
+    ) => analytics.track(event, { item_id: storeId, source: 'store_page' });
+
     if (isFavorite) {
-      deleteFavorite({
-        id: favorite!.id,
-        user: { id: user!.id },
-      });
+      deleteFavorite(
+        {
+          id: favorite!.id,
+          user: { id: user!.id },
+        },
+        { onSuccess: () => trackWishlist('remove_from_wishlist') },
+      );
     } else {
-      createFavorite({
-        store: { id: selectedStore!.id },
-        user: { id: user!.id },
-      });
+      createFavorite(
+        {
+          store: { id: storeId },
+          user: { id: user!.id },
+        },
+        { onSuccess: () => trackWishlist('add_to_wishlist') },
+      );
     }
   }, [
+    analytics,
     createFavorite,
     deleteFavorite,
     favorite,
@@ -172,5 +241,6 @@ export const useBusinessShowcase = () => {
     handleCloseGallery,
     handleShare,
     handleSave,
+    handleOpenReviews,
   };
 };

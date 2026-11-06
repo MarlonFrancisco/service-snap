@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { OnboardingService } from '@/service/partner/onboarding';
 import type { TOnboardingStore } from '@/types/api/onboarding.types';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -47,6 +48,7 @@ export const useSpaceStep = ({
   onExit,
 }: TUseSpaceStepParams) => {
   const [exitBlocked, setExitBlocked] = useState(false);
+  const analytics = useAnalytics();
   const mutation = useOnboardingMutation(OnboardingService.saveSpace.bind(OnboardingService));
 
   const form = useForm<TSpaceForm>({
@@ -75,21 +77,38 @@ export const useSpaceStep = ({
         });
         afterSave();
       },
-      () => setExitBlocked(afterSave === onExit),
+      () => setExitBlocked(afterSave === exitAfterSave),
     )();
+
+  const completeStep = () => {
+    analytics.track('onboarding_step_completed', { step: 'space' });
+    onSaved();
+  };
+
+  const exitAfterSave = () => {
+    analytics.track('onboarding_save_and_exit', {
+      step: 'space',
+      had_changes: true,
+    });
+    onExit();
+  };
 
   const handleContinue = () => {
     setExitBlocked(false);
-    void submit(onSaved).catch(() => undefined);
+    void submit(completeStep).catch(() => undefined);
   };
 
   const handleSaveAndExit = () => {
     // Nada digitado: não há o que salvar, nem por que barrar a saída.
     if (!isDirty) {
+      analytics.track('onboarding_save_and_exit', {
+        step: 'space',
+        had_changes: false,
+      });
       onExit();
       return;
     }
-    void submit(onExit).catch(() => undefined);
+    void submit(exitAfterSave).catch(() => undefined);
   };
 
   const description = form.watch('description');

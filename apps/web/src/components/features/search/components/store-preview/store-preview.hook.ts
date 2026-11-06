@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import useSearchStore from '@/store/search/search.store';
 import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
@@ -12,6 +13,7 @@ const SHORT_SCREEN_QUERY = '(max-height: 800px)';
 export function useStorePreview() {
   const selectedStore = useSearchStore((state) => state.selectedStore);
   const router = useRouter();
+  const analytics = useAnalytics();
   const [isShortScreen, setIsShortScreen] = useState(false);
 
   useEffect(() => {
@@ -25,8 +27,21 @@ export function useStorePreview() {
 
   const handleBookingClick = useCallback(() => {
     if (!selectedStore) return;
+    analytics.track('select_content', {
+      content_type: 'book_cta_preview',
+      item_id: selectedStore.id,
+      destination: `/booking/${selectedStore.id}`,
+    });
     router.push(`/booking/${selectedStore.id}`);
-  }, [selectedStore, router]);
+  }, [selectedStore, router, analytics]);
+
+  const handleWhatsAppClick = useCallback(() => {
+    if (!selectedStore) return;
+    analytics.track('contact_whatsapp_clicked', {
+      store_id: selectedStore.id,
+      placement: 'search_preview',
+    });
+  }, [selectedStore, analytics]);
 
   const formattedPrice = selectedStore
     ? formatStorePrice(
@@ -78,5 +93,6 @@ export function useStorePreview() {
     hasReviews,
     displayReviews,
     handleBookingClick,
+    handleWhatsAppClick,
   };
 }

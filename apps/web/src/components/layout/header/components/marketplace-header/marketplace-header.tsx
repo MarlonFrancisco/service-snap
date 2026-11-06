@@ -39,6 +39,8 @@ export const MarketplaceHeader = ({
     toggleMenu,
     closeMenu,
     handleAuth,
+    handleHeaderPartnerClick,
+    handleMenuPartnerClick,
   } = useMarketplaceHeader();
   const { isCompactSearchVisible, focusDiscoverySearch } =
     useCompactSearch(compactSearch);
@@ -95,6 +97,7 @@ export const MarketplaceHeader = ({
           <div className="flex shrink-0 items-center gap-2 md:gap-3">
             <Link
               href={partnerHref}
+              onClick={handleHeaderPartnerClick}
               className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[#2B2B2B] transition-colors hover:bg-[#F4F4F5] hover:text-[#0A0A0A] lg:inline-flex"
             >
               {partnerLabel}
@@ -134,7 +137,7 @@ export const MarketplaceHeader = ({
                   </Link>
                   <Link
                     href={partnerHref}
-                    onClick={closeMenu}
+                    onClick={handleMenuPartnerClick}
                     className="block rounded-xl px-3 py-2.5 text-sm text-[#2B2B2B] hover:bg-[#F4F4F5] lg:hidden"
                   >
                     {partnerLabel}

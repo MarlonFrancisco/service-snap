@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import {
   instagramLabel,
   storePublicUrl,
@@ -11,14 +12,22 @@ export const useStorePublicPresence = ({
   storeId,
   instagram,
 }: TStorePublicPresenceConfig) => {
+  const analytics = useAnalytics();
   const publicUrl = storePublicUrl(storeId);
 
   const handleCopyPublicUrl = useCallback(() => {
     void navigator.clipboard.writeText(publicUrl).then(
-      () => toast.success('Link copiado'),
+      () => {
+        analytics.track('booking_link_copied', {
+          store_id: storeId,
+          source: 'store_details',
+          method: 'clipboard',
+        });
+        toast.success('Link copiado');
+      },
       () => toast.error('Falha ao copiar o link'),
     );
-  }, [publicUrl]);
+  }, [analytics, publicUrl, storeId]);
 
   return {
     instagramUrl: toInstagramUrl(instagram),

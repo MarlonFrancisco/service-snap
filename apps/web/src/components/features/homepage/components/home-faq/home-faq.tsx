@@ -1,3 +1,4 @@
+import { TrackedSummary } from '@/components/ui/tracked-summary';
 import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import { HOME_FAQ } from './home-faq.constants';
 
@@ -30,9 +31,13 @@ export const HomeFaq = () => {
       <div className="mt-4 max-w-[48rem] divide-y divide-[#EBE9F0] border-y border-[#EBE9F0] md:mt-5">
         {HOME_FAQ.map((item, index) => (
           <details key={item.question} open={index === 0} className="py-4">
-            <summary className="cursor-pointer text-base font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]">
+            <TrackedSummary
+              event="faq_opened"
+              properties={{ page: 'home', question_index: index }}
+              className="cursor-pointer text-base font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+            >
               {item.question}
-            </summary>
+            </TrackedSummary>
             <p className="mt-2 text-sm leading-[1.6] text-[#5F5C6E] md:text-[15px]">
               {item.answer}
             </p>

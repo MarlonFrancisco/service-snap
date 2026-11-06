@@ -2,7 +2,8 @@ import {
   ROI_ILLUSTRATIVE_BOOKINGS_LIFT,
   ROI_ILLUSTRATIVE_NO_SHOW_REDUCTION_PP,
 } from './pricing-roi-calculator.constants';
-import { useCallback, useMemo, useState } from 'react';
+import { useAnalytics } from '@/providers/analytics.provider';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 export type TRoiField =
   | 'appointments'
@@ -34,11 +35,16 @@ const parseAmount = (value: string) => {
   return Number.isFinite(amount) ? amount : null;
 };
 
+/** Espera a digitação parar para não registrar cada tecla. */
+const ROI_TRACK_DELAY_MS = 1500;
+
 const getPaybackLabel = (months: number) =>
   months === 1 ? '1 mês' : `${months} meses`;
 
 export const usePricingRoiCalculator = () => {
   const [values, setValues] = useState(EMPTY_VALUES);
+  const analytics = useAnalytics();
+  const lastTrackedKeyRef = useRef<string | null>(null);
 
   const handleChange = useCallback((field: TRoiField, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -83,6 +89,27 @@ export const usePricingRoiCalculator = () => {
           : 'O ganho não cobre o plano',
     };
   }, [values]);
+
+  useEffect(() => {
+    if (!result) return;
+
+    const appointments = parseAmount(values.appointments);
+    const averagePrice = parseAmount(values.averagePrice);
+    if (!appointments || !averagePrice) return;
+
+    const key = `${appointments}:${averagePrice}`;
+    if (lastTrackedKeyRef.current === key) return;
+
+    const timer = setTimeout(() => {
+      lastTrackedKeyRef.current = key;
+      analytics.track('roi_calculated', {
+        appointments,
+        avg_price: averagePrice,
+      });
+    }, ROI_TRACK_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [result, values.appointments, values.averagePrice, analytics]);
 
   return {
     values,

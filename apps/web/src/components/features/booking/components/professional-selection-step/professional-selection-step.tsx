@@ -1,4 +1,5 @@
 'use client';
+import { useAnalytics } from '@/providers/analytics.provider';
 import { IProfessional } from '@/types/api';
 import { cn } from '@repo/ui';
 import { Info } from 'lucide-react';
@@ -23,6 +24,7 @@ const OPTION_RADIO_ON_CLASS = 'border-[7px] border-[#0B0B0F]';
 
 export function ProfessionalSelectionStep() {
   const stores = useGetStore();
+  const analytics = useAnalytics();
   const form = useFormContext<TBookingFormData>();
   const selectedServices = form.watch('selectedServices');
   const selectedProfessional = form.watch('selectedProfessional');
@@ -110,12 +112,21 @@ export function ProfessionalSelectionStep() {
     if (compatibilityStatus.canUseAny) {
       form.setValue('selectedProfessional', null);
       form.setValue('isAnyProfessional', true);
+      analytics.track('select_professional', {
+        store_id: stores?.id ?? '',
+        is_any_professional: true,
+      });
     }
   };
 
   const handleProfessionalSelect = (professional: IProfessional) => {
     form.setValue('selectedProfessional', professional);
     form.setValue('isAnyProfessional', false);
+    analytics.track('select_professional', {
+      store_id: stores?.id ?? '',
+      is_any_professional: false,
+      professional_id: professional.id,
+    });
   };
 
   const canProfessionalDoAllServices = (professional: IProfessional) => {

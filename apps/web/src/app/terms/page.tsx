@@ -1,3 +1,4 @@
+import { TrackedLink } from '@/components/ui/tracked-link';
 import {
   LegalDocument,
   LEGAL_NOTE_CLASS,
@@ -135,8 +136,14 @@ const SECTIONS: TLegalSection[] = [
           </li>
           <li>
             Notificar-nos imediatamente através de{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> sobre
-            qualquer uso não autorizado
+            <TrackedLink
+              href={`mailto:${CONTACT_EMAIL}`}
+              event="contact_email_clicked"
+              properties={{ page: 'terms' }}
+            >
+              {CONTACT_EMAIL}
+            </TrackedLink>{' '}
+            sobre qualquer uso não autorizado
           </li>
           <li>Manter suas informações de perfil atualizadas e precisas</li>
         </ul>
@@ -441,7 +448,13 @@ const SECTIONS: TLegalSection[] = [
         <ul className={LEGAL_PLAIN_LIST_CLASS}>
           <li>
             <strong>E-mail Geral:</strong>{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <TrackedLink
+              href={`mailto:${CONTACT_EMAIL}`}
+              event="contact_email_clicked"
+              properties={{ page: 'terms' }}
+            >
+              {CONTACT_EMAIL}
+            </TrackedLink>
           </li>
           <li>
             <strong>Suporte:</strong> Através da central de ajuda em{' '}

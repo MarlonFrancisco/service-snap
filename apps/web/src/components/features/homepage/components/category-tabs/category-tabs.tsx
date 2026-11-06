@@ -14,6 +14,7 @@ import {
   categoryGuidePath,
   getCategoryGuideByName,
 } from '@/utils/constants/category-guides.constants';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import Link from 'next/link';
 
 const TAB_CLASS =
@@ -58,14 +59,20 @@ export const CategoryTabs = () => {
           Tudo
         </Link>
         {HOME_CATEGORIES.map(({ label, query, icon: Icon }) => (
-          <Link
+          <TrackedLink
             key={query}
             href={getCategoryHref(query)}
+            event="select_content"
+            properties={{
+              content_type: 'category_tab',
+              item_id: query,
+              destination: getCategoryHref(query),
+            }}
             className={`${TAB_CLASS} border-transparent text-[#5F5C6E] hover:border-[#0B0B0F] hover:text-[#0B0B0F]`}
           >
             <Icon className={ICON_CLASS} strokeWidth={1.6} aria-hidden />
             {label}
-          </Link>
+          </TrackedLink>
         ))}
       </nav>
     </div>

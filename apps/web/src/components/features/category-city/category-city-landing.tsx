@@ -1,10 +1,16 @@
 import { Footer, Header } from '@/components/layout';
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
+import { TrackedLink } from '@/components/ui/tracked-link';
 import { instagramLabel } from '@/utils/helpers/social.helper';
 import { formatRating } from '@/utils/helpers/search.helper';
 import { Instagram, MapPin, Search } from 'lucide-react';
 import Link from 'next/link';
-import { formatStoreLocation } from './category-city-landing.helpers';
+import {
+  CATEGORY_CITY_LIST_NAME,
+  formatStoreLocation,
+  getStoreIdFromPath,
+} from './category-city-landing.helpers';
+import { CategoryCityTracker } from './components/category-city-tracker';
 import type { TCategoryCityLandingConfig } from './category-city-landing.types';
 
 const FOCUS_CLASS =
@@ -31,6 +37,12 @@ export function CategoryCityLanding({
   return (
     <Header>
       <main className="mx-auto max-w-[82.5rem] px-5 pb-20 md:px-10">
+        <CategoryCityTracker
+          status={status}
+          categoryName={resolved.categoryName}
+          city={city}
+          storeIds={stores.map((store) => getStoreIdFromPath(store.path))}
+        />
         <h1 className="mt-3 text-[34px] leading-[1.08] font-extrabold tracking-[-0.035em] md:mt-8 md:text-[44px]">
           {resolved.categoryName} em {city}
         </h1>
@@ -72,7 +84,12 @@ export function CategoryCityLanding({
           </div>
         ) : (
           <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(280px,100%),1fr))] gap-x-6 gap-y-9">
-            {stores.map((store) => {
+            {stores.map((store, index) => {
+              const selectItem = {
+                item_id: getStoreIdFromPath(store.path),
+                item_list_name: CATEGORY_CITY_LIST_NAME,
+                index,
+              };
               const location = formatStoreLocation(store);
               const hasRating = Boolean(store.reviewCount && store.rating);
 
@@ -91,12 +108,14 @@ export function CategoryCityLanding({
 
                     <div className="mt-3.5 flex justify-between gap-2">
                       <h2 className="text-base font-bold">
-                        <Link
+                        <TrackedLink
                           href={store.path}
+                          event="select_item"
+                          properties={selectItem}
                           className={`after:absolute after:inset-0 after:rounded-[22px] ${FOCUS_CLASS}`}
                         >
                           {store.name}
-                        </Link>
+                        </TrackedLink>
                       </h2>
                       {hasRating ? (
                         <span className="flex-none text-sm font-semibold">
@@ -136,13 +155,15 @@ export function CategoryCityLanding({
                     ) : null}
 
                     {store.path ? (
-                      <Link
+                      <TrackedLink
                         href={store.path}
+                        event="select_item"
+                        properties={selectItem}
                         aria-label={`Agendar em ${store.name}`}
                         className={`relative z-10 mt-3 ${ACTION_CLASS}`}
                       >
                         Agendar
-                      </Link>
+                      </TrackedLink>
                     ) : null}
                   </article>
                 </li>

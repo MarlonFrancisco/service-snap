@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { ServiceService } from '@/service/partner/service/service.service';
 import { ICategory, IService } from '@/types/api/service.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
@@ -6,6 +7,7 @@ import { toast } from 'sonner';
 
 export const useServicesMutations = ({ storeId }: { storeId: string }) => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
 
   const { mutate: createService, isPending: isCreatingService } = useMutation({
     mutationFn: (service: Partial<IService>) =>
@@ -20,9 +22,18 @@ export const useServicesMutations = ({ storeId }: { storeId: string }) => {
               : c,
           ),
       );
+      analytics.track('service_created', {
+        service_id: data.id,
+        price: data.price,
+        duration: data.duration,
+      });
       toast.success('Serviço criado com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'service',
+        operation: 'create',
+      });
       toast.error('Erro ao criar serviço');
     },
   });
@@ -30,6 +41,17 @@ export const useServicesMutations = ({ storeId }: { storeId: string }) => {
   const { mutate: updateService, isPending: isUpdatingService } = useMutation({
     mutationFn: (service: IService) => ServiceService.update(storeId, service),
     onSuccess: (data) => {
+      const previousCategoryId = queryClient
+        .getQueryData<ICategory[]>(CACHE_QUERY_KEYS.categories(storeId))
+        ?.find((c) => c.services.some((s) => s.id === data.id))?.id;
+
+      analytics.track('service_updated', {
+        service_id: data.id,
+        category_changed:
+          previousCategoryId !== undefined &&
+          previousCategoryId !== data.category?.id,
+      });
+
       queryClient.setQueryData(
         CACHE_QUERY_KEYS.categories(storeId),
         (old: ICategory[]) =>
@@ -48,6 +70,10 @@ export const useServicesMutations = ({ storeId }: { storeId: string }) => {
     },
     onError: (error) => {
       console.error(error);
+      analytics.track('partner_mutation_failed', {
+        entity: 'service',
+        operation: 'update',
+      });
       toast.error('Erro ao atualizar serviço');
     },
   });
@@ -65,9 +91,14 @@ export const useServicesMutations = ({ storeId }: { storeId: string }) => {
               : c,
           ),
       );
+      analytics.track('service_deleted', { service_id: data.id });
       toast.success('Serviço excluído com sucesso');
     },
     onError: () => {
+      analytics.track('partner_mutation_failed', {
+        entity: 'service',
+        operation: 'delete',
+      });
       toast.error('Erro ao excluir serviço');
     },
   });

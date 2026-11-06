@@ -107,3 +107,6 @@ export const PRICE_RANGE_LIMITS = {
   max: 500,
   step: 10,
 } as const;
+
+/** Nome da lista de resultados nos eventos `view_item_list` e `select_item`. */
+export const SEARCH_LIST_NAME = 'search';

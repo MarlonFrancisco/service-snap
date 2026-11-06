@@ -30,6 +30,7 @@ export const PlanFeatureGate = ({
     minPlanName,
     currentPlanName,
     priceLabel,
+    handleUpgradeClick,
   } = usePlanFeatureGate({ module });
 
   if (isLoading) return null;
@@ -88,6 +89,7 @@ export const PlanFeatureGate = ({
           <div className="mt-1.5 flex flex-col gap-2 self-stretch sm:mt-2 sm:flex-row sm:flex-wrap sm:justify-center sm:gap-2.5 sm:self-auto">
             <Link
               href="/partner/plans/upgrade"
+              onClick={() => handleUpgradeClick('/partner/plans/upgrade')}
               className={cn(
                 ACTION_CLASS,
                 'bg-[#0B0B0F] text-[15px] text-white hover:bg-[#2B2B2B] sm:text-sm',
@@ -99,6 +101,7 @@ export const PlanFeatureGate = ({
             </Link>
             <Link
               href="/pricing"
+              onClick={() => handleUpgradeClick('/pricing')}
               className={cn(
                 ACTION_CLASS,
                 'bg-[#F4F3F7] text-[15px] text-[#0B0B0F] hover:bg-[#EBE9F0] sm:px-5 sm:text-sm',

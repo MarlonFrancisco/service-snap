@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { WhatsappService } from '@/service/whatsapp';
 import type { TWhatsappReminderTemplateStatus } from '@/types/api/whatsapp.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
@@ -67,6 +68,7 @@ export const useWhatsappTemplateStatus = ({
   isConnected,
 }: TWhatsappTemplateStatusConfig) => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
   const queryKey = CACHE_QUERY_KEYS.whatsappReminderTemplate(storeId);
 
   const { data, isPending, isError, isFetching, refetch } = useQuery({
@@ -80,9 +82,11 @@ export const useWhatsappTemplateStatus = ({
     mutationFn: () => WhatsappService.createReminderTemplate(storeId),
     onSuccess: (template) => {
       queryClient.setQueryData(queryKey, template);
+      analytics.track('whatsapp_template_submitted', {});
       toast.success('Template enviado para análise da Meta');
     },
     onError: (error) => {
+      analytics.track('whatsapp_template_failed', {});
       toast.error(
         error instanceof Error && error.message
           ? error.message

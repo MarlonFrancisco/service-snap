@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useCallback, useMemo } from 'react';
 import type { TProfileTabsConfig } from './profile-tabs.types';
 
@@ -27,6 +28,7 @@ export const useProfileTabs = ({
   bookingsCount,
   favoritesCount,
 }: TProfileTabsConfig) => {
+  const analytics = useAnalytics();
   const tabs = useMemo(() => {
     const counts = {
       bookings: bookingsCount,
@@ -47,8 +49,13 @@ export const useProfileTabs = ({
     (event: { preventDefault: () => void }, href: string) => {
       event.preventDefault();
       window.history.pushState(null, '', href);
+
+      const tab = TAB_CONFIG.find((item) => item.href === href);
+      if (tab && tab.id !== activeTab) {
+        analytics.track('profile_tab_viewed', { tab: tab.id });
+      }
     },
-    [],
+    [activeTab, analytics],
   );
 
   return { tabs, handleNavigate };

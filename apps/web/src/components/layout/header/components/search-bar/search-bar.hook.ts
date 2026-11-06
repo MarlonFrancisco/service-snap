@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/providers/analytics.provider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -11,6 +12,7 @@ const AI_SUGGESTIONS = [
 export const useSearchBar = () => {
   const params = useSearchParams();
   const router = useRouter();
+  const analytics = useAnalytics();
   const [query, setQuery] = useState(params.get('query') || '');
   const [isFocused, setIsFocused] = useState(false);
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
@@ -36,6 +38,14 @@ export const useSearchBar = () => {
     const category = params.get('category');
     if (location) next.set('location', location);
     if (category) next.set('category', category);
+
+    analytics.track('search', {
+      search_term: query.trim(),
+      ...(category && { category }),
+      ...(location && { location }),
+      source: 'header',
+    });
+
     router.push(`/booking?${next.toString()}`);
   };
 
