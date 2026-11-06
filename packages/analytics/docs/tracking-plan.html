@@ -1,0 +1,347 @@
+<title>Plano de Tagueamento Service Snap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: cabeçalho curto, decisões em cartões, depois catálogo filtrável em tabela densa */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --fg:#1b2230; --muted:#5d6778; --line:#dfe3ea;
+  --accent:#2f5bd3; --accent-soft:#e7edfb;
+  --p0:#b4232f; --p0-bg:#fbe9ea; --p1:#9a5b00; --p1-bg:#fdf1dc; --p2:#4f5b6e; --p2-bg:#eceff4;
+  --api:#0d7a5f; --api-bg:#dff4ec; --web:#2f5bd3; --web-bg:#e7edfb; --new:#6a3fb5; --new-bg:#efe8fb;
+  --f-display:"Fraunces",Georgia,serif; --f-body:"IBM Plex Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161d; --surface:#1a2029; --fg:#e4e8ef; --muted:#9aa4b5; --line:#2b3340;
+  --accent:#86a6ff; --accent-soft:#1f2a44;
+  --p0:#ff8b93; --p0-bg:#3a1c20; --p1:#f3bd62; --p1-bg:#3a2c14; --p2:#b3bccb; --p2-bg:#262d39;
+  --api:#5fd3ae; --api-bg:#123329; --web:#86a6ff; --web-bg:#1f2a44; --new:#c3a5ff; --new-bg:#2b2142; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161d; --surface:#1a2029; --fg:#e4e8ef; --muted:#9aa4b5; --line:#2b3340;
+  --accent:#86a6ff; --accent-soft:#1f2a44;
+  --p0:#ff8b93; --p0-bg:#3a1c20; --p1:#f3bd62; --p1-bg:#3a2c14; --p2:#b3bccb; --p2-bg:#262d39;
+  --api:#5fd3ae; --api-bg:#123329; --web:#86a6ff; --web-bg:#1f2a44; --new:#c3a5ff; --new-bg:#2b2142; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5}
+.wrap{max-width:1320px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+h1{font-family:var(--f-display);font-weight:600;font-size:clamp(26px,4vw,36px);line-height:1.15;margin:0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:600;font-size:21px;margin:0 0 12px;text-wrap:balance}
+.lede{color:var(--muted);max-width:72ch;margin:8px 0 0}
+code,.mono{font-family:var(--f-mono);font-size:12.5px}
+.stats{display:flex;flex-wrap:wrap;gap:8px 24px;margin-top:16px;color:var(--muted)}
+.stats b{color:var(--fg);font-variant-numeric:tabular-nums;font-size:18px;margin-right:4px}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.note{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.note h3{margin:0 0 6px;font-size:14px;font-weight:600}
+.note p{margin:0;color:var(--muted)}
+.note p code{color:var(--fg)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:10px;z-index:5;border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+input[type=search],select{font:inherit;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 10px}
+input[type=search]{flex:1 1 240px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.count{color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+.tablebox{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;min-width:1040px}
+th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface);position:sticky;top:0}
+tr.grp td{background:var(--accent-soft);font-weight:600;font-size:13px;color:var(--fg)}
+td.ev code{font-weight:500;color:var(--fg);font-size:13px}
+td.where code{color:var(--muted);word-break:break-all}
+td.props{color:var(--muted);font-family:var(--f-mono);font-size:12px}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap;margin:0 4px 3px 0}
+.P0{color:var(--p0);background:var(--p0-bg)} .P1{color:var(--p1);background:var(--p1-bg)} .P2{color:var(--p2);background:var(--p2-bg)}
+.web{color:var(--web);background:var(--web-bg)} .api{color:var(--api);background:var(--api-bg)}
+.cat{color:var(--api);background:var(--api-bg)} .gap{color:var(--new);background:var(--new-bg)}
+.done{color:var(--api);background:var(--api-bg)} .pending{color:var(--p1);background:var(--p1-bg)}
+.stnote{color:var(--muted);font-size:12px;margin-top:2px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:12.5px}
+footer{color:var(--muted);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Plano de tagueamento do Service Snap</h1>
+  <p class="lede">Todos os pontos do app web onde um evento do <code>@repo/analytics</code> é disparado: front público, área do cliente e painel do parceiro. Cada linha diz onde o <code>track()</code> foi colocado e quais propriedades vão junto, sem dados pessoais. O backend ficou fora do escopo. O catálogo tipado em <code>packages/analytics/src/events/analytics.events.ts</code> é a fonte da verdade dos nomes e propriedades; as notas de status mostram onde a implementação diverge desta tabela.</p>
+  <div class="stats" id="stats"></div>
+</header>
+
+<section>
+  <h2>Como foi implementado</h2>
+  <div class="notes">
+    <div class="note"><h3>Só no web</h3><p>O backend ficou fora do escopo. <code>sign_up</code>, <code>booking_completed</code> e <code>purchase</code> saem do browser: podem se perder com aba fechada ou bloqueador de anúncios, e agendamentos pelo bot de WhatsApp não aparecem.</p></div>
+    <div class="note"><h3>Período de cobrança</h3><p>Os planos usam <code>'month' | 'year'</code> e o catálogo <code>'monthly' | 'yearly'</code>. A conversão é o <code>toBillingPeriod</code> em <code>apps/web/src/utils/helpers/analytics.helper.ts</code>.</p></div>
+    <div class="note"><h3><code>purchase</code> uma vez só</h3><p>O <code>begin_checkout</code> guarda plano e valor em <code>sessionStorage</code> (<code>checkout.helpers.ts</code>). A página de retorno do Stripe lê, dispara uma vez por <code>session_id</code> e limpa. Sem plano guardado, não dispara.</p></div>
+    <div class="note"><h3>Erros de login</h3><p>Os hooks de cada etapa do login têm try/catch que dispara <code>login_failed</code> ou <code>sign_up_failed</code> e repassa o erro, então a tela se comporta como antes.</p></div>
+    <div class="note"><h3>Mutations compartilhadas</h3><p><code>use-schedule-mutations</code> serve cliente e parceiro e não tem tracking: cada chamador dispara no seu <code>onSuccess</code>/<code>onError</code>. As mutations do parceiro (serviços, categorias, lojas, equipe, bloqueios, notificações, WhatsApp) disparam no próprio hook.</p></div>
+    <div class="note"><h3>Links em server components</h3><p>Home, landing por segmento, guias de categoria e footer usam <code>&lt;TrackedLink&gt;</code>; os FAQs em <code>&lt;details&gt;</code> usam <code>&lt;TrackedSummary&gt;</code>. Ambos em <code>apps/web/src/components/ui</code>.</p></div>
+    <div class="note"><h3>Origem do login e identify</h3><p><code>openAuthAction({ source })</code> guarda a origem no auth store e o modal dispara <code>login_modal_opened</code>. <code>identify(user.id)</code> roda quando o usuário carrega e <code>reset()</code> ao excluir a conta.</p></div>
+    <div class="note"><h3>Ainda não existe no produto</h3><p>Banner de cookies (só o hook <code>useAnalyticsConsent</code>), logout, remarcação pelo cliente, edição de nome/telefone, filtros na busca, arrastar para remarcar, portal de cobrança e QR do WhatsApp.</p></div>
+    <div class="note"><h3>Nunca enviar</h3><p>E-mail, telefone, nome, texto de avaliação, conteúdo do formulário de contato, tokens da Meta, código de indicação e o tipo de negócio digitado à mão.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Catálogo de cenários</h2>
+  <div class="legend">
+    <span><span class="pill P0">P0</span>funil principal</span>
+    <span><span class="pill P1">P1</span>uso de features e erros relevantes</span>
+    <span><span class="pill P2">P2</span>navegação e detalhes de UI</span>
+    <span><span class="pill cat">no catálogo</span>já existe em <code>analytics.events.ts</code></span>
+    <span><span class="pill gap">novo</span>precisa entrar no catálogo</span>
+  </div>
+  <div class="controls">
+    <input type="search" id="q" placeholder="Buscar evento, arquivo ou propriedade" aria-label="Buscar">
+    <select id="fa" aria-label="Área"><option value="">Todas as áreas</option></select>
+    <select id="fp" aria-label="Prioridade"><option value="">Todas as prioridades</option><option>P0</option><option>P1</option><option>P2</option></select>
+    <select id="fs" aria-label="Status"><option value="">Qualquer status</option><option value="done">Implementados</option><option value="pending">Pendentes</option></select>
+    <select id="fc" aria-label="Catálogo"><option value="">Catálogo: todos</option><option value="cat">Já no catálogo</option><option value="gap">Novos</option></select>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th style="width:90px">Prioridade</th><th style="width:150px">Status</th><th style="width:210px">Evento</th><th style="width:220px">Quando dispara</th><th>Onde chamar</th><th style="width:250px">Propriedades</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+</section>
+<footer>Caminhos relativos à raiz do monorepo. Linhas conferidas na branch <code>release</code> em 06/11/2026, antes da implementação: com o <code>track()</code> adicionado, os números de linha andaram. Procure pelo nome do evento no código.</footer>
+</div>
+
+<script>
+const W='apps/web/src/', F=W+'components/features/', PC=F+'partner/components/', O=F+'partner-onboarding/', A=PC+'agenda-module/components/', D=PC+'dashboard-module/', S=PC+'stores-module/', API='apps/api/src/modules/', SCH=API+'partner/stores/schedule/', SUB=API+'subscription/subscription.service.ts', BOT=API+'whatsapp-bot/whatsapp-bot.service.ts';
+const CAT=new Set(['search','login','sign_up','booking_started','booking_completed','begin_checkout','purchase','partner_onboarding_completed']);
+// [área, prioridade, camada, evento, gatilho, onde, props]
+const R=[
+// Descoberta
+['Descoberta','P0','web','search','Busca na home (botão ou Enter)',F+'homepage/components/discovery-search/discovery-search.hook.ts:26','search_term, source:home_hero'],
+['Descoberta','P0','web','search','Busca no header',W+'components/layout/header/components/search-bar/search-bar.hook.ts:29','search_term, category, location, source:header'],
+['Descoberta','P1','web','select_content','Clique na busca compacta do header',W+'components/layout/header/components/marketplace-header/marketplace-header.hook.ts:30','content_type:compact_search'],
+['Descoberta','P1','web','select_content','Aba de categoria na home',F+'homepage/components/category-tabs/category-tabs.tsx:63','content_type:category_tab, item_id'],
+['Descoberta','P1','web','select_item','Card de experiência na home',F+'homepage/components/experience-card/experience-card.tsx:24','item_id, item_list_name, index'],
+['Descoberta','P2','web','view_item_list','"Ver todos" no carrossel',F+'homepage/components/experience-carousel/experience-carousel.tsx:50','item_list_name'],
+['Descoberta','P2','web','select_content','Diretório de categorias',F+'homepage/components/category-directory/category-directory.tsx:50 e :73','item_id: slug'],
+['Descoberta','P1','web','partner_cta_clicked','Banner "Cadastrar meu espaço" / "Conhecer o sistema"',F+'homepage/components/partner-banner/partner-banner.tsx:21 e :27','placement:home_banner, destination'],
+['Descoberta','P1','web','partner_cta_clicked','Header "Torne-se parceiro" / "Meu painel"',W+'components/layout/header/components/marketplace-header/marketplace-header.tsx:97 e :136','placement:header, is_active_partner'],
+['Descoberta','P1','web','partner_cta_clicked','Landing por segmento: preços, contato, segmento, CTA final',F+'business-landing/business-landing.tsx:65, :68, :140, :169','segment, placement'],
+['Descoberta','P2','web','faq_opened','FAQ da home e da ajuda',F+'homepage/components/home-faq/home-faq.tsx:32 · '+W+'app/help/page.tsx:40','question_index'],
+['Descoberta','P1','web','view_item_list','Lista categoria/cidade exibida',F+'category-city/category-city-landing.tsx:72 (precisa de tracker client)','item_list_name, results_count'],
+['Descoberta','P1','web','select_item','Loja na página categoria/cidade',F+'category-city/category-city-landing.tsx:95 e :140','item_id, index'],
+['Descoberta','P1','web','search_no_results','Categoria/cidade vazia ou indisponível',F+'category-city/category-city-landing.tsx:58 e :43','category, city'],
+['Descoberta','P2','web','select_content','CTA e links do guia de categoria',F+'category-guide/category-guide.tsx:77, :149, :166','slug'],
+['Descoberta','P2','web','footer_link_clicked','Links do footer',W+'components/layout/footer/footer.tsx:42-123','destination'],
+['Descoberta','P2','web','locale_changed','País, moeda, tradução automática',W+'components/layout/locale-dialog/locale-dialog.hook.ts:33, :40, :47, :54','country, currency, auto_translate'],
+['Descoberta','P2','web','select_content','Tab bar mobile',W+'components/layout/mobile-tab-bar/mobile-tab-bar.hook.ts:13','tab'],
+['Descoberta','P1','web','referral_link_landed','Chegada com ?ref=',W+'components/layout/config/config.tsx:16','has_referral (sem o código)'],
+['Descoberta','P2','web','sign_up_deep_link','?cadastro=1 abre o modal',W+'components/layout/config/config.tsx:18','—'],
+['Descoberta','P1','web','add_to_wishlist / remove_from_wishlist','Coração no card',W+'components/ui/store-card/store-card.hook.ts:16','item_id, source'],
+['Descoberta','P1','api','search_executed / search_zero_results','Busca processada no servidor',API+'search/search.service.ts:59 (contagens :84)','results_count, raw_count, category, location, query_length'],
+['Descoberta','P2','api','recommendation_served','Lojas populares servidas',API+'recomendation/recomendation.service.ts:15','results_count, store_ids, limit'],
+// Busca
+['Resultados de busca','P0','web','view_item_list','Resultados carregados',F+'search/search.tsx:24','search_term, category, location, results_count, item_ids'],
+['Resultados de busca','P0','web','search_no_results','Estado vazio',F+'search/search.tsx:31','search_term, category, location'],
+['Resultados de busca','P1','web','search_failed','Erro na busca',F+'search/search.tsx:43','—'],
+['Resultados de busca','P0','web','select_item','Clique no resultado',F+'search/components/results-list/virtualized-results-list.tsx:64','item_id, index, item_list_name:search, rating, review_count'],
+['Resultados de busca','P2','web','view_item_list (load_more)','"Carregar mais"',F+'search/components/results-list/virtualized-results-list.hook.ts:23','visible_count, total'],
+['Resultados de busca','P1','web','select_content (book_cta)','"Agendar" no preview / drawer',F+'search/components/store-preview/store-preview.hook.ts:26 · '+F+'search/components/store-details-drawer/store-details-drawer.tsx:25','item_id'],
+['Resultados de busca','P1','web','contact_whatsapp_clicked','WhatsApp no preview',F+'search/components/store-preview/store-preview.tsx:83','store_id, placement'],
+['Resultados de busca','P2','web','contact_phone_clicked','Link tel: no drawer',F+'search/components/store-details-drawer/store-details-drawer.tsx:111','store_id'],
+// Loja e agendamento
+['Loja e agendamento','P0','web','view_item','Página da loja carregada',F+'booking/booking.tsx:33','item_id, city, services_count, review_count, rating, currency'],
+['Loja e agendamento','P1','web','store_not_found','Erro ao carregar loja',F+'booking/booking.tsx:158','store_id'],
+['Loja e agendamento','P1','web','share','Compartilhar loja (nativo ou cópia)',F+'booking/components/business-showcase/business-showcase.hook.ts:96','method, content_type:store, item_id'],
+['Loja e agendamento','P2','web','gallery_opened / share / gallery_image_downloaded','Galeria de fotos',F+'booking/components/business-showcase/business-showcase.hook.ts:87 · '+W+'components/layout/image-gallery/use-gallery-controls.hook.ts:51, :67','image_index, total'],
+['Loja e agendamento','P1','web','add_to_wishlist / remove_from_wishlist','Salvar loja',F+'booking/components/business-showcase/business-showcase.hook.ts:121 (resultado em '+W+'hooks/use-mutations/use-favorites-mutations/use-favorites-mutations.hook.ts:16, :26, :36, :46)','item_id'],
+['Loja e agendamento','P2','web','reviews_opened','Link de avaliações',F+'booking/components/business-showcase/business-showcase.tsx:75','store_id, review_count'],
+['Loja e agendamento','P2','web','social_link_clicked','Instagram da loja',F+'booking/components/business-showcase/business-info/business-info.tsx:67','store_id, network'],
+['Loja e agendamento','P2','web','select_content (service_category)','Chip de categoria de serviço',F+'booking/components/service-selection-step/service-selection-step.tsx:128 e :144','category_id'],
+['Loja e agendamento','P0','web','booking_started','Primeiro serviço adicionado',F+'booking/components/service-selection-step/service-selection-step.tsx:83','store_id, service_id'],
+['Loja e agendamento','P1','web','add_to_cart / remove_from_cart','Adicionar ou remover serviço',F+'booking/components/service-selection-step/service-selection-step.tsx:83 e :62','item_id, price, quantity, duration'],
+['Loja e agendamento','P0','web','booking_step_completed','Avançar etapa',F+'booking/booking.tsx:113','from_step, to_step, services_count, total_price, total_duration'],
+['Loja e agendamento','P1','web','booking_step_back','Voltar etapa',F+'booking/booking.tsx:123','from_step'],
+['Loja e agendamento','P2','web','booking_services_pruned','Serviços removidos pelo profissional escolhido',F+'booking/booking.tsx:105','removed_count, professional_id'],
+['Loja e agendamento','P1','web','select_professional','Profissional específico ou "Qualquer"',F+'booking/components/professional-selection-step/professional-selection-step.tsx:116 e :109','professional_id, is_any_professional'],
+['Loja e agendamento','P1','web','select_date / select_time_slot','Data e horário',F+'booking/components/date-time-selection-step/date-time-selection-step.tsx:52 e :58','days_ahead, weekday, time'],
+['Loja e agendamento','P0','web','no_slots_available','Dia sem horários',F+'booking/components/date-time-selection-step/date-time-selection-step.tsx:155','date, professional_id'],
+['Loja e agendamento','P1','web','slots_load_failed','Erro de disponibilidade',F+'booking/components/date-time-selection-step/date-time-selection-step.tsx:151','store_id, date'],
+['Loja e agendamento','P1','web','login_modal_opened','Checkout deslogado',F+'booking/components/checkout-step/checkout-step.tsx:34','source:checkout, store_id'],
+['Loja e agendamento','P1','web','booking_confirm_clicked','"Confirmar agendamento"',F+'booking/components/checkout-step/checkout-step.tsx:38','store_id, service_ids, value, currency'],
+['Loja e agendamento','P0','web','booking_completed','Agendamento criado (cliente)',F+'booking/components/checkout-step/checkout-step.tsx:67','store_id, service_ids, value, currency, appointment_ids, professional_id'],
+['Loja e agendamento','P0','web','booking_failed','409 slot_taken, erro de API, validação',F+'booking/components/checkout-step/checkout-step.tsx:56 (onError), :49, :88','reason, http_status, store_id'],
+// Auth
+['Login e cadastro','P1','web','login_modal_opened','Qualquer abertura do modal',W+'store/auth/auth.actions.ts:16 (7 chamadores)','source'],
+['Login e cadastro','P1','web','login_modal_closed','Fechar ou abandonar',F+'auth/auth.hook.ts:41','step'],
+['Login e cadastro','P2','web','auth_step_viewed','Troca de etapa',F+'auth/auth.hook.ts:28','step'],
+['Login e cadastro','P1','web','login_code_requested','Envio do e-mail',F+'auth/components/login-step/login-step.hook.ts:12','method:email, is_new_user'],
+['Login e cadastro','P2','web','login_code_resent','Reenviar código',F+'auth/components/verification-step/verification-step.hook.ts:58','—'],
+['Login e cadastro','P0','web','login','Código válido, usuário existente',F+'auth/components/verification-step/verification-step.hook.ts:54','method:email'],
+['Login e cadastro','P0','web','sign_up','Cadastro concluído (e-mail)',F+'auth/components/signup-step/signup-step.hook.ts:91','method:email, has_referral'],
+['Login e cadastro','P0','web','login / sign_up','Callback do Google',F+'auth/components/google-auth/google-auth.hook.ts:13','method:google, has_referral'],
+['Login e cadastro','P1','web','login_failed / sign_up_failed','Erro em pedir código, validar, cadastrar ou Google',F+'auth/components/login-step/login-step.hook.ts:15 · verification-step.hook.ts:43 · signup-step.hook.ts:83 · google-auth.hook.ts:15 (precisam de try/catch)','method, stage'],
+['Login e cadastro','P1','web','profile_type_selected','Escolha cliente ou parceiro',F+'auth/components/profile-selection/profile-selection.tsx:12','profile_type'],
+['Login e cadastro','P0','api','user_registered','Cadastro por e-mail concluído',API+'auth/auth.service.ts:125','user_id, method:email, has_referral'],
+['Login e cadastro','P0','api','user_registered','Primeiro login Google',API+'auth/google-sso.service.ts:58-73','user_id, method:google, has_referral'],
+['Login e cadastro','P2','api','user_logged_in','Login (e-mail ou Google)',API+'auth/auth.service.ts:87 · '+API+'auth/google-sso.service.ts:49','user_id, method, reactivated'],
+// Perfil
+['Perfil do cliente','P2','web','profile_tab_viewed','Troca de aba',F+'profile/components/profile-tabs/profile-tabs.hook.ts:46','tab, count'],
+['Perfil do cliente','P2','web','appointment_details_opened','Detalhe do agendamento',F+'profile/components/bookings-section/bookings-section.tsx:139','appointment_id, store_id'],
+['Perfil do cliente','P1','web','appointment_cancel_started','Botão cancelar',F+'profile/components/bookings-section/bookings-section.tsx:146','appointment_id'],
+['Perfil do cliente','P0','web','appointment_cancelled','Cancelamento confirmado',F+'profile/components/bookings-section/bookings-section.hook.ts:45','appointment_id, store_id, hours_before, source:customer'],
+['Perfil do cliente','P1','web','appointment_cancel_failed','Erro ao cancelar',F+'profile/components/bookings-section/bookings-section.hook.ts:44 (onError)','appointment_id'],
+['Perfil do cliente','P1','web','rebook_clicked','"Reservar novamente"',F+'profile/components/bookings-section/bookings-section.tsx:195','store_id'],
+['Perfil do cliente','P1','web','review_started','"Avaliar" num agendamento passado',F+'profile/components/bookings-section/bookings-section.hook.ts:63 · '+W+'components/layout/reviews-modal/components/reviews-content/reviews-content.hook.ts:38','store_id, source'],
+['Perfil do cliente','P1','web','review_submitted','Avaliação criada',W+'components/layout/reviews-modal/components/write-review-form/write-review-form.hook.ts:70','store_id, rating, comment_length'],
+['Perfil do cliente','P2','web','review_failed','Validação ou API',W+'components/layout/reviews-modal/components/write-review-form/write-review-form.hook.ts:47-57 · '+W+'hooks/use-mutations/use-reviews-mutations/use-reviews-mutations.hook.ts:17','reason'],
+['Perfil do cliente','P2','web','remove_from_wishlist / select_item','Favoritos no perfil',F+'profile/components/favorites-section/favorites-section.hook.ts:22, :29, :36, :43','item_id, item_list_name:favorites'],
+['Perfil do cliente','P2','web','avatar_updated','Upload de foto',F+'profile/components/profile-header/profile-header.hook.ts:21','—'],
+['Perfil do cliente','P1','web','account_deleted','Excluir conta (+ reset())',F+'profile/components/settings-section/settings-section.hook.ts:13','—'],
+['Perfil do cliente','P1','web','referral_shared','Copiar código, link ou compartilhar',F+'referral/referral-share-card/referral-share-card.hook.ts:48, :53, :58, :63','method, variant:client|partner, referred_count'],
+// Planos e checkout
+['Planos e checkout','P1','web','view_item_list (plans)','Página de preços carregada',F+'pricing/pricing.hook.ts:12','billing_period, plan_ids'],
+['Planos e checkout','P2','web','billing_period_toggled','Mensal / anual',F+'pricing/pricing.tsx:38','billing_period'],
+['Planos e checkout','P2','web','roi_calculated','Calculadora de ROI',F+'pricing/components/pricing-roi-calculator/pricing-roi-calculator.hook.ts:47','appointments, avg_price'],
+['Planos e checkout','P0','web','begin_checkout','"Assinar plano" (preços)',F+'pricing/components/pricing-plan-card/pricing-plan-card.hook.ts:31','plan_id, billing_period, value, currency, has_trial'],
+['Planos e checkout','P0','web','begin_checkout','Selecionar plano no upgrade',PC+'plans-module/upgrade-plan/upgrade-plan.hook.ts:131-137','plan_id, from_plan_id, change_type, billing_period, value, currency'],
+['Planos e checkout','P1','web','login_modal_opened','Plano clicado deslogado',W+'components/ui/plan-card/plan-card.hook.ts:31','source:plan'],
+['Planos e checkout','P1','web','add_payment_info','URL do Stripe recebida',W+'components/ui/plan-card/plan-card.hook.ts:23','plan_id'],
+['Planos e checkout','P1','web','checkout_failed','Sem URL ou erro',W+'components/ui/plan-card/plan-card.hook.ts:26 · '+PC+'plans-module/upgrade-plan/upgrade-plan.hook.ts:138','reason, source'],
+['Planos e checkout','P0','web','purchase','Retorno do Stripe com sucesso (once-guard)',F+'checkout/checkout.hook.ts:94','transaction_id, plan/value via sessionStorage'],
+['Planos e checkout','P1','web','checkout_status','Inválido, erro, timeout',F+'checkout/checkout.hook.ts:78 e ~:73','status, reason'],
+['Planos e checkout','P2','web','checkout_retry','Tentar de novo',F+'checkout/checkout.hook.ts:108','—'],
+['Planos e checkout','P1','web','partner_onboarding_started','Redireciona para /onboarding',F+'checkout/checkout.hook.ts:60','—'],
+['Planos e checkout','P1','api','checkout_started','Sessão de checkout criada',SUB+':208 (sessão :255)','user_id, price_id, plan, interval, currency, unit_amount, trial_days, is_plan_change'],
+['Planos e checkout','P1','api','checkout_completed','checkout.session.completed',SUB+':481','session_id, subscription_id, amount_total, currency'],
+['Planos e checkout','P0','api','subscription_created / trial_started','customer.subscription.created',SUB+':705 → syncSubscription :346','subscription_id, status, price_id, plan'],
+['Planos e checkout','P0','api','purchase (invoice_paid)','invoice.paid',SUB+':505','transaction_id: invoice_id, amount_paid, currency, billing_reason (primeira compra vs renovação)'],
+['Planos e checkout','P0','api','invoice_payment_failed','invoice.payment_failed',SUB+':529','invoice_id, subscription_id, attempt_count, amount_due'],
+['Planos e checkout','P1','api','trial_will_end','3 dias antes do fim do trial',SUB+':557','subscription_id, days_left, amount_due, plan'],
+['Planos e checkout','P0','api','trial_converted / trial_ended','previous_attributes.status = trialing',SUB+':606 (handleSubscriptionUpdated)','subscription_id, from_status, to_status, plan'],
+['Planos e checkout','P1','api','subscription_plan_changed','Troca de plano',SUB+':448-472','old/new price_id'],
+['Planos e checkout','P0','api','subscription_cancel_scheduled / subscription_reactivated','cancel_at_period_end muda',SUB+':612-627 · cancel() :67 · update() :89','subscription_id, plan, access_until'],
+['Planos e checkout','P0','api','subscription_cancelled','customer.subscription.deleted',SUB+':710','subscription_id, plan, tenure'],
+// Contato
+['Contato e consentimento','P1','web','generate_lead','Formulário de contato',W+'app/contact/contact.hook.ts:21','method:mailto, has_subject, message_length'],
+['Contato e consentimento','P2','web','contact_email_clicked','Links mailto',W+'app/contact/page.tsx:98 · app/privacy/page.tsx:276, :341 · app/terms/page.tsx:138, :444','page'],
+['Contato e consentimento','P2','web','social_link_clicked','Redes no contato',W+'app/contact/page.tsx:112','network'],
+['Contato e consentimento','P0','web','consent_updated','Aceitar / recusar cookies (banner não existe)',W+'providers/analytics.provider.tsx:62 (useAnalyticsConsent)','analytics, marketing'],
+// Onboarding
+['Onboarding do parceiro','P0','web','onboarding_step_viewed','Mudança de etapa',O+'partner-onboarding.hook.ts:79 (useEffect em currentView)','step, step_index, is_resume'],
+['Onboarding do parceiro','P1','web','onboarding_business_type_selected','Escolha do tipo de negócio',O+'partner-onboarding.hook.ts:50 · '+O+'components/welcome-step/welcome-step.hook.ts:44','business_type, is_custom'],
+['Onboarding do parceiro','P0','web','onboarding_step_completed','Espaço, horários, serviços, equipe salvos',O+'components/space-step/space-step.hook.ts:71 · hours-step.hook.ts:84 · services-step.hook.ts:149 · team-step.hook.ts:70','step, services_count, members_count, days_open_count'],
+['Onboarding do parceiro','P1','web','onboarding_service_added / removed','Serviço no wizard',O+'components/services-step/services-step.hook.ts:115 e :189','is_new_category, duration, price, from_suggestion'],
+['Onboarding do parceiro','P1','web','onboarding_team_member_invited / invite_failed','Convite por e-mail',O+'components/team-step/team-step.hook.ts:100 e :105','members_count, plan_limit, error'],
+['Onboarding do parceiro','P1','web','onboarding_photo_uploaded / upload_failed','Upload de fotos',O+'components/photos-step/photos-step.hook.ts:87, :92, :70','count, reason'],
+['Onboarding do parceiro','P0','web','partner_onboarding_completed','Fim do wizard',O+'components/photos-step/photos-step.hook.ts:44','store_id, services_count, photos_count'],
+['Onboarding do parceiro','P1','web','onboarding_complete_failed','API devolve para uma etapa',O+'components/photos-step/photos-step.hook.ts:50-58','missing_step'],
+['Onboarding do parceiro','P0','web','onboarding_save_and_exit','"Sair" ou salvar e sair',O+'partner-onboarding.hook.ts:84 · space:86 · hours:135 · services:156 · team:159','step, had_changes'],
+['Onboarding do parceiro','P0','web','booking_link_copied','Tela final: copiar ou compartilhar link',O+'components/ready-step/ready-step.hook.ts:44 e :60','store_id, source:onboarding_ready, method'],
+['Onboarding do parceiro','P1','web','onboarding_checklist_viewed / dismissed / item_clicked','Checklist na home do painel',O+'components/onboarding-home-checklist/onboarding-home-checklist.hook.ts:78, :90, :23-65','store_id, completed_count, item_id'],
+['Onboarding do parceiro','P0','api','onboarding_completed + store_published','complete()',API+'partner/onboarding/onboarding.service.ts:375 (após :415)','user_id, store_id, services_count, members_count, business_type'],
+['Onboarding do parceiro','P2','api','onboarding_step_saved','Cada etapa salva',API+'partner/onboarding/onboarding.service.ts:150, :190, :219, :275, :336','step, store_id'],
+['Onboarding do parceiro','P1','api','onboarding_link_shared','Primeiro compartilhamento',API+'partner/onboarding/onboarding.service.ts:484','store_id'],
+// Agenda
+['Agenda','P2','web','agenda_view_changed / agenda_navigated','Dia/semana, anterior/próximo/hoje',A+'agenda-toolbar/agenda-toolbar.hook.ts:144, :76, :98, :120','view_mode, direction, unit'],
+['Agenda','P2','web','agenda_professional_filtered','Filtro por profissional',A+'agenda-toolbar/agenda-toolbar.hook.ts:159','is_all, professionals_count'],
+['Agenda','P2','web','agenda_focus_mode_toggled / block_mode_toggled','Modo foco / bloqueio',A+'agenda-toolbar/agenda-toolbar.hook.ts:132, :136, :124','enabled'],
+['Agenda','P2','web','appointment_form_opened','Novo agendamento',A+'agenda-toolbar/agenda-toolbar.hook.ts:155 · agenda-default-view.hook.ts:12 · focus-mode-view.hook.ts:9 · agenda-grid.hook.ts:276','source'],
+['Agenda','P0','web','appointment_created','Parceiro cria agendamento',A+'add-appointment-responsive/add-appointment.hook.ts:37','store_id, service_id, duration, value, source:partner_agenda'],
+['Agenda','P1','web','appointment_create_failed','409 conflito ou outro',A+'add-appointment-responsive/add-appointment.hook.ts:45','error, status'],
+['Agenda','P0','web','appointment_completed / cancelled / no_show','Mudança de status no drawer',A+'appointment-details-responsive/appointment-details.hook.ts:67','store_id, appointment_id, status, previous_status'],
+['Agenda','P1','web','time_blocked / time_unblocked (+ bulk)','Bloqueio de horários',W+'hooks/partner/use-blocked-time-mutations/use-blocked-time-mutations.hook.ts:14, :45, :85, :126','store_id, slots_count, is_recurring'],
+['Agenda','P0','api','appointment_created','createSchedules após a transação',SCH+'schedule.service.ts:220 (emitir ~:318)','schedule_ids, store_id, service_ids, total_price, lead_time_days, source'],
+['Agenda','P0','api','appointment_cancelled','delete() ou PUT com status cancelled',SCH+'schedule.service.ts:364 · :345','schedule_id, store_id, hours_before_start, source'],
+['Agenda','P1','api','appointment_rescheduled','reschedule() (bot) ou PUT (parceiro)',SCH+'schedule.service.ts:420 · :345','schedule_id, time_changed, professional_changed, source'],
+['Agenda','P0','api','appointment_completed / appointment_no_show','PUT update(): status antes ≠ depois',SCH+'schedule.service.ts:345 (before em :346)','schedule_id, store_id, service_id, price'],
+// Dashboard
+['Dashboard','P2','web','dashboard_viewed','Visão geral, clientes, operacional, vendas',W+'app/partner/dashboard/{page,customers,operational,sales}/page.tsx','section, store_id, has_access'],
+['Dashboard','P2','web','dashboard_period_changed','Filtro de período',D+'general-metrics/general-metrics.hook.ts:28 · customer-metrics.hook.ts:43 · operational-metrics.hook.ts:24 · sales-revenue-metrics.hook.ts:21','section, period'],
+['Dashboard','P2','web','dashboard_refreshed / dashboard_load_failed','Atualizar ou erro',D+'dashboard-module.hook.ts:56, :60, :46','section, period'],
+['Dashboard','P1','web','customers_exported','Exportar CSV',D+'customer-metrics/customer-metrics.hook.ts:139','store_id, period, rows'],
+['Dashboard','P1','web','monthly_goal_set','Meta mensal (vendas ou checklist)',D+'sales-revenue-metrics/sales-goal-card.hook.ts:43-60 · '+O+'components/onboarding-home-checklist/onboarding-home-checklist.hook.ts:102','store_id, value, had_goal, source'],
+// Serviços
+['Serviços','P1','web','service_created / updated / deleted','CRUD de serviço',W+'hooks/partner/use-services-mutations/use-services-mutations.hook.ts:13, :32, :58','store_id, service_id, price, duration, category_changed'],
+['Serviços','P2','web','service_activated / deactivated','Toggle de status',PC+'services-module/components/service-card/service-card.hook.ts:43','service_id, is_active'],
+['Serviços','P2','web','category_created / updated / deleted','CRUD de categoria',W+'hooks/partner/use-category-mutations/use-category-mutations.hook.ts:14, :29, :45','category_id, services_count'],
+['Serviços','P2','web','services_searched / filtered','Busca e filtro',PC+'services-module/components/services-filters/services-filters.hook.ts:23','has_query, category'],
+['Serviços','P2','web','service_*_failed','Erros de CRUD',W+'hooks/partner/use-services-mutations/use-services-mutations.hook.ts:25, :49, :70','—'],
+// Lojas
+['Lojas e equipe','P1','web','store_created / updated / deleted','CRUD de loja',W+'hooks/partner/store/use-store-mutations/use-store-mutations.hook.ts:43, :12, :25','store_id, stores_count, fields_changed, source'],
+['Lojas e equipe','P2','web','store_activated / deactivated','Toggle no card',S+'components/store-card/store-card.hook.ts:26','store_id, is_active'],
+['Lojas e equipe','P2','web','store_image_uploaded / deleted / main_set','Galeria',W+'hooks/partner/store/use-gallery-mutations/use-gallery-mutations.hook.ts:38, :59, :13','store_id, images_count, reason'],
+['Lojas e equipe','P1','web','team_member_invited / updated / removed','Equipe',W+'hooks/partner/store/use-store-member-mutations/use-store-member-mutations.hook.ts:81, :47, :59','store_id, role, members_count'],
+['Lojas e equipe','P1','web','team_member_invite_failed','Erro no convite (limite ou usuário inexistente)',W+'hooks/partner/store/use-store-member-mutations/use-store-member-mutations.hook.ts:87','error_code, status'],
+['Lojas e equipe','P1','web','booking_link_copied','Copiar link público',S+'components/store-public-presence/store-public-presence.hook.ts:16','store_id, source:store_details'],
+['Lojas e equipe','P2','web','active_store_switched','Seletor de loja',PC+'store-selector/store-selector.hook.ts:14','store_id, stores_count'],
+['Lojas e equipe','P2','api','store_activated / store_deactivated','isActive muda',API+'partner/stores/stores.services.ts:123 · :55','store_id, previous_active'],
+// Assinatura no painel
+['Assinatura no painel','P2','web','current_plan_viewed','/partner/plans/me',PC+'plans-module/current-plan/current-plan.hook.ts:8','plan_id, usage, cancel_scheduled'],
+['Assinatura no painel','P1','web','plans_viewed','Página de upgrade',PC+'plans-module/upgrade-plan/upgrade-plan.hook.ts:51','current_plan_id, billing_period'],
+['Assinatura no painel','P1','web','subscription_cancel_started','Abrir diálogo de cancelar',PC+'plans-module/current-plan/current-plan.hook.ts:12','plan_id'],
+['Assinatura no painel','P0','web','subscription_cancelled','Cancelar ao fim do período',W+'hooks/use-mutations/use-subscription-mutations/use-subscription-mutations.hook.ts:17-26','plan_id, billing_period'],
+['Assinatura no painel','P1','web','subscription_reactivated','Desfazer cancelamento',W+'hooks/use-mutations/use-subscription-mutations/use-subscription-mutations.hook.ts:39','plan_id'],
+['Assinatura no painel','P2','web','invoice_downloaded','PDF da fatura',PC+'plans-module/payment-history-card/payment-history-card.hook.ts:61','status'],
+// Notificações e WhatsApp
+['Notificações e WhatsApp','P1','web','reminder_settings_updated','Salvar lembretes (e-mail, SMS, WhatsApp)',PC+'notifications-module/email-settings/email-settings.hook.ts:36 · sms-settings.hook.ts:33 · whatsapp-settings.hook.ts:54','channel, enabled, advance_hours'],
+['Notificações e WhatsApp','P1','web','reminder_settings_blocked','WhatsApp não conectado',PC+'notifications-module/whatsapp-settings/whatsapp-settings.hook.ts:45','reason'],
+['Notificações e WhatsApp','P1','web','whatsapp_template_submitted / failed','Enviar template à Meta',PC+'notifications-module/whatsapp-settings/whatsapp-template-status/whatsapp-template-status.hook.ts:80 e :85','status'],
+['Notificações e WhatsApp','P2','web','notification_marked_read / deleted','Histórico',W+'hooks/partner/use-notifications-mutations/use-notifications-mutations.hook.ts:40, :60, :81','type, unread_count'],
+['Notificações e WhatsApp','P0','web','whatsapp_connected / whatsapp_disconnected','Salvar config (isActive)',W+'hooks/partner/use-whatsapp-mutations/use-whatsapp.hook.ts:17','store_id, is_active, was_active, is_first_config'],
+['Notificações e WhatsApp','P1','web','whatsapp_config_save_failed / test_message_failed','Erros de integração',W+'hooks/partner/use-whatsapp-mutations/use-whatsapp.hook.ts:30, :46','store_id'],
+['Notificações e WhatsApp','P2','web','whatsapp_test_message_sent','Mensagem de teste',W+'hooks/partner/use-whatsapp-mutations/use-whatsapp.hook.ts:43','store_id'],
+['Notificações e WhatsApp','P1','api','notification_sent / notification_failed','Todo e-mail enviado',API+'notification/notification.service.ts:44 (erro :53) · '+SCH+'schedule-notifications.service.ts:171','channel, template, audience, schedule_id'],
+['Notificações e WhatsApp','P0','api','reminder_sent / reminder_failed','Lembrete entregue',API+'partner/stores/notifications/reminders/reminders.service.ts:155','channel, schedule_id, store_id, attempt, advance_hours'],
+['Notificações e WhatsApp','P1','api','whatsapp_message_failed','Falha no envio à Meta',API+'partner/stores/whatsapp/whatsapp.service.ts:105','message_type, error_code'],
+['Notificações e WhatsApp','P2','api','whatsapp_message_status','Webhook sent/delivered/read/failed',BOT+':110-118','status, error_code'],
+// Bot
+['Bot de WhatsApp','P1','api','whatsapp_conversation_started','Mensagem sem sessão',BOT+':144 (:157-162)','store_id, entry_input'],
+['Bot de WhatsApp','P0','api','whatsapp_booking_created','Confirmação no bot',BOT+':808 (após :834)','store_id, service_id, date, source:whatsapp_bot'],
+['Bot de WhatsApp','P1','api','whatsapp_booking_rescheduled / cancelled','Remarcar ou cancelar pelo bot',BOT+':796 · :1216','schedule_id, store_id'],
+['Bot de WhatsApp','P1','api','whatsapp_booking_abandoned / slot_conflict','Recusa ou conflito',BOT+':776 · :825','store_id, step'],
+['Bot de WhatsApp','P2','api','whatsapp_bot_error','Erro no fluxo',BOT+':169','store_id, state'],
+// Limites
+['Limites e paywall','P0','web','paywall_viewed','Módulo bloqueado pelo plano',PC+'plan-feature-gate/plan-feature-gate.hook.ts:68','module, required_features, current_plan, min_plan'],
+['Limites e paywall','P0','web','paywall_upgrade_clicked','CTA do bloqueio',PC+'plan-feature-gate/plan-feature-gate.tsx:89-108','module, destination'],
+['Limites e paywall','P0','web','plan_limit_reached','Lojas ou profissionais no limite',PC+'stores-module/stores-module.hook.ts:27 · '+S+'components/add-store-modal/store-form-tabs/professionals-tab/professional-tab.hook.ts:52 · '+O+'components/team-step/team-step.hook.ts:138','limit_type, current, limit, source'],
+['Limites e paywall','P1','web','plan_limit_warning_viewed / plan_upgrade_cta_clicked','Aviso no rodapé da sidebar',PC+'admin-sidebar/components/admin-sidebar-footer/admin-sidebar-footer.hook.ts:59-71','is_at_limit, is_near_limit, source:sidebar'],
+['Limites e paywall','P0','api','plan_limit_reached','assertWithinStoreLimit / ProfessionalLimit',API+'partner/stores/stores.services.ts:172 · '+API+'partner/stores/store-member/store-member.service.ts:277','owner_id, limit_type, count, limit'],
+['Limites e paywall','P1','api','plan_feature_blocked','Guard de feature',API+'partner/stores/guards/plan-feature.guard.ts:61 · '+API+'partner/stores/notifications/settings/settings.service.ts:64','store_id, missing_features, route'],
+['Limites e paywall','P1','api','subscription_required_blocked','Sem assinatura ativa',API+'partner/onboarding/onboarding.service.ts:606 · '+W+'app/partner/layout.tsx:45','user_id'],
+];
+// O tagueamento é só no web; o backend ficou fora do escopo.
+R.splice(0,R.length,...R.filter(r=>r[2]==='web'));
+// Status da implementação (feita em 06/11/2026).
+const NOTES=[
+  [r=>r[3]==='consent_updated','pending','O banner de cookies ainda não existe.'],
+  [r=>r[4].startsWith('"Ver todos"'),'done','Enviado como select_content (content_type: see_all), para não contar a lista duas vezes.'],
+  [r=>r[3]==='search_no_results'&&r[0]==='Descoberta','done','Página indisponível sai como search_failed; lista vazia, como search_no_results.'],
+  [r=>r[3]==='service_activated / deactivated','done','Enviado como service_status_changed { is_active }.'],
+  [r=>r[3]==='store_activated / deactivated','done','Enviado como store_status_changed { is_active }.'],
+  [r=>r[3]==='services_searched / filtered','done','Enviado como services_filtered { has_query, has_category }.'],
+  [r=>r[3]==='service_*_failed','done','Enviado como partner_mutation_failed { entity, operation }.'],
+  [r=>r[3]==='login_modal_opened','done','Disparado pelo modal com o source guardado no auth store.'],
+];
+const statusOf=r=>{const n=NOTES.find(([m])=>m(r));if(n)return{s:n[1],note:n[2]};return{s:'done',note:''}};
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const inCat=e=>e.split(/[\s/+(]+/).some(t=>CAT.has(t.trim()));
+const areas=[...new Set(R.map(r=>r[0]))];
+const fa=document.getElementById('fa'); areas.forEach(a=>fa.insertAdjacentHTML('beforeend',`<option>${a}</option>`));
+const st=document.getElementById('stats');
+const c=k=>R.filter(k).length;
+st.innerHTML=`<span><b>${R.length}</b>cenários</span><span><b>${c(r=>statusOf(r).s==='done')}</b>implementados</span><span><b>${c(r=>statusOf(r).s==='pending')}</b>pendentes</span><span><b>${c(r=>r[1]==='P0')}</b>P0</span><span><b>${c(r=>inCat(r[3]))}</b>já no catálogo</span><span><b>${areas.length}</b>áreas</span>`;
+const ids=['q','fa','fp','fc','fs'], el={}; ids.forEach(i=>el[i]=document.getElementById(i));
+try{const s=JSON.parse(localStorage.getItem('tp-filters')||'{}');ids.forEach(i=>{if(s[i]!=null)el[i].value=s[i]})}catch(e){}
+function render(){
+  const q=el.q.value.trim().toLowerCase();
+  const rows=R.filter(r=>(!el.fa.value||r[0]===el.fa.value)&&(!el.fp.value||r[1]===el.fp.value)&&(!el.fc.value||(el.fc.value==='cat')===inCat(r[3]))&&(!el.fs.value||statusOf(r).s===el.fs.value)&&(!q||r.join(' ').toLowerCase().includes(q)));
+  let html='',last='';
+  rows.forEach(r=>{
+    if(r[0]!==last){last=r[0];html+=`<tr class="grp"><td colspan="6">${esc(r[0])}</td></tr>`}
+    const cat=inCat(r[3]); const st=statusOf(r);
+    html+=`<tr><td><span class="pill ${r[1]}">${r[1]}</span></td><td><span class="pill ${st.s}">${st.s==='done'?'implementado':'pendente'}</span>${st.note?`<div class="stnote">${esc(st.note)}</div>`:''}</td><td class="ev"><code>${esc(r[3])}</code><br><span class="pill ${cat?'cat':'gap'}">${cat?'no catálogo':'novo'}</span></td><td>${esc(r[4])}</td><td class="where"><code>${esc(r[5])}</code></td><td class="props">${esc(r[6])}</td></tr>`;
+  });
+  document.getElementById('tb').innerHTML=html||'<tr><td colspan="6">Nenhum cenário com esses filtros. Limpe a busca ou troque a área.</td></tr>';
+  document.getElementById('count').textContent=`${rows.length} de ${R.length}`;
+  try{localStorage.setItem('tp-filters',JSON.stringify(Object.fromEntries(ids.map(i=>[i,el[i].value]))))}catch(e){}
+}
+ids.forEach(i=>el[i].addEventListener('input',render)); render();
+</script>
