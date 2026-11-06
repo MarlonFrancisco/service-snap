@@ -1,3 +1,12 @@
+## 0.25.0 (2026-11-06)
+
+### Feat
+
+- **web**: dispara os eventos de analytics em todo o app
+- **analytics**: cataloga os eventos do app web e o plano de tagueamento
+- **web**: integra @repo/analytics com page view automático
+- **analytics**: cria package de analytics desacoplado da ferramenta
+
 ## 0.24.0 (2026-11-05)
 
 ### Feat
