@@ -1,5 +1,5 @@
 import { AuthModal } from '@/components/features/auth';
-import { Config, Toaster } from '@/components/layout';
+import { Config, CookieConsent, Toaster } from '@/components/layout';
 import { ReviewsModal } from '@/components/layout/reviews-modal';
 import {
   AnalyticsProvider,
@@ -88,6 +88,7 @@ export default async function RootLayout({
                 <AuthModal />
                 <Toaster />
                 <ReviewsModal />
+                <CookieConsent />
               </HydrationBoundary>
             </QueryProvider>
           </AnalyticsProvider>

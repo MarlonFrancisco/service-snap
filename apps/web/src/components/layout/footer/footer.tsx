@@ -1,6 +1,7 @@
 'use client';
 
 import { LocaleDialog } from '@/components/layout/locale-dialog';
+import { useConsentStore } from '@/store/consent';
 import { useLocaleStore } from '@/store/locale';
 import { SOCIAL_LINKS } from '@/utils/constants/contact.constants';
 import { COUNTRIES, CURRENCIES } from '@repo/shared/constants';
@@ -17,6 +18,9 @@ const COLUMN_LINK_CLASS =
 export const Footer = ({ compact = false }: TFooterConfig) => {
   const [isLocaleOpen, setIsLocaleOpen] = useState(false);
   const { country, currency } = useLocaleStore();
+  const openCookiePreferences = useConsentStore(
+    (state) => state.openPreferences,
+  );
 
   const countryData = COUNTRIES[country];
   const currencyData = CURRENCIES[currency];
@@ -179,6 +183,14 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
                 })}
               </ul>
             ) : null}
+
+            <button
+              type="button"
+              onClick={openCookiePreferences}
+              className="min-h-11 transition-colors hover:text-[#0B0B0F]"
+            >
+              Preferências de cookies
+            </button>
 
             <button
               type="button"

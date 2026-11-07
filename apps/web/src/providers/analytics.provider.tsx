@@ -11,6 +11,7 @@ import {
   createContext,
   PropsWithChildren,
   Suspense,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -61,5 +62,6 @@ export const useAnalytics = (): IAnalyticsTracker =>
 /** Para quem precisa registrar o consentimento (banner de cookies). */
 export const useAnalyticsConsent = (): IAnalytics['setConsent'] => {
   const analytics = useContext(AnalyticsContext);
-  return (consent) => analytics.setConsent(consent);
+  // Estável entre renders: quem chama costuma colocá-la em dependências de efeito.
+  return useCallback((consent) => analytics.setConsent(consent), [analytics]);
 };

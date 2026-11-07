@@ -1,4 +1,5 @@
 export * from './config';
+export * from './cookie-consent';
 export * from './footer';
 export type { TFooterConfig } from './footer';
 export {
