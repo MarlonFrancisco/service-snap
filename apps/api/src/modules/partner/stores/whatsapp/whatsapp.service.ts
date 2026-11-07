@@ -6,7 +6,19 @@ import { Repository } from 'typeorm';
 import { SaveWhatsappConfigDto } from './dto/save-whatsapp-config.dto';
 import { WHATSAPP_REMINDER_TEMPLATE } from './whatsapp-reminder-template';
 import { WhatsappConfig } from './whatsapp.entity';
-import { IWhatsappInteractiveList } from './whatsapp.types';
+import {
+  buildDisplayNameCheck,
+  buildIdsCheck,
+  buildTokenCheck,
+  buildWebhookCheck,
+  settle,
+} from './whatsapp.helpers';
+import type {
+  IWhatsappInteractiveList,
+  TMetaDebugToken,
+  TMetaPhoneNumber,
+  TWhatsappCheck,
+} from './whatsapp.types';
 
 export type TWhatsappConnectionStatus =
   | 'connected'
@@ -22,6 +34,8 @@ export type TWhatsappStatusResponse = {
   verifiedName?: string;
   qualityRating?: string;
   message?: string;
+  /** Uma conferência por credencial; só vem quando as três estão preenchidas. */
+  checks?: TWhatsappCheck[];
 };
 
 export type TWhatsappTemplateSummary = {
@@ -271,50 +285,92 @@ export class WhatsappService {
       };
     }
 
+    const checks = await this.runCredentialChecks(config);
+    const phone = checks.phone;
+    const isReachable =
+      checks.ids.state === 'ok' && checks.token.state !== 'error';
+    const list = [checks.ids, checks.token, checks.webhook, checks.displayName];
+    const firstError = list.find((check) => check.state === 'error');
+
     if (!config.isActive) {
       return {
         status: 'inactive',
         isActive: false,
         hasCredentials: true,
-        message: 'Integração desativada. Ative o WhatsApp para enviar mensagens.',
+        message:
+          'Integração desativada. Ative o WhatsApp para enviar mensagens.',
+        checks: list,
       };
     }
 
-    try {
-      const { data } = await axios.get(
-        `${this.baseUrl}/${config.phoneNumberId}`,
-        {
-          params: {
-            fields: 'display_phone_number,verified_name,quality_rating',
-          },
-          headers: {
-            Authorization: `Bearer ${config.accessToken}`,
-          },
-        },
-      );
-
-      return {
-        status: 'connected',
-        isActive: true,
-        hasCredentials: true,
-        displayPhoneNumber: data.display_phone_number,
-        verifiedName: data.verified_name,
-        qualityRating: data.quality_rating,
-        message: 'Conectado à Meta WhatsApp Cloud API.',
-      };
-    } catch (error: any) {
-      const metaMessage =
-        error.response?.data?.error?.message || error.message;
+    if (!isReachable || !phone.ok) {
       this.logger.warn(
-        `WhatsApp status check failed for store ${storeId}: ${metaMessage}`,
+        `WhatsApp status check failed for store ${storeId}: ${firstError?.message}`,
       );
       return {
         status: 'error',
         isActive: true,
         hasCredentials: true,
-        message: metaMessage || 'Não foi possível validar as credenciais.',
+        message:
+          firstError?.message || 'Não foi possível validar as credenciais.',
+        checks: list,
       };
     }
+
+    return {
+      status: 'connected',
+      isActive: true,
+      hasCredentials: true,
+      displayPhoneNumber: phone.data.display_phone_number,
+      verifiedName: phone.data.verified_name,
+      qualityRating: phone.data.quality_rating,
+      message: 'Conectado à Meta WhatsApp Cloud API.',
+      checks: list,
+    };
+  }
+
+  /** Confere cada credencial em paralelo. Nenhuma chamada lança: a falha vira o resultado da conferência. */
+  private async runCredentialChecks(config: WhatsappConfig) {
+    const headers = { Authorization: `Bearer ${config.accessToken}` };
+    const get = <T>(path: string, params: Record<string, unknown>) =>
+      axios
+        .get(`${this.baseUrl}/${path}`, { params, headers })
+        .then(({ data }) => data as T);
+
+    const [debug, phone, accountPhones, subscribedApps] = await Promise.all([
+      // Um token pode consultar a si mesmo: validade, expiração e permissões.
+      settle(
+        get<{ data: TMetaDebugToken }>('debug_token', {
+          input_token: config.accessToken,
+        }).then((body) => body.data ?? {}),
+      ),
+      settle(
+        get<TMetaPhoneNumber>(config.phoneNumberId, {
+          fields:
+            'display_phone_number,verified_name,quality_rating,name_status',
+        }),
+      ),
+      settle(
+        get<{ data?: { id?: string }[] }>(
+          `${config.businessAccountId}/phone_numbers`,
+          { fields: 'id', limit: 100 },
+        ).then((body) => body.data ?? []),
+      ),
+      settle(
+        get<{ data?: unknown[] }>(
+          `${config.businessAccountId}/subscribed_apps`,
+          {},
+        ).then((body) => body.data ?? []),
+      ),
+    ]);
+
+    return {
+      phone,
+      token: buildTokenCheck(debug, phone),
+      ids: buildIdsCheck(phone, accountPhones, config.phoneNumberId),
+      webhook: buildWebhookCheck(subscribedApps),
+      displayName: buildDisplayNameCheck(phone),
+    };
   }
 
   async sendTestMessage(storeId: string, to: string) {
@@ -346,8 +402,7 @@ export class WhatsappService {
         message: 'Mensagem de teste enviada.',
       };
     } catch (error: any) {
-      const metaMessage =
-        error.response?.data?.error?.message || error.message;
+      const metaMessage = error.response?.data?.error?.message || error.message;
       throw new BadRequestException(
         metaMessage || 'Falha ao enviar mensagem de teste.',
       );
@@ -389,8 +444,7 @@ export class WhatsappService {
         }),
       );
     } catch (error: any) {
-      const metaMessage =
-        error.response?.data?.error?.message || error.message;
+      const metaMessage = error.response?.data?.error?.message || error.message;
       this.logger.warn(
         `WhatsApp templates fetch failed for store ${storeId}: ${metaMessage}`,
       );
