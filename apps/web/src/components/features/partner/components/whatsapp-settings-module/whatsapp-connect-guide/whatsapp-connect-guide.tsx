@@ -55,6 +55,7 @@ export const WhatsappConnectGuide = ({
     hasResult,
     isConnected,
     checks,
+    handleUseSuggestion,
     whatsappStatus,
     storeId,
     webhookUrl,
@@ -184,6 +185,7 @@ export const WhatsappConnectGuide = ({
                   hasResult={hasResult}
                   checks={checks}
                   onReviewStep={goToStep}
+                  onUseSuggestion={handleUseSuggestion}
                 />
               ) : null}
             </section>

@@ -1,5 +1,6 @@
 import { useWhatsappMutation } from '@/hooks/partner';
 import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query';
+import type { IWhatsappIdsSuggestion } from '@/types/api/whatsapp.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -93,6 +94,17 @@ export const useWhatsappConnectGuide = (initialStep: number) => {
     },
   );
 
+  // Troca o par de IDs pelo sugerido e verifica de novo na mesma hora.
+  const handleUseSuggestion = (suggestion: IWhatsappIdsSuggestion) => {
+    form.setValue('phoneNumberId', suggestion.phoneNumberId, {
+      shouldDirty: true,
+    });
+    form.setValue('businessAccountId', suggestion.businessAccountId, {
+      shouldDirty: true,
+    });
+    void handleVerify();
+  };
+
   const copy = async (value: string, label: string) => {
     if (!value) return;
     try {
@@ -144,6 +156,7 @@ export const useWhatsappConnectGuide = (initialStep: number) => {
     hasResult,
     isConnected,
     checks,
+    handleUseSuggestion,
     whatsappStatus,
     storeId,
     webhookUrl: WHATSAPP_WEBHOOK_URL,

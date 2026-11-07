@@ -1,4 +1,7 @@
-import type { IWhatsappCheck } from '@/types/api/whatsapp.types';
+import type {
+  IWhatsappCheck,
+  IWhatsappIdsSuggestion,
+} from '@/types/api/whatsapp.types';
 
 export interface IWhatsappConnectGuideProps {
   /** Etapa aberta ao entrar, vinda de `?step=`. */
@@ -19,4 +22,5 @@ export interface IGuideVerifyStepProps {
   hasResult: boolean;
   checks: IWhatsappCheck[];
   onReviewStep: (step: number) => void;
+  onUseSuggestion: (suggestion: IWhatsappIdsSuggestion) => void;
 }

@@ -1,6 +1,7 @@
 import { useWhatsappMutation } from '@/hooks/partner';
 import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query';
 import { isNotFoundError } from '@/service/api';
+import type { IWhatsappIdsSuggestion } from '@/types/api/whatsapp.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useForm } from 'react-hook-form';
@@ -96,6 +97,17 @@ export const useWhatsappSettingsModule = () => {
     });
   });
 
+  // Troca o par de IDs e já salva: o status é refeito com os IDs novos.
+  const handleUseSuggestion = (suggestion: IWhatsappIdsSuggestion) => {
+    form.setValue('phoneNumberId', suggestion.phoneNumberId, {
+      shouldDirty: true,
+    });
+    form.setValue('businessAccountId', suggestion.businessAccountId, {
+      shouldDirty: true,
+    });
+    void handleSubmit();
+  };
+
   const handleSendTest = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!testPhone.trim()) return;
@@ -122,6 +134,13 @@ export const useWhatsappSettingsModule = () => {
     (check) => check.state !== 'ok',
   );
   const webhookToken = form.watch('webhookVerifyToken');
+  // O status confere o que está salvo: com o formulário alterado, o resultado é do valor antigo.
+  const { dirtyFields } = form.formState;
+  const hasUnsavedCredentials = Boolean(
+    dirtyFields.phoneNumberId ||
+      dirtyFields.businessAccountId ||
+      dirtyFields.accessToken,
+  );
 
   return {
     isLoading,
@@ -137,6 +156,8 @@ export const useWhatsappSettingsModule = () => {
     whatsappStatus,
     isConnected,
     connectionIssues,
+    handleUseSuggestion,
+    hasUnsavedCredentials,
     statusBadge: getStatusBadge({
       status: whatsappStatus?.status,
       isError: isWhatsappStatusError,

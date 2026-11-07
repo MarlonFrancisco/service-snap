@@ -427,6 +427,7 @@ export const GuideVerifyStep = ({
   hasResult,
   checks,
   onReviewStep,
+  onUseSuggestion,
 }: IGuideVerifyStepProps) => (
   <>
     <GuideEyebrow>Passo 6 · Teste</GuideEyebrow>
@@ -444,6 +445,8 @@ export const GuideVerifyStep = ({
     {hasResult && checks.length ? (
       <WhatsappConnectionChecks
         checks={checks}
+        onUseSuggestion={onUseSuggestion}
+        isApplyingSuggestion={isVerifying}
         renderReview={(step) => (
           <button
             type="button"

@@ -2,6 +2,7 @@ import type { TWhatsappCheckState } from '@/types/api/whatsapp.types';
 import { cn } from '@repo/ui';
 import { CircleCheck, CircleX, Clock, TriangleAlert } from 'lucide-react';
 import {
+  MODULE_ACTION_CLASS,
   MODULE_BADGE_CLASS,
   MODULE_BADGE_TONE_CLASS,
 } from '../../notifications-module/notifications-module.styles';
@@ -22,6 +23,8 @@ const STATE_ICON = {
 export const WhatsappConnectionChecks = ({
   checks,
   renderReview,
+  onUseSuggestion,
+  isApplyingSuggestion,
 }: IWhatsappConnectionChecksProps) => (
   <ul className="grid gap-2">
     {checks.map((check) => {
@@ -57,6 +60,44 @@ export const WhatsappConnectionChecks = ({
           <p className="text-sm leading-normal text-[#5F5C6E]">
             {check.message}
           </p>
+          {check.suggestions?.length && onUseSuggestion ? (
+            <div className="grid gap-2 rounded-[14px] bg-[#FAFAFC] p-3.5">
+              <p className="text-[13px] font-bold">
+                {check.suggestions.length === 1
+                  ? 'Encontramos este número nas contas do seu token:'
+                  : 'Encontramos estes números nas contas do seu token:'}
+              </p>
+              <ul className="grid gap-2">
+                {check.suggestions.map((suggestion) => (
+                  <li
+                    key={`${suggestion.businessAccountId}-${suggestion.phoneNumberId}`}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#EBE9F0] bg-white px-3.5 py-3"
+                  >
+                    <div className="min-w-0 text-[13px] leading-normal">
+                      <b className="block text-sm">
+                        {suggestion.displayPhoneNumber || 'Número sem nome'}
+                        {suggestion.verifiedName
+                          ? ` · ${suggestion.verifiedName}`
+                          : ''}
+                      </b>
+                      <span className="block break-all text-[#5F5C6E] tabular-nums">
+                        Phone Number ID {suggestion.phoneNumberId} · Business
+                        Account ID {suggestion.businessAccountId}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onUseSuggestion(suggestion)}
+                      disabled={isApplyingSuggestion}
+                      className={MODULE_ACTION_CLASS}
+                    >
+                      Usar estes IDs
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {needsReview && renderReview ? (
             <div>{renderReview(WHATSAPP_CHECK_STEP[check.key])}</div>
           ) : null}

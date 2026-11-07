@@ -36,6 +36,15 @@ export interface IWhatsappCheck {
   state: TWhatsappCheckState;
   message: string;
   metaCode?: number;
+  /** Só na conferência `ids` com erro: números que o token alcança, com os IDs certos. */
+  suggestions?: IWhatsappIdsSuggestion[];
+}
+
+export interface IWhatsappIdsSuggestion {
+  phoneNumberId: string;
+  businessAccountId: string;
+  displayPhoneNumber?: string;
+  verifiedName?: string;
 }
 
 export interface IWhatsappStatusResponse {

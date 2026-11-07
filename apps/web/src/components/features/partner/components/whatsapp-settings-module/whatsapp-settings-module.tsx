@@ -58,6 +58,8 @@ export const WhatsappSettingsModule = () => {
     whatsappStatus,
     isConnected,
     connectionIssues,
+    handleUseSuggestion,
+    hasUnsavedCredentials,
     statusBadge,
     isCheckingStatus,
     isWhatsappStatusError,
@@ -153,9 +155,21 @@ export const WhatsappSettingsModule = () => {
           </p>
         )}
 
+        {hasUnsavedCredentials ? (
+          <p
+            role="status"
+            className="rounded-[14px] bg-[#FFF4E5] px-3.5 py-3 text-sm leading-normal text-[#6B3A00]"
+          >
+            Você alterou as credenciais abaixo. Salve as alterações para
+            conferir os novos dados: o status mostra o que está salvo.
+          </p>
+        ) : null}
+
         {connectionIssues.length ? (
           <WhatsappConnectionChecks
             checks={connectionIssues}
+            onUseSuggestion={handleUseSuggestion}
+            isApplyingSuggestion={isSaveConfigPending}
             renderReview={(step) => (
               <Link
                 href={getGuideStepHref(step)}
