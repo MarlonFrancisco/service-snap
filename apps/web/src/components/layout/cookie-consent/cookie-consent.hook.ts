@@ -27,6 +27,9 @@ export const useConsentDecision = () => {
 export const useCookieConsent = () => {
   const consent = useConsentStore((state) => state.consent);
   const openPreferences = useConsentStore((state) => state.openPreferences);
+  const isPreferencesOpen = useConsentStore(
+    (state) => state.isPreferencesOpen,
+  );
   const setAnalyticsConsent = useAnalyticsConsent();
   const decide = useConsentDecision();
 
@@ -40,17 +43,18 @@ export const useCookieConsent = () => {
 
     // Escolha de uma visita anterior: aplica uma vez, ao carregar. Este efeito
     // roda antes do page_view do AnalyticsProvider, então a visita já é
-    // medida com a permissão certa.
-    if (consent && !appliedStoredConsent.current) {
+    // medida com a permissão certa. Lê direto do store: na hidratação o
+    // `consent` do render ainda é o inicial (null), igual ao do servidor.
+    const storedConsent = useConsentStore.getState().consent;
+    if (storedConsent && !appliedStoredConsent.current) {
       appliedStoredConsent.current = true;
-      setAnalyticsConsent(consent);
+      setAnalyticsConsent(storedConsent);
     }
-    // Só na montagem: mudanças depois passam por useConsentDecision.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setAnalyticsConsent]);
 
   return {
-    isVisible: isHydrated && consent === null,
+    // Some enquanto o painel está aberto, para não ficar por cima dele.
+    isVisible: isHydrated && consent === null && !isPreferencesOpen,
     handleAcceptAll: () => decide(ACCEPT_ALL_CONSENT),
     handleRejectAll: () => decide(DENIED_CONSENT),
     handleCustomize: openPreferences,

@@ -26,9 +26,9 @@ const DESCRIPTION =
   'Escolha o que podemos usar. Você pode mudar isso quando quiser em “Preferências de cookies”, no rodapé.';
 
 const SECONDARY_BUTTON_CLASS =
-  'h-12 rounded-full border border-[#E3E1EA] bg-white px-[22px] text-sm font-bold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7]';
+  'h-12 rounded-full border border-[#E3E1EA] bg-white px-5 text-sm font-bold whitespace-nowrap text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7]';
 const PRIMARY_BUTTON_CLASS =
-  'h-12 rounded-full bg-[#0B0B0F] px-[22px] text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B]';
+  'h-12 rounded-full bg-[#0B0B0F] px-5 text-sm font-bold whitespace-nowrap text-white transition-colors hover:bg-[#2B2B2B]';
 
 export const CookiePreferences = () => {
   const {
@@ -148,9 +148,9 @@ export const CookiePreferences = () => {
 
         <div className="mt-5">{categories}</div>
 
-        <div className="mt-2 flex items-center justify-between gap-3 border-t border-[#EBE9F0] bg-[#FBFBFC] px-8 pt-5 pb-7">
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3 border-t border-[#EBE9F0] bg-[#FBFBFC] px-8 pt-5 pb-7">
           {privacyLink}
-          <div className="flex gap-2.5">
+          <div className="flex flex-wrap gap-2">
             <button type="button" className={SECONDARY_BUTTON_CLASS} onClick={handleRejectAll}>
               Rejeitar todos
             </button>
