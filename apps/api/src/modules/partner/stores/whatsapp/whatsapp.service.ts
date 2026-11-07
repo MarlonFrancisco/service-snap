@@ -9,8 +9,12 @@ import { WhatsappConfig } from './whatsapp.entity';
 import {
   buildDisplayNameCheck,
   buildIdsCheck,
+  buildIdsSuggestions,
+  buildSwappedIdsMessage,
   buildTokenCheck,
   buildWebhookCheck,
+  getTokenAccountIds,
+  isPhoneNumber,
   settle,
 } from './whatsapp.helpers';
 import type {
@@ -58,6 +62,9 @@ type TMetaTemplateRow = {
   language?: string;
   rejected_reason?: string;
 };
+
+/** Limite de contas consultadas para sugerir IDs: cada uma é uma chamada à Meta. */
+const MAX_SUGGESTED_ACCOUNTS = 5;
 
 @Injectable()
 export class WhatsappService {
@@ -364,10 +371,45 @@ export class WhatsappService {
       ),
     ]);
 
+    const ids = buildIdsCheck(phone, accountPhones, config);
+    if (ids.state === 'error') {
+      // Procura os números que o token alcança para sugerir o par de IDs certo.
+      // O debug_token nem sempre lista as contas: os IDs informados que são contas válidas também entram.
+      const accountIds = [
+        ...new Set([
+          ...getTokenAccountIds(debug),
+          ...(accountPhones.ok ? [config.businessAccountId] : []),
+          ...(phone.ok && !isPhoneNumber(phone) ? [config.phoneNumberId] : []),
+        ]),
+      ].slice(0, MAX_SUGGESTED_ACCOUNTS);
+      const accounts = await Promise.all(
+        accountIds.map(async (businessAccountId) => ({
+          businessAccountId,
+          phones: await settle(
+            get<{ data?: TMetaPhoneNumber[] }>(
+              `${businessAccountId}/phone_numbers`,
+              { fields: 'id,display_phone_number,verified_name', limit: 20 },
+            ).then((body) => body.data ?? []),
+          ),
+        })),
+      );
+      const suggestions = buildIdsSuggestions(accounts, config);
+      if (suggestions.length) ids.suggestions = suggestions;
+
+      const isPhoneFieldAnAccount = accounts.some(
+        (account) =>
+          account.businessAccountId === config.phoneNumberId &&
+          Boolean(account.phones.data?.length),
+      );
+      if (isPhoneFieldAnAccount) {
+        ids.message = buildSwappedIdsMessage(config.phoneNumberId);
+      }
+    }
+
     return {
       phone,
       token: buildTokenCheck(debug, phone),
-      ids: buildIdsCheck(phone, accountPhones, config.phoneNumberId),
+      ids,
       webhook: buildWebhookCheck(subscribedApps),
       displayName: buildDisplayNameCheck(phone),
     };
