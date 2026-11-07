@@ -26,6 +26,18 @@ export type TWhatsappConnectionStatus =
   | 'incomplete'
   | 'error';
 
+/** `pending` quando outra falha impede a conferência (ex.: token recusado). */
+export type TWhatsappCheckState = 'ok' | 'warning' | 'error' | 'pending';
+
+export type TWhatsappCheckKey = 'ids' | 'token' | 'webhook' | 'displayName';
+
+export interface IWhatsappCheck {
+  key: TWhatsappCheckKey;
+  state: TWhatsappCheckState;
+  message: string;
+  metaCode?: number;
+}
+
 export interface IWhatsappStatusResponse {
   status: TWhatsappConnectionStatus;
   isActive: boolean;
@@ -34,6 +46,8 @@ export interface IWhatsappStatusResponse {
   verifiedName?: string;
   qualityRating?: string;
   message?: string;
+  /** Uma conferência por credencial; só vem quando as três estão preenchidas. */
+  checks?: IWhatsappCheck[];
 }
 
 export interface IWhatsappTemplateSummary {

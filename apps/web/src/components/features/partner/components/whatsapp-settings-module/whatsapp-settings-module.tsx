@@ -27,6 +27,12 @@ import {
   MODULE_LEAD_CLASS,
   MODULE_PRIMARY_ACTION_CLASS,
 } from '../notifications-module/notifications-module.styles';
+import {
+  getGuideStepHref,
+  WHATSAPP_GUIDE_ROUTE,
+} from './whatsapp-connect-guide';
+import { WhatsappConnectEmpty } from './whatsapp-connect-empty';
+import { WhatsappConnectionChecks } from './whatsapp-connection-checks';
 import { WhatsappSettingsModuleSkeleton } from './whatsapp-settings-module-skeleton';
 import { useWhatsappSettingsModule } from './whatsapp-settings-module.hook';
 
@@ -43,6 +49,7 @@ export const WhatsappSettingsModule = () => {
     isLoading,
     isError,
     hasNoStore,
+    isConfigured,
     handleRetry,
     isRetrying,
     isSaveConfigPending,
@@ -50,6 +57,7 @@ export const WhatsappSettingsModule = () => {
     handleSubmit,
     whatsappStatus,
     isConnected,
+    connectionIssues,
     statusBadge,
     isCheckingStatus,
     isWhatsappStatusError,
@@ -75,6 +83,7 @@ export const WhatsappSettingsModule = () => {
   if (isError) {
     return <ModuleErrorState onRetry={handleRetry} isRetrying={isRetrying} />;
   }
+  if (!isConfigured) return <WhatsappConnectEmpty />;
 
   return (
     <div className="grid max-w-[960px] gap-4">
@@ -133,7 +142,7 @@ export const WhatsappSettingsModule = () => {
               </dd>
             </div>
           </dl>
-        ) : (
+        ) : connectionIssues.length ? null : (
           <p role="status" className={CARD_NOTE_CLASS}>
             {isCheckingStatus
               ? 'Validando as credenciais com a Cloud API da Meta...'
@@ -143,6 +152,20 @@ export const WhatsappSettingsModule = () => {
                   'Complete e salve as credenciais abaixo, depois atualize o status.'}
           </p>
         )}
+
+        {connectionIssues.length ? (
+          <WhatsappConnectionChecks
+            checks={connectionIssues}
+            renderReview={(step) => (
+              <Link
+                href={getGuideStepHref(step)}
+                className={MODULE_ACTION_CLASS}
+              >
+                Rever o passo {step}
+              </Link>
+            )}
+          />
+        ) : null}
       </section>
 
       <section className={MODULE_CARD_CLASS}>
@@ -257,6 +280,16 @@ export const WhatsappSettingsModule = () => {
               )}
             />
           </div>
+
+          <p className={CARD_NOTE_CLASS}>
+            Não sabe onde encontrar esses dados?{' '}
+            <Link
+              href={WHATSAPP_GUIDE_ROUTE}
+              className="font-bold text-[#0B0B0F] underline underline-offset-[3px]"
+            >
+              Ver o passo a passo na Meta
+            </Link>
+          </p>
 
           <div className="grid grid-cols-[repeat(auto-fit,minmax(min(240px,100%),1fr))] gap-3">
             {CREDENTIAL_FIELDS.map(({ name, label }) => (

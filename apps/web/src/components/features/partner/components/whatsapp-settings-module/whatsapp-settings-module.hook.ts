@@ -118,12 +118,17 @@ export const useWhatsappSettingsModule = () => {
   };
 
   const isConnected = whatsappStatus?.status === 'connected';
+  const connectionIssues = (whatsappStatus?.checks ?? []).filter(
+    (check) => check.state !== 'ok',
+  );
   const webhookToken = form.watch('webhookVerifyToken');
 
   return {
     isLoading,
     isError,
     hasNoStore: storeAvailability === 'no-store',
+    // Sem `id`, a API devolve só o token do webhook: a loja nunca salvou credenciais.
+    isConfigured: Boolean(whatsappConfig?.id),
     handleRetry,
     isRetrying: isWhatsappFetching,
     isSaveConfigPending,
@@ -131,6 +136,7 @@ export const useWhatsappSettingsModule = () => {
     handleSubmit,
     whatsappStatus,
     isConnected,
+    connectionIssues,
     statusBadge: getStatusBadge({
       status: whatsappStatus?.status,
       isError: isWhatsappStatusError,

@@ -79,6 +79,11 @@ export const MODULE_CONFIG: Record<string, TModuleConfig> = {
     description: 'Conecte a conta do WhatsApp Business da sua loja',
     showStoreSelector: true,
   },
+  '/partner/settings/whatsapp/connect': {
+    title: 'Conectar WhatsApp',
+    description: 'Passo a passo para conseguir as credenciais na Meta',
+    showStoreSelector: true,
+  },
 };
 
 const FALLBACK_MODULE_CONFIG: TModuleConfig = {
@@ -94,11 +99,9 @@ export const findLongestPathMatch = (
 ): string | null =>
   paths
     .filter((path) => pathname === path || pathname.startsWith(`${path}/`))
-    .reduce<string | null>(
-      (longest, path) =>
-        longest === null || path.length > longest.length ? path : longest,
-      null,
-    );
+    .reduce<
+      string | null
+    >((longest, path) => (longest === null || path.length > longest.length ? path : longest), null);
 
 export const getPartnerModuleConfig = (pathname: string): TModuleConfig => {
   const match = findLongestPathMatch(pathname, Object.keys(MODULE_CONFIG));
