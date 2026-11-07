@@ -223,7 +223,7 @@ const R=[
 ['Contato e consentimento','P1','web','generate_lead','Formulário de contato',W+'app/contact/contact.hook.ts:21','method:mailto, has_subject, message_length'],
 ['Contato e consentimento','P2','web','contact_email_clicked','Links mailto',W+'app/contact/page.tsx:98 · app/privacy/page.tsx:276, :341 · app/terms/page.tsx:138, :444','page'],
 ['Contato e consentimento','P2','web','social_link_clicked','Redes no contato',W+'app/contact/page.tsx:112','network'],
-['Contato e consentimento','P0','web','consent_updated','Aceitar / recusar cookies (banner não existe)',W+'providers/analytics.provider.tsx:62 (useAnalyticsConsent)','analytics, marketing'],
+['Contato e consentimento','P0','web','consent_updated','Aceitar, recusar ou salvar preferências no aviso de cookies',W+'components/layout/cookie-consent/cookie-consent.hook.ts (useConsentDecision)','analytics, marketing'],
 // Onboarding
 ['Onboarding do parceiro','P0','web','onboarding_step_viewed','Mudança de etapa',O+'partner-onboarding.hook.ts:79 (useEffect em currentView)','step, step_index, is_resume'],
 ['Onboarding do parceiro','P1','web','onboarding_business_type_selected','Escolha do tipo de negócio',O+'partner-onboarding.hook.ts:50 · '+O+'components/welcome-step/welcome-step.hook.ts:44','business_type, is_custom'],
@@ -311,7 +311,7 @@ const R=[
 R.splice(0,R.length,...R.filter(r=>r[2]==='web'));
 // Status da implementação (feita em 06/11/2026).
 const NOTES=[
-  [r=>r[3]==='consent_updated','pending','O banner de cookies ainda não existe.'],
+  [r=>r[3]==='consent_updated','done','Disparado em cada escolha do aviso de cookies, logo depois de aplicar o consentimento no GTM.'],
   [r=>r[4].startsWith('"Ver todos"'),'done','Enviado como select_content (content_type: see_all), para não contar a lista duas vezes.'],
   [r=>r[3]==='search_no_results'&&r[0]==='Descoberta','done','Página indisponível sai como search_failed; lista vazia, como search_no_results.'],
   [r=>r[3]==='service_activated / deactivated','done','Enviado como service_status_changed { is_active }.'],
