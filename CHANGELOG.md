@@ -1,3 +1,13 @@
+## 0.26.0 (2026-11-07)
+
+### Feat
+
+- **web**: adiciona aviso e preferências de cookies (LGPD)
+
+### Fix
+
+- **web**: aplica o consentimento salvo ao carregar e ajusta o painel de cookies
+
 ## 0.25.0 (2026-11-06)
 
 ### Feat
