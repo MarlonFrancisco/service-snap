@@ -1,3 +1,24 @@
+## 0.27.0 (2026-11-08)
+
+### Feat
+
+- **web**: escolhe o país na etapa de espaço do onboarding
+- **api**: grava país, moeda e fuso da loja e normaliza telefones em E.164
+- **web**: inclui lojas e cidades por categoria no sitemap
+- **api**: expõe lojas do índice de busca para o sitemap
+- **web**: atualizar vídeo de demonstração da home
+- **web**: sugere IDs do WhatsApp e avisa sobre credenciais não salvas
+- **web**: adiciona onboarding de conexão do WhatsApp
+- **api**: diagnostica cada credencial do WhatsApp no status da conexão
+
+### Fix
+
+- **api**: compila @repo/shared antes do build na Vercel
+- **api**: importa @repo/shared pela raiz para os scripts compilarem
+- **web**: ocupa a largura do desktop nas telas do WhatsApp
+- **web**: ajusta layout do Meu plano no desktop largo
+- **api**: explica IDs errados do WhatsApp e sugere o par certo
+
 ## 0.26.0 (2026-11-07)
 
 ### Feat
