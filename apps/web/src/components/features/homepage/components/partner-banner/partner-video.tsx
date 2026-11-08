@@ -31,7 +31,7 @@ export const PartnerVideo = ({
       loop
       playsInline
       controls
-      aria-label="Demonstração do ServiceSnap: o cliente encontra o espaço e agenda, e o negócio acompanha a agenda e os resultados."
+      aria-label="Demonstração do ServiceSnap: o cliente agenda pelo site ou pelo WhatsApp, e o negócio acompanha a agenda, a equipe e os resultados."
       className={`absolute inset-0 h-full w-full object-cover ${className}`}
     />
   );

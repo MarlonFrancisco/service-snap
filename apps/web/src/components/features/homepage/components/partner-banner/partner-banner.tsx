@@ -41,15 +41,15 @@ export const PartnerBanner = () => {
         {/* O vídeo com display: none nunca entra na tela, então não é baixado. */}
         <div className="relative aspect-[9/16] bg-[#0B0B0F] sm:aspect-video xl:aspect-auto">
           <PartnerVideo
-            src="/videos/servicesnap-demo-vertical-v1.mp4"
-            poster="/videos/servicesnap-demo-vertical-v1.jpg"
+            src="/videos/servicesnap-demo-vertical-v2.mp4"
+            poster="/videos/servicesnap-demo-vertical-v2.webp"
             width={810}
             height={1440}
             className="sm:hidden"
           />
           <PartnerVideo
-            src="/videos/servicesnap-demo-v2.mp4"
-            poster="/videos/servicesnap-demo-v2.jpg"
+            src="/videos/servicesnap-demo-v3.mp4"
+            poster="/videos/servicesnap-demo-v3.webp"
             width={1920}
             height={1080}
             className="hidden sm:block"
