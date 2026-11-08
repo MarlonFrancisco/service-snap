@@ -68,6 +68,7 @@ export const mountStoreSearchIndex = (
     metadata: {
       ownerId: store.owner.id,
       createdAt: store.createdAt.toISOString(),
+      updatedAt: (store.updatedAt ?? store.createdAt).toISOString(),
       telephone: store.telephone,
       email: store.email,
       website: store.website,

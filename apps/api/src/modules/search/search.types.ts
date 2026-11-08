@@ -33,6 +33,8 @@ export interface IStoreSearchContent {
 export interface IStoreSearchMetadata {
   ownerId: string;
   createdAt: string;
+  /** Última alteração da loja; o sitemap usa como `lastmod`. */
+  updatedAt: string;
   telephone: string;
   email: string;
   website: string;
@@ -43,3 +45,26 @@ export interface IStoreSearchMetadata {
   gallery: Gallery[];
   reviews: Review[];
 }
+
+/** Loja que o sitemap pode listar: só o necessário para montar a URL. */
+export type TStoreSitemapEntry = {
+  id: string;
+  /** Ausente em documento antigo sem data no índice. */
+  updatedAt?: string;
+};
+
+/** Par categoria pública + cidade com ao menos uma loja no índice. */
+export type TCategoryCitySitemapEntry = {
+  /** Nome da categoria exatamente como o web enviou. */
+  category: string;
+  /** Cidade como a primeira loja do grupo escreveu. */
+  city: string;
+  storeCount: number;
+  /** Atualização mais recente entre as lojas do grupo. */
+  updatedAt?: string;
+};
+
+export type TStoresSitemap = {
+  stores: TStoreSitemapEntry[];
+  categoryCities: TCategoryCitySitemapEntry[];
+};

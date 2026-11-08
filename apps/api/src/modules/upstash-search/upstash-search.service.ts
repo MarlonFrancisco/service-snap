@@ -132,6 +132,31 @@ export class UpstashSearchService {
   }
 
   /**
+   * Página de documentos do índice, sem ranking. Começa com cursor "0"; quando
+   * `nextCursor` vem vazio, acabou.
+   */
+  async range(
+    indexName: string,
+    params: { cursor: string; limit: number },
+  ) {
+    const index = this.getIndex(indexName);
+
+    if (!index) {
+      this.logger.warn(
+        `Cannot range over index ${indexName}: client not available`,
+      );
+      return { nextCursor: '', documents: [] };
+    }
+
+    try {
+      return await index.range(params);
+    } catch (error) {
+      this.logger.error(`Range failed in index ${indexName}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete documents from an index
    */
   async delete(indexName: string, ids: string[]) {

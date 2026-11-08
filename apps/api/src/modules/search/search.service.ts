@@ -5,9 +5,18 @@ import {
   type TSearchHit,
 } from '../../utils/helpers/search-relevance.helpers';
 import { UpstashSearchService } from '../upstash-search/upstash-search.service';
-import { IStoreSearchContent, IStoreSearchMetadata } from './search.types';
+import { buildCategoryCitySitemap, sitemapUpdatedAt } from './search.helpers';
+import type {
+  IStoreSearchContent,
+  IStoreSearchMetadata,
+  TStoresSitemap,
+} from './search.types';
 
 const STORES_INDEX = 'stores';
+/** Máximo que o `range` do Upstash aceita por chamada ("max allowed read limit"). */
+const SITEMAP_PAGE_SIZE = 100;
+/** Trava contra cursor que nunca termina: 50 mil lojas, o teto de um sitemap. */
+const SITEMAP_MAX_PAGES = 500;
 
 @Injectable()
 export class SearchService {
@@ -91,6 +100,36 @@ export class SearchService {
       this.logger.error('Search failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Lojas do índice e os pares categoria + cidade que elas preenchem, para o
+   * `sitemap.xml` do web. O índice só guarda quem passou em
+   * `availableToIndexStore`, então tudo aqui dá para agendar.
+   */
+  async getSitemap(categories: string[]): Promise<TStoresSitemap> {
+    const hits: TSearchHit[] = [];
+    let cursor = '0';
+
+    for (let page = 0; page < SITEMAP_MAX_PAGES; page += 1) {
+      const { nextCursor, documents } = await this.upstashService.range(
+        STORES_INDEX,
+        { cursor, limit: SITEMAP_PAGE_SIZE },
+      );
+
+      hits.push(...(documents as TSearchHit[]));
+
+      if (!nextCursor || nextCursor === cursor) break;
+      cursor = nextCursor;
+    }
+
+    return {
+      stores: hits.map((hit) => ({
+        id: hit.id,
+        updatedAt: sitemapUpdatedAt(hit),
+      })),
+      categoryCities: buildCategoryCitySitemap(hits, categories),
+    };
   }
 
   async searchStore({ storeId }: { storeId: string }) {
