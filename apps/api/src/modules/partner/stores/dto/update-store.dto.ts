@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -12,6 +12,11 @@ import {
 import type { User } from '../../../users/user.entity';
 import type { Gallery } from '../gallery/gallery.entity';
 import { Store } from '../store.entity';
+import {
+  IsSupportedCountry,
+  IsSupportedCurrency,
+  IsTimeZone,
+} from '../../../../utils/validators/region.validators';
 
 export class UpdateStoreDto {
   @IsObject()
@@ -31,15 +36,21 @@ export class UpdateStoreDto {
   @IsOptional()
   amenities: string[];
 
-  @IsString()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsSupportedCountry()
   @IsOptional()
   country: string;
 
-  @IsString()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsSupportedCurrency()
   @IsOptional()
   currency: string;
 
-  @IsString()
+  @IsTimeZone()
   @IsOptional()
   timezone: string;
 

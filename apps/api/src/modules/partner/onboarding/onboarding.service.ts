@@ -28,6 +28,7 @@ import {
   SetStepDto,
 } from './dto/onboarding.dto';
 import {
+  buildSpaceRegionFields,
   furthestStep,
   isBookableProfessional,
   isStoreDraft,
@@ -152,7 +153,7 @@ export class OnboardingService {
 
     const stores = await this.findOwnedStores(userId);
     const draft = stores.find(isStoreDraft);
-    const fields = { ...space, state: space.state.toUpperCase() };
+    const fields = buildSpaceRegionFields(space);
 
     if (draft) {
       await this.storeRepository.update(draft.id, fields);
@@ -612,6 +613,9 @@ export class OnboardingService {
       id: store.id,
       name: store.name,
       description: store.description,
+      country: store.country,
+      currency: store.currency,
+      timezone: store.timezone,
       zipCode: store.zipCode,
       address: store.address,
       city: store.city,

@@ -1,3 +1,8 @@
+import type { EntityManager } from 'typeorm';
+import { Store } from '../../modules/partner/stores/store.entity';
+import { getStoreTimezone } from './region.helpers';
+import { getStoreNow } from './schedule.helpers';
+
 /**
  * Helpers Utilitários para Cálculo de Períodos em Métricas
  * Reutilizável por todos os módulos de métricas (overview, sales, operational, customers)
@@ -8,6 +13,30 @@ export type PeriodType = 'week' | 'month' | 'quarter';
 export interface DateRange {
   start: Date;
   end: Date;
+}
+
+/**
+ * "Hoje" da loja como Date à meia-noite no relógio do servidor. Os cálculos de
+ * período usam campos locais (getDate, setHours): com este Date eles ficam no
+ * dia da loja, e não no dia UTC em que a função serverless roda.
+ */
+export function toStoreLocalToday(timezone: string, now = new Date()): Date {
+  const [year, month, day] = getStoreNow(timezone, now).date.split('-');
+  return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
+/** Busca o fuso da loja e devolve o "hoje" dela (ver `toStoreLocalToday`). */
+export async function resolveStoreToday(
+  manager: EntityManager,
+  storeId: string,
+  now = new Date(),
+): Promise<Date> {
+  const store = await manager.findOne(Store, {
+    where: { id: storeId },
+    select: { id: true, country: true, timezone: true },
+  });
+
+  return toStoreLocalToday(getStoreTimezone(store), now);
 }
 
 /**

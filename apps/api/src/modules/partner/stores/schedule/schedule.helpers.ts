@@ -1,21 +1,48 @@
 import { formatCurrency } from '../../../../utils/helpers/format.helpers';
 import {
+  getStoreCurrency,
+  getStoreLocale,
+  getStoreTimezone,
+} from '../../../../utils/helpers/region.helpers';
+import {
   buildGoogleCalendarLink,
   formatLongDate,
 } from '../../../../utils/helpers/schedule.helpers';
 import { getUserFullName } from '../../../../utils/helpers/user.helpers';
+import type { Store } from '../store.entity';
 import type { Schedule } from './schedule.entity';
 
 export const getBookingServiceNames = (schedules: Schedule[]) =>
   schedules.map(({ service }) => service?.name || 'Serviço').join(', ');
 
+/** Snapshot gravado na reserva: valor do serviço e moeda da loja naquele momento. */
+export const buildSchedulePriceSnapshot = (
+  price: number | string | null | undefined,
+  store: Pick<Store, 'country' | 'currency'>,
+) => ({
+  price: price == null ? null : Number(price),
+  currency: getStoreCurrency(store),
+});
+
+/** Preço gravado na reserva; agendamentos antigos (sem snapshot) usam o do serviço. */
+export const getSchedulePrice = (schedule: Schedule): number =>
+  Number(schedule.price ?? schedule.service?.price ?? 0);
+
+/**
+ * Total formatado na moeda da reserva (ou da loja) e no padrão numérico do país
+ * da loja: "R$ 50,00", "12,50 €", "$12.50".
+ */
 export const getBookingPrice = (schedules: Schedule[]) => {
   const total = schedules.reduce(
-    (sum, { service }) => sum + Number(service?.price ?? 0),
+    (sum, schedule) => sum + getSchedulePrice(schedule),
     0,
   );
+  const [first] = schedules;
+  const currency = first?.currency || getStoreCurrency(first?.store);
 
-  return total ? formatCurrency(total) : 'Sob consulta';
+  return total
+    ? formatCurrency(total, currency, getStoreLocale(first?.store))
+    : 'Sob consulta';
 };
 
 const getProfessionalName = (schedule: Schedule) =>
@@ -39,7 +66,7 @@ export const buildBookingCalendarLink = (schedules: Schedule[]) => {
     date: first.date,
     startTime: first.startTime,
     endTime: schedules[schedules.length - 1].endTime,
-    timezone: first.store.timezone || 'America/Sao_Paulo',
+    timezone: getStoreTimezone(first.store),
     location: first.store.address || '',
   });
 };

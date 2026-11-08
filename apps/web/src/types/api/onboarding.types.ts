@@ -1,3 +1,4 @@
+import type { TCountryCode, TCurrencyCode } from '@repo/shared/constants';
 import type { IStoreGallery, TWorkingDays } from './stores.types';
 
 export type TOnboardingStep =
@@ -13,6 +14,9 @@ export type TOnboardingStore = {
   id: string;
   name: string;
   description: string;
+  country: TCountryCode | null;
+  currency: TCurrencyCode | null;
+  timezone: string | null;
   zipCode: string;
   address: string;
   city: string;
@@ -70,7 +74,7 @@ export type TSaveSpacePayload = Pick<
   | 'city'
   | 'state'
   | 'telephone'
-> & { businessType: string };
+> & { businessType: string; country: TCountryCode };
 
 export type TSaveHoursPayload = {
   businessDays: TWorkingDays;

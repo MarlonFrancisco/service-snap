@@ -241,7 +241,7 @@ describe('RemindersService', () => {
     expect(scheduleReminder).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps processing when a store has an invalid timezone', async () => {
+  it('falls back to the country timezone when a store has an invalid one', async () => {
     const base = schedule();
     const { service, scheduleReminder } = setup([
       schedule({
@@ -253,7 +253,7 @@ describe('RemindersService', () => {
 
     await service.sendDueEmailReminders(NOW);
 
-    expect(scheduleReminder).toHaveBeenCalledTimes(1);
+    expect(scheduleReminder).toHaveBeenCalledTimes(2);
   });
 
   it('retries a failed send without an extra history row', async () => {

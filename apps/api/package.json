@@ -16,6 +16,7 @@
     "migrate:stores-to-search": "ts-node --project tsconfig.scripts.json src/scripts/migrate-stores-to-search.ts",
     "migrate:store-onboardings": "ts-node --project tsconfig.scripts.json src/scripts/create-store-onboardings-table.ts",
     "migrate:schedule-reminders": "ts-node --project tsconfig.scripts.json src/scripts/create-schedule-reminders-table.ts",
+    "migrate:multiregional": "ts-node --project tsconfig.scripts.json src/scripts/migrate-multiregional-foundation.ts",
     "seed:stores:json": "ts-node --project tsconfig.scripts.json src/scripts/seed-stores.ts",
     "reset:db": "ts-node --project tsconfig.scripts.json src/scripts/reset-db.ts",
     "products:update": "ts-node --project tsconfig.scripts.json src/scripts/update-stripe-products-metadata.ts"
@@ -33,6 +34,7 @@
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/terminus": "^11.0.0",
     "@nestjs/typeorm": "^11.0.0",
+    "@repo/shared": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@supabase/supabase-js": "^2.76.1",
     "@types/node": "^22.10.7",

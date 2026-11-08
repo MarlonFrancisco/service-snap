@@ -1,9 +1,11 @@
 import type { TOnboardingStore } from '@/types/api/onboarding.types';
+import type { TCountryCode } from '@repo/shared/constants';
 import {
   ONBOARDING_ERROR_CLASS,
   ONBOARDING_FIELD_LABEL_CLASS,
   ONBOARDING_HINT_CLASS,
   ONBOARDING_INPUT_CLASS,
+  ONBOARDING_PHONE_CODE_CLASS,
 } from '../../partner-onboarding.styles';
 import { OnboardingStepLayout } from '../onboarding-step-layout';
 import { useSpaceStep } from './space-step.hook';
@@ -31,6 +33,9 @@ export const SpaceStep = ({
       register,
       formState: { errors },
     },
+    countryOptions,
+    region,
+    handleCountryChange,
     descriptionLength,
     isSaving,
     exitBlocked,
@@ -87,14 +92,34 @@ export const SpaceStep = ({
           <FieldError message={errors.description?.message} />
         </label>
 
+        <label className={ONBOARDING_FIELD_LABEL_CLASS}>
+          País
+          <select
+            autoComplete="country"
+            className={ONBOARDING_INPUT_CLASS}
+            {...register('country', {
+              onChange: (event: { target: { value: string } }) =>
+                handleCountryChange(event.target.value as TCountryCode),
+            })}
+          >
+            {countryOptions.map(({ code, name }) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <small className={ONBOARDING_HINT_CLASS}>
+            Define a moeda e o fuso horário do espaço.
+          </small>
+        </label>
+
         <div className="grid gap-3 md:grid-cols-[1fr_2fr]">
           <label className={ONBOARDING_FIELD_LABEL_CLASS}>
-            CEP
+            {region.postalCodeLabel}
             <input
               type="text"
-              inputMode="numeric"
               autoComplete="postal-code"
-              placeholder="00000-000"
+              placeholder={region.postalCodePlaceholder}
               aria-invalid={Boolean(errors.zipCode)}
               className={ONBOARDING_INPUT_CLASS}
               {...registerMasked('zipCode')}
@@ -128,30 +153,51 @@ export const SpaceStep = ({
             <FieldError message={errors.city?.message} />
           </label>
           <label className={ONBOARDING_FIELD_LABEL_CLASS}>
-            Estado
-            <input
-              type="text"
-              maxLength={2}
-              autoComplete="address-level1"
-              placeholder="UF"
-              aria-invalid={Boolean(errors.state)}
-              className={`${ONBOARDING_INPUT_CLASS} uppercase placeholder:normal-case`}
-              {...register('state')}
-            />
+            {region.stateLabel}
+            {region.states.length ? (
+              <select
+                autoComplete="address-level1"
+                aria-invalid={Boolean(errors.state)}
+                className={ONBOARDING_INPUT_CLASS}
+                {...register('state')}
+              >
+                <option value="">Selecione</option>
+                {region.states.map(({ code, name }) => (
+                  <option key={code} value={code}>
+                    {code} · {name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                maxLength={100}
+                autoComplete="address-level1"
+                placeholder="Opcional"
+                aria-invalid={Boolean(errors.state)}
+                className={ONBOARDING_INPUT_CLASS}
+                {...register('state')}
+              />
+            )}
             <FieldError message={errors.state?.message} />
           </label>
         </div>
 
         <label className={ONBOARDING_FIELD_LABEL_CLASS}>
           Telefone
-          <input
-            type="tel"
-            autoComplete="tel"
-            placeholder="(00) 00000-0000"
-            aria-invalid={Boolean(errors.telephone)}
-            className={ONBOARDING_INPUT_CLASS}
-            {...registerMasked('telephone')}
-          />
+          <div className="flex items-center gap-2">
+            <span className={ONBOARDING_PHONE_CODE_CLASS} aria-label="Código do país">
+              {region.phoneCode}
+            </span>
+            <input
+              type="tel"
+              autoComplete="tel-national"
+              placeholder={region.phonePlaceholder}
+              aria-invalid={Boolean(errors.telephone)}
+              className={`${ONBOARDING_INPUT_CLASS} min-w-0 flex-1`}
+              {...registerMasked('telephone')}
+            />
+          </div>
           <FieldError message={errors.telephone?.message} />
         </label>
       </form>

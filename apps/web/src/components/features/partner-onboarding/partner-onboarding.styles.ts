@@ -6,6 +6,10 @@ export const ONBOARDING_FIELD_LABEL_CLASS =
 
 export const ONBOARDING_INPUT_CLASS = `h-[50px] w-full rounded-[14px] border border-[#E3E1EA] bg-white px-3.5 text-base font-medium text-[#0B0B0F] placeholder:text-[#6F6C7E] aria-invalid:border-[#B42318] md:text-[15px] ${FOCUS_RING}`;
 
+/** DDI fixo ao lado do telefone: segue a altura e o raio dos campos. */
+export const ONBOARDING_PHONE_CODE_CLASS =
+  'flex h-[50px] shrink-0 items-center rounded-[14px] border border-[#E3E1EA] bg-[#F7F6FA] px-3.5 text-base font-medium tabular-nums text-[#0B0B0F] md:text-[15px]';
+
 export const ONBOARDING_ERROR_CLASS = 'text-[13px] font-semibold text-[#B42318]';
 
 export const ONBOARDING_HINT_CLASS = 'text-[13px] font-medium text-[#5F5C6E]';

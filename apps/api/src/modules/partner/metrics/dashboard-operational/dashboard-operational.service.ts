@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import {
   PeriodType,
   getPeriodDateRange,
+  resolveStoreToday,
   getPreviousPeriodStart,
 } from '../../../../utils/helpers/metrics.helpers';
 import { Schedule } from '../../stores/schedule/schedule.entity';
@@ -52,7 +53,11 @@ export class DashboardOperationalService {
     }
 
     // Calcular períodos com base no tipo selecionado
-    const now = new Date();
+    // Períodos no dia da loja, não no dia UTC do servidor
+    const now = await resolveStoreToday(
+      this.scheduleRepository.manager,
+      storeId,
+    );
     const currentPeriod = getPeriodDateRange(now, period);
     const previousPeriod = getPeriodDateRange(
       getPreviousPeriodStart(now, period),

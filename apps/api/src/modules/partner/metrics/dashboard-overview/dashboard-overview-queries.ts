@@ -11,7 +11,7 @@ export const DashboardOverviewQueries = {
    */
   calculateRevenue: `
     WITH current_period AS (
-      SELECT COALESCE(SUM(s.price), 0) as total
+      SELECT COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total
       FROM schedules sch
       INNER JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -20,7 +20,7 @@ export const DashboardOverviewQueries = {
         AND sch.status = 'completed'
     ),
     prev_period AS (
-      SELECT COALESCE(SUM(s.price), 0) as total
+      SELECT COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total
       FROM schedules sch
       INNER JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -68,7 +68,7 @@ export const DashboardOverviewQueries = {
     WITH current_period AS (
       SELECT
         COUNT(*) as completed_count,
-        COALESCE(AVG(s.price), 0) as avg_price
+        COALESCE(AVG(COALESCE(sch.price, s.price)), 0) as avg_price
       FROM schedules sch
       INNER JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -79,7 +79,7 @@ export const DashboardOverviewQueries = {
     prev_period AS (
       SELECT
         COUNT(*) as completed_count,
-        COALESCE(AVG(s.price), 0) as avg_price
+        COALESCE(AVG(COALESCE(sch.price, s.price)), 0) as avg_price
       FROM schedules sch
       INNER JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -227,7 +227,7 @@ export const DashboardOverviewQueries = {
         COUNT(*) as total_appointments,
         SUM(CASE WHEN sch.status = 'completed' THEN 1 ELSE 0 END) as completed_count,
         SUM(CASE WHEN sch.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_count,
-        COALESCE(SUM(s.price), 0) as total_revenue
+        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
       FROM schedules sch
       LEFT JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -255,7 +255,7 @@ export const DashboardOverviewQueries = {
       s.id as service_id,
       s.name as service_name,
       COUNT(*) as bookings_count,
-      COALESCE(SUM(s.price), 0) as total_revenue
+      COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
     FROM schedules sch
     INNER JOIN services s ON sch."serviceId" = s.id
     WHERE sch."storeId" = $1::uuid

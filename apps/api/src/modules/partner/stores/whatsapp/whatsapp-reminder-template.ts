@@ -1,3 +1,5 @@
+import { toE164 } from '../../../../utils/helpers/region.helpers';
+
 /**
  * Template do lembrete criado na WABA de cada loja. Fora da janela de 24h a Meta
  * só entrega mensagem iniciada pela empresa se ela usar um template aprovado.
@@ -45,15 +47,13 @@ export type TWhatsappReminderTemplateParams = {
 };
 
 /**
- * Telefone do cliente no formato da Meta (só dígitos, com DDI). Cadastros sem DDI
- * são do Brasil: 10 ou 11 dígitos ganham o 55. Abaixo disso não há para onde enviar.
+ * Telefone do cliente no formato da Meta (só dígitos, com DDI). Número sem DDI
+ * é lido como do país da loja. Inválido não tem para onde enviar.
  */
-export const toWhatsappRecipient = (telephone?: string | null) => {
-  const digits = (telephone ?? '').replace(/\D/g, '');
-
-  if (digits.length === 10 || digits.length === 11) return `55${digits}`;
-  return digits.length >= 12 ? digits : null;
-};
+export const toWhatsappRecipient = (
+  telephone?: string | null,
+  storeCountry?: string | null,
+) => toE164(telephone, storeCountry)?.slice(1) ?? null;
 
 // Parâmetro de template não aceita vazio, quebra de linha, tab nem 4+ espaços
 const toParam = (value: string | undefined, fallback: string) =>
