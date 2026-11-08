@@ -1,4 +1,4 @@
-import type { TCountryCode, TCurrencyCode } from '@repo/shared/constants';
+import type { TCountryCode, TCurrencyCode } from '@repo/shared';
 
 /** Campos regionais da loja: qualquer um pode faltar em lojas antigas. */
 export type TRegionSource = {

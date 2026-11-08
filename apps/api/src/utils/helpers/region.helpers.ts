@@ -4,7 +4,7 @@ import {
   type ICountry,
   type TCountryCode,
   type TCurrencyCode,
-} from '@repo/shared/constants';
+} from '@repo/shared';
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import type { TRegionDefaults, TRegionSource } from './region.types';
 
