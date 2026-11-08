@@ -1,5 +1,6 @@
 import { PUBLIC_CATEGORY_NAMES } from '@/utils/constants/public-categories.constants';
 import type { TWorkingDays } from '@/types/api/stores.types';
+import { COUNTRIES, type TCountryCode } from '@repo/shared/constants';
 
 export const FEATURED_BUSINESS_TYPES = [
   'Barbearia',
@@ -57,3 +58,10 @@ export const DEFAULT_BUSINESS_DAYS: TWorkingDays = {
 export const NEW_CATEGORY_VALUE = '__new__';
 export const MAX_PHOTOS = 10;
 export const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
+
+/** Países que a plataforma atende, pelo nome local, em ordem alfabética. */
+export const COUNTRY_OPTIONS = (Object.keys(COUNTRIES) as TCountryCode[])
+  .map((code) => ({ code, name: COUNTRIES[code].nativeName }))
+  .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+
+export const DEFAULT_ONBOARDING_COUNTRY: TCountryCode = 'BR';

@@ -1,4 +1,5 @@
 import { isApiHttpError } from '@/service/api';
+import { COUNTRIES, type TCountryCode } from '@repo/shared/constants';
 
 const digitsOf = (value: string) => value.replace(/\D/g, '');
 
@@ -16,6 +17,59 @@ export const maskPhone = (value: string) => {
     return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
   }
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};
+
+/** Aplica uma máscara com `#` no lugar de cada dígito: "#####-###". */
+const applyDigitMask = (digits: string, mask: string) => {
+  let result = '';
+  let index = 0;
+
+  for (const char of mask) {
+    if (index >= digits.length) break;
+    if (char === '#') {
+      result += digits[index];
+      index += 1;
+    } else {
+      result += char;
+    }
+  }
+
+  return result;
+};
+
+/**
+ * CEP / código postal no formato do país. Máscaras só numéricas formatam os
+ * dígitos; as alfanuméricas (Reino Unido, Irlanda, Holanda) só ficam em
+ * maiúsculas, já que a posição das letras varia.
+ */
+export const maskPostalCodeFor = (value: string, country: TCountryCode) => {
+  if (country === 'BR') return maskZipCode(value);
+
+  const mask = COUNTRIES[country].postalCodeMask;
+  if (/[A-Za-z]/.test(mask)) return value.toUpperCase().slice(0, mask.length);
+
+  return applyDigitMask(digitsOf(value), mask);
+};
+
+/** Telefone sem DDI no formato do país; o Brasil aceita fixo e celular. */
+export const maskPhoneFor = (value: string, country: TCountryCode) =>
+  country === 'BR'
+    ? maskPhone(value)
+    : applyDigitMask(digitsOf(value), COUNTRIES[country].phoneFormat);
+
+/**
+ * O telefone vem da API em E.164 (+5511…): tira o DDI do país para o campo,
+ * que só pede o número local.
+ */
+export const toLocalPhone = (telephone: string, country: TCountryCode) => {
+  const code = digitsOf(COUNTRIES[country].phoneCode);
+  const digits = digitsOf(telephone);
+  const local =
+    telephone.trim().startsWith('+') && digits.startsWith(code)
+      ? digits.slice(code.length)
+      : digits;
+
+  return maskPhoneFor(local, country);
 };
 
 export const maskTime = (value: string) => {
