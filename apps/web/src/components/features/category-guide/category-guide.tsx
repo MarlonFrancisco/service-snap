@@ -8,6 +8,7 @@ import {
   businessPagePath,
   getBusinessSegment,
 } from '@/utils/constants/business-pages.constants';
+import type { TCategoryCityLink } from '@/utils/helpers/store-sitemap.helper';
 import { CalendarCheck, Search, UserRound } from 'lucide-react';
 import { TrackedLink } from '@/components/ui/tracked-link';
 import Link from 'next/link';
@@ -45,7 +46,14 @@ export function categorySearchHref(guide: TCategoryGuide): string {
   return `/booking?${params.toString()}`;
 }
 
-export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
+export function CategoryGuide({
+  guide,
+  cities = [],
+}: {
+  guide: TCategoryGuide;
+  /** Cidades com lojas desta categoria; a seção some quando vazia. */
+  cities?: TCategoryCityLink[];
+}) {
   const searchHref = categorySearchHref(guide);
   const partnerHref = businessPagePath(
     getBusinessSegment(guide.slug) ? guide.slug : '',
@@ -107,6 +115,32 @@ export function CategoryGuide({ guide }: { guide: TCategoryGuide }) {
             ))}
           </ul>
         </section>
+
+        {cities.length > 0 ? (
+          <section aria-labelledby="cidades" className="mt-14 md:mt-20">
+            <h2 id="cidades" className={SECTION_TITLE_CLASS}>
+              {guide.name} por cidade
+            </h2>
+            <ul className="mt-5 flex flex-wrap gap-2.5">
+              {cities.map((city) => (
+                <li key={city.path}>
+                  <TrackedLink
+                    href={city.path}
+                    event="select_content"
+                    properties={{
+                      content_type: 'category_guide_city',
+                      item_id: city.path,
+                      destination: city.path,
+                    }}
+                    className={SECONDARY_ACTION_CLASS}
+                  >
+                    {guide.name} em {city.cityName}
+                  </TrackedLink>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section aria-labelledby="como-funciona" className="mt-14 md:mt-20">
           <h2 id="como-funciona" className={SECTION_TITLE_CLASS}>

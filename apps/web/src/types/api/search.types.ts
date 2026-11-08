@@ -48,3 +48,15 @@ export interface ISearchResult {
   metadata: IStoreSearchMetadata;
   score?: number;
 }
+
+/** Resposta de `GET /search/sitemap`: lojas do índice e seus pares categoria + cidade. */
+export type TStoresSitemap = {
+  /** `updatedAt` falta em documento antigo, ainda sem data no índice. */
+  stores: { id: string; updatedAt?: string }[];
+  categoryCities: {
+    category: string;
+    city: string;
+    storeCount: number;
+    updatedAt?: string;
+  }[];
+};

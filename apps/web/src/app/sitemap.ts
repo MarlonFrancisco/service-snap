@@ -12,9 +12,17 @@ import {
   MARKETING_PAGES_UPDATED_AT,
 } from '@/utils/constants/platform.constants';
 import { SITE_URL } from '@/utils/constants/site.constants';
+import {
+  loadStoreSitemap,
+  toCategoryCityLinks,
+  toLastModified,
+} from '@/utils/helpers/store-sitemap.helper';
 import type { MetadataRoute } from 'next';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// Lojas entram e saem do sitemap sem deploy; 1 h basta para o Google.
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: `${SITE_URL}/`,
@@ -80,7 +88,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: page.slug ? 0.8 : 0.9,
   }));
 
-  // Lojas dependem do índice de busca; ficam de fora até ele estar confiável.
+  // Lojas e pares categoria + cidade vêm do índice da busca, que só guarda quem
+  // dá para agendar. Se a API falhar, o sitemap sai só com o fixo.
   // Busca (`/booking?query=`) nunca entra: é página de resultado.
-  return [...staticPages, ...businessPages, ...categoryGuidePages];
+  const storeSitemap = await loadStoreSitemap();
+
+  const storePages: MetadataRoute.Sitemap = (storeSitemap?.stores ?? []).map(
+    (store) => ({
+      url: `${SITE_URL}/booking/${store.id}`,
+      lastModified: toLastModified(store.updatedAt),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }),
+  );
+
+  const categoryCityPages: MetadataRoute.Sitemap = toCategoryCityLinks(
+    storeSitemap,
+  ).map((link) => ({
+    url: `${SITE_URL}${link.path}`,
+    lastModified: toLastModified(link.updatedAt),
+    changeFrequency: 'weekly',
+    priority: 0.8,
+  }));
+
+  return [
+    ...staticPages,
+    ...businessPages,
+    ...categoryGuidePages,
+    ...categoryCityPages,
+    ...storePages,
+  ];
 }

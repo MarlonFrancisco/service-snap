@@ -1,4 +1,7 @@
-import type { ISearchResult } from '../../types/api/search.types';
+import type {
+  ISearchResult,
+  TStoresSitemap,
+} from '../../types/api/search.types';
 import { apiClient } from '../api';
 
 export type TSearchStoresParams = {
@@ -29,6 +32,15 @@ export class SearchService {
       {
         headers: this.headers,
       },
+    );
+  }
+
+  static async getSitemap(categories: readonly string[]) {
+    const searchParams = new URLSearchParams({
+      categories: categories.join(','),
+    });
+    return await this.apiClient.get<TStoresSitemap>(
+      `/search/sitemap?${searchParams.toString()}`,
     );
   }
 }

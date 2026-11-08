@@ -8,6 +8,11 @@ import {
 import { SITE_URL } from '@/utils/constants/site.constants';
 import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
+import {
+  categoryCityLinksFor,
+  loadStoreSitemap,
+  toCategoryCityLinks,
+} from '@/utils/helpers/store-sitemap.helper';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -17,6 +22,9 @@ type CategoryGuidePageProps = {
 
 // Só as categorias com conteúdo próprio viram página; as outras dão 404.
 export const dynamicParams = false;
+
+// A lista de cidades acompanha as lojas novas sem precisar de deploy.
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return CATEGORY_GUIDES.map((guide) => ({ category: guide.slug }));
@@ -68,6 +76,12 @@ export default async function CategoryGuidePage({
   const guide = getCategoryGuide((await params).category);
   if (!guide) notFound();
 
+  // Links no HTML do servidor: é por eles que o Google chega às cidades e lojas.
+  const cities = categoryCityLinksFor(
+    toCategoryCityLinks(await loadStoreSitemap()),
+    guide.slug,
+  );
+
   return (
     <>
       <script
@@ -76,7 +90,7 @@ export default async function CategoryGuidePage({
           __html: serializeJsonLd(buildJsonLd(guide)),
         }}
       />
-      <CategoryGuide guide={guide} />
+      <CategoryGuide guide={guide} cities={cities} />
     </>
   );
 }
