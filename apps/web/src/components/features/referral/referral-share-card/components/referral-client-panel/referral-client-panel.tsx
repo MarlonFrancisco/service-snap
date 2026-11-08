@@ -24,13 +24,14 @@ export const ReferralClientPanel = ({
   handleCopyPrimary,
   handleCopySecondary,
   handleShare,
+  isSticky = true,
 }: TReferralClientPanelConfig) => {
   return (
     <aside
       aria-label="Indicação"
       className={cn(
-        'rounded-3xl bg-white p-5 shadow-[0_10px_32px_rgba(15,12,30,0.1)] md:rounded-[28px] md:p-6 md:shadow-[0_12px_40px_rgba(15,12,30,0.1)] min-[1021px]:sticky',
-        HEADER_STICKY_TOP_CLASS,
+        'rounded-3xl bg-white p-5 shadow-[0_10px_32px_rgba(15,12,30,0.1)] md:rounded-[28px] md:p-6 md:shadow-[0_12px_40px_rgba(15,12,30,0.1)]',
+        isSticky && ['min-[1021px]:sticky', HEADER_STICKY_TOP_CLASS],
       )}
     >
       <h2 className="text-xl font-extrabold tracking-[-0.02em] md:tracking-[-0.025em]">

@@ -11,7 +11,7 @@ export function PaymentHistoryCard() {
   const { paymentHistory, downloadPDF } = usePaymentHistoryCard();
 
   return (
-    <section className="col-[1/-1] grid gap-3.5 rounded-[24px] border border-[#EBE9F0] p-6">
+    <section className="grid gap-3.5 rounded-[24px] border border-[#EBE9F0] p-6">
       <h3 className="text-lg font-extrabold">Histórico de pagamentos</h3>
 
       {paymentHistory.length === 0 ? (

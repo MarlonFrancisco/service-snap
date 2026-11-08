@@ -19,18 +19,20 @@ export function CurrentPlan() {
   } = useCurrentPlan();
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(360px,100%),1fr))] items-start gap-4">
+    // Desktop largo: plano no topo; recursos e histórico à esquerda, indicação à direita.
+    <div className="grid items-start gap-4 min-[1280px]:grid-cols-[minmax(0,1fr)_minmax(340px,400px)]">
       <CancellationWarningAlert />
 
       <PlanOverviewCard
         onCancelReactivateClick={() => setIsCancelDialogOpen(true)}
       />
 
-      <ReferralClientPanel {...referralShare} />
+      <div className="grid min-w-0 content-start gap-4">
+        <PlanFeaturesCard />
+        <PaymentHistoryCard />
+      </div>
 
-      <PlanFeaturesCard />
-
-      <PaymentHistoryCard />
+      <ReferralClientPanel {...referralShare} isSticky={false} />
 
       <CancelReactivateDialog
         isOpen={isCancelDialogOpen}
