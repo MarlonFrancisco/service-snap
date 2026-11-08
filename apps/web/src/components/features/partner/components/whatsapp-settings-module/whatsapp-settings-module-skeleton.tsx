@@ -10,7 +10,7 @@ export const WhatsappSettingsModuleSkeleton = () => {
     <div
       role="status"
       aria-label="Carregando configurações do WhatsApp"
-      className="grid max-w-[960px] gap-4"
+      className="grid gap-4"
     >
       <div className="grid gap-2">
         <Skeleton className="h-7 w-40 rounded-[14px]" />

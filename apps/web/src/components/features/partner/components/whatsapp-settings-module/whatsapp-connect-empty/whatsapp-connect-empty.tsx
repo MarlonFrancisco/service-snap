@@ -50,7 +50,7 @@ const CHAT_PREVIEW = [
 ];
 
 export const WhatsappConnectEmpty = () => (
-  <div className="grid max-w-[960px] gap-4">
+  <div className="grid gap-4">
     <section className="flex flex-wrap items-center gap-7 rounded-[26px] border border-[#EBE9F0] p-[22px] sm:p-8">
       <div className="grid flex-[999_1_380px] gap-3.5">
         <span

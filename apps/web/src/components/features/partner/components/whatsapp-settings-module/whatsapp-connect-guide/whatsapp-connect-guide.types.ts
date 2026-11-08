@@ -8,6 +8,19 @@ export interface IWhatsappConnectGuideProps {
   initialStep: number;
 }
 
+export interface IGuideSummaryItem {
+  label: string;
+  /** Valor para exibir: o token vem mascarado. Vazio quando ainda falta. */
+  value: string;
+  step: number;
+}
+
+export interface IGuideSummaryProps {
+  items: IGuideSummaryItem[];
+  webhookTokenLabel: string;
+  onGoToStep: (step: number) => void;
+}
+
 export interface IGuideWebhookStepProps {
   webhookUrl: string;
   webhookTokenLabel: string;

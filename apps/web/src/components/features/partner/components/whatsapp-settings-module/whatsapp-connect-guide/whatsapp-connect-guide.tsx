@@ -27,6 +27,7 @@ import {
   GuideVerifyStep,
   GuideWebhookStep,
 } from './components/guide-steps';
+import { GuideSummary } from './components/guide-summary';
 import { WHATSAPP_SETTINGS_ROUTE } from './whatsapp-connect-guide.constants';
 import { useWhatsappConnectGuide } from './whatsapp-connect-guide.hook';
 import type { IWhatsappConnectGuideProps } from './whatsapp-connect-guide.types';
@@ -59,6 +60,7 @@ export const WhatsappConnectGuide = ({
     whatsappStatus,
     storeId,
     webhookUrl,
+    summaryItems,
     webhookTokenLabel,
     hasWebhookToken,
     handleCopyWebhookUrl,
@@ -78,7 +80,7 @@ export const WhatsappConnectGuide = ({
   const current = steps[step] ?? steps[0];
 
   return (
-    <div className="grid max-w-[1120px] gap-6">
+    <div className="grid gap-6">
       <div>
         <h2 className={MODULE_TITLE_CLASS}>
           Como conseguir as credenciais da API do WhatsApp
@@ -103,6 +105,7 @@ export const WhatsappConnectGuide = ({
         </div>
       </div>
 
+      {/* Desktop largo: etapas, conteúdo e resumo dos dados lado a lado. */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <ol
           aria-label="Etapas"
@@ -222,6 +225,14 @@ export const WhatsappConnectGuide = ({
               ) : null}
             </div>
           </div>
+        </div>
+
+        <div className="hidden w-[320px] shrink-0 min-[1600px]:grid">
+          <GuideSummary
+            items={summaryItems}
+            webhookTokenLabel={webhookTokenLabel}
+            onGoToStep={goToStep}
+          />
         </div>
       </div>
     </div>

@@ -88,8 +88,8 @@ export const WhatsappSettingsModule = () => {
   if (!isConfigured) return <WhatsappConnectEmpty />;
 
   return (
-    <div className="grid max-w-[960px] gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="grid gap-4 min-[1280px]:grid-cols-[minmax(0,1fr)_minmax(380px,460px)] min-[1280px]:items-start">
+      <div className="flex flex-wrap items-center justify-between gap-3 min-[1280px]:col-span-full">
         <div className="min-w-0 max-w-[620px]">
           <h2 className="sr-only">WhatsApp</h2>
           <p className={MODULE_LEAD_CLASS}>
@@ -105,173 +105,178 @@ export const WhatsappSettingsModule = () => {
         </Link>
       </div>
 
-      <section className={MODULE_CARD_CLASS}>
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <h3 className={MODULE_CARD_TITLE_CLASS}>Status da conexão</h3>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <span className={cn(MODULE_BADGE_CLASS, statusBadge.className)}>
-              {statusBadge.label}
-            </span>
-            <button
-              type="button"
-              onClick={() => void refetchWhatsappStatus()}
-              disabled={isWhatsappStatusFetching}
-              className={MODULE_ACTION_CLASS}
-            >
-              {isWhatsappStatusFetching ? 'Atualizando...' : 'Atualizar'}
-            </button>
-          </div>
-        </div>
-
-        {isConnected ? (
-          <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-3 text-sm">
-            <div>
-              <dt className="text-xs text-[#5F5C6E]">Nome verificado</dt>
-              <dd className="mt-0.5 font-semibold">
-                {whatsappStatus?.verifiedName || 'Não informado'}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[#5F5C6E]">Número</dt>
-              <dd className="mt-0.5 font-semibold">
-                {whatsappStatus?.displayPhoneNumber || 'Não informado'}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[#5F5C6E]">Qualidade</dt>
-              <dd className="mt-0.5 font-semibold">
-                {whatsappStatus?.qualityRating || 'Não informada'}
-              </dd>
-            </div>
-          </dl>
-        ) : connectionIssues.length ? null : (
-          <p role="status" className={CARD_NOTE_CLASS}>
-            {isCheckingStatus
-              ? 'Validando as credenciais com a Cloud API da Meta...'
-              : isWhatsappStatusError
-                ? 'Não foi possível verificar a conexão agora. Suas credenciais não foram alteradas.'
-                : whatsappStatus?.message ||
-                  'Complete e salve as credenciais abaixo, depois atualize o status.'}
-          </p>
-        )}
-
-        {hasUnsavedCredentials ? (
-          <p
-            role="status"
-            className="rounded-[14px] bg-[#FFF4E5] px-3.5 py-3 text-sm leading-normal text-[#6B3A00]"
-          >
-            Você alterou as credenciais abaixo. Salve as alterações para
-            conferir os novos dados: o status mostra o que está salvo.
-          </p>
-        ) : null}
-
-        {connectionIssues.length ? (
-          <WhatsappConnectionChecks
-            checks={connectionIssues}
-            onUseSuggestion={handleUseSuggestion}
-            isApplyingSuggestion={isSaveConfigPending}
-            renderReview={(step) => (
-              <Link
-                href={getGuideStepHref(step)}
+      {/* Desktop largo: status, teste e templates à esquerda; credenciais à direita. */}
+      <div className="grid min-w-0 content-start gap-4 min-[1680px]:grid-cols-2">
+        <section
+          className={cn(MODULE_CARD_CLASS, 'min-[1680px]:col-span-full')}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <h3 className={MODULE_CARD_TITLE_CLASS}>Status da conexão</h3>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className={cn(MODULE_BADGE_CLASS, statusBadge.className)}>
+                {statusBadge.label}
+              </span>
+              <button
+                type="button"
+                onClick={() => void refetchWhatsappStatus()}
+                disabled={isWhatsappStatusFetching}
                 className={MODULE_ACTION_CLASS}
               >
-                Rever o passo {step}
-              </Link>
-            )}
-          />
-        ) : null}
-      </section>
+                {isWhatsappStatusFetching ? 'Atualizando...' : 'Atualizar'}
+              </button>
+            </div>
+          </div>
 
-      <section className={MODULE_CARD_CLASS}>
-        <h3 className={MODULE_CARD_TITLE_CLASS}>Teste de envio</h3>
-        <p className={CARD_NOTE_CLASS}>
-          O número precisa ter falado com a loja nas últimas 24 horas, conforme
-          a janela de atendimento da Meta.
-        </p>
-        <form
-          onSubmit={handleSendTest}
-          className="flex flex-col gap-2 sm:flex-row sm:items-end"
-        >
-          <label
-            className={cn('grid flex-1 gap-1.5', MODULE_FIELD_LABEL_CLASS)}
-          >
-            Número de destino
-            <Input
-              inputMode="tel"
-              value={testPhone}
-              onChange={(event) => setTestPhone(event.target.value)}
-              placeholder="5511999999999"
-              className={MODULE_FIELD_CLASS}
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={isSendTestPending || !testPhone.trim()}
-            className={cn(MODULE_PRIMARY_ACTION_CLASS, LARGE_ACTION_CLASS)}
-          >
-            {isSendTestPending ? (
-              <>
-                <Spinner />
-                Enviando...
-              </>
-            ) : (
-              'Enviar teste'
-            )}
-          </button>
-        </form>
-      </section>
-
-      <section className={MODULE_CARD_CLASS}>
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <h3 className={MODULE_CARD_TITLE_CLASS}>Templates (Meta)</h3>
           {isConnected ? (
-            <button
-              type="button"
-              onClick={() => void refetchWhatsappTemplates()}
-              disabled={isWhatsappTemplatesFetching}
-              className={MODULE_ACTION_CLASS}
-            >
-              {isWhatsappTemplatesFetching ? 'Atualizando...' : 'Atualizar'}
-            </button>
-          ) : null}
-        </div>
+            <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-3 text-sm">
+              <div>
+                <dt className="text-xs text-[#5F5C6E]">Nome verificado</dt>
+                <dd className="mt-0.5 font-semibold">
+                  {whatsappStatus?.verifiedName || 'Não informado'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[#5F5C6E]">Número</dt>
+                <dd className="mt-0.5 font-semibold">
+                  {whatsappStatus?.displayPhoneNumber || 'Não informado'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-[#5F5C6E]">Qualidade</dt>
+                <dd className="mt-0.5 font-semibold">
+                  {whatsappStatus?.qualityRating || 'Não informada'}
+                </dd>
+              </div>
+            </dl>
+          ) : connectionIssues.length ? null : (
+            <p role="status" className={CARD_NOTE_CLASS}>
+              {isCheckingStatus
+                ? 'Validando as credenciais com a Cloud API da Meta...'
+                : isWhatsappStatusError
+                  ? 'Não foi possível verificar a conexão agora. Suas credenciais não foram alteradas.'
+                  : whatsappStatus?.message ||
+                    'Complete e salve as credenciais abaixo, depois atualize o status.'}
+            </p>
+          )}
 
-        {!isConnected ? (
+          {hasUnsavedCredentials ? (
+            <p
+              role="status"
+              className="rounded-[14px] bg-[#FFF4E5] px-3.5 py-3 text-sm leading-normal text-[#6B3A00]"
+            >
+              Você alterou as credenciais abaixo. Salve as alterações para
+              conferir os novos dados: o status mostra o que está salvo.
+            </p>
+          ) : null}
+
+          {connectionIssues.length ? (
+            <WhatsappConnectionChecks
+              checks={connectionIssues}
+              onUseSuggestion={handleUseSuggestion}
+              isApplyingSuggestion={isSaveConfigPending}
+              renderReview={(step) => (
+                <Link
+                  href={getGuideStepHref(step)}
+                  className={MODULE_ACTION_CLASS}
+                >
+                  Rever o passo {step}
+                </Link>
+              )}
+            />
+          ) : null}
+        </section>
+
+        <section className={MODULE_CARD_CLASS}>
+          <h3 className={MODULE_CARD_TITLE_CLASS}>Teste de envio</h3>
           <p className={CARD_NOTE_CLASS}>
-            Conecte o WhatsApp para carregar os templates.
+            O número precisa ter falado com a loja nas últimas 24 horas,
+            conforme a janela de atendimento da Meta.
           </p>
-        ) : isLoadingTemplates ? (
-          <p role="status" className={CARD_NOTE_CLASS}>
-            Carregando templates...
-          </p>
-        ) : isWhatsappTemplatesError ? (
-          <p role="alert" className="text-sm leading-normal text-[#A4231A]">
-            {templatesErrorMessage}
-          </p>
-        ) : whatsappTemplates?.length ? (
-          <ul>
-            {whatsappTemplates.map((template) => (
-              <li
-                key={`${template.name}-${template.language}`}
-                className="flex justify-between gap-3 border-t border-[#F0EEF4] py-2.5 text-sm"
+          <form
+            onSubmit={handleSendTest}
+            className="flex flex-col gap-2 sm:flex-row sm:items-end"
+          >
+            <label
+              className={cn('grid flex-1 gap-1.5', MODULE_FIELD_LABEL_CLASS)}
+            >
+              Número de destino
+              <Input
+                inputMode="tel"
+                value={testPhone}
+                onChange={(event) => setTestPhone(event.target.value)}
+                placeholder="5511999999999"
+                className={MODULE_FIELD_CLASS}
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={isSendTestPending || !testPhone.trim()}
+              className={cn(MODULE_PRIMARY_ACTION_CLASS, LARGE_ACTION_CLASS)}
+            >
+              {isSendTestPending ? (
+                <>
+                  <Spinner />
+                  Enviando...
+                </>
+              ) : (
+                'Enviar teste'
+              )}
+            </button>
+          </form>
+        </section>
+
+        <section className={MODULE_CARD_CLASS}>
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <h3 className={MODULE_CARD_TITLE_CLASS}>Templates (Meta)</h3>
+            {isConnected ? (
+              <button
+                type="button"
+                onClick={() => void refetchWhatsappTemplates()}
+                disabled={isWhatsappTemplatesFetching}
+                className={MODULE_ACTION_CLASS}
               >
-                <div className="min-w-0 break-words">
-                  {template.name}
-                  <span className="block text-[13px] text-[#5F5C6E]">
-                    {template.language}
-                    {template.category ? ` · ${template.category}` : ''}
-                  </span>
-                </div>
-                <strong className="shrink-0">{template.status}</strong>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className={CARD_NOTE_CLASS}>
-            Nenhum template encontrado nesta conta.
-          </p>
-        )}
-      </section>
+                {isWhatsappTemplatesFetching ? 'Atualizando...' : 'Atualizar'}
+              </button>
+            ) : null}
+          </div>
+
+          {!isConnected ? (
+            <p className={CARD_NOTE_CLASS}>
+              Conecte o WhatsApp para carregar os templates.
+            </p>
+          ) : isLoadingTemplates ? (
+            <p role="status" className={CARD_NOTE_CLASS}>
+              Carregando templates...
+            </p>
+          ) : isWhatsappTemplatesError ? (
+            <p role="alert" className="text-sm leading-normal text-[#A4231A]">
+              {templatesErrorMessage}
+            </p>
+          ) : whatsappTemplates?.length ? (
+            <ul>
+              {whatsappTemplates.map((template) => (
+                <li
+                  key={`${template.name}-${template.language}`}
+                  className="flex justify-between gap-3 border-t border-[#F0EEF4] py-2.5 text-sm"
+                >
+                  <div className="min-w-0 break-words">
+                    {template.name}
+                    <span className="block text-[13px] text-[#5F5C6E]">
+                      {template.language}
+                      {template.category ? ` · ${template.category}` : ''}
+                    </span>
+                  </div>
+                  <strong className="shrink-0">{template.status}</strong>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className={CARD_NOTE_CLASS}>
+              Nenhum template encontrado nesta conta.
+            </p>
+          )}
+        </section>
+      </div>
 
       <FormProvider {...form}>
         <form onSubmit={handleSubmit} className={MODULE_CARD_CLASS}>

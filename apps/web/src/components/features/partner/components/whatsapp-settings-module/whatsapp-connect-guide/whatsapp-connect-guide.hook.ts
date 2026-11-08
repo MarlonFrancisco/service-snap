@@ -3,7 +3,7 @@ import { useWhatsappQuery } from '@/hooks/use-query/use-whatsapp-query';
 import type { IWhatsappIdsSuggestion } from '@/types/api/whatsapp.types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useStoreAvailability } from '../../notifications-module/notifications-module.hook';
 import {
@@ -15,6 +15,7 @@ import {
   WHATSAPP_GUIDE_LAST_STEP,
   WHATSAPP_GUIDE_STEP_FIELDS,
   WHATSAPP_GUIDE_STEPS,
+  WHATSAPP_GUIDE_SUMMARY_FIELDS,
   WHATSAPP_WEBHOOK_URL,
 } from './whatsapp-connect-guide.constants';
 
@@ -47,6 +48,10 @@ export const useWhatsappConnectGuide = (initialStep: number) => {
     defaultValues: EMPTY_FORM_VALUES,
   });
   const { reset, trigger, handleSubmit } = form;
+  const summaryValues = useWatch({
+    control: form.control,
+    name: WHATSAPP_GUIDE_SUMMARY_FIELDS.map(({ name }) => name),
+  });
 
   // Preenche uma vez com o que já foi salvo; depois disso o que a pessoa digita manda.
   const hasHydrated = useRef(false);
@@ -125,6 +130,18 @@ export const useWhatsappConnectGuide = (initialStep: number) => {
     whatsappStatus?.status === 'connected' &&
     !checks.some((check) => check.state === 'error');
 
+  // Resumo do que já foi colado; o token aparece mascarado.
+  const summaryItems = WHATSAPP_GUIDE_SUMMARY_FIELDS.map(
+    ({ name, label, step: fieldStep }, index) => {
+      const value = String(summaryValues[index] ?? '').trim();
+      return {
+        label,
+        step: fieldStep,
+        value: value && name === 'accessToken' ? maskToken(value) : value,
+      };
+    },
+  );
+
   const handleRetry = () => {
     if (storeAvailability !== 'ready') {
       retryStore();
@@ -160,6 +177,7 @@ export const useWhatsappConnectGuide = (initialStep: number) => {
     whatsappStatus,
     storeId,
     webhookUrl: WHATSAPP_WEBHOOK_URL,
+    summaryItems,
     webhookTokenLabel: maskToken(webhookToken),
     hasWebhookToken: Boolean(webhookToken),
     handleCopyWebhookUrl: () => void copy(WHATSAPP_WEBHOOK_URL, 'URL'),

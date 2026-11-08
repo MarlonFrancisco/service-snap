@@ -20,6 +20,17 @@ export const WHATSAPP_GUIDE_STEP_FIELDS: Partial<
   4: ['accessToken'],
 };
 
+/** Dados que o guia coleta, na ordem em que aparecem, com a etapa onde cada um é colado. */
+export const WHATSAPP_GUIDE_SUMMARY_FIELDS = [
+  { name: 'phoneNumberId', label: 'Phone Number ID', step: 3 },
+  { name: 'businessAccountId', label: 'Business Account ID', step: 3 },
+  { name: 'accessToken', label: 'Access Token', step: 4 },
+] as const satisfies readonly {
+  name: keyof IWhatsappSettingsSchema;
+  label: string;
+  step: number;
+}[];
+
 export const WHATSAPP_GUIDE_ROUTE = '/partner/settings/whatsapp/connect';
 export const WHATSAPP_SETTINGS_ROUTE = '/partner/settings/whatsapp';
 
