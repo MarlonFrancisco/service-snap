@@ -1,6 +1,7 @@
 import type { Schedule } from '../../modules/partner/stores/schedule/schedule.entity';
 import type { BlockedTime } from '../../modules/partner/stores/store-member/blocked-time/blocked-time.entity';
 import type { TCalendarEvent } from './schedule.types';
+import { getStoreTimezone } from './region.helpers';
 
 export const calculateEndTime = (
   startTime: string,
@@ -221,7 +222,7 @@ export function buildAvailabilitySlots({
 }: AvailabilityParams): AvailabilitySlot[] {
   // Meio-dia em UTC mantém o mesmo dia da semana em qualquer fuso do servidor
   const selectedDate = new Date(`${date}T12:00:00Z`);
-  const storeNow = getStoreNow(store.timezone || 'America/Sao_Paulo', now);
+  const storeNow = getStoreNow(getStoreTimezone(store), now);
   const isClosedDay =
     store.businessDays?.[WEEK_DAYS[selectedDate.getUTCDay()]] === false;
 

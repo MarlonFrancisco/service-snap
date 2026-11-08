@@ -23,6 +23,23 @@ export class Schedule extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   notes: string;
 
+  /** Preço do serviço no momento da reserva. Nulo em agendamentos antigos. */
+  @Column({
+    type: 'numeric',
+    precision: 12,
+    scale: 2,
+    nullable: true,
+    transformer: {
+      to: (value?: number | null) => value,
+      from: (value?: string | null) => (value == null ? null : Number(value)),
+    },
+  })
+  price: number | null;
+
+  /** Moeda (ISO 4217) da loja no momento da reserva. */
+  @Column({ type: 'char', length: 3, nullable: true })
+  currency: string | null;
+
   @Column({
     type: 'enum',
     nullable: true,

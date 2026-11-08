@@ -27,6 +27,7 @@ import { CreateSchedulesDto } from './dto/create-schedule.dto';
 import { ScheduleDto } from './dto/schedule.dto';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
 import { Schedule } from './schedule.entity';
+import { buildSchedulePriceSnapshot } from './schedule.helpers';
 
 /**
  * Lista do que sai nas respostas de agendamento, para coluna nova em `User` não
@@ -158,7 +159,7 @@ export class ScheduleService {
   async create(scheduleDto: CreateSchedulesDto): Promise<Schedule[]> {
     return this.createSchedules(
       scheduleDto,
-      () => this.upsertCustomer(scheduleDto.user),
+      (store) => this.upsertCustomer(scheduleDto.user, store.country),
       false,
     );
   }
@@ -172,9 +173,9 @@ export class ScheduleService {
 
     return this.createSchedules(
       scheduleDto,
-      () =>
+      (store) =>
         isStaff
-          ? this.upsertCustomer(scheduleDto.user)
+          ? this.upsertCustomer(scheduleDto.user, store.country)
           : this.usersService.findById(requesterId),
       isStaff,
     );
@@ -201,8 +202,12 @@ export class ScheduleService {
     );
   }
 
-  private async upsertCustomer(contact?: Partial<User>): Promise<User> {
-    const telephone = normalizePhoneNumber(contact?.telephone);
+  /** Telefone sem DDI é lido como do país da loja. */
+  private async upsertCustomer(
+    contact: Partial<User> | undefined,
+    storeCountry?: string | null,
+  ): Promise<User> {
+    const telephone = normalizePhoneNumber(contact?.telephone, storeCountry);
 
     // Sem contato, a busca do upsert fica sem filtro e devolve um usuário qualquer
     if (!contact?.email && !telephone) {
@@ -219,7 +224,7 @@ export class ScheduleService {
 
   private async createSchedules(
     scheduleDto: CreateSchedulesDto,
-    resolveCustomer: () => Promise<User>,
+    resolveCustomer: (store: Store) => Promise<User>,
     createdByStore: boolean,
   ): Promise<Schedule[]> {
     const storeId = scheduleDto.store?.id;
@@ -265,7 +270,9 @@ export class ScheduleService {
     const schedules = scheduleDto.services.map((service) => {
       const startTime = !endTime ? scheduleDto.startTime : endTime;
       // A duração vem da loja: a do corpo encurtaria a checagem de conflito
-      const { duration } = storeServices.find(({ id }) => id === service.id);
+      const { duration, price } = storeServices.find(
+        ({ id }) => id === service.id,
+      );
       const scheduleEndTime = calculateEndTime(startTime, duration);
 
       const nextSchedule = {
@@ -276,6 +283,9 @@ export class ScheduleService {
         endTime: scheduleEndTime,
         service: { id: service.id },
         services: undefined,
+        // Preço e moeda do momento da reserva: mudar o serviço depois não
+        // reescreve o histórico de receita
+        ...buildSchedulePriceSnapshot(price, store),
       };
 
       endTime = scheduleEndTime;
@@ -306,7 +316,7 @@ export class ScheduleService {
           }
         }
 
-        const user = await resolveCustomer();
+        const user = await resolveCustomer(store);
 
         return manager.save(
           Schedule,

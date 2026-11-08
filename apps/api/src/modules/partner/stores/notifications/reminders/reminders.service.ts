@@ -7,11 +7,13 @@ import {
   storeTimeToDate,
   toDateKey,
 } from '../../../../../utils/helpers/schedule.helpers';
+import { getStoreTimezone } from '../../../../../utils/helpers/region.helpers';
 import { NotificationService } from '../../../../notification/notification.service';
 import { PlanFeatureGuard } from '../../guards';
 import {
   buildCustomerEmailData,
   getBookingPrice,
+  getSchedulePrice,
 } from '../../schedule/schedule.helpers';
 import { Schedule } from '../../schedule/schedule.entity';
 import type { Store } from '../../store.entity';
@@ -118,7 +120,8 @@ export class RemindersService {
       sendIntervalMs: WHATSAPP_SEND_INTERVAL_MS,
       historyLabel: 'Lembrete por WhatsApp do agendamento',
       advanceOf: (settings) => settings.whatsappReminderAdvanceHours,
-      recipientOf: (schedule) => toWhatsappRecipient(schedule.user.telephone),
+      recipientOf: (schedule) =>
+        toWhatsappRecipient(schedule.user.telephone, schedule.store.country),
       isStoreReady: (store) => {
         if (!readiness.has(store.id)) {
           readiness.set(store.id, this.isWhatsappStoreReady(store));
@@ -213,7 +216,7 @@ export class RemindersService {
       const startsAt = storeTimeToDate(
         toDateKey(schedule.date),
         schedule.startTime,
-        schedule.store.timezone || 'America/Sao_Paulo',
+        getStoreTimezone(schedule.store),
       ).getTime();
       const advanceHours = parseAdvanceHours(
         config.advanceOf(schedule.store.notificationsSettings),
@@ -346,7 +349,7 @@ export class RemindersService {
   /** "R$ 50,00, no local"; sem preço fica só "Sob consulta". */
   private formatPrice(schedule: Schedule) {
     const price = getBookingPrice([schedule]);
-    return Number(schedule.service?.price) > 0 ? `${price}, no local` : price;
+    return getSchedulePrice(schedule) > 0 ? `${price}, no local` : price;
   }
 
   private async recordHistory(

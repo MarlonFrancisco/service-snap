@@ -4,7 +4,8 @@ import type { Cache } from 'cache-manager';
 import { isEmail } from 'class-validator';
 import { createHash } from 'crypto';
 import { generateAuthCode } from '../../utils/helpers/auth.helpers';
-import { formatCurrency } from '../../utils/helpers/format.helpers';
+import { formatStoreCurrency } from '../../utils/helpers/format.helpers';
+import { getStoreTimezone } from '../../utils/helpers/region.helpers';
 import {
   formatLongDate,
   getStoreNow,
@@ -56,7 +57,6 @@ const MESSAGE_DEDUP_TTL_MS = 60 * 60 * 1000;
 // Quantos dias à frente procurar vaga, e quantos consultar de uma vez
 const DAY_SEARCH_HORIZON = 60;
 const DAY_SEARCH_BATCH = 7;
-const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 // Código de confirmação do e-mail: validade, tentativas e reenvios por conversa
 const EMAIL_CODE_TTL_MS = 10 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
@@ -375,7 +375,9 @@ export class WhatsappBotService {
         description: truncate(
           [
             formatDuration(service.duration),
-            service.price ? formatCurrency(service.price) : '',
+            service.price
+              ? formatStoreCurrency(service.price, ctx.config.store)
+              : '',
           ]
             .filter(Boolean)
             .join(' · ') || service.description,
@@ -738,7 +740,9 @@ export class WhatsappBotService {
       `🕐 ${slot.time}`,
     ];
 
-    if (service.price) lines.push(`💰 ${formatCurrency(service.price)}`);
+    if (service.price) {
+      lines.push(`💰 ${formatStoreCurrency(service.price, ctx.config.store)}`);
+    }
     if (ctx.session.customerEmail) {
       lines.push(`📧 Confirmação para ${ctx.session.customerEmail}`);
     }
@@ -867,7 +871,7 @@ export class WhatsappBotService {
       return this.enterConfirm(ctx);
     }
 
-    const telephone = normalizePhoneNumber(ctx.from);
+    const telephone = normalizePhoneNumber(ctx.from, ctx.config.store.country);
     const customer =
       telephone && (await this.usersService.findByOne({ telephone }));
 
@@ -1046,7 +1050,7 @@ export class WhatsappBotService {
   // ---------------------------------------------------------------------------
 
   private async enterAppointments(ctx: IBotContext) {
-    const tz = ctx.config.store.timezone || DEFAULT_TIMEZONE;
+    const tz = getStoreTimezone(ctx.config.store);
     const now = getStoreNow(tz, new Date());
     const schedules = await this.scheduleService.findUpcomingForCustomer(
       ctx.config.store.id,
@@ -1297,10 +1301,7 @@ export class WhatsappBotService {
   }
 
   private today(ctx: IBotContext) {
-    return getStoreNow(
-      ctx.config.store.timezone || DEFAULT_TIMEZONE,
-      new Date(),
-    ).date;
+    return getStoreNow(getStoreTimezone(ctx.config.store), new Date()).date;
   }
 
   private professionalName(ctx: IBotContext, memberId: string) {

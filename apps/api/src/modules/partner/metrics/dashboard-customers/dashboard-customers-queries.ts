@@ -101,7 +101,7 @@ export const DashboardCustomersQueries = {
     WITH current_ltv AS (
       SELECT
         COUNT(DISTINCT sch."userId") as customer_count,
-        COALESCE(SUM(s.price), 0) as total_revenue
+        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
       FROM schedules sch
       LEFT JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -112,7 +112,7 @@ export const DashboardCustomersQueries = {
     previous_ltv AS (
       SELECT
         COUNT(DISTINCT sch."userId") as customer_count,
-        COALESCE(SUM(s.price), 0) as total_revenue
+        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
       FROM schedules sch
       LEFT JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -220,7 +220,7 @@ export const DashboardCustomersQueries = {
         sch."userId",
         COUNT(*) as total_visits,
         COUNT(CASE WHEN sch.status = 'completed' THEN 1 END) as completed_visits,
-        COALESCE(SUM(s.price), 0) as total_spent,
+        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_spent,
         MIN(sch.date) as first_visit,
         MAX(sch.date) as last_visit,
         CASE
@@ -277,7 +277,7 @@ export const DashboardCustomersQueries = {
       sch."userId" as customer_id,
       COALESCE(u.first_name || ' ' || u.last_name, 'Cliente') as customer_name,
       COUNT(*) as visits,
-      ROUND(COALESCE(SUM(s.price), 0)::NUMERIC) as total_spent,
+      ROUND(COALESCE(SUM(COALESCE(sch.price, s.price)), 0)::NUMERIC) as total_spent,
       MAX(sch.date) as last_visit
     FROM schedules sch
     LEFT JOIN services s ON sch."serviceId" = s.id

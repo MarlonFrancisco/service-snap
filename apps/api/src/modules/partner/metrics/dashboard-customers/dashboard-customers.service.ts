@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   getPeriodDateRange,
+  resolveStoreToday,
   getPreviousPeriodStart,
 } from '../../../../utils/helpers/metrics.helpers';
 import { Schedule } from '../../stores/schedule/schedule.entity';
@@ -45,7 +46,11 @@ export class DashboardCustomersService {
     storeId: string,
     period: PeriodType = 'month',
   ): Promise<DashboardCustomersDto> {
-    const now = new Date();
+    // Períodos no dia da loja, não no dia UTC do servidor
+    const now = await resolveStoreToday(
+      this.scheduleRepository.manager,
+      storeId,
+    );
     const currentPeriod = getPeriodDateRange(now, period);
     const previousPeriod = getPeriodDateRange(
       getPreviousPeriodStart(now, period),

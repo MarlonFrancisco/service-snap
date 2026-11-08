@@ -1,5 +1,12 @@
+import {
+  getCountryDefaults,
+  isValidTimeZone,
+  normalizeStateFor,
+  toE164,
+} from '../../../utils/helpers/region.helpers';
 import type { StoreMember } from '../stores/store-member/store-member.entity';
 import type { Store } from '../stores/store.entity';
+import type { SaveSpaceDto } from './dto/onboarding.dto';
 import { ONBOARDING_STEPS, type TOnboardingStep } from './onboarding.types';
 
 /** Rascunho: saiu do assistente sem concluir. Clientes não podem ver. */
@@ -62,4 +69,28 @@ export const validateBusinessHours = ({
   }
 
   return null;
+};
+
+/**
+ * Campos da loja vindos da etapa de espaço. País, moeda e fuso são gravados
+ * explicitamente (antes caíam nos defaults do Brasil) e o telefone vai em E.164.
+ */
+export const buildSpaceRegionFields = ({
+  country: countryCode,
+  timezone,
+  state,
+  telephone,
+  ...space
+}: Omit<SaveSpaceDto, 'businessType'>) => {
+  const defaults = getCountryDefaults(countryCode);
+
+  return {
+    ...space,
+    country: defaults.country,
+    currency: defaults.currency,
+    timezone: isValidTimeZone(timezone) ? timezone : defaults.timezone,
+    state: normalizeStateFor(state, defaults.country),
+    // O DTO já validou: o fallback só cobre quem chama sem passar pelo DTO
+    telephone: toE164(telephone, defaults.country) ?? telephone,
+  };
 };

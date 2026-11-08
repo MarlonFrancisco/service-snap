@@ -16,6 +16,13 @@ import {
   Max,
   Min,
 } from 'class-validator';
+import {
+  IsPhoneFor,
+  IsPostalCodeFor,
+  IsStateFor,
+  IsSupportedCountry,
+  IsTimeZone,
+} from '../../../../utils/validators/region.validators';
 import { ONBOARDING_STEPS, type TOnboardingStep } from '../onboarding.types';
 
 const trim = ({ value }: { value: unknown }) =>
@@ -38,8 +45,21 @@ export class SaveSpaceDto {
   @Length(10, 500)
   description: string;
 
-  @IsString()
-  @Matches(/^\d{5}-?\d{3}$/, { message: 'CEP inválido' })
+  // Opcional até o front enviar: sem país, a loja nasce no país padrão
+  @IsOptional()
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : value,
+  )
+  @IsSupportedCountry()
+  country?: string;
+
+  // Sem fuso, vale o padrão do país
+  @IsOptional()
+  @IsTimeZone()
+  timezone?: string;
+
+  @Transform(trim)
+  @IsPostalCodeFor()
   zipCode: string;
 
   @Transform(trim)
@@ -52,12 +72,12 @@ export class SaveSpaceDto {
   @Length(2, 100)
   city: string;
 
-  @IsString()
-  @Matches(/^[A-Za-z]{2}$/, { message: 'Estado inválido' })
-  state: string;
+  @Transform(trim)
+  @IsStateFor()
+  state?: string;
 
   @IsString()
-  @Matches(/^[\d\s()+-]{10,20}$/, { message: 'Telefone inválido' })
+  @IsPhoneFor()
   telephone: string;
 }
 

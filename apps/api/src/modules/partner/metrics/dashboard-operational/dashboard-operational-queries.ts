@@ -370,7 +370,7 @@ export const DashboardOperationalQueries = {
       SUM(CASE WHEN sch.status = 'completed' THEN 1 ELSE 0 END) as completed_appointments,
       SUM(CASE WHEN sch.status = 'no-show' THEN 1 ELSE 0 END) as no_show_count,
       ROUND(AVG(s.duration))::INT as avg_service_duration,
-      ROUND(SUM(s.price))::INT as total_revenue
+      ROUND(SUM(COALESCE(sch.price, s.price)))::INT as total_revenue
     FROM schedules sch
     INNER JOIN store_members sm ON sch."storeMemberId" = sm.id
     LEFT JOIN users u ON sm."userId" = u.id
