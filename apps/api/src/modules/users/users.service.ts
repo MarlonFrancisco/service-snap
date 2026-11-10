@@ -287,6 +287,7 @@ export class UsersService {
         'firstName',
         'lastName',
         'telephone',
+        'avatar',
         'createdAt',
       ],
     });
