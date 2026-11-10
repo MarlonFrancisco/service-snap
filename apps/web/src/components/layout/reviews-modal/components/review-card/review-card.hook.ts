@@ -1,3 +1,4 @@
+import { getUserAvatarUrl } from '@/utils/helpers/storage.helper';
 import type { TReviewCardConfig } from './review-card.types';
 
 export const useReviewCard = ({ review }: TReviewCardConfig) => {
@@ -6,7 +7,7 @@ export const useReviewCard = ({ review }: TReviewCardConfig) => {
   return {
     fullName: `${firstName} ${lastName}`,
     initials: `${firstName.charAt(0)}${lastName.charAt(0)}`,
-    avatarSrc: `${process.env.NEXT_PUBLIC_CDN_URL}${avatar}`,
+    avatarSrc: getUserAvatarUrl(avatar),
     formattedDate: new Date(review.createdAt).toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',

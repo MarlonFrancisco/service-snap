@@ -1,5 +1,6 @@
 import { PARTNER_MUTED_TEXT_CLASS } from '@/components/features/partner/partner.styles';
 import { ImageWithFallback } from '@/components/ui/image-with-fallback';
+import { getUserAvatarUrl } from '@/utils/helpers/storage.helper';
 import { cn } from '@repo/ui';
 import {
   STORES_COMPACT_BUTTON_CLASS,
@@ -29,7 +30,7 @@ export const ProfessionalCard = ({
       {professional.user.avatar ? (
         <span className="relative size-12 overflow-hidden rounded-full">
           <ImageWithFallback
-            src={professional.user.avatar}
+            src={getUserAvatarUrl(professional.user.avatar)}
             alt=""
             fill
             sizes="48px"

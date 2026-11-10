@@ -10,6 +10,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from '@repo/ui';
+import { resolveStoreImageSrc } from '@/components/ui/image-with-fallback/image-with-fallback.helpers';
 import {
   Download,
   Grid3X3,
@@ -212,7 +213,7 @@ export const ImageGallery = ({
                       <Image
                         width={800}
                         height={800}
-                        src={`${process.env.NEXT_PUBLIC_CDN_URL}/stores/${image}`}
+                        src={resolveStoreImageSrc(image)}
                         alt={`${businessName} - Foto ${index + 1}`}
                         className="w-auto h-auto max-w-full max-h-[calc(85vh-12rem)] sm:max-h-[calc(80vh-12rem)] object-contain transition-all duration-500 ease-out"
                         style={{
@@ -251,7 +252,7 @@ export const ImageGallery = ({
                     <Image
                       width={100}
                       height={60}
-                      src={`${process.env.NEXT_PUBLIC_CDN_URL}/stores/${image}`}
+                      src={resolveStoreImageSrc(image)}
                       alt={`Miniatura ${index + 1}`}
                       className="w-full h-full object-cover"
                       loading="lazy"

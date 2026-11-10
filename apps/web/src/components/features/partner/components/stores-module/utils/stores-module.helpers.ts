@@ -6,11 +6,7 @@ import { formatBusinessHours } from '@/utils/helpers/business-hours.helper';
 
 import type { TPlanUsage } from '../stores-module.types';
 
-import {
-  AMENITIES_LIST,
-  STAFF_ROLES,
-  STORE_IMAGES_BASE_URL,
-} from './stores-module.constants';
+import { AMENITIES_LIST, STAFF_ROLES } from './stores-module.constants';
 
 export const getRoleLabel = (role: TProfessionalRole): string => {
   return STAFF_ROLES[role].label;
@@ -56,10 +52,6 @@ export const getStoreLocationLabel = ({
 }: Pick<IStore, 'address' | 'city' | 'state'>): string => {
   const region = [city, state].filter(Boolean).join(' - ');
   return [address, region].filter(Boolean).join(', ');
-};
-
-export const getStoreImageUrl = (path: string): string => {
-  return `${STORE_IMAGES_BASE_URL}/${path}`;
 };
 
 export const getProfessionalName = ({ user }: IProfessional): string => {

@@ -17,7 +17,6 @@ import {
   STORES_DANGER_TEXT_CLASS,
 } from '../../stores-module.styles';
 import { STORE_DELETE_CONSEQUENCE } from '../../utils/stores-module.constants';
-import { getStoreImageUrl } from '../../utils/stores-module.helpers';
 import { ConfirmDialog } from '../confirm-dialog';
 import { StorePublicPresence } from '../store-public-presence';
 import { useStoreCard } from './store-card.hook';
@@ -55,7 +54,7 @@ export const StoreCard = ({ store }: TStoreCardConfig) => {
                 {orderedGallery.map((image, index) => (
                   <CarouselItem key={image.id} className="relative h-full pl-0">
                     <ImageWithFallback
-                      src={getStoreImageUrl(image.url)}
+                      src={image.url}
                       alt={`Foto ${index + 1} da loja ${store.name}`}
                       fill
                       sizes={IMAGE_SIZES}

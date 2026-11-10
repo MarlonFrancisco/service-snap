@@ -6,7 +6,6 @@ import {
   STORES_DANGER_TEXT_CLASS,
   STORES_ERROR_TEXT_CLASS,
 } from '../../stores-module.styles';
-import { getStoreImageUrl } from '../../utils/stores-module.helpers';
 import { useMultiImageUpload } from './multiple-image-upload.hook';
 import type { TMultiImageUploadConfig } from './multiple-image-upload.types';
 
@@ -77,7 +76,7 @@ export const MultiImageUpload = ({
             <li key={image.id} className="min-w-0">
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#F4F3F7]">
                 <ImageWithFallback
-                  src={getStoreImageUrl(image.url)}
+                  src={image.url}
                   alt={`Foto ${index + 1} da loja`}
                   fill
                   sizes="(min-width: 768px) 280px, 100vw"

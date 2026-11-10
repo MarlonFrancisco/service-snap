@@ -1,5 +1,6 @@
 import path from 'path';
 
+/** Libera no next/image o domínio público do bucket do R2. */
 function cdnRemotePattern() {
   const cdnUrl = process.env.NEXT_PUBLIC_CDN_URL;
   if (!cdnUrl) return null;
@@ -32,11 +33,6 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'qwprndmtjhwgmtngiwjg.supabase.co',
         pathname: '/**',
       },
       ...(cdnPattern ? [cdnPattern] : []),

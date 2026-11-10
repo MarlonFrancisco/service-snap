@@ -1,3 +1,4 @@
+import { getStoreImageUrl } from '@/utils/helpers/storage.helper';
 import { STORE_PLACEHOLDER_IMAGE } from './image-with-fallback.constants';
 
 export const resolveStoreImageSrc = (src?: string | null): string => {
@@ -14,12 +15,7 @@ export const resolveStoreImageSrc = (src?: string | null): string => {
     return src;
   }
 
-  const cdn = process.env.NEXT_PUBLIC_CDN_URL?.replace(/\/$/, '');
-  if (!cdn) {
-    return STORE_PLACEHOLDER_IMAGE;
-  }
-
-  return `${cdn}/stores/${src}`;
+  return getStoreImageUrl(src) ?? STORE_PLACEHOLDER_IMAGE;
 };
 
 export const isStorePlaceholderImage = (src?: string | null) =>

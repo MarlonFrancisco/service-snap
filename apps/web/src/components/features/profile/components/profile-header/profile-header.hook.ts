@@ -1,6 +1,7 @@
 import { useUsersMutations } from '@/hooks/use-mutations/use-users-mutations';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useAnalytics } from '@/providers/analytics.provider';
+import { getUserAvatarUrl } from '@/utils/helpers/storage.helper';
 import { useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 
@@ -54,9 +55,7 @@ export const useProfileHeader = () => {
     initials: user
       ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
       : '',
-    avatarUrl: user?.avatar
-      ? `${process.env.NEXT_PUBLIC_CDN_URL}${user.avatar}`
-      : undefined,
+    avatarUrl: getUserAvatarUrl(user?.avatar),
     memberSince: user
       ? MEMBER_SINCE_FORMATTER.format(new Date(user.createdAt))
       : '',

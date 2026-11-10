@@ -1,8 +1,5 @@
 export const PLAN_UPGRADE_ROUTE = '/partner/plans/upgrade';
 
-export const STORE_IMAGES_BASE_URL =
-  'https://qwprndmtjhwgmtngiwjg.supabase.co/storage/v1/object/public/stores';
-
 /**
  * Consequências conferidas em `apps/api`: as duas exclusões são físicas e o
  * banco remove em cascata os registros ligados. Nenhuma notifica clientes.
