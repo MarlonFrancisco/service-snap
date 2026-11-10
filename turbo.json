@@ -13,6 +13,7 @@
     "REDIS_PASSWORD",
     "REDIS_URL",
 
+    "R2_BUCKET",
     "R2_ACCOUNT_ID",
     "R2_ACCESS_KEY_ID",
     "R2_SECRET_ACCESS_KEY",
@@ -59,6 +60,7 @@
         "REDIS_PASSWORD",
         "REDIS_URL",
 
+        "R2_BUCKET",
         "R2_ACCOUNT_ID",
         "R2_ACCESS_KEY_ID",
         "R2_SECRET_ACCESS_KEY",
