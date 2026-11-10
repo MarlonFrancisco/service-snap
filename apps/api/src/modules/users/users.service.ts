@@ -256,7 +256,7 @@ export class UsersService {
   async delete(id: string): Promise<{ id: string }> {
     await this.userRepository.update(id, { isDeleted: true });
     await this.storageService.deleteFile({
-      bucket: 'users',
+      folder: 'users',
       path: `${id}/avatar.webp`,
     });
 
@@ -305,7 +305,7 @@ export class UsersService {
     const webpBuffer = await sharp(arrayBuffer).webp().toBuffer();
 
     const avatarUrl = await this.storageService.uploadFile({
-      bucket: 'users',
+      folder: 'users',
       filePath: `${id}/avatar.webp`,
       file: webpBuffer,
       contentType: 'image/webp',

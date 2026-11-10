@@ -5,14 +5,16 @@ import {
 } from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import type { TStorageFolder } from './storage.types';
 
 @Injectable()
 export class StorageService {
   private readonly s3Client: S3Client;
-  private readonly isDev: boolean;
+  /** Um bucket por ambiente (ex.: ssnap-production, ssnap-development). */
+  private readonly bucket: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.isDev = this.configService.get('NODE_ENV') !== 'production';
+    this.bucket = this.configService.getOrThrow('R2_BUCKET');
     this.s3Client = new S3Client({
       region: 'auto',
       endpoint: `https://${this.configService.getOrThrow('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
@@ -23,27 +25,29 @@ export class StorageService {
     });
   }
 
-  /** Em dev, isola objetos em buckets `*-dev` (ex.: stores → stores-dev). */
-  private resolveBucket(bucket: string): string {
-    return this.isDev ? `${bucket}-dev` : bucket;
+  private buildKey(folder: TStorageFolder, filePath: string): string {
+    return `${folder}/${filePath.replace(/^\/+/, '')}`;
   }
 
-  /** Devolve a chave do objeto, que é o que os chamadores gravam no banco. */
+  /**
+   * Grava em `<folder>/<filePath>` e devolve só o `filePath`, que é o que os
+   * chamadores gravam no banco; o front acrescenta a pasta ao montar a URL.
+   */
   async uploadFile({
-    bucket,
+    folder,
     filePath,
     file,
     contentType,
   }: {
-    bucket: string;
+    folder: TStorageFolder;
     filePath: string;
     file: Buffer;
     contentType?: string;
   }): Promise<string> {
     await this.s3Client.send(
       new PutObjectCommand({
-        Bucket: this.resolveBucket(bucket),
-        Key: filePath,
+        Bucket: this.bucket,
+        Key: this.buildKey(folder, filePath),
         Body: file,
         ContentType: contentType,
       }),
@@ -53,16 +57,16 @@ export class StorageService {
   }
 
   async deleteFile({
-    bucket,
+    folder,
     path,
   }: {
-    bucket: string;
+    folder: TStorageFolder;
     path: string;
   }): Promise<void> {
     await this.s3Client.send(
       new DeleteObjectCommand({
-        Bucket: this.resolveBucket(bucket),
-        Key: path,
+        Bucket: this.bucket,
+        Key: this.buildKey(folder, path),
       }),
     );
   }

@@ -30,7 +30,7 @@ export class GalleryService {
     const webpBuffer = await sharp(arrayBuffer).webp().toBuffer();
 
     gallery.url = await this.storageService.uploadFile({
-      bucket: 'stores',
+      folder: 'stores',
       filePath: `${gallery.store.id}/gallery/${gallery.id}.webp`,
       file: webpBuffer,
       contentType: 'image/webp',
@@ -68,7 +68,7 @@ export class GalleryService {
     }
 
     await this.storageService.deleteFile({
-      bucket: 'stores',
+      folder: 'stores',
       path: `${storeId}/gallery/${id}.webp`,
     });
 
