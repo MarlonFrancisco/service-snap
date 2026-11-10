@@ -33,6 +33,7 @@ export class GalleryService {
       bucket: 'stores',
       filePath: `${gallery.store.id}/gallery/${gallery.id}.webp`,
       file: webpBuffer,
+      contentType: 'image/webp',
     });
 
     return this.galleryRepository.save(gallery);

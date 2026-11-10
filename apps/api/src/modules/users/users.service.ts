@@ -90,7 +90,8 @@ export class UsersService {
     const user = this.userRepository.create({
       ...userData,
       paymentCustomerId: customer.id,
-      referralCode: userData.referralCode || (await this.createUniqueReferralCode()),
+      referralCode:
+        userData.referralCode || (await this.createUniqueReferralCode()),
     });
 
     return this.userRepository.save(user);
@@ -306,6 +307,7 @@ export class UsersService {
       bucket: 'users',
       filePath: `${id}/avatar.webp`,
       file: webpBuffer,
+      contentType: 'image/webp',
     });
 
     await this.userRepository.update(id, { avatar: `/users/${avatarUrl}` });
