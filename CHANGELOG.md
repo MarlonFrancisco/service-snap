@@ -1,3 +1,16 @@
+## 0.28.0 (2026-11-10)
+
+### Feat
+
+- **web**: monta as URLs de imagem a partir do bucket R2
+- **api**: usa um bucket R2 por ambiente com pastas stores/ e users/
+- **api**: migra o storage do Supabase para o Cloudflare R2
+
+### Fix
+
+- **api**: inclui o avatar na resposta de /users/me
+- **api**: envia o content-type image/webp nos uploads da galeria e do avatar
+
 ## 0.27.0 (2026-11-08)
 
 ### Feat
