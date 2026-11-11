@@ -12,8 +12,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
           type: 'postgres',
           url: configService.get<string>('DB_URL'),
           entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-          synchronize: configService.get<boolean>('DB_SYNCHRONIZE', false),
-          logging: configService.get<boolean>('DB_LOGGING', false),
+          // Variável de ambiente chega como texto: "false" seria verdadeiro
+          synchronize: configService.get('DB_SYNCHRONIZE') === 'true',
+          logging: configService.get('DB_LOGGING') === 'true',
           ssl: false,
           autoLoadEntities: true,
           // Serverless: default ~10 retries (~30s) turns a bad DB_URL into
