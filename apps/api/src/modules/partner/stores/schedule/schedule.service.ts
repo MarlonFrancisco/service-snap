@@ -299,7 +299,7 @@ export class ScheduleService {
       return nextSchedule;
     });
 
-    const savedSchedules = await this.scheduleRepository.manager.transaction(
+    const savedSchedules = await this.inSlotTransaction(
       async (manager) => {
         await this.assertMemberFree(manager, {
           store,
@@ -344,6 +344,29 @@ export class ScheduleService {
 
   async findOne(id: string, relations: string[] = []): Promise<Schedule> {
     return this.scheduleRepository.findOne({ where: { id }, relations });
+  }
+
+  /**
+   * Transação de quem ocupa um horário. Se algo escapar da checagem em
+   * `assertMemberFree`, a constraint do banco recusa (23P01) e vira o mesmo 409.
+   */
+  private async inSlotTransaction<T>(
+    work: (manager: EntityManager) => Promise<T>,
+  ): Promise<T> {
+    try {
+      return await this.scheduleRepository.manager.transaction(work);
+    } catch (error) {
+      const code = (error as { driverError?: { code?: string } }).driverError
+        ?.code;
+
+      if (code === '23P01') {
+        throw new ConflictException(
+          'Professional already has a schedule at this time',
+        );
+      }
+
+      throw error;
+    }
   }
 
   /** Membro ativo da loja. Fora da transação: ver `assertMemberFree`. */
@@ -462,7 +485,7 @@ export class ScheduleService {
       await this.assertMemberInStore(schedule.store.id, storeMemberId);
     }
 
-    await this.scheduleRepository.manager.transaction(async (manager) => {
+    await this.inSlotTransaction(async (manager) => {
       if (needsSlot && storeMemberId && date && startTime) {
         await this.assertMemberFree(manager, {
           store: before.store,
@@ -579,7 +602,7 @@ export class ScheduleService {
       endTime: calculateEndTime(startTime, before.service?.duration ?? 0),
     };
 
-    await this.scheduleRepository.manager.transaction(async (manager) => {
+    await this.inSlotTransaction(async (manager) => {
       // Só o bot remarca por aqui, em nome do cliente: vale a regra do cliente
       await this.assertMemberFree(manager, {
         store: before.store,

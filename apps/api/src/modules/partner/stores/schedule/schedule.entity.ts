@@ -1,11 +1,30 @@
-import { Column, Entity, Index, ManyToOne } from 'typeorm';
+import { Column, Entity, Exclusion, Index, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../database/base.entity';
 import { User } from '../../../users/user.entity';
 import { Service } from '../category/service/service.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
 
+export const SCHEDULE_OVERLAP_CONSTRAINT = 'excl_schedules_member_overlap';
+
+// HH:MM em minutos. Conta com inteiros porque texto::time não é imutável, e o
+// Postgres só aceita expressão imutável em constraint.
+const minutesOf = (column: string) =>
+  `substr("${column}", 1, 2)::int * 60 + substr("${column}", 4, 2)::int`;
+
+/**
+ * Última barreira contra dois atendimentos no mesmo horário: o mesmo
+ * profissional, no mesmo dia, não pode ter intervalos que se cruzam. Cancelados
+ * ficam de fora. Precisa da extensão `btree_gist` (ver `pnpm migrate:schedule-overlap`).
+ */
+export const SCHEDULE_OVERLAP_EXCLUSION = `USING gist (
+  "storeMemberId" WITH =,
+  "date" WITH =,
+  int4range(${minutesOf('startTime')}, ${minutesOf('endTime')}) WITH &&
+) WHERE ("status" <> 'cancelled' AND "startTime" IS NOT NULL AND "endTime" IS NOT NULL)`;
+
 @Entity('schedules')
+@Exclusion(SCHEDULE_OVERLAP_CONSTRAINT, SCHEDULE_OVERLAP_EXCLUSION)
 @Index('idx_schedules_store', ['store.id'])
 @Index('idx_schedules_service', ['service.id'])
 @Index('idx_schedules_user', ['user.id'])
