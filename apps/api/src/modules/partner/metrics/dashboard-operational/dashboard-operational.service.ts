@@ -4,24 +4,21 @@ import { Repository } from 'typeorm';
 import {
   PeriodType,
   getPeriodDateRange,
-  resolveStoreToday,
   getPreviousPeriodStart,
+  toStoreLocalToday,
 } from '../../../../utils/helpers/metrics.helpers';
+import { getStoreTimezone } from '../../../../utils/helpers/region.helpers';
 import { Schedule } from '../../stores/schedule/schedule.entity';
 import { Store } from '../../stores/store.entity';
 import { DashboardOperationalQueries } from './dashboard-operational-queries';
 import {
-  AppointmentStatusResult,
-  AverageTimeResult,
   DailyCapacityUtilizationResult,
   IdleTimeOpportunitiesResult,
   OccupancyHeatMapResult,
-  OccupancyRateResult,
   PeriodDistributionResult,
+  PeriodSummaryResult,
   ProfessionalPerformanceResult,
-  PunctualityRateResult,
   ServiceDurationResult,
-  TeamEfficiencyResult,
 } from './dashboard-operational.types';
 import { DashboardOperationalDto } from './dto';
 
@@ -53,25 +50,28 @@ export class DashboardOperationalService {
     }
 
     // Calcular períodos com base no tipo selecionado
-    // Períodos no dia da loja, não no dia UTC do servidor
-    const now = await resolveStoreToday(
-      this.scheduleRepository.manager,
-      storeId,
-    );
+    // Períodos no dia da loja, não no dia UTC do servidor. A loja já foi
+    // carregada acima: reaproveita em vez de buscar o fuso de novo.
+    const now = toStoreLocalToday(getStoreTimezone(store));
     const currentPeriod = getPeriodDateRange(now, period);
     const previousPeriod = getPeriodDateRange(
       getPreviousPeriodStart(now, period),
       period,
     );
 
+    const bothPeriods = [
+      storeId,
+      currentPeriod.start,
+      currentPeriod.end,
+      previousPeriod.start,
+      previousPeriod.end,
+    ];
+    const currentOnly = [storeId, currentPeriod.start, currentPeriod.end];
+
     // Executar todas as queries SQL em paralelo
     const [
-      occupancyRateResult,
-      averageTimeResult,
-      teamEfficiencyResult,
-      punctualityRateResult,
+      summaryResult,
       dailyCapacityUtilizationResults,
-      appointmentStatusResult,
       serviceDurationResults,
       periodDistributionResults,
       occupancyHeatMapResults,
@@ -79,101 +79,46 @@ export class DashboardOperationalService {
       professionalPerformanceResults,
     ] = await Promise.all([
       this.scheduleRepository.query(
-        DashboardOperationalQueries.calculateOccupancyRate,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardOperationalQueries.calculateAverageTime,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardOperationalQueries.calculateTeamEfficiency,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardOperationalQueries.calculatePunctualityRate,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
+        DashboardOperationalQueries.calculatePeriodSummary,
+        bothPeriods,
       ),
       this.scheduleRepository.query(
         DashboardOperationalQueries.calculateDailyCapacityUtilization,
-        [storeId, currentPeriod.start, currentPeriod.end],
-      ),
-      this.scheduleRepository.query(
-        DashboardOperationalQueries.calculateAppointmentStatus,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
       this.scheduleRepository.query(
         DashboardOperationalQueries.calculateServiceDuration,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
       this.scheduleRepository.query(
         DashboardOperationalQueries.calculatePeriodDistribution,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
+        bothPeriods,
       ),
       this.scheduleRepository.query(
         DashboardOperationalQueries.calculateOccupancyHeatMap,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
       this.scheduleRepository.query(
         DashboardOperationalQueries.calculateIdleTimeOpportunities,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
       this.scheduleRepository.query(
         DashboardOperationalQueries.calculateProfessionalPerformance,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
     ]);
 
     // Formatar resultados
-    const occupancyRate = this.formatOccupancyRate(
-      occupancyRateResult[0] as OccupancyRateResult,
-    );
-    const averageTime = this.formatAverageTime(
-      averageTimeResult[0] as AverageTimeResult,
-    );
-    const teamEfficiency = this.formatTeamEfficiency(
-      teamEfficiencyResult[0] as TeamEfficiencyResult,
-    );
-    const punctualityRate = this.formatPunctualityRate(
-      punctualityRateResult[0] as PunctualityRateResult,
-    );
+    const summary = summaryResult[0] as PeriodSummaryResult;
+    const occupancyRate = this.formatOccupancyRate(summary);
+    const averageTime = this.formatAverageTime(summary);
+    const teamEfficiency = this.formatTeamEfficiency(summary);
+    const punctualityRate = this.formatPunctualityRate(summary);
     const dailyCapacityUtilization = this.formatDailyCapacityUtilization(
       dailyCapacityUtilizationResults as DailyCapacityUtilizationResult[],
       store,
     );
-    const appointmentStatus = this.formatAppointmentStatus(
-      appointmentStatusResult[0] as AppointmentStatusResult,
-    );
+    const appointmentStatus = this.formatAppointmentStatus(summary);
     const serviceDuration = this.formatServiceDuration(
       serviceDurationResults as ServiceDurationResult[],
     );
@@ -205,7 +150,7 @@ export class DashboardOperationalService {
     };
   }
 
-  private formatOccupancyRate(result: OccupancyRateResult) {
+  private formatOccupancyRate(result: PeriodSummaryResult) {
     const currentValue = Number(result.current_occupancy) || 0;
     const previousValue = Number(result.prev_occupancy) || 0;
     const percentageChange =
@@ -222,7 +167,7 @@ export class DashboardOperationalService {
     };
   }
 
-  private formatAverageTime(result: AverageTimeResult) {
+  private formatAverageTime(result: PeriodSummaryResult) {
     const currentValue = Number(result.current_avg_duration) || 0;
     const previousValue = Number(result.prev_avg_duration) || 0;
     const percentageChange =
@@ -239,7 +184,7 @@ export class DashboardOperationalService {
     };
   }
 
-  private formatTeamEfficiency(result: TeamEfficiencyResult) {
+  private formatTeamEfficiency(result: PeriodSummaryResult) {
     const currentValue = Number(result.current_efficiency) || 0;
     const previousValue = Number(result.prev_efficiency) || 0;
     const percentageChange =
@@ -256,7 +201,7 @@ export class DashboardOperationalService {
     };
   }
 
-  private formatPunctualityRate(result: PunctualityRateResult) {
+  private formatPunctualityRate(result: PeriodSummaryResult) {
     const currentValue = Number(result.current_punctuality) || 0;
     const previousValue = Number(result.prev_punctuality) || 0;
     const percentageChange =
@@ -292,7 +237,7 @@ export class DashboardOperationalService {
     }));
   }
 
-  private formatAppointmentStatus(result: AppointmentStatusResult) {
+  private formatAppointmentStatus(result: PeriodSummaryResult) {
     const total = Number(result.total) || 1;
     return [
       {

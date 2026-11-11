@@ -10,16 +10,11 @@ import {
 import { Schedule } from '../../stores/schedule/schedule.entity';
 import { DashboardSalesQueries } from './dashboard-sales-queries';
 import {
-  AverageTicketResult,
-  ConversionRateResult,
-  GoalProgressResult,
-  MostProfitableDayResult,
+  PeriodSummaryResult,
   ProfitableHoursResult,
   RevenueByCategoryResult,
   RevenueByDayOfWeekResult,
   RevenueEvolutionResult,
-  RevenuePerHourResult,
-  RevenueResult,
   TopServicesResult,
 } from './dashboard-sales.types';
 import { DashboardSalesDto } from './dto/dashboard-sales.dto';
@@ -53,60 +48,27 @@ export class DashboardSalesService {
       period,
     );
 
+    const bothPeriods = [
+      storeId,
+      currentPeriod.start,
+      currentPeriod.end,
+      previousPeriod.start,
+      previousPeriod.end,
+    ];
+    const currentOnly = [storeId, currentPeriod.start, currentPeriod.end];
+
     // Executar todas as queries SQL em paralelo
     const [
-      revenueResult,
-      averageTicketResult,
-      conversionRateResult,
-      revenuePerHourResult,
-      goalProgressResult,
+      summaryResult,
       revenueEvolutionResults,
       revenueByDayOfWeekResults,
       revenueByCategoryResults,
       topServicesResults,
       profitableHoursResults,
-      mostProfitableDayResult,
     ] = await Promise.all([
-      this.scheduleRepository.query(DashboardSalesQueries.calculateRevenue, [
-        storeId,
-        currentPeriod.start,
-        currentPeriod.end,
-        previousPeriod.start,
-        previousPeriod.end,
-      ]),
       this.scheduleRepository.query(
-        DashboardSalesQueries.calculateAverageTicket,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardSalesQueries.calculateConversionRate,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardSalesQueries.calculateRevenuePerHour,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardSalesQueries.calculateGoalProgress,
-        [storeId, currentPeriod.start, currentPeriod.end, period],
+        DashboardSalesQueries.calculatePeriodSummary,
+        [...bothPeriods, period],
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateRevenueEvolution,
@@ -114,52 +76,29 @@ export class DashboardSalesService {
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateRevenueByDayOfWeek,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateRevenueByCategory,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
+        bothPeriods,
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateTopServices,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
+        bothPeriods,
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateProfitableHours,
-        [storeId, currentPeriod.start, currentPeriod.end],
-      ),
-      this.scheduleRepository.query(
-        DashboardSalesQueries.calculateMostProfitableDay,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
     ]);
 
     // Formatar resultados (com casting de tipo)
-    const revenue = this.formatRevenueResult(revenueResult[0] as RevenueResult);
-    const averageTicket = this.formatAverageTicketResult(
-      averageTicketResult[0] as AverageTicketResult,
-    );
-    const conversionRate = this.formatConversionRateResult(
-      conversionRateResult[0] as ConversionRateResult,
-    );
-    const revenuePerHour = this.formatRevenuePerHourResult(
-      revenuePerHourResult[0] as RevenuePerHourResult,
-    );
-    const goal = this.formatGoalProgressResult(
-      goalProgressResult[0] as GoalProgressResult,
-    );
+    const summary = summaryResult[0] as PeriodSummaryResult;
+    const revenue = this.formatRevenueResult(summary);
+    const averageTicket = this.formatAverageTicketResult(summary);
+    const conversionRate = this.formatConversionRateResult(summary);
+    const revenuePerHour = this.formatRevenuePerHourResult(summary);
+    const goal = this.formatGoalProgressResult(summary);
     const revenueEvolution = this.formatRevenueEvolutionResults(
       revenueEvolutionResults as RevenueEvolutionResult[],
     );
@@ -193,10 +132,7 @@ export class DashboardSalesService {
     );
 
     // Insights
-    const insights = this.generateInsights(
-      revenueByDayOfWeek,
-      mostProfitableDayResult[0] as MostProfitableDayResult,
-    );
+    const insights = this.generateInsights(revenueByDayOfWeek);
 
     return {
       revenue,
@@ -216,7 +152,7 @@ export class DashboardSalesService {
   /**
    * Formata resultado SQL de receita
    */
-  private formatRevenueResult(result: RevenueResult) {
+  private formatRevenueResult(result: PeriodSummaryResult) {
     const currentRevenue = Number(result.current_revenue) || 0;
     const prevRevenue = Number(result.prev_revenue) || 0;
     const absoluteChange = currentRevenue - prevRevenue;
@@ -236,7 +172,7 @@ export class DashboardSalesService {
   /**
    * Formata resultado SQL de ticket médio
    */
-  private formatAverageTicketResult(result: AverageTicketResult) {
+  private formatAverageTicketResult(result: PeriodSummaryResult) {
     const currentTicket = Number(result.current_avg_ticket) || 0;
     const prevTicket = Number(result.prev_avg_ticket) || 0;
     const absoluteChange = currentTicket - prevTicket;
@@ -257,7 +193,7 @@ export class DashboardSalesService {
   /**
    * Formata resultado SQL de taxa de conversão
    */
-  private formatConversionRateResult(result: ConversionRateResult) {
+  private formatConversionRateResult(result: PeriodSummaryResult) {
     const currentRate = Number(result.current_rate) || 0;
     const prevRate = Number(result.prev_rate) || 0;
     const variationInPoints = currentRate - prevRate;
@@ -278,7 +214,7 @@ export class DashboardSalesService {
   /**
    * Formata resultado SQL de receita por hora
    */
-  private formatRevenuePerHourResult(result: RevenuePerHourResult) {
+  private formatRevenuePerHourResult(result: PeriodSummaryResult) {
     const currentRevenuePerHour = Number(result.current_revenue_per_hour) || 0;
     const prevRevenuePerHour = Number(result.prev_revenue_per_hour) || 0;
     const absoluteChange = currentRevenuePerHour - prevRevenuePerHour;
@@ -298,7 +234,7 @@ export class DashboardSalesService {
   /**
    * Formata resultado SQL de progresso de meta
    */
-  private formatGoalProgressResult(result: GoalProgressResult) {
+  private formatGoalProgressResult(result: PeriodSummaryResult) {
     const currentRevenue = Number(result.current_revenue) || 0;
     const targetGoal = Number(result.target_goal) || 0;
     const daysRemaining = Number(result.days_remaining) || 0;
@@ -384,24 +320,17 @@ export class DashboardSalesService {
       averageTicket: number;
       appointments: number;
     }>,
-    mostProfitableDayResult: MostProfitableDayResult | undefined,
   ) {
-    const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'] as const;
-
-    // Encontrar dia mais rentável
-    let mostProfitableDay = revenueByDayOfWeek[0];
-    if (
-      mostProfitableDayResult &&
-      mostProfitableDayResult.day_of_week !== null
-    ) {
-      const dayIndex = Number(mostProfitableDayResult.day_of_week) || 0;
-      const foundDay = revenueByDayOfWeek.find(
-        (d) => days.indexOf(d.day as any) === dayIndex,
-      );
-      if (foundDay) {
-        mostProfitableDay = foundDay;
-      }
-    }
+    // Dia mais rentável: maior ticket médio entre os dias com atendimento
+    // concluído. Sem nenhum, cai no primeiro dia da lista.
+    const mostProfitableDay = revenueByDayOfWeek.reduce(
+      (best, day) =>
+        day.appointments > 0 &&
+        (best.appointments === 0 || day.averageTicket > best.averageTicket)
+          ? day
+          : best,
+      revenueByDayOfWeek[0],
+    );
 
     const opportunities = [];
     // Identificar dias com receita baixa

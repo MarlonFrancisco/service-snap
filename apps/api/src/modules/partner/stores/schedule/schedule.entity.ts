@@ -7,6 +7,8 @@ import { Store } from '../store.entity';
 
 @Entity('schedules')
 @Index('idx_schedules_store', ['store.id'])
+// As métricas e a agenda filtram sempre loja + intervalo de datas.
+@Index('idx_schedules_store_date', ['store.id', 'date'])
 @Index('idx_schedules_service', ['service.id'])
 @Index('idx_schedules_user', ['user.id'])
 @Index('idx_schedules_store_member', ['storeMember.id'])

@@ -3,35 +3,16 @@
  * Tipos de retorno das queries SQL parametrizadas
  */
 
-// Revenue calculation
-export interface RevenueResult {
+// Resumo do período atual vs anterior (receita, ticket, conversão, meta)
+export interface PeriodSummaryResult {
   current_revenue: number;
   prev_revenue: number;
-  current_count: number;
-  prev_count: number;
-}
-
-// Average Ticket calculation
-export interface AverageTicketResult {
   current_avg_ticket: number;
   prev_avg_ticket: number;
-}
-
-// Conversion Rate calculation
-export interface ConversionRateResult {
   current_rate: number;
   prev_rate: number;
-}
-
-// Revenue Per Hour calculation
-export interface RevenuePerHourResult {
   current_revenue_per_hour: number;
   prev_revenue_per_hour: number;
-}
-
-// Goal Progress calculation
-export interface GoalProgressResult {
-  current_revenue: number;
   target_goal: number;
   days_remaining: number;
 }
@@ -75,10 +56,4 @@ export interface ProfitableHoursResult {
   hour: string;
   revenue: number;
   utilization_rate: number;
-}
-
-// Most Profitable Day (for insights)
-export interface MostProfitableDayResult {
-  day_of_week: number;
-  avg_revenue: number;
 }

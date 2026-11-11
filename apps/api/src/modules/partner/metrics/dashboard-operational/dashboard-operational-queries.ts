@@ -6,137 +6,78 @@
 
 export const DashboardOperationalQueries = {
   /**
-   * Calcula taxa de ocupação (agendamentos / capacidade máxima)
+   * Resumo do período atual vs anterior em uma única leitura de `schedules`:
+   * ocupação, duração média, eficiência do time, pontualidade/no-show e
+   * contagem por status.
    * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
    */
-  calculateOccupancyRate: `
-    WITH business_hours AS (
+  calculatePeriodSummary: `
+    WITH base AS (
+      SELECT
+        sch.status,
+        sch."storeMemberId" AS member_id,
+        s.duration,
+        (sch.date >= $2::date AND sch.date <= $3::date) AS is_current
+      FROM schedules sch
+      LEFT JOIN services s ON sch."serviceId" = s.id
+      WHERE sch."storeId" = $1::uuid
+        AND (
+          (sch.date >= $2::date AND sch.date <= $3::date)
+          OR (sch.date >= $4::date AND sch.date <= $5::date)
+        )
+    ),
+    totals AS (
+      SELECT
+        COUNT(*) FILTER (WHERE is_current) AS current_total,
+        COUNT(*) FILTER (WHERE NOT is_current) AS prev_total,
+        COUNT(*) FILTER (WHERE is_current AND status = 'completed') AS current_completed,
+        COUNT(*) FILTER (WHERE NOT is_current AND status = 'completed') AS prev_completed,
+        COUNT(*) FILTER (WHERE is_current AND status = 'no-show') AS current_no_show,
+        COUNT(*) FILTER (WHERE is_current AND status = 'scheduled') AS current_scheduled,
+        COUNT(*) FILTER (WHERE is_current AND status = 'cancelled') AS current_cancelled,
+        COALESCE(AVG(duration) FILTER (WHERE is_current), 30) AS current_avg_duration,
+        COALESCE(AVG(duration) FILTER (WHERE NOT is_current), 30) AS prev_avg_duration,
+        COUNT(DISTINCT member_id) FILTER (WHERE is_current) AS current_active,
+        COUNT(DISTINCT member_id) FILTER (WHERE NOT is_current) AS prev_active
+      FROM base
+    ),
+    store AS (
       SELECT
         CAST(SUBSTRING("closeTime", 1, 2) AS INT) -
-        CAST(SUBSTRING("openTime", 1, 2) AS INT) as hours_per_day
+        CAST(SUBSTRING("openTime", 1, 2) AS INT) AS hours_per_day
       FROM stores
       WHERE id = $1::uuid
     ),
-    current_capacity AS (
-      SELECT
-        COUNT(*) as total_appointments,
-        (SELECT hours_per_day FROM business_hours) * (($3::date - $2::date) + 1) as max_capacity
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $2::date
-        AND date <= $3::date
-    ),
-    prev_capacity AS (
-      SELECT
-        COUNT(*) as total_appointments,
-        (SELECT hours_per_day FROM business_hours) * (($5::date - $4::date) + 1) as max_capacity
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $4::date
-        AND date <= $5::date
-    )
-    SELECT
-      LEAST(100, ROUND(((SELECT total_appointments FROM current_capacity)::NUMERIC /
-            GREATEST((SELECT max_capacity FROM current_capacity), 1)::NUMERIC * 100))) as current_occupancy,
-      LEAST(100, ROUND(((SELECT total_appointments FROM prev_capacity)::NUMERIC /
-            GREATEST((SELECT max_capacity FROM prev_capacity), 1)::NUMERIC * 100))) as prev_occupancy
-  `,
-
-  /**
-   * Calcula tempo médio de duração dos serviços
-   * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
-   */
-  calculateAverageTime: `
-    WITH current_period AS (
-      SELECT
-        COALESCE(AVG(s.duration), 30) as avg_duration
-      FROM schedules sch
-      LEFT JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $2::date
-        AND sch.date <= $3::date
-        AND s.duration IS NOT NULL
-    ),
-    prev_period AS (
-      SELECT
-        COALESCE(AVG(s.duration), 30) as avg_duration
-      FROM schedules sch
-      LEFT JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $4::date
-        AND sch.date <= $5::date
-        AND s.duration IS NOT NULL
-    )
-    SELECT
-      ROUND((SELECT avg_duration FROM current_period))::INT as current_avg_duration,
-      ROUND((SELECT avg_duration FROM prev_period))::INT as prev_avg_duration
-  `,
-
-  /**
-   * Calcula eficiência do time (profissionais com agendamentos / total)
-   * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
-   */
-  calculateTeamEfficiency: `
-    WITH total_members AS (
-      SELECT COUNT(*) as total_professionals
+    members AS (
+      SELECT COUNT(*) AS total_professionals
       FROM store_members
       WHERE "storeId" = $1::uuid
-    ),
-    current_active AS (
-      SELECT COUNT(DISTINCT "storeMemberId") as active_professionals
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $2::date
-        AND date <= $3::date
-    ),
-    prev_active AS (
-      SELECT COUNT(DISTINCT "storeMemberId") as active_professionals
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $4::date
-        AND date <= $5::date
     )
     SELECT
-      ROUND(((SELECT active_professionals FROM current_active)::NUMERIC /
-             GREATEST((SELECT total_professionals FROM total_members), 1)::NUMERIC * 100))::INT as current_efficiency,
-      ROUND(((SELECT active_professionals FROM prev_active)::NUMERIC /
-             GREATEST((SELECT total_professionals FROM total_members), 1)::NUMERIC * 100))::INT as prev_efficiency
-  `,
-
-  /**
-   * Calcula taxa de pontualidade (completados / total) e no-show rate
-   * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
-   */
-  calculatePunctualityRate: `
-    WITH current_period AS (
-      SELECT
-        COUNT(*) as total_appointments,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
-        SUM(CASE WHEN status = 'no-show' THEN 1 ELSE 0 END) as no_show_count
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $2::date
-        AND date <= $3::date
-    ),
-    prev_period AS (
-      SELECT
-        COUNT(*) as total_appointments,
-        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
-        SUM(CASE WHEN status = 'no-show' THEN 1 ELSE 0 END) as no_show_count
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $4::date
-        AND date <= $5::date
-    )
-    SELECT
-      ROUND((SELECT completed_count FROM current_period)::NUMERIC /
-            GREATEST((SELECT total_appointments FROM current_period), 1)::NUMERIC * 100)::INT as current_punctuality,
-      ROUND((SELECT completed_count FROM prev_period)::NUMERIC /
-            GREATEST((SELECT total_appointments FROM prev_period), 1)::NUMERIC * 100)::INT as prev_punctuality,
-      ROUND((SELECT no_show_count FROM current_period)::NUMERIC /
-            GREATEST((SELECT total_appointments FROM current_period), 1)::NUMERIC * 100)::INT as current_no_show_rate,
-      ROUND((SELECT no_show_count FROM prev_period)::NUMERIC /
-            GREATEST((SELECT total_appointments FROM prev_period), 1)::NUMERIC * 100)::INT as prev_no_show_rate
+      LEAST(100, ROUND(t.current_total::NUMERIC /
+            GREATEST((SELECT hours_per_day FROM store) *
+                     (($3::date - $2::date) + 1), 1)::NUMERIC * 100)) AS current_occupancy,
+      LEAST(100, ROUND(t.prev_total::NUMERIC /
+            GREATEST((SELECT hours_per_day FROM store) *
+                     (($5::date - $4::date) + 1), 1)::NUMERIC * 100)) AS prev_occupancy,
+      ROUND(t.current_avg_duration)::INT AS current_avg_duration,
+      ROUND(t.prev_avg_duration)::INT AS prev_avg_duration,
+      ROUND(t.current_active::NUMERIC /
+            GREATEST((SELECT total_professionals FROM members), 1)::NUMERIC * 100)::INT AS current_efficiency,
+      ROUND(t.prev_active::NUMERIC /
+            GREATEST((SELECT total_professionals FROM members), 1)::NUMERIC * 100)::INT AS prev_efficiency,
+      ROUND(t.current_completed::NUMERIC /
+            GREATEST(t.current_total, 1)::NUMERIC * 100)::INT AS current_punctuality,
+      ROUND(t.prev_completed::NUMERIC /
+            GREATEST(t.prev_total, 1)::NUMERIC * 100)::INT AS prev_punctuality,
+      ROUND(t.current_no_show::NUMERIC /
+            GREATEST(t.current_total, 1)::NUMERIC * 100)::INT AS current_no_show_rate,
+      t.current_completed AS completed,
+      t.current_scheduled AS scheduled,
+      t.current_no_show AS no_show,
+      t.current_cancelled AS cancelled,
+      t.current_total AS total
+    FROM totals t
   `,
 
   /**
@@ -183,23 +124,6 @@ export const DashboardOperationalQueries = {
     FROM all_days ad
     LEFT JOIN daily_counts dc ON ad.day_of_week = dc.day_of_week
     ORDER BY ad.day_of_week
-  `,
-
-  /**
-   * Conta agendamentos por status
-   * $1: store_id, $2: period_start, $3: period_end
-   */
-  calculateAppointmentStatus: `
-    SELECT
-      SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed,
-      SUM(CASE WHEN status = 'scheduled' THEN 1 ELSE 0 END) as scheduled,
-      SUM(CASE WHEN status = 'no-show' THEN 1 ELSE 0 END) as no_show,
-      SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled,
-      COUNT(*) as total
-    FROM schedules
-    WHERE "storeId" = $1::uuid
-      AND date >= $2::date
-      AND date <= $3::date
   `,
 
   /**

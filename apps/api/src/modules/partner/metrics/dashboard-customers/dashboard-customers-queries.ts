@@ -6,42 +6,53 @@
 
 export const DashboardCustomersQueries = {
   /**
-   * Calcula base de clientes (total único até data)
-   * $1: store_id, $2: current_end, $3: prev_end, $4: current_start, $5: current_end
+   * Base de clientes (total único até a data, novos no período) e LTV médio,
+   * agrupando o histórico da loja por cliente uma única vez.
+   * $1: store_id, $2: current_start, $3: current_end, $4: prev_end
    */
-  calculateCustomerBase: `
-    WITH current_customers AS (
-      SELECT COUNT(DISTINCT "userId") as total
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date <= $2::date
-        AND "userId" IS NOT NULL
+  calculateCustomerBaseAndLTV: `
+    WITH per_user AS (
+      SELECT
+        MIN(sch.date) AS first_date,
+        MIN(sch.date) FILTER (WHERE sch.status = 'completed') AS first_completed_date,
+        BOOL_OR(sch.date >= $2::date AND sch.date <= $3::date) AS active_in_period,
+        SUM(COALESCE(sch.price, s.price)) FILTER (
+          WHERE sch.status = 'completed' AND sch.date <= $3::date
+        ) AS spent_until_current,
+        SUM(COALESCE(sch.price, s.price)) FILTER (
+          WHERE sch.status = 'completed' AND sch.date <= $4::date
+        ) AS spent_until_prev
+      FROM schedules sch
+      LEFT JOIN services s ON sch."serviceId" = s.id
+      WHERE sch."storeId" = $1::uuid
+        AND sch."userId" IS NOT NULL
+      GROUP BY sch."userId"
     ),
-    previous_customers AS (
-      SELECT COUNT(DISTINCT "userId") as total
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date <= $3::date
-        AND "userId" IS NOT NULL
-    ),
-    new_customers_period AS (
-      SELECT COUNT(DISTINCT s."userId") as new_count
-      FROM schedules s
-      WHERE s."storeId" = $1::uuid
-        AND s.date >= $4::date
-        AND s.date <= $5::date
-        AND s."userId" IS NOT NULL
-        AND NOT EXISTS (
-          SELECT 1 FROM schedules s2
-          WHERE s2."storeId" = $1::uuid
-            AND s2."userId" = s."userId"
-            AND s2.date < $4::date
-        )
+    totals AS (
+      SELECT
+        COUNT(*) FILTER (WHERE first_date <= $3::date) AS current_customers,
+        COUNT(*) FILTER (WHERE first_date <= $4::date) AS prev_customers,
+        -- Novo: apareceu no período e não tem agendamento anterior a ele
+        COUNT(*) FILTER (
+          WHERE active_in_period AND first_date >= $2::date
+        ) AS new_customers_period,
+        COUNT(*) FILTER (WHERE first_completed_date <= $3::date) AS current_ltv_customers,
+        COUNT(*) FILTER (WHERE first_completed_date <= $4::date) AS prev_ltv_customers,
+        COALESCE(SUM(spent_until_current), 0) AS current_ltv_revenue,
+        COALESCE(SUM(spent_until_prev), 0) AS prev_ltv_revenue
+      FROM per_user
     )
     SELECT
-      (SELECT total FROM current_customers) as current_customers,
-      (SELECT total FROM previous_customers) as prev_customers,
-      (SELECT new_count FROM new_customers_period) as new_customers_period
+      current_customers,
+      prev_customers,
+      new_customers_period,
+      ROUND(CASE WHEN current_ltv_customers > 0
+        THEN current_ltv_revenue / current_ltv_customers
+        ELSE 0 END) AS current_ltv,
+      ROUND(CASE WHEN prev_ltv_customers > 0
+        THEN prev_ltv_revenue / prev_ltv_customers
+        ELSE 0 END) AS prev_ltv
+    FROM totals
   `,
 
   /**
@@ -91,50 +102,6 @@ export const DashboardCustomersQueries = {
       (SELECT count FROM current_returned)::INT as current_returned_count,
       (SELECT COUNT(*) FROM before_prev_customers)::INT as before_prev_count,
       (SELECT count FROM prev_returned)::INT as prev_returned_count
-  `,
-
-  /**
-   * Calcula LTV (Lifetime Value) médio
-   * $1: store_id, $2: current_end, $3: prev_end
-   */
-  calculateAverageLTV: `
-    WITH current_ltv AS (
-      SELECT
-        COUNT(DISTINCT sch."userId") as customer_count,
-        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
-      FROM schedules sch
-      LEFT JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date <= $2::date
-        AND sch.status = 'completed'
-        AND sch."userId" IS NOT NULL
-    ),
-    previous_ltv AS (
-      SELECT
-        COUNT(DISTINCT sch."userId") as customer_count,
-        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
-      FROM schedules sch
-      LEFT JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date <= $3::date
-        AND sch.status = 'completed'
-        AND sch."userId" IS NOT NULL
-    )
-    SELECT
-      ROUND(CAST(
-        CASE
-          WHEN (SELECT customer_count FROM current_ltv) > 0
-          THEN (SELECT total_revenue FROM current_ltv) / (SELECT customer_count FROM current_ltv)
-          ELSE 0
-        END AS NUMERIC
-      )) as current_ltv,
-      ROUND(CAST(
-        CASE
-          WHEN (SELECT customer_count FROM previous_ltv) > 0
-          THEN (SELECT total_revenue FROM previous_ltv) / (SELECT customer_count FROM previous_ltv)
-          ELSE 0
-        END AS NUMERIC
-      )) as prev_ltv
   `,
 
   /**

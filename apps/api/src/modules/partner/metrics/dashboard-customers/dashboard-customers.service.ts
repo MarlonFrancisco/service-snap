@@ -63,23 +63,16 @@ export class DashboardCustomersService {
 
     // Executar todas as queries em paralelo
     const [
-      customerBaseResult,
+      customerBaseAndLTVResult,
       retentionRateResult,
-      averageLTVResult,
       npsScoreResult,
       customerEvolutionResults,
       ltvBySegmentResults,
       topVIPCustomersResults,
     ] = await Promise.all([
       this.scheduleRepository.query(
-        DashboardCustomersQueries.calculateCustomerBase,
-        [
-          storeId,
-          currentPeriod.end,
-          previousPeriod.end,
-          currentPeriod.start,
-          currentPeriod.end,
-        ],
+        DashboardCustomersQueries.calculateCustomerBaseAndLTV,
+        [storeId, currentPeriod.start, currentPeriod.end, previousPeriod.end],
       ),
       this.scheduleRepository.query(
         DashboardCustomersQueries.calculateRetentionRate,
@@ -92,10 +85,6 @@ export class DashboardCustomersService {
           beforePreviousPeriod.start,
           beforePreviousPeriod.end,
         ],
-      ),
-      this.scheduleRepository.query(
-        DashboardCustomersQueries.calculateAverageLTV,
-        [storeId, currentPeriod.end, previousPeriod.end],
       ),
       this.scheduleRepository.query(
         DashboardCustomersQueries.calculateNPSScore,
@@ -122,15 +111,13 @@ export class DashboardCustomersService {
     ]);
 
     // Formatar resultados
-    const customerBase = this.formatCustomerBaseResult(
-      customerBaseResult[0] as CustomerBaseResult,
-    );
+    const customerBaseAndLTV =
+      customerBaseAndLTVResult[0] as CustomerBaseResult & AverageLTVResult;
+    const customerBase = this.formatCustomerBaseResult(customerBaseAndLTV);
     const retentionRate = this.formatRetentionRateResult(
       retentionRateResult[0] as RetentionRateResult,
     );
-    const averageLTV = this.formatAverageLTVResult(
-      averageLTVResult[0] as AverageLTVResult,
-    );
+    const averageLTV = this.formatAverageLTVResult(customerBaseAndLTV);
     const npsScore = this.formatNPSScoreResult(
       npsScoreResult[0] as NPSScoreResult,
     );

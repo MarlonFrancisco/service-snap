@@ -6,92 +6,61 @@
 
 export const DashboardOverviewQueries = {
   /**
-   * Calcula receita do período atual vs anterior
+   * Resumo do período atual vs anterior em uma única leitura de `schedules`:
+   * receita, ticket médio, ocupação, cancelamento e conversão.
    * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
    */
-  calculateRevenue: `
-    WITH current_period AS (
-      SELECT COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total
+  calculatePeriodSummary: `
+    WITH base AS (
+      SELECT
+        sch.status,
+        (sch.date >= $2::date AND sch.date <= $3::date) AS is_current,
+        -- Receita só conta agendamento concluído cujo serviço ainda existe
+        CASE WHEN sch.status = 'completed' AND s.id IS NOT NULL
+          THEN COALESCE(sch.price, s.price)
+        END AS paid_amount
       FROM schedules sch
-      INNER JOIN services s ON sch."serviceId" = s.id
+      LEFT JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $2::date
-        AND sch.date <= $3::date
-        AND sch.status = 'completed'
-    ),
-    prev_period AS (
-      SELECT COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total
-      FROM schedules sch
-      INNER JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $4::date
-        AND sch.date <= $5::date
-        AND sch.status = 'completed'
+        AND (
+          (sch.date >= $2::date AND sch.date <= $3::date)
+          OR (sch.date >= $4::date AND sch.date <= $5::date)
+        )
     )
     SELECT
-      (SELECT total FROM current_period) as current_revenue,
-      (SELECT total FROM prev_period) as prev_revenue
+      COALESCE(SUM(paid_amount) FILTER (WHERE is_current), 0) AS current_revenue,
+      COALESCE(SUM(paid_amount) FILTER (WHERE NOT is_current), 0) AS prev_revenue,
+      ROUND(COALESCE(AVG(paid_amount) FILTER (WHERE is_current), 0)) AS current_avg_ticket,
+      ROUND(COALESCE(AVG(paid_amount) FILTER (WHERE NOT is_current), 0)) AS prev_avg_ticket,
+      (COUNT(*) FILTER (WHERE is_current AND status IN ('scheduled', 'completed')))::INT AS current_occupied,
+      (COUNT(*) FILTER (WHERE NOT is_current AND status IN ('scheduled', 'completed')))::INT AS prev_occupied,
+      COUNT(*) FILTER (WHERE is_current) AS total_schedules,
+      COUNT(*) FILTER (WHERE is_current AND status = 'cancelled') AS cancelled_count,
+      COUNT(*) FILTER (WHERE is_current AND status = 'completed') AS completed_count
+    FROM base
   `,
 
   /**
-   * Calcula taxa de ocupação (agendamentos confirmados + completados / total de slots)
-   * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
+   * Clientes novos (primeira reserva criada no período) e recorrentes (mais de
+   * um agendamento no período), agrupando o histórico da loja uma única vez.
+   * $1: store_id, $2: period_start, $3: period_end
    */
-  calculateOccupationRate: `
-    WITH current_period AS (
-      SELECT COUNT(*) as occupied
+  countCustomers: `
+    WITH per_user AS (
+      SELECT
+        MIN(created_at) AS first_visit_date,
+        COUNT(*) FILTER (WHERE date >= $2::date AND date <= $3::date) AS period_bookings
       FROM schedules
       WHERE "storeId" = $1::uuid
-        AND date >= $2::date
-        AND date <= $3::date
-        AND status IN ('scheduled', 'completed')
-    ),
-    prev_period AS (
-      SELECT COUNT(*) as occupied
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $4::date
-        AND date <= $5::date
-        AND status IN ('scheduled', 'completed')
+        AND "userId" IS NOT NULL
+      GROUP BY "userId"
     )
     SELECT
-      (SELECT occupied FROM current_period)::INT as current_occupied,
-      (SELECT occupied FROM prev_period)::INT as prev_occupied,
-      ($3::date - $2::date) + 1 as period_days
-  `,
-
-  /**
-   * Calcula ticket médio (receita média por agendamento completado)
-   * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
-   */
-  calculateAverageTicket: `
-    WITH current_period AS (
-      SELECT
-        COUNT(*) as completed_count,
-        COALESCE(AVG(COALESCE(sch.price, s.price)), 0) as avg_price
-      FROM schedules sch
-      INNER JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $2::date
-        AND sch.date <= $3::date
-        AND sch.status = 'completed'
-    ),
-    prev_period AS (
-      SELECT
-        COUNT(*) as completed_count,
-        COALESCE(AVG(COALESCE(sch.price, s.price)), 0) as avg_price
-      FROM schedules sch
-      INNER JOIN services s ON sch."serviceId" = s.id
-      WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $4::date
-        AND sch.date <= $5::date
-        AND sch.status = 'completed'
-    )
-    SELECT
-      ROUND(CAST((SELECT avg_price FROM current_period) AS NUMERIC)) as current_avg_ticket,
-      (SELECT completed_count FROM current_period) as current_completed_count,
-      ROUND(CAST((SELECT avg_price FROM prev_period) AS NUMERIC)) as prev_avg_ticket,
-      (SELECT completed_count FROM prev_period) as prev_completed_count
+      COUNT(*) FILTER (
+        WHERE first_visit_date >= $2::date AND first_visit_date <= $3::date
+      ) AS new_customers_count,
+      COUNT(*) FILTER (WHERE period_bookings > 1) AS recurring_count
+    FROM per_user
   `,
 
   /**
@@ -135,75 +104,6 @@ export const DashboardOverviewQueries = {
       (SELECT avg_rating FROM current_ratings) as avg_rating,
       (SELECT review_count FROM current_ratings) as review_count,
       (SELECT avg_rating FROM prev_ratings) as prev_avg_rating
-  `,
-
-  /**
-   * Conta novos clientes (usuários cuja primeira compra foi no período)
-   * $1: store_id, $2: period_start, $3: period_end
-   */
-  countNewCustomers: `
-    WITH first_visits AS (
-      SELECT
-        "userId",
-        MIN(created_at) as first_visit_date
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND "userId" IS NOT NULL
-      GROUP BY "userId"
-    )
-    SELECT COUNT(*) as new_customers_count
-    FROM first_visits
-    WHERE first_visit_date >= $2::date
-      AND first_visit_date <= $3::date
-  `,
-
-  /**
-   * Conta clientes recorrentes (com mais de 1 agendamento no período)
-   * $1: store_id, $2: period_start, $3: period_end
-   */
-  countRecurringCustomers: `
-    WITH user_bookings AS (
-      SELECT
-        "userId",
-        COUNT(*) as booking_count
-      FROM schedules
-      WHERE "storeId" = $1::uuid
-        AND date >= $2::date
-        AND date <= $3::date
-        AND "userId" IS NOT NULL
-      GROUP BY "userId"
-    )
-    SELECT COUNT(*) as recurring_count
-    FROM user_bookings
-    WHERE booking_count > 1
-  `,
-
-  /**
-   * Calcula taxa de cancelamento
-   * $1: store_id, $2: period_start, $3: period_end
-   */
-  calculateCancellationRate: `
-    SELECT
-      COUNT(*) as total_schedules,
-      SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_count
-    FROM schedules
-    WHERE "storeId" = $1::uuid
-      AND date >= $2::date
-      AND date <= $3::date
-  `,
-
-  /**
-   * Calcula taxa de conversão (completados / total)
-   * $1: store_id, $2: period_start, $3: period_end
-   */
-  calculateConversionRate: `
-    SELECT
-      SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_count,
-      COUNT(*) as total_count
-    FROM schedules
-    WHERE "storeId" = $1::uuid
-      AND date >= $2::date
-      AND date <= $3::date
   `,
 
   /**

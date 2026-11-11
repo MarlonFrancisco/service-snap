@@ -3,30 +3,22 @@
  * Tipos de retorno das queries SQL parametrizadas
  */
 
-// Occupancy rate calculation
-export interface OccupancyRateResult {
+// Resumo do período atual vs anterior (ocupação, duração, time, status)
+export interface PeriodSummaryResult {
   current_occupancy: number;
   prev_occupancy: number;
-}
-
-// Average time calculation
-export interface AverageTimeResult {
   current_avg_duration: number;
   prev_avg_duration: number;
-}
-
-// Team efficiency calculation
-export interface TeamEfficiencyResult {
   current_efficiency: number;
   prev_efficiency: number;
-}
-
-// Punctuality rate calculation
-export interface PunctualityRateResult {
   current_punctuality: number;
   prev_punctuality: number;
   current_no_show_rate: number;
-  prev_no_show_rate: number;
+  completed: number;
+  scheduled: number;
+  no_show: number;
+  cancelled: number;
+  total: number;
 }
 
 // Daily capacity utilization
@@ -35,15 +27,6 @@ export interface DailyCapacityUtilizationResult {
   appointments: number;
   utilization_percentage: number;
   avg_duration: number;
-}
-
-// Appointment status
-export interface AppointmentStatusResult {
-  completed: number;
-  scheduled: number;
-  no_show: number;
-  cancelled: number;
-  total: number;
 }
 
 // Service duration

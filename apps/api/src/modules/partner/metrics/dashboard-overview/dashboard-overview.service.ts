@@ -13,11 +13,8 @@ import { DashboardOverviewQueries } from './dashboard-overview-queries';
 import {
   AppointmentsByDayResult,
   AverageRatingResult,
-  AverageTicketResult,
-  CancellationRateResult,
-  ConversionRateResult,
-  OccupationRateResult,
-  RevenueResult,
+  CustomerCountsResult,
+  PeriodSummaryResult,
   TopServicesResult,
 } from './dashboard-overview.types';
 import { DashboardOverviewDto } from './dto/dashboard-overview.dto';
@@ -51,97 +48,61 @@ export class DashboardOverviewService {
       period,
     );
 
-    // Executar todas as queries SQL em paralelo
+    const bothPeriods = [
+      storeId,
+      currentPeriod.start,
+      currentPeriod.end,
+      previousPeriod.start,
+      previousPeriod.end,
+    ];
+    const currentOnly = [storeId, currentPeriod.start, currentPeriod.end];
+
+    // Cinco queries em paralelo: cabem no pool (max 5) sem enfileirar
     const [
-      revenueResult,
+      summaryResult,
+      customerCountsResult,
       averageRatingResult,
-      newCustomersResult,
-      occupationRateResult,
-      averageTicketResult,
-      cancellationRateResult,
-      conversionRateResult,
       appointmentsByDayResults,
       topServicesResults,
-      recurringCustomersResult,
     ] = await Promise.all([
-      this.scheduleRepository.query(DashboardOverviewQueries.calculateRevenue, [
-        storeId,
-        currentPeriod.start,
-        currentPeriod.end,
-        previousPeriod.start,
-        previousPeriod.end,
-      ]),
+      this.scheduleRepository.query(
+        DashboardOverviewQueries.calculatePeriodSummary,
+        bothPeriods,
+      ),
+      this.scheduleRepository.query(
+        DashboardOverviewQueries.countCustomers,
+        currentOnly,
+      ),
       this.scheduleRepository.query(
         DashboardOverviewQueries.calculateAverageRating,
         [storeId, currentPeriod.start, previousPeriod.start],
       ),
       this.scheduleRepository.query(
-        DashboardOverviewQueries.countNewCustomers,
-        [storeId, currentPeriod.start, currentPeriod.end],
-      ),
-      this.scheduleRepository.query(
-        DashboardOverviewQueries.calculateOccupationRate,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardOverviewQueries.calculateAverageTicket,
-        [
-          storeId,
-          currentPeriod.start,
-          currentPeriod.end,
-          previousPeriod.start,
-          previousPeriod.end,
-        ],
-      ),
-      this.scheduleRepository.query(
-        DashboardOverviewQueries.calculateCancellationRate,
-        [storeId, currentPeriod.start, currentPeriod.end],
-      ),
-      this.scheduleRepository.query(
-        DashboardOverviewQueries.calculateConversionRate,
-        [storeId, currentPeriod.start, currentPeriod.end],
-      ),
-      this.scheduleRepository.query(
         DashboardOverviewQueries.calculateAppointmentsByDay,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
       this.scheduleRepository.query(
         DashboardOverviewQueries.calculateTopServices,
-        [storeId, currentPeriod.start, currentPeriod.end],
-      ),
-      this.scheduleRepository.query(
-        DashboardOverviewQueries.countRecurringCustomers,
-        [storeId, currentPeriod.start, currentPeriod.end],
+        currentOnly,
       ),
     ]);
 
     // Formatar resultados (com casting de tipo)
-    const weeklyRevenue = this.formatRevenueResult(
-      revenueResult[0] as RevenueResult,
-    );
-    const occupationRate = this.formatOccupationRateResult(
-      occupationRateResult[0] as OccupationRateResult,
-      period,
-    );
-    const averageTicket = this.formatAverageTicketResult(
-      averageTicketResult[0] as AverageTicketResult,
-    );
+    const summary = summaryResult[0] as PeriodSummaryResult;
+    const customerCounts = customerCountsResult[0] as
+      | CustomerCountsResult
+      | undefined;
+
+    const weeklyRevenue = this.formatRevenueResult(summary);
+    const occupationRate = this.formatOccupationRateResult(summary, period);
+    const averageTicket = this.formatAverageTicketResult(summary);
     const averageRating = this.formatAverageRatingResult(
       averageRatingResult[0] as AverageRatingResult,
     );
-    const newCustomers = newCustomersResult[0]?.new_customers_count || 0;
-    const cancellationRate = this.formatCancellationRateResult(
-      cancellationRateResult[0] as CancellationRateResult,
-    );
-    const conversionRate = this.formatConversionRateResult(
-      conversionRateResult[0] as ConversionRateResult,
-    );
+    const newCustomers = customerCounts?.new_customers_count || 0;
+    const recurringCustomers = customerCounts?.recurring_count || 0;
+    const cancellationRate = this.formatCancellationRateResult(summary);
+    const conversionRate = this.formatConversionRateResult(summary);
 
     const appointmentsByDay = this.formatAppointmentsByDayResults(
       appointmentsByDayResults as AppointmentsByDayResult[],
@@ -154,10 +115,6 @@ export class DashboardOverviewService {
         revenue: Math.round(Number(service.total_revenue)),
       }),
     );
-
-    // Extrair resultado de clientes recorrentes
-    const recurringCustomers =
-      recurringCustomersResult[0]?.recurring_count || 0;
 
     return {
       weeklyRevenue,
@@ -176,7 +133,7 @@ export class DashboardOverviewService {
   /**
    * Formata resultado SQL de receita
    */
-  private formatRevenueResult(result: RevenueResult) {
+  private formatRevenueResult(result: PeriodSummaryResult) {
     const currentRevenue = Number(result.current_revenue) || 0;
     const prevRevenue = Number(result.prev_revenue) || 0;
     const absoluteChange = currentRevenue - prevRevenue;
@@ -197,7 +154,7 @@ export class DashboardOverviewService {
    * Formata resultado SQL de taxa de ocupação
    */
   private formatOccupationRateResult(
-    result: OccupationRateResult,
+    result: PeriodSummaryResult,
     period: PeriodType,
   ) {
     const slotsPerDay = 10;
@@ -221,7 +178,7 @@ export class DashboardOverviewService {
   /**
    * Formata resultado SQL de ticket médio
    */
-  private formatAverageTicketResult(result: AverageTicketResult) {
+  private formatAverageTicketResult(result: PeriodSummaryResult) {
     const currentTicket = Number(result.current_avg_ticket) || 0;
     const prevTicket = Number(result.prev_avg_ticket) || 0;
     const absoluteChange = currentTicket - prevTicket;
@@ -251,7 +208,7 @@ export class DashboardOverviewService {
   /**
    * Formata resultado SQL de taxa de cancelamento
    */
-  private formatCancellationRateResult(result: CancellationRateResult) {
+  private formatCancellationRateResult(result: PeriodSummaryResult) {
     const totalSchedules = Number(result.total_schedules) || 0;
     const cancelled = Number(result.cancelled_count) || 0;
 
@@ -265,9 +222,9 @@ export class DashboardOverviewService {
   /**
    * Formata resultado SQL de taxa de conversão
    */
-  private formatConversionRateResult(result: ConversionRateResult) {
+  private formatConversionRateResult(result: PeriodSummaryResult) {
     const completed = Number(result.completed_count) || 0;
-    const total = Number(result.total_count) || 0;
+    const total = Number(result.total_schedules) || 0;
 
     const rate = total > 0 ? (completed / total) * 100 : 0;
 
