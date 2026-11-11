@@ -37,7 +37,6 @@ export const useBookingsSection = () => {
     (state) => state.setReviewsAttributesAction,
   );
 
-  // TODO: Substituir mock data por dados reais da API
   const upcomingBookings = useMemo(() => {
     return (
       user?.schedules?.filter((schedule) => schedule.status === 'scheduled') ??
