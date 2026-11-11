@@ -159,7 +159,14 @@ export class StoresService {
       },
     });
 
-    const limit = subscription?.features?.UNIT_LIMIT ?? 0;
+    // Sem assinatura não há plano: o 0 de "ilimitado" só vale para quem tem um
+    if (!subscription) {
+      throw new ForbiddenException(
+        'É preciso uma assinatura ativa para ativar uma loja.',
+      );
+    }
+
+    const limit = subscription.features?.UNIT_LIMIT ?? 0;
 
     if (!limit) {
       return;

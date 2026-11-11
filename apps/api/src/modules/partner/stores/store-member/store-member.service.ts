@@ -225,7 +225,7 @@ export class StoreMemberService {
       .andWhere('member.isDeleted = false')
       .getCount();
 
-    return { count, limit };
+    return { count, limit, hasActivePlan: !!subscription };
   }
 
   /** O limite é do plano do dono: quem adiciona pode ser um gerente sem assinatura. */
@@ -267,8 +267,18 @@ export class StoreMemberService {
     ownerUserId: string,
     storeId?: string,
   ) {
-    const { count: currentCount, limit: proLimit } =
-      await this.getProfessionalUsage(ownerUserId, storeId);
+    const {
+      count: currentCount,
+      limit: proLimit,
+      hasActivePlan,
+    } = await this.getProfessionalUsage(ownerUserId, storeId);
+
+    // Sem assinatura não há plano: o 0 de "ilimitado" só vale para quem tem um
+    if (!hasActivePlan) {
+      throw new ForbiddenException(
+        'É preciso uma assinatura ativa para adicionar profissionais.',
+      );
+    }
 
     if (!proLimit) {
       return;
