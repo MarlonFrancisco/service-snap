@@ -49,6 +49,15 @@ export class UsersService {
     });
   }
 
+  /** Direto no repositório: `update` sincronizaria o Stripe a cada login. */
+  async clearAuthCode(id: string, userData: Partial<User> = {}): Promise<void> {
+    await this.userRepository.update(id, {
+      ...userData,
+      authCode: null,
+      authCodeExpiresAt: null,
+    });
+  }
+
   async findByOne({
     email,
     telephone,

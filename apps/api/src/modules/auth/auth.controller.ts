@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   HttpCode,
+  HttpException,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -10,7 +12,8 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { getAccessTokenFromCookie } from '../../utils';
-import { AuthService } from './auth.service';
+import { buildSessionCookieOptions } from './auth.helpers';
+import { AuthService, type TokenResponse } from './auth.service';
 import { LoginFirstStepDto } from './dto/login-first-step.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ValidationCodeDto } from './dto/validation-code.dto';
@@ -19,8 +22,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  private readonly isProduction = process.env.NODE_ENV === 'production';
-
   constructor(
     private readonly authService: AuthService,
     private readonly googleSSOService: GoogleSSOService,
@@ -40,23 +41,42 @@ export class AuthController {
     try {
       const { tokens, user } = await this.authService.validateCode(body);
 
-      res.cookie('access_token', tokens.access_token, {
-        httpOnly: true,
-        secure: this.isProduction,
-        maxAge: tokens.expires_in * 1000,
-      });
-
-      if (user) {
-        res.cookie('user_identification', user.id, {
-          httpOnly: false,
-          secure: this.isProduction,
-          maxAge: tokens.expires_in * 1000,
-        });
-      }
+      this.setSessionCookies(res, tokens, user?.id);
 
       return { user };
     } catch (error) {
+      // O limite de tentativas precisa chegar como 429, não como código errado
+      if (
+        error instanceof HttpException &&
+        error.getStatus() === (HttpStatus.TOO_MANY_REQUESTS as number)
+      ) {
+        throw error;
+      }
+
       throw new UnauthorizedException(error);
+    }
+  }
+
+  /** `user_identification` é lido pelo front; só vai quando o cadastro está completo. */
+  private setSessionCookies(
+    res: Response,
+    tokens: TokenResponse,
+    userId?: string,
+  ) {
+    const maxAgeMs = tokens.expires_in * 1000;
+
+    res.cookie(
+      'access_token',
+      tokens.access_token,
+      buildSessionCookieOptions(maxAgeMs, true),
+    );
+
+    if (userId) {
+      res.cookie(
+        'user_identification',
+        userId,
+        buildSessionCookieOptions(maxAgeMs, false),
+      );
     }
   }
 
@@ -73,17 +93,7 @@ export class AuthController {
       getAccessTokenFromCookie(req.headers.cookie),
     );
 
-    res.cookie('access_token', tokens.access_token, {
-      httpOnly: true,
-      secure: this.isProduction,
-      maxAge: tokens.expires_in * 1000,
-    });
-
-    res.cookie('user_identification', user.id, {
-      httpOnly: false,
-      secure: this.isProduction,
-      maxAge: tokens.expires_in * 1000,
-    });
+    this.setSessionCookies(res, tokens, user.id);
   }
 
   @Post('social/google')
@@ -96,17 +106,7 @@ export class AuthController {
       body.referralCode,
     );
 
-    res.cookie('access_token', tokens.access_token, {
-      httpOnly: true,
-      secure: this.isProduction,
-      maxAge: tokens.expires_in * 1000,
-    });
-
-    res.cookie('user_identification', user.id, {
-      httpOnly: false,
-      secure: this.isProduction,
-      maxAge: tokens.expires_in * 1000,
-    });
+    this.setSessionCookies(res, tokens, user.id);
 
     return { isNewUser, user };
   }

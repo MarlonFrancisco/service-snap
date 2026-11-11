@@ -23,6 +23,8 @@ export class GoogleSSOService extends OAuth2Client {
     try {
       const ticket = await this.verifyIdToken({
         idToken: token,
+        // Sem isto, um token do Google emitido para outro site entraria aqui
+        audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
       });
 
       return ticket;
