@@ -311,7 +311,11 @@ export class UsersService {
       contentType: 'image/webp',
     });
 
-    await this.userRepository.update(id, { avatar: `/users/${avatarUrl}` });
+    // A chave do arquivo é sempre a mesma; o `?v=` muda a URL a cada upload
+    // para o navegador não reaproveitar a foto antiga do cache.
+    await this.userRepository.update(id, {
+      avatar: `/users/${avatarUrl}?v=${Date.now()}`,
+    });
     return this.findById(id);
   }
 }
