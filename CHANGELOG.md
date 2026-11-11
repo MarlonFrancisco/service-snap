@@ -1,3 +1,9 @@
+## 0.28.1 (2026-11-11)
+
+### Fix
+
+- **api**: versiona a URL do avatar para atualizar sem refresh
+
 ## 0.28.0 (2026-11-10)
 
 ### Feat
