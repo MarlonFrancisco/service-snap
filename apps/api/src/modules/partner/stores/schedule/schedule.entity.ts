@@ -10,6 +10,8 @@ import { Store } from '../store.entity';
 @Index('idx_schedules_service', ['service.id'])
 @Index('idx_schedules_user', ['user.id'])
 @Index('idx_schedules_store_member', ['storeMember.id'])
+// Busca de conflito e de disponibilidade: profissional + dia
+@Index('idx_schedules_member_date', ['storeMember.id', 'date'])
 export class Schedule extends BaseEntity {
   @Column({ type: 'char', length: 5, nullable: true })
   startTime: string;

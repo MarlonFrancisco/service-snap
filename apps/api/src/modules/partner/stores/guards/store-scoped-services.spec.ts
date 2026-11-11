@@ -126,6 +126,8 @@ describe('store-scoped services with an id from another store', () => {
   describe('ScheduleService', () => {
     const manager = {
       save: vi.fn(async (_entity, rows) => rows),
+      findOne: vi.fn().mockResolvedValue({ id: 'member-1' }),
+      find: vi.fn().mockResolvedValue([]),
       transaction: vi.fn(async (callback) => callback(manager)),
     };
     const create = () =>
@@ -135,11 +137,15 @@ describe('store-scoped services with an id from another store', () => {
         {
           find: vi.fn().mockResolvedValue([{ id: 'service-1', duration: 30 }]),
         } as never,
-        {} as never,
+        { exists: vi.fn().mockResolvedValue(true) } as never,
         {} as never,
         { upsert: vi.fn().mockResolvedValue({ id: 'user-1' }) } as never,
         {
-          load: vi.fn().mockResolvedValue({ status: 'scheduled' }),
+          // Atendimento de outra loja: o id existe, mas não nesta
+          load: vi.fn().mockResolvedValue({
+            status: 'scheduled',
+            store: { id: 'other-store' },
+          }),
           notifyBookingCreated: vi.fn(),
           notifyCancellation: vi.fn(),
           notifyUpdate: vi.fn(),
@@ -150,7 +156,7 @@ describe('store-scoped services with an id from another store', () => {
       await expect(create().update(scoped as never)).rejects.toBeInstanceOf(
         NotFoundException,
       );
-      expect(repository.update.mock.calls[0][0]).toEqual(scoped);
+      expect(manager.transaction).not.toHaveBeenCalled();
     });
 
     it('delete filters by store and returns 404', async () => {
@@ -171,11 +177,17 @@ describe('store-scoped services with an id from another store', () => {
     });
 
     it('create ignores an id sent in the body', async () => {
-      related.findOne.mockResolvedValue({ id: STORE });
+      related.findOne.mockResolvedValue({
+        id: STORE,
+        openTime: '09:00',
+        closeTime: '18:00',
+      });
 
       await create().create({
         id: 'foreign-id',
         store: { id: STORE },
+        storeMember: { id: 'member-1' },
+        date: '2099-11-10',
         startTime: '10:00',
         user: { email: 'ana@example.com' },
         services: [{ id: 'service-1', duration: 30 }],

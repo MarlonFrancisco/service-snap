@@ -52,7 +52,7 @@ const makeService = () => {
     load: vi.fn().mockResolvedValue({
       id: 'sch1',
       status: 'scheduled',
-      store: { id: STORE_ID },
+      store: { id: STORE_ID, openTime: '09:00', closeTime: '18:00' },
       service: { id: SERVICE_ID, duration: 45 },
       storeMember: { id: 'm1' },
     }),
@@ -80,8 +80,9 @@ const makeService = () => {
   };
 };
 
+// Data futura: reserva de cliente só entra em horário que a loja ofereceria
 const DTO = {
-  date: '2026-11-10',
+  date: '2099-11-10',
   startTime: '10:00',
   endTime: '10:30',
   store: { id: STORE_ID },
@@ -228,7 +229,7 @@ describe('ScheduleService.getAvailability', () => {
 
 describe('ScheduleService.reschedule', () => {
   let ctx: ReturnType<typeof makeService>;
-  const MOVE = { date: '2026-11-12', startTime: '14:00', storeMemberId: 'm2' };
+  const MOVE = { date: '2099-11-12', startTime: '14:00', storeMemberId: 'm2' };
 
   beforeEach(() => {
     ctx = makeService();
@@ -245,7 +246,7 @@ describe('ScheduleService.reschedule', () => {
       expect.anything(),
       { id: 'sch1' },
       {
-        date: '2026-11-12',
+        date: '2099-11-12',
         startTime: '14:00',
         endTime: '14:45',
         storeMember: { id: 'm2' },

@@ -6,14 +6,24 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
-import { Between, In, MoreThanOrEqual, Not, Repository } from 'typeorm';
+import {
+  Between,
+  EntityManager,
+  In,
+  MoreThanOrEqual,
+  Not,
+  Repository,
+} from 'typeorm';
 import {
   AvailabilitySlot,
   buildAvailabilitySlots,
   calculateEndTime,
   hasScheduleConflict,
+  isSlotBookable,
+  timeToMinutes,
   toDateKey,
 } from '../../../../utils/helpers/schedule.helpers';
+import type { TSlotRequest } from '../../../../utils/helpers/schedule.types';
 import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
 import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
@@ -93,6 +103,8 @@ export class ScheduleService {
         where: {
           store: { id: storeId },
           role: 'professional',
+          // Profissional pausado não recebe reserva nova
+          isActive: true,
           ...(memberId && { id: memberId }),
         },
         relations: ['services'],
@@ -250,20 +262,14 @@ export class ScheduleService {
 
     const storeMemberId = scheduleDto.storeMember?.id;
 
-    // Fora da trava abaixo: filtrar por relação gera LEFT JOIN, e o Postgres
-    // recusa FOR UPDATE nesse caso.
-    if (
-      storeMemberId &&
-      !(await this.storeMemberRepository.exists({
-        where: {
-          id: storeMemberId,
-          store: { id: storeId },
-          isDeleted: false,
-        },
-      }))
-    ) {
-      throw new BadRequestException('Professional not found in this store');
+    // Sem os três não há como checar conflito, e a reserva entraria direto
+    if (!storeMemberId || !scheduleDto.date || !scheduleDto.startTime) {
+      throw new BadRequestException(
+        'Professional, date and start time are required',
+      );
     }
+
+    await this.assertMemberInStore(storeId, storeMemberId);
 
     let endTime = '';
 
@@ -295,26 +301,14 @@ export class ScheduleService {
 
     const savedSchedules = await this.scheduleRepository.manager.transaction(
       async (manager) => {
-        if (storeMemberId && scheduleDto.date) {
-          // Trava o profissional para duas reservas simultâneas não passarem juntas
-          await manager.findOne(StoreMember, {
-            where: { id: storeMemberId },
-            lock: { mode: 'pessimistic_write' },
-          });
-
-          const existing = await manager.find(Schedule, {
-            where: {
-              storeMember: { id: storeMemberId },
-              date: toDateKey(scheduleDto.date) as unknown as Date,
-            },
-          });
-
-          if (hasScheduleConflict(existing, schedules)) {
-            throw new ConflictException(
-              'Professional already has a schedule at this time',
-            );
-          }
-        }
+        await this.assertMemberFree(manager, {
+          store,
+          storeMemberId,
+          date: toDateKey(scheduleDto.date),
+          items: schedules,
+          // A loja pode encaixar fora do expediente; o cliente só pega o que é oferecido
+          enforceAvailability: !createdByStore,
+        });
 
         const user = await resolveCustomer(store);
 
@@ -352,16 +346,148 @@ export class ScheduleService {
     return this.scheduleRepository.findOne({ where: { id }, relations });
   }
 
-  async update(schedule: ScheduleDto): Promise<Schedule> {
-    const before = await this.scheduleNotifications.load(schedule.id);
-    const result = await this.scheduleRepository.update(
-      { id: schedule.id, store: { id: schedule.store.id } },
-      schedule,
+  /** Membro ativo da loja. Fora da transação: ver `assertMemberFree`. */
+  private async assertMemberInStore(storeId: string, storeMemberId: string) {
+    const exists = await this.storeMemberRepository.exists({
+      where: {
+        id: storeMemberId,
+        store: { id: storeId },
+        isActive: true,
+        isDeleted: false,
+      },
+    });
+
+    if (!exists) {
+      throw new BadRequestException('Professional not found in this store');
+    }
+  }
+
+  /**
+   * Trava o profissional, para duas reservas simultâneas não passarem juntas, e
+   * recusa o horário que cruza outro atendimento. A trava busca só pelo id:
+   * filtrar por relação gera LEFT JOIN, e o Postgres recusa FOR UPDATE nesse caso.
+   */
+  private async assertMemberFree(
+    manager: EntityManager,
+    {
+      store,
+      storeMemberId,
+      date,
+      items,
+      excludeId,
+      enforceAvailability,
+    }: TSlotRequest,
+  ) {
+    await manager.findOne(StoreMember, {
+      where: { id: storeMemberId },
+      lock: { mode: 'pessimistic_write' },
+    });
+
+    const existing = await manager.find(Schedule, {
+      where: {
+        ...(excludeId && { id: Not(excludeId) }),
+        storeMember: { id: storeMemberId },
+        date: date as unknown as Date,
+      },
+    });
+
+    if (hasScheduleConflict(existing, items)) {
+      throw new ConflictException(
+        'Professional already has a schedule at this time',
+      );
+    }
+
+    if (!enforceAvailability) return;
+
+    const blockedTimes = await manager.find(BlockedTime, {
+      where: [
+        { storeMember: { id: storeMemberId }, date: date as unknown as Date },
+        { storeMember: { id: storeMemberId }, isRecurring: true },
+      ],
+    });
+    const [first] = items;
+    const last = items[items.length - 1];
+    const isBookable = isSlotBookable(
+      {
+        store,
+        date,
+        durationMinutes:
+          timeToMinutes(last.endTime) - timeToMinutes(first.startTime),
+        members: [{ id: storeMemberId, blockedTimes, schedules: existing }],
+      },
+      first.startTime,
     );
 
-    if (!result.affected) {
+    // 409 como no conflito: web e bot já pedem outro horário nesse caso
+    if (!isBookable) {
+      throw new ConflictException('This time is not available');
+    }
+  }
+
+  /**
+   * Grava só status, observação e, se vierem, dia, horário e profissional. O
+   * resto do corpo (cliente, serviço, preço, loja) nunca é escrito por aqui.
+   */
+  async update(schedule: ScheduleDto): Promise<Schedule> {
+    const before = await this.scheduleNotifications.load(schedule.id);
+
+    if (!before || before.store?.id !== schedule.store.id) {
       throw new NotFoundException('Schedule not found');
     }
+
+    const beforeDate = before.date && toDateKey(before.date);
+    const date = schedule.date ? toDateKey(schedule.date) : beforeDate;
+    const startTime = schedule.startTime ?? before.startTime;
+    const storeMemberId = schedule.storeMember?.id ?? before.storeMember?.id;
+    const isMoved =
+      date !== beforeDate ||
+      startTime !== before.startTime ||
+      storeMemberId !== before.storeMember?.id;
+    // Mantém a duração reservada: a do serviço pode ter mudado desde então
+    const next = {
+      startTime,
+      endTime: isMoved
+        ? calculateEndTime(
+            startTime,
+            timeToMinutes(before.endTime) - timeToMinutes(before.startTime),
+          )
+        : before.endTime,
+    };
+    // Reativar um cancelado ocupa o horário de novo, então também é checado
+    const needsSlot =
+      schedule.status !== 'cancelled' &&
+      (isMoved || before.status === 'cancelled');
+
+    if (storeMemberId !== before.storeMember?.id) {
+      await this.assertMemberInStore(schedule.store.id, storeMemberId);
+    }
+
+    await this.scheduleRepository.manager.transaction(async (manager) => {
+      if (needsSlot && storeMemberId && date && startTime) {
+        await this.assertMemberFree(manager, {
+          store: before.store,
+          storeMemberId,
+          date,
+          items: [next],
+          excludeId: schedule.id,
+          enforceAvailability: false,
+        });
+      }
+
+      await manager.update(
+        Schedule,
+        { id: schedule.id },
+        {
+          status: schedule.status,
+          ...(schedule.notes !== undefined && { notes: schedule.notes }),
+          ...(isMoved && {
+            ...next,
+            date: date as unknown as Date,
+            storeMember: { id: storeMemberId },
+          }),
+        },
+      );
+    });
 
     await this.scheduleNotifications.notifyUpdate(
       before,
@@ -446,13 +572,7 @@ export class ScheduleService {
       throw new NotFoundException('Schedule not found');
     }
 
-    const memberExists = await this.storeMemberRepository.exists({
-      where: { id: storeMemberId, store: { id: storeId }, isDeleted: false },
-    });
-
-    if (!memberExists) {
-      throw new BadRequestException('Professional not found in this store');
-    }
+    await this.assertMemberInStore(storeId, storeMemberId);
 
     const next = {
       startTime,
@@ -460,24 +580,15 @@ export class ScheduleService {
     };
 
     await this.scheduleRepository.manager.transaction(async (manager) => {
-      await manager.findOne(StoreMember, {
-        where: { id: storeMemberId },
-        lock: { mode: 'pessimistic_write' },
+      // Só o bot remarca por aqui, em nome do cliente: vale a regra do cliente
+      await this.assertMemberFree(manager, {
+        store: before.store,
+        storeMemberId,
+        date,
+        items: [next],
+        excludeId: scheduleId,
+        enforceAvailability: true,
       });
-
-      const existing = await manager.find(Schedule, {
-        where: {
-          id: Not(scheduleId),
-          storeMember: { id: storeMemberId },
-          date: date as unknown as Date,
-        },
-      });
-
-      if (hasScheduleConflict(existing, [next])) {
-        throw new ConflictException(
-          'Professional already has a schedule at this time',
-        );
-      }
 
       await manager.update(
         Schedule,

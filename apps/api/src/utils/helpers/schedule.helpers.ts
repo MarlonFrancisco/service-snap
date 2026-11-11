@@ -278,6 +278,18 @@ export function buildAvailabilitySlots({
 }
 
 /**
+ * Diz se o início pedido é um dos horários que `buildAvailabilitySlots` ofereceria
+ */
+export function isSlotBookable(
+  params: AvailabilityParams,
+  startTime: string,
+): boolean {
+  return buildAvailabilitySlots(params).some(
+    (slot) => slot.time === startTime && slot.available,
+  );
+}
+
+/**
  * Dia YYYY-MM-DD como o TypeORM grava: um Date usa os campos locais
  */
 export function toDateKey(date: Date | string): string {
