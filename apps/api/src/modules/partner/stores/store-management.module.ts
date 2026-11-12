@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AnamnesisModule } from './anamnesis/anamnesis.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { CashModule } from './cash/cash.module';
@@ -24,6 +25,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     CheckoutModule,
     CommissionsModule,
     ScheduleSeriesModule,
+    AnamnesisModule,
   ],
 })
 export class StoreManagementModule {}
