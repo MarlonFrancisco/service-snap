@@ -10,6 +10,7 @@ import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
 import { ScheduleEventsService } from './schedule-events.service';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
+import { SchedulePresenceController } from './schedule-presence.controller';
 import { SchedulePresenceService } from './schedule-presence.service';
 import { ScheduleController } from './schedule.controller';
 import { Schedule } from './schedule.entity';
@@ -29,7 +30,8 @@ import { ScheduleService } from './schedule.service';
     NotificationsHistoryModule,
     NotificationModule,
   ],
-  controllers: [ScheduleController],
+  // A rota fixa de presença vem antes da de `:id`
+  controllers: [SchedulePresenceController, ScheduleController],
   providers: [
     ScheduleService,
     ScheduleNotificationsService,

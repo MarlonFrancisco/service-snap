@@ -10,6 +10,7 @@ import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
 import { WhatsappModule } from '../whatsapp';
 import { WaitlistEntry } from './waitlist-entry.entity';
+import { MyWaitlistController } from './my-waitlist.controller';
 import { WaitlistController } from './waitlist.controller';
 import { WaitlistNotificationsService } from './waitlist-notifications.service';
 import { WaitlistService } from './waitlist.service';
@@ -23,7 +24,7 @@ import { WaitlistService } from './waitlist.service';
     StoreGuardsModule,
     UsersModule,
   ],
-  controllers: [WaitlistController],
+  controllers: [WaitlistController, MyWaitlistController],
   providers: [WaitlistService, WaitlistNotificationsService, PlanFeatureGuard],
   exports: [WaitlistService],
 })

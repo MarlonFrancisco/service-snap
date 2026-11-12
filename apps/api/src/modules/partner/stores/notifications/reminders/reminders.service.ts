@@ -56,6 +56,8 @@ type TReminderChannelConfig = {
   recipientOf: (schedule: Schedule) => string | null;
   isStoreReady?: (store: Store) => Promise<boolean>;
   send: (schedule: Schedule, recipient: string) => Promise<unknown>;
+  /** Colunas a mais gravadas na trava quando o envio dá certo. */
+  sentFields?: (schedule: Schedule) => Promise<Partial<ScheduleReminder>>;
 };
 
 const parseAdvanceHours = (value?: string) => {
@@ -134,6 +136,11 @@ export class RemindersService {
       isStoreReady: async (store) => Boolean(await templateOf(store)),
       send: async (schedule, phone) =>
         this.sendWhatsapp(schedule, phone, await templateOf(schedule.store)),
+      sentFields: async (schedule) => ({
+        asksPresence: Boolean(
+          (await templateOf(schedule.store))?.withConfirmation,
+        ),
+      }),
     });
   }
 
@@ -164,7 +171,13 @@ export class RemindersService {
       result[status] += 1;
 
       // Marca antes do histórico: uma falha ao gravá-lo não pode reenviar o lembrete
-      await this.reminderRepository.update({ id: claim.id }, { status });
+      await this.reminderRepository.update(
+        { id: claim.id },
+        {
+          status,
+          ...(status === 'sent' && (await config.sentFields?.(schedule))),
+        },
+      );
 
       if (status === 'sent' || claim.attempts >= SCHEDULE_REMINDER_ATTEMPTS) {
         await this.recordHistory(schedule, recipient, status, now, config);

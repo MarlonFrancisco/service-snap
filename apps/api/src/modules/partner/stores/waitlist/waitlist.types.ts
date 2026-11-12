@@ -25,6 +25,8 @@ export type TWaitlistEntryResponse = {
   channel: TWaitlistChannel;
   service: { id: string; name: string; duration: number };
   storeMember: { id: string; name: string } | null;
+  /** Só na lista de todas as lojas do cliente. */
+  store?: { id: string; name: string };
 };
 
 /** O que vai no aviso de vaga, nos dois canais. */

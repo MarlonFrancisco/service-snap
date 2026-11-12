@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
-import { In, IsNull, Repository } from 'typeorm';
+import { In, IsNull, MoreThanOrEqual, Repository } from 'typeorm';
 import { getStoreTimezone } from '../../../../utils/helpers/region.helpers';
 import { getStoreNow } from '../../../../utils/helpers/schedule.helpers';
 import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
@@ -143,7 +143,26 @@ export class WaitlistService {
       order: { date: 'ASC', createdAt: 'ASC' },
     });
 
-    return entries.map(toWaitlistEntryResponse);
+    return entries.map((entry) => toWaitlistEntryResponse(entry));
+  }
+
+  /** Filas abertas do cliente em todas as lojas, para o perfil. */
+  async listAllForCustomer(customerId: string) {
+    const today = new Date().toISOString().slice(0, 10);
+    const entries = await this.waitlistRepository.find({
+      where: {
+        user: { id: customerId },
+        status: 'waiting',
+        // Margem de um dia: o fuso de cada loja decide o "hoje"
+        date: MoreThanOrEqual(addDays(today, -1)),
+      },
+      relations: WAITLIST_RELATIONS,
+      order: { date: 'ASC', createdAt: 'ASC' },
+    });
+
+    return entries.map((entry) =>
+      toWaitlistEntryResponse(entry, { withStore: true }),
+    );
   }
 
   async leave(storeId: string, entryId: string, customerId: string) {

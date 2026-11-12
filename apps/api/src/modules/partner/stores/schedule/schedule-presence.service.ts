@@ -16,6 +16,7 @@ import {
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
 import { ScheduleReminder } from '../notifications/reminders/schedule-reminder.entity';
+import type { TPresenceAwaiting } from './schedule-presence.types';
 import { Schedule } from './schedule.entity';
 
 const RELATIONS = [
@@ -104,6 +105,32 @@ export class SchedulePresenceService {
     return (
       candidates.find((schedule) => this.isUpcoming(schedule, now)) ?? null
     );
+  }
+
+  /**
+   * Agendamentos da loja cujo lembrete perguntou se o cliente vem e que ainda
+   * não tiveram resposta, para a agenda mostrar "aguardando resposta".
+   */
+  async findAwaitingForStore(storeId: string): Promise<TPresenceAwaiting[]> {
+    const rows: { scheduleId: string; reminderSentAt: Date }[] =
+      await this.scheduleRepository.query(
+        `SELECT "schedule"."id" AS "scheduleId", "reminder"."updated_at" AS "reminderSentAt"
+         FROM "schedules" "schedule"
+         JOIN "schedule_reminders" "reminder"
+           ON "reminder"."scheduleId" = "schedule"."id"
+          AND "reminder"."channel" = 'whatsapp'
+          AND "reminder"."status" = 'sent'
+          AND "reminder"."asksPresence" = true
+          AND "reminder"."appointmentKey" =
+            to_char("schedule"."date", 'YYYY-MM-DD') || 'T' || "schedule"."startTime"
+         WHERE "schedule"."storeId" = $1
+           AND "schedule"."status" = 'scheduled'
+           AND "schedule"."presenceConfirmedAt" IS NULL
+           AND "schedule"."date" >= CURRENT_DATE - 1`,
+        [storeId],
+      );
+
+    return rows;
   }
 
   /** Ainda não começou, no fuso da loja. */

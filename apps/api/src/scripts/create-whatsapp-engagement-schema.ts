@@ -3,7 +3,7 @@ import { createConnection } from 'typeorm';
 
 /**
  * Migração manual da Fase 2 do WhatsApp: confirmação de presença
- * (`schedules.presenceConfirmedAt`), número do bot para o link `wa.me`
+ * (`schedules.presenceConfirmedAt` e `schedule_reminders.asksPresence`), número do bot para o link `wa.me`
  * (`whatsapp_configs.displayPhoneNumber`) e a tabela da lista de espera. Sem
  * argumento só confere o banco; com `--apply` cria o que falta. Pode rodar mais
  * de uma vez.
@@ -18,6 +18,11 @@ const COLUMNS = [
     table: 'whatsapp_configs',
     column: 'displayPhoneNumber',
     definition: 'character varying NULL',
+  },
+  {
+    table: 'schedule_reminders',
+    column: 'asksPresence',
+    definition: 'boolean NOT NULL DEFAULT false',
   },
 ];
 

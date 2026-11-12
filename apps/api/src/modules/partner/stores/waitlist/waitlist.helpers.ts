@@ -102,7 +102,9 @@ export const buildWaitlistNotice = (
 
 export const toWaitlistEntryResponse = (
   entry: WaitlistEntry,
+  { withStore = false }: { withStore?: boolean } = {},
 ): TWaitlistEntryResponse => ({
+  ...(withStore && { store: { id: entry.store?.id, name: entry.store?.name } }),
   id: entry.id,
   date: entry.date,
   status: entry.status,
