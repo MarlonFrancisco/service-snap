@@ -118,6 +118,14 @@ export interface IAnalyticsEventMap {
     professional_id?: string;
   };
   slots_load_failed: { store_id: string; date: string };
+  /** Entrou na lista de espera de um dia cheio. */
+  waitlist_joined: {
+    store_id: string;
+    service_id: string;
+    date: string;
+    professional_id?: string;
+  };
+  waitlist_left: { store_id: string; source: TWaitlistSource };
   booking_confirm_clicked: {
     store_id: string;
     service_ids: string[];
@@ -377,6 +385,11 @@ export interface IAnalyticsEventMap {
   whatsapp_config_save_failed: Record<string, never>;
   whatsapp_test_message_sent: { store_id?: string };
   whatsapp_test_message_failed: { store_id?: string };
+  /** Cliente abriu a conversa com o bot da loja pelo link `wa.me`. */
+  whatsapp_bot_link_clicked: {
+    store_id: string;
+    placement: TWhatsappBotLinkPlacement;
+  };
 
   // ── Limites do plano e paywall ──────────────────────────────────────
   paywall_viewed: {
@@ -413,7 +426,11 @@ export type TLoginSource =
   | 'favorite'
   | 'plan'
   | 'deep_link'
+  | 'waitlist'
   | 'other';
+
+/** Onde o cliente saiu da lista de espera. */
+export type TWaitlistSource = 'booking' | 'profile';
 
 export type TLoginFailureStage = 'request_code' | 'verify' | 'google';
 
@@ -468,6 +485,8 @@ export type TPartnerEntity =
   | 'notification';
 
 export type TCrudOperation = 'create' | 'update' | 'delete';
+
+export type TWhatsappBotLinkPlacement = 'booking_sidebar' | 'booking_mobile_bar';
 
 export type TNotificationChannel = 'email' | 'sms' | 'whatsapp';
 
