@@ -22,6 +22,13 @@ export class WhatsappConfig extends BaseEntity {
   })
   webhookVerifyToken: string;
 
+  /**
+   * Número como a Meta mostra ("+55 11 99999-0000"), guardado na conferência do
+   * painel para o link `wa.me` da página pública não depender de chamar a Meta.
+   */
+  @Column({ type: 'varchar', nullable: true })
+  displayPhoneNumber: string | null;
+
   @OneToOne(() => Store, { onDelete: 'CASCADE' })
   @JoinColumn()
   store: Store;

@@ -56,7 +56,7 @@ export const toWhatsappRecipient = (
 ) => toE164(telephone, storeCountry)?.slice(1) ?? null;
 
 // Parâmetro de template não aceita vazio, quebra de linha, tab nem 4+ espaços
-const toParam = (value: string | undefined, fallback: string) =>
+export const toParam = (value: string | undefined, fallback: string) =>
   (value ?? '').replace(/\s+/g, ' ').trim() || fallback;
 
 /** Valores na ordem de {{1}} a {{8}} do corpo. */

@@ -17,11 +17,13 @@ import {
 } from '../../schedule/schedule.helpers';
 import { Schedule } from '../../schedule/schedule.entity';
 import type { Store } from '../../store.entity';
+import { buildPresencePayloads } from '../../schedule/schedule-presence.helpers';
 import {
   WHATSAPP_REMINDER_TEMPLATE,
   buildReminderTemplateParams,
   toWhatsappRecipient,
 } from '../../whatsapp/whatsapp-reminder-template';
+import { WHATSAPP_CONFIRMATION_REMINDER_TEMPLATE } from '../../whatsapp/whatsapp-templates';
 import { WhatsappService } from '../../whatsapp/whatsapp.service';
 import { NotificationsHistory } from '../history/history.entity';
 import { NotificationsHistoryService } from '../history/history.service';
@@ -31,6 +33,7 @@ import {
   ScheduleReminder,
   TScheduleReminderChannel,
 } from './schedule-reminder.entity';
+import type { TStoreReminderTemplate } from './reminders.types';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -113,7 +116,13 @@ export class RemindersService {
 
   async sendDueWhatsappReminders(now = new Date()) {
     // Uma consulta de plano e de template por loja em cada execução
-    const readiness = new Map<string, Promise<boolean>>();
+    const templates = new Map<string, Promise<TStoreReminderTemplate | null>>();
+    const templateOf = (store: Store) => {
+      if (!templates.has(store.id)) {
+        templates.set(store.id, this.findStoreReminderTemplate(store));
+      }
+      return templates.get(store.id);
+    };
 
     return this.deliver(now, await this.findCandidates(now, 'whatsapp'), {
       channel: 'whatsapp',
@@ -122,13 +131,9 @@ export class RemindersService {
       advanceOf: (settings) => settings.whatsappReminderAdvanceHours,
       recipientOf: (schedule) =>
         toWhatsappRecipient(schedule.user.telephone, schedule.store.country),
-      isStoreReady: (store) => {
-        if (!readiness.has(store.id)) {
-          readiness.set(store.id, this.isWhatsappStoreReady(store));
-        }
-        return readiness.get(store.id);
-      },
-      send: (schedule, phone) => this.sendWhatsapp(schedule, phone),
+      isStoreReady: async (store) => Boolean(await templateOf(store)),
+      send: async (schedule, phone) =>
+        this.sendWhatsapp(schedule, phone, await templateOf(schedule.store)),
     });
   }
 
@@ -239,12 +244,14 @@ export class RemindersService {
    * O plano pode ter caído depois de o lembrete ser ligado, e a Meta só entrega
    * com o template aprovado. Sem isso o lembrete nem é reservado: sai quando der.
    */
-  private async isWhatsappStoreReady(store: Store) {
+  private async findStoreReminderTemplate(
+    store: Store,
+  ): Promise<TStoreReminderTemplate | null> {
     try {
       const missing = await this.planFeatureGuard.getMissingFeatures(store.id, [
         'WHATSAPP_INTEGRATION',
       ]);
-      if (missing.length) return false;
+      if (missing.length) return null;
 
       const template = await this.whatsappService.findReminderTemplate(
         store.whatsappConfig,
@@ -253,16 +260,35 @@ export class RemindersService {
         this.logger.warn(
           `Loja ${store.id} sem template de lembrete aprovado (${template.status})`,
         );
-        return false;
+        return null;
       }
 
-      return true;
+      const withConfirmation =
+        template.name === WHATSAPP_CONFIRMATION_REMINDER_TEMPLATE.name;
+      if (!withConfirmation) await this.requestNewTemplates(store);
+
+      return { name: template.name, withConfirmation };
     } catch (error) {
       this.logger.error(
         `Lembretes por WhatsApp da loja ${store.id} não verificados`,
         error instanceof Error ? error.stack : undefined,
       );
-      return false;
+      return null;
+    }
+  }
+
+  /**
+   * Loja que já usa o lembrete antigo ganha os templates novos (confirmação e
+   * lista de espera) sem precisar voltar ao painel. Até a Meta aprovar, o antigo
+   * continua saindo; uma falha aqui não segura o lembrete.
+   */
+  private async requestNewTemplates(store: Store) {
+    try {
+      await this.whatsappService.ensureStoreTemplates(store.whatsappConfig);
+    } catch (error) {
+      this.logger.warn(
+        `Templates novos da loja ${store.id} não criados: ${(error as Error).message}`,
+      );
     }
   }
 
@@ -327,19 +353,27 @@ export class RemindersService {
     });
   }
 
-  private sendWhatsapp(schedule: Schedule, phone: string) {
+  private sendWhatsapp(
+    schedule: Schedule,
+    phone: string,
+    template: TStoreReminderTemplate,
+  ) {
     const { phoneNumberId, accessToken } = schedule.store.whatsappConfig;
 
     return this.whatsappService.sendTemplate(
       phoneNumberId,
       phone,
       {
-        name: WHATSAPP_REMINDER_TEMPLATE.name,
+        name: template.name,
+        // Os dois templates do lembrete têm o mesmo idioma e os mesmos parâmetros
         language: WHATSAPP_REMINDER_TEMPLATE.language,
         bodyParams: buildReminderTemplateParams({
           ...buildCustomerEmailData(schedule),
           customMessage:
             schedule.store.notificationsSettings?.whatsappReminderCustomMessage,
+        }),
+        ...(template.withConfirmation && {
+          buttonPayloads: buildPresencePayloads(schedule.id),
         }),
       },
       accessToken,

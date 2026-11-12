@@ -507,6 +507,8 @@ export class ScheduleService {
             ...next,
             date: date as unknown as Date,
             storeMember: { id: storeMemberId },
+            // A confirmação de presença valia para o horário antigo
+            presenceConfirmedAt: null,
           }),
         },
       );
@@ -620,6 +622,7 @@ export class ScheduleService {
           ...next,
           date: date as unknown as Date,
           storeMember: { id: storeMemberId },
+          presenceConfirmedAt: null,
         },
       );
     });

@@ -250,6 +250,7 @@ describe('ScheduleService.reschedule', () => {
         startTime: '14:00',
         endTime: '14:45',
         storeMember: { id: 'm2' },
+        presenceConfirmedAt: null,
       },
     );
     expect(ctx.notifications.notifyUpdate).toHaveBeenCalledTimes(1);

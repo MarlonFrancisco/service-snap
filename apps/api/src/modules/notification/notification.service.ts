@@ -14,6 +14,7 @@ import {
   CUSTOMER_FOOTER,
   LOGIN_CODE_MINUTES,
   storeFooter,
+  waitlistFooter,
 } from './notification.helpers';
 import type {
   TEmailConfirmationCode,
@@ -26,6 +27,7 @@ import type {
   TScheduleStoreEmail,
   TSubscriptionCancelScheduledEmail,
   TTrialEndingEmail,
+  TWaitlistSlotEmail,
 } from './notification.types';
 
 @Injectable()
@@ -244,6 +246,21 @@ export class NotificationService {
     return this.sendEmail(
       to,
       `${data.customerName} cancelou o horário de ${data.scheduleDay} às ${data.scheduleTime}`,
+      body,
+    );
+  }
+
+  /** Lista de espera: vagou horário no dia que o cliente pediu. */
+  async waitlistSlotAvailable(to: string, data: TWaitlistSlotEmail) {
+    const body = await this.renderEmail('waitlist-slot-available', data, {
+      title: 'Vagou um horário',
+      preheader: `${data.scheduleDay} em ${data.storeName}. A vaga fica com quem reservar primeiro.`,
+      footerNote: waitlistFooter(data.storeName),
+    });
+
+    return this.sendEmail(
+      to,
+      `Vagou um horário em ${data.storeName}: ${data.scheduleDay}`,
       body,
     );
   }

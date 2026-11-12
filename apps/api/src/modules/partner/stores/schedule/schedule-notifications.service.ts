@@ -9,6 +9,7 @@ import {
 import { NotificationService } from '../../../notification/notification.service';
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
+import { ScheduleEventsService } from './schedule-events.service';
 import { Schedule } from './schedule.entity';
 import {
   buildBookingCalendarLink,
@@ -43,6 +44,7 @@ export class ScheduleNotificationsService {
     private readonly notificationsHistoryService: NotificationsHistoryService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+    private readonly scheduleEvents: ScheduleEventsService,
   ) {}
 
   load(id: string) {
@@ -104,6 +106,8 @@ export class ScheduleNotificationsService {
   }
 
   async notifyCancellation(schedule: Schedule, cancelledByCustomer: boolean) {
+    await this.slotFreed(schedule);
+
     await this.notifyCustomer(
       schedule,
       {
@@ -149,6 +153,9 @@ export class ScheduleNotificationsService {
 
     if (!timeChanged && !professionalChanged) return;
 
+    // O horário de antes ficou livre para a lista de espera
+    await this.slotFreed(before);
+
     await this.notifyCustomer(
       after,
       {
@@ -166,6 +173,15 @@ export class ScheduleNotificationsService {
           manageLink: `${this.frontendUrl}/profile`,
         }),
     );
+  }
+
+  private async slotFreed(schedule: Schedule) {
+    if (!schedule.store?.id || !schedule.date) return;
+
+    await this.scheduleEvents.emitSlotFreed({
+      storeId: schedule.store.id,
+      date: toDateKey(schedule.date),
+    });
   }
 
   private async notifyCustomer(

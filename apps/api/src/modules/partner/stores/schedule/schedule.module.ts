@@ -8,7 +8,9 @@ import { NotificationsHistoryModule } from '../notifications/history/history.mod
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
+import { ScheduleEventsService } from './schedule-events.service';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
+import { SchedulePresenceService } from './schedule-presence.service';
 import { ScheduleController } from './schedule.controller';
 import { Schedule } from './schedule.entity';
 import { ScheduleService } from './schedule.service';
@@ -28,7 +30,12 @@ import { ScheduleService } from './schedule.service';
     NotificationModule,
   ],
   controllers: [ScheduleController],
-  providers: [ScheduleService, ScheduleNotificationsService],
-  exports: [ScheduleService],
+  providers: [
+    ScheduleService,
+    ScheduleNotificationsService,
+    ScheduleEventsService,
+    SchedulePresenceService,
+  ],
+  exports: [ScheduleService, ScheduleEventsService, SchedulePresenceService],
 })
 export class ScheduleModule {}

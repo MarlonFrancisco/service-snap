@@ -14,6 +14,8 @@ import { StoreMemberModule } from './store-member/store-member.module';
 import { Store } from './store.entity';
 import { StoresController } from './stores.controller';
 import { StoresService } from './stores.services';
+import { WaitlistModule } from './waitlist';
+import { WhatsappModule } from './whatsapp';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { StoresService } from './stores.services';
     NotificationsModule,
     ReviewModule,
     StoreSearchSyncModule,
+    WaitlistModule,
+    WhatsappModule,
   ],
   controllers: [StoresController],
   providers: [StoresService, StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard],

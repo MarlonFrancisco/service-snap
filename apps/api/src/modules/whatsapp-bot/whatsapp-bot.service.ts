@@ -1,5 +1,11 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import type { Cache } from 'cache-manager';
 import { isEmail } from 'class-validator';
 import { createHash } from 'crypto';
@@ -32,11 +38,23 @@ import {
   truncate,
 } from '../../utils/helpers/whatsapp.helpers';
 import { CategoryService } from '../partner/stores/category/category.service';
+import { parsePresencePayload } from '../partner/stores/schedule/schedule-presence.helpers';
+import { SchedulePresenceService } from '../partner/stores/schedule/schedule-presence.service';
+import type { TPresenceAnswer } from '../partner/stores/schedule/schedule-presence.types';
+import type { Schedule } from '../partner/stores/schedule/schedule.entity';
 import { ScheduleService } from '../partner/stores/schedule/schedule.service';
 import { StoreMemberService } from '../partner/stores/store-member/store-member.service';
+import { parseWaitlistPayload } from '../partner/stores/waitlist/waitlist.helpers';
+import { WaitlistService } from '../partner/stores/waitlist/waitlist.service';
 import { WhatsappConfig } from '../partner/stores/whatsapp/whatsapp.entity';
 import { WhatsappService } from '../partner/stores/whatsapp/whatsapp.service';
 import { UsersService } from '../users/users.service';
+import {
+  buildPresenceConfirmedText,
+  buildWaitlistJoinedText,
+  parseTypedPresence,
+  toBotAppointment,
+} from './whatsapp-bot.helpers';
 import {
   BotState,
   IBotAppointment,
@@ -57,6 +75,8 @@ const MESSAGE_DEDUP_TTL_MS = 60 * 60 * 1000;
 // Quantos dias à frente procurar vaga, e quantos consultar de uma vez
 const DAY_SEARCH_HORIZON = 60;
 const DAY_SEARCH_BATCH = 7;
+// Dias cheios para a lista de espera: só o mês seguinte, cada dia é uma consulta
+const WAITLIST_SEARCH_HORIZON = 30;
 // Código de confirmação do e-mail: validade, tentativas e reenvios por conversa
 const EMAIL_CODE_TTL_MS = 10 * 60 * 1000;
 const EMAIL_CODE_MAX_ATTEMPTS = 5;
@@ -100,6 +120,8 @@ export class WhatsappBotService {
     private readonly usersService: UsersService,
     private readonly notificationService: NotificationService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly schedulePresenceService: SchedulePresenceService,
+    private readonly waitlistService: WaitlistService,
   ) {}
 
   async handleWebhookMessage(body: IWhatsappWebhook) {
@@ -181,6 +203,16 @@ export class WhatsappBotService {
   // ---------------------------------------------------------------------------
 
   private async route(ctx: IBotContext, input: IBotInput, hasSession: boolean) {
+    // Botões de mensagens que a loja enviou (lembrete e aviso de vaga): trazem
+    // o agendamento ou a entrada no payload e valem sem sessão
+    const presence = parsePresencePayload(input.reply);
+    if (presence) {
+      return this.onPresenceReply(ctx, presence.answer, presence.scheduleId);
+    }
+
+    const waitlistEntryId = parseWaitlistPayload(input.reply);
+    if (waitlistEntryId) return this.onWaitlistNotice(ctx, waitlistEntryId);
+
     // Com um agendamento aberto, "cancelar" é cancelar ele, não sair da conversa
     if (
       ctx.session.state === BotState.APPOINTMENT_ACTIONS &&
@@ -220,6 +252,8 @@ export class WhatsappBotService {
         return this.onAskEmail(ctx, input);
       case BotState.VERIFY_EMAIL:
         return this.onVerifyEmail(ctx, input);
+      case BotState.WAITLIST_DAY:
+        return this.onWaitlistDay(ctx, input);
       default:
         return this.enterMenu(ctx);
     }
@@ -262,6 +296,7 @@ export class WhatsappBotService {
           ? this.enterAppointmentActions(ctx)
           : this.enterServices(ctx);
       case BotState.SELECT_TIME:
+      case BotState.WAITLIST_DAY:
         return this.enterDays(ctx);
       case BotState.CONFIRM_BOOKING:
       case BotState.ASK_EMAIL:
@@ -305,6 +340,8 @@ export class WhatsappBotService {
         return this.enterAppointmentActions(ctx);
       case BotState.CONFIRM_CANCEL:
         return this.enterConfirmCancel(ctx);
+      case BotState.WAITLIST_DAY:
+        return this.enterWaitlistDays(ctx);
       default:
         return this.enterMenu(ctx);
     }
@@ -335,6 +372,8 @@ export class WhatsappBotService {
   private async onMenu(ctx: IBotContext, input: IBotInput) {
     if (input.reply === 'menu:book') return this.enterServices(ctx);
     if (input.reply === 'menu:appointments') return this.enterAppointments(ctx);
+
+    if (!input.reply && (await this.tryTypedPresence(ctx, input))) return;
 
     return this.enterMenu(ctx);
   }
@@ -441,18 +480,7 @@ export class WhatsappBotService {
     const { service } = ctx.session;
     if (!service) return this.expired(ctx);
 
-    const members = await this.storeMemberService.findStoreMembers(
-      ctx.config.store.id,
-    );
-    // Mesmo filtro da disponibilidade: só profissional ativo que faz o serviço
-    const professionals = members
-      .filter(
-        (member) =>
-          !member.isDeleted &&
-          (!member.role || member.role === 'professional') &&
-          member.services?.some((s) => s.id === service.id),
-      )
-      .map((member) => ({ id: member.id, name: getUserFullName(member.user) }));
+    const professionals = await this.findProfessionals(ctx, service.id);
 
     if (professionals.length === 0) {
       await this.sendText(
@@ -507,6 +535,22 @@ export class WhatsappBotService {
     });
   }
 
+  /** Mesmo filtro da disponibilidade: só profissional ativo que faz o serviço. */
+  private async findProfessionals(ctx: IBotContext, serviceId: string) {
+    const members = await this.storeMemberService.findStoreMembers(
+      ctx.config.store.id,
+    );
+
+    return members
+      .filter(
+        (member) =>
+          !member.isDeleted &&
+          (!member.role || member.role === 'professional') &&
+          member.services?.some((s) => s.id === serviceId),
+      )
+      .map((member) => ({ id: member.id, name: getUserFullName(member.user) }));
+  }
+
   private async onProfessional(ctx: IBotContext, input: IBotInput) {
     const professionals = ctx.session.professionals ?? [];
     const value = this.replyValue(input, 'pro');
@@ -543,19 +587,23 @@ export class WhatsappBotService {
     const days = await this.findDaysWithSlots(ctx, start, today);
 
     if (days.length === 0) {
+      if (from) {
+        await this.sendText(
+          ctx,
+          'Não encontrei mais datas com horário livre. Escolha uma das anteriores 👇',
+        );
+        return this.enterDays(ctx);
+      }
+
       await this.sendText(
         ctx,
-        from
-          ? 'Não encontrei mais datas com horário livre. Escolha uma das anteriores 👇'
-          : `Não há horários livres nos próximos ${DAY_SEARCH_HORIZON} dias para essa escolha. 😕`,
+        `Não há horários livres nos próximos ${DAY_SEARCH_HORIZON} dias para essa escolha. 😕\nPosso te avisar se vagar um horário 👇`,
       );
-
-      if (from) return this.enterDays(ctx);
-      if (!ctx.session.professionalSkipped) return this.enterProfessionals(ctx);
-      return this.enterServices(ctx);
+      return this.enterWaitlistDays(ctx);
     }
 
-    const hasMore = days.length === WHATSAPP_LIMITS.listRows;
+    // Uma linha fica sempre para a lista de espera
+    const hasMore = days.length === WHATSAPP_LIMITS.listRows - 1;
     const visible = hasMore ? days.slice(0, -1) : days;
     const rows: { id: string; title: string; description?: string }[] =
       visible.map((day) => ({
@@ -580,7 +628,19 @@ export class WhatsappBotService {
     await this.sendList(ctx, {
       header: 'Qual dia fica melhor?',
       body: `*${service.name}*${this.professionalLine(ctx)}\nEstes são os próximos dias com horário livre.`,
-      sections: [{ title: 'Datas', rows }],
+      sections: [
+        { title: 'Datas', rows },
+        {
+          title: 'Dia cheio?',
+          rows: [
+            {
+              id: 'day:waitlist',
+              title: '🔔 Lista de espera',
+              description: 'Te aviso se vagar horário num dia cheio',
+            },
+          ],
+        },
+      ],
     });
   }
 
@@ -588,13 +648,40 @@ export class WhatsappBotService {
    * Procura, a partir de `start`, até uma página de dias com vaga (mais um, para
    * saber se há próxima página). Dias fechados nem chegam a ser consultados.
    */
-  private async findDaysWithSlots(
+  private findDaysWithSlots(ctx: IBotContext, start: string, today: string) {
+    return this.findDays(ctx, {
+      start,
+      limit: addDays(today, DAY_SEARCH_HORIZON),
+      wanted: WHATSAPP_LIMITS.listRows - 1,
+      match: (day) => day.free > 0,
+    });
+  }
+
+  /** Dias de expediente sem nenhum horário livre: os que têm fila de espera. */
+  private findFullDays(ctx: IBotContext, today: string) {
+    return this.findDays(ctx, {
+      start: today,
+      limit: addDays(today, WAITLIST_SEARCH_HORIZON),
+      wanted: WHATSAPP_LIMITS.listRows,
+      // Sem horário nenhum, a loja não abre ou o dia já acabou
+      match: (day) => day.total > 0 && day.free === 0,
+    });
+  }
+
+  private async findDays(
     ctx: IBotContext,
-    start: string,
-    today: string,
+    {
+      start,
+      limit,
+      wanted,
+      match,
+    }: {
+      start: string;
+      limit: string;
+      wanted: number;
+      match: (day: { total: number; free: number }) => boolean;
+    },
   ) {
-    const wanted = WHATSAPP_LIMITS.listRows;
-    const limit = addDays(today, DAY_SEARCH_HORIZON);
     const found: { date: string; slots: number }[] = [];
     let cursor = start;
 
@@ -611,11 +698,15 @@ export class WhatsappBotService {
       const results = await Promise.all(
         batch.map(async (date) => ({
           date,
-          slots: (await this.fetchSlots(ctx, date)).length,
+          ...(await this.countSlots(ctx, date)),
         })),
       );
 
-      found.push(...results.filter((day) => day.slots > 0));
+      found.push(
+        ...results
+          .filter((day) => match(day))
+          .map((day) => ({ date: day.date, slots: day.free })),
+      );
     }
 
     return found.slice(0, wanted);
@@ -627,6 +718,8 @@ export class WhatsappBotService {
     if (value?.startsWith('more:')) {
       return this.enterDays(ctx, addDays(value.slice(5), 1));
     }
+
+    if (value === 'waitlist') return this.enterWaitlistDays(ctx);
 
     if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
       return this.repeatStep(ctx, this.tapHint);
@@ -1065,24 +1158,7 @@ export class WhatsappBotService {
           timeToMinutes(schedule.startTime) > now.minutes,
       )
       .slice(0, WHATSAPP_LIMITS.listRows)
-      .map((schedule) => ({
-        id: schedule.id,
-        customerId: schedule.user?.id,
-        date: toDateKey(schedule.date),
-        time: schedule.startTime,
-        service: {
-          id: schedule.service?.id,
-          name: schedule.service?.name ?? 'Atendimento',
-          duration: schedule.service?.duration ?? 0,
-          price: schedule.service?.price,
-        },
-        professional: {
-          id: schedule.storeMember?.id,
-          name: schedule.storeMember?.user
-            ? getUserFullName(schedule.storeMember.user)
-            : '',
-        },
-      }));
+      .map(toBotAppointment);
 
     if (appointments.length === 0) {
       await this.saveSession(ctx, { state: BotState.MENU });
@@ -1235,10 +1311,284 @@ export class WhatsappBotService {
   }
 
   // ---------------------------------------------------------------------------
+  // Confirmação de presença (resposta ao lembrete)
+  // ---------------------------------------------------------------------------
+
+  private async onPresenceReply(
+    ctx: IBotContext,
+    answer: TPresenceAnswer,
+    scheduleId: string,
+  ) {
+    const schedule = await this.schedulePresenceService.findForCustomer(
+      ctx.config.store.id,
+      scheduleId,
+      ctx.from,
+    );
+
+    return this.answerPresence(ctx, schedule, answer);
+  }
+
+  /**
+   * "Sim" ou "não" digitado logo depois do lembrete. Sem lembrete aguardando
+   * resposta, a mensagem segue o caminho de sempre.
+   */
+  private async tryTypedPresence(ctx: IBotContext, input: IBotInput) {
+    const answer = parseTypedPresence(input.text);
+    if (!answer) return false;
+
+    const schedule = await this.schedulePresenceService.findAwaitingAnswer(
+      ctx.config.store.id,
+      ctx.from,
+    );
+    if (!schedule) return false;
+
+    if (answer === 'yes') {
+      await this.answerPresence(ctx, schedule, 'yes');
+      return true;
+    }
+
+    // "Não" digitado pode ser engano: pergunta antes, como no cancelamento do menu
+    const appointment = toBotAppointment(schedule);
+    ctx.session = {
+      state: BotState.CONFIRM_CANCEL,
+      appointments: [appointment],
+      appointmentId: appointment.id,
+    };
+    await this.enterConfirmCancel(ctx);
+    return true;
+  }
+
+  /** O "não" cancela como o menu cancela: a loja e o cliente recebem os avisos. */
+  private async answerPresence(
+    ctx: IBotContext,
+    schedule: Schedule | null,
+    answer: TPresenceAnswer,
+  ) {
+    await this.clearSession(ctx);
+
+    if (!schedule) {
+      await this.sendText(
+        ctx,
+        'Não encontrei esse agendamento 😕 Ele pode ter sido remarcado ou feito com outro número.',
+      );
+      return this.enterMenu(ctx);
+    }
+
+    const appointment = toBotAppointment(schedule);
+    const when = `${formatShortDate(appointment.date)} às ${appointment.time}`;
+    const bookAgain = [
+      { id: 'menu:book', title: '📅 Agendar' },
+      { id: 'menu:home', title: '🏠 Menu' },
+    ];
+
+    if (schedule.status === 'cancelled') {
+      return this.sendButtons(
+        ctx,
+        `O agendamento de ${when} já estava cancelado.\n\nQuer marcar outro horário?`,
+        bookAgain,
+      );
+    }
+
+    if (
+      schedule.status !== 'scheduled' ||
+      !this.schedulePresenceService.isUpcoming(schedule)
+    ) {
+      return this.sendText(
+        ctx,
+        `O horário de ${when} já passou. Para marcar outro, é só mandar *agendar*.`,
+      );
+    }
+
+    if (answer === 'yes') {
+      await this.schedulePresenceService.confirm(schedule);
+
+      const store = ctx.config.store;
+      return this.sendText(
+        ctx,
+        buildPresenceConfirmedText(
+          appointment,
+          [store.address, store.city].filter(Boolean).join(', '),
+        ),
+      );
+    }
+
+    await this.scheduleService.delete(
+      ctx.config.store.id,
+      schedule.id,
+      appointment.customerId,
+    );
+
+    return this.sendButtons(
+      ctx,
+      `Tudo bem, o agendamento de ${when} foi cancelado e a loja já foi avisada.\n\nQuer marcar outro horário?`,
+      bookAgain,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lista de espera
+  // ---------------------------------------------------------------------------
+
+  private async enterWaitlistDays(ctx: IBotContext) {
+    const { service } = ctx.session;
+    if (!service || ctx.session.professionalId === undefined) {
+      return this.expired(ctx);
+    }
+
+    const today = this.today(ctx);
+    const days = await this.findFullDays(ctx, today);
+
+    if (days.length === 0) {
+      await this.sendText(
+        ctx,
+        `Os próximos ${WAITLIST_SEARCH_HORIZON} dias ainda têm horário livre 🙂 Escolha um deles 👇`,
+      );
+      return this.enterDays(ctx);
+    }
+
+    await this.saveSession(ctx, {
+      ...ctx.session,
+      state: BotState.WAITLIST_DAY,
+      waitlistDays: days.map((day) => day.date),
+    });
+
+    await this.sendList(ctx, {
+      header: 'Lista de espera',
+      body: `*${service.name}*${this.professionalLine(ctx)}\nEstes dias estão cheios. Escolha um e eu te aviso por aqui se vagar um horário.`,
+      sections: [
+        {
+          title: 'Dias cheios',
+          rows: days.map((day) => ({
+            id: `wait:${day.date}`,
+            title: formatShortDate(day.date),
+            description: 'Sem horário livre',
+          })),
+        },
+      ],
+    });
+  }
+
+  private async onWaitlistDay(ctx: IBotContext, input: IBotInput) {
+    const date = this.replyValue(input, 'wait');
+    const { service, professionalId } = ctx.session;
+
+    if (!date || !ctx.session.waitlistDays?.includes(date)) {
+      return this.repeatStep(ctx, this.tapHint);
+    }
+    if (!service || professionalId === undefined) return this.expired(ctx);
+
+    try {
+      await this.waitlistService.join({
+        storeId: ctx.config.store.id,
+        serviceId: service.id,
+        storeMemberId: professionalId,
+        date,
+        customer: await this.findOrCreateCustomer(ctx),
+        channel: 'whatsapp',
+      });
+    } catch (error) {
+      // Vagou entre a lista e a escolha: melhor reservar direto
+      if (error instanceof ConflictException) {
+        await this.sendText(
+          ctx,
+          'Boa notícia: acabou de vagar horário nesse dia! 🎉',
+        );
+        ctx.session.date = date;
+        return this.enterTimes(ctx);
+      }
+      if (error instanceof BadRequestException) {
+        return this.repeatStep(
+          ctx,
+          'Não consegui te colocar na lista desse dia. Escolha outro, por favor.',
+        );
+      }
+
+      throw error;
+    }
+
+    await this.clearSession(ctx);
+    await this.sendButtons(
+      ctx,
+      buildWaitlistJoinedText({
+        serviceName: service.name,
+        professionalName: professionalId
+          ? this.professionalName(ctx, professionalId)
+          : undefined,
+        date,
+      }),
+      [{ id: 'menu:home', title: '🏠 Menu' }],
+    );
+  }
+
+  /** Toque em "Ver horários" no aviso de vaga: abre direto os horários do dia. */
+  private async onWaitlistNotice(ctx: IBotContext, entryId: string) {
+    const entry = await this.waitlistService.findForPhone(
+      ctx.config.store.id,
+      entryId,
+      ctx.from,
+    );
+
+    await this.clearSession(ctx);
+
+    if (!entry || entry.status === 'cancelled' || !entry.service) {
+      await this.sendText(ctx, 'Essa lista de espera não está mais ativa 😕');
+      return this.enterMenu(ctx);
+    }
+
+    const professionals = await this.findProfessionals(ctx, entry.service.id);
+
+    ctx.session = {
+      state: BotState.SELECT_TIME,
+      service: {
+        id: entry.service.id,
+        name: entry.service.name,
+        duration: entry.service.duration,
+        price: entry.service.price,
+      },
+      professionals,
+      professionalId: entry.storeMember?.id ?? null,
+      // Voltar a partir daqui leva aos serviços, não à escolha de profissional
+      professionalSkipped: true,
+      date: entry.date,
+    };
+
+    if (entry.date < this.today(ctx)) {
+      await this.sendText(
+        ctx,
+        'Esse dia já passou. Veja os próximos com horário livre 👇',
+      );
+      return this.enterDays(ctx);
+    }
+
+    return this.enterTimes(ctx);
+  }
+
+  /** O cliente da lista de espera é achado pelo telefone, como na reserva. */
+  private async findOrCreateCustomer(ctx: IBotContext) {
+    const telephone = normalizePhoneNumber(ctx.from, ctx.config.store.country);
+    const existing =
+      telephone && (await this.usersService.findByOne({ telephone }));
+    if (existing) return existing;
+
+    const [firstName, ...lastName] = ctx.userName.trim().split(/\s+/);
+
+    return this.usersService.upsert({
+      telephone,
+      firstName: firstName || undefined,
+      lastName: lastName.join(' ') || undefined,
+    });
+  }
+
+  // ---------------------------------------------------------------------------
   // Apoio
   // ---------------------------------------------------------------------------
 
   private parseInput(message: IWhatsappWebhookMessage): IBotInput | null {
+    // Botão de resposta rápida de template (lembrete, aviso de vaga)
+    if (message.button?.payload) {
+      return { reply: message.button.payload, text: message.button.text ?? '' };
+    }
+
     const interactive =
       message.interactive?.button_reply ?? message.interactive?.list_reply;
 
@@ -1283,21 +1633,32 @@ export class WhatsappBotService {
   }
 
   private async fetchSlots(ctx: IBotContext, date: string) {
-    const { service, professionalId } = ctx.session;
-
-    // Mesma regra do site: duração, almoço, fechamento e horários já passados
-    const slots = await this.scheduleService.getAvailability(
-      ctx.config.store.id,
-      {
-        date,
-        serviceIds: service.id,
-        ...(professionalId && { memberId: professionalId }),
-      },
-    );
+    const slots = await this.fetchDay(ctx, date);
 
     return slots
       .filter((slot) => slot.available && slot.storeMemberId)
       .map((slot) => ({ time: slot.time, memberId: slot.storeMemberId }));
+  }
+
+  /** Horários que o dia tem e quantos estão livres. */
+  private async countSlots(ctx: IBotContext, date: string) {
+    const slots = await this.fetchDay(ctx, date);
+
+    return {
+      total: slots.length,
+      free: slots.filter((slot) => slot.available && slot.storeMemberId).length,
+    };
+  }
+
+  private fetchDay(ctx: IBotContext, date: string) {
+    const { service, professionalId } = ctx.session;
+
+    // Mesma regra do site: duração, almoço, fechamento e horários já passados
+    return this.scheduleService.getAvailability(ctx.config.store.id, {
+      date,
+      serviceIds: service.id,
+      ...(professionalId && { memberId: professionalId }),
+    });
   }
 
   private today(ctx: IBotContext) {
