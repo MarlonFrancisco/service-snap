@@ -34,6 +34,8 @@ export interface TWorkingDays {
 
 export interface IStore extends TWorkingHours {
   id: string;
+  /** Papel de quem está logado nesta loja (vem em `GET partner/stores`). */
+  memberRole?: 'owner' | 'manager' | 'professional';
   name: string;
   description: string;
   country: TCountryCode;
