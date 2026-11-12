@@ -10,6 +10,7 @@ import { NotificationModule } from './notification';
 import { PartnerRoutesGuard } from './partner/guards';
 import { PartnerModule } from './partner/partner.module';
 import { PlansModule } from './plans';
+import { PushModule } from './push/push.module';
 import { RecomendationModule } from './recomendation';
 import { SearchModule } from './search';
 import { StoreDiscoveryModule } from './store-discovery/store-discovery.module';
@@ -30,6 +31,7 @@ import { WhatsappBotModule } from './whatsapp-bot';
     DatabaseModule,
     SubscriptionModule,
     PlansModule,
+    PushModule,
     UsersModule,
     NotificationModule,
     PartnerModule,

@@ -7,6 +7,7 @@ import {
   toDateKey,
 } from '../../../../utils/helpers/schedule.helpers';
 import { NotificationService } from '../../../notification/notification.service';
+import { PushService } from '../../../push/push.service';
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
 import { Schedule } from './schedule.entity';
@@ -15,10 +16,14 @@ import {
   buildBookingConfirmationData,
   buildCustomerEmailData,
   buildStoreEmailData,
+  buildStorePushBody,
   getBookingPrice,
   getBookingServiceNames,
+  getStoreRecipientUserIds,
   getStoreRecipients,
 } from './schedule.helpers';
+
+const AGENDA_PATH = '/partner/agenda';
 
 const RELATIONS = [
   'store',
@@ -43,6 +48,7 @@ export class ScheduleNotificationsService {
     private readonly notificationsHistoryService: NotificationsHistoryService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+    private readonly pushService: PushService,
   ) {}
 
   load(id: string) {
@@ -91,6 +97,17 @@ export class ScheduleNotificationsService {
     createdByStore: boolean,
   ) {
     const [first] = schedules;
+
+    // Quem marcou pela loja já sabe do agendamento: push só para reserva do cliente
+    if (!createdByStore) {
+      await this.pushService.sendToUsers(getStoreRecipientUserIds(first), {
+        title: 'Novo agendamento',
+        body: buildStorePushBody(first, getBookingServiceNames(schedules)),
+        url: AGENDA_PATH,
+        tag: `booking-${first.id}`,
+      });
+    }
+
     const recipients = getStoreRecipients(first);
 
     if (!recipients.length) return;
@@ -120,6 +137,13 @@ export class ScheduleNotificationsService {
     );
 
     if (!cancelledByCustomer) return;
+
+    await this.pushService.sendToUsers(getStoreRecipientUserIds(schedule), {
+      title: 'Cliente cancelou',
+      body: buildStorePushBody(schedule),
+      url: AGENDA_PATH,
+      tag: `booking-${schedule.id}`,
+    });
 
     const recipients = getStoreRecipients(schedule);
 
