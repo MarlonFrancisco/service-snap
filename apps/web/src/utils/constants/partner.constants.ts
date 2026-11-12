@@ -23,6 +23,11 @@ export const MODULE_CONFIG: Record<string, TModuleConfig> = {
     description: 'Visualize os clientes da sua empresa',
     showStoreSelector: true,
   },
+  '/partner/clientes': {
+    title: 'Clientes',
+    description: 'Clientes da loja: contato, visitas, etiquetas e anotações',
+    showStoreSelector: true,
+  },
   '/partner/stores': {
     title: 'Lojas',
     description: 'Gerencie todas as suas filiais em um só lugar',
