@@ -69,8 +69,8 @@ export const SettingsSection = () => {
           <div className="min-w-0">
             <h3 className="text-[15px] font-bold">Seus dados estão seguros</h3>
             <p className="mt-0.5 text-sm leading-normal text-[#5F5C6E]">
-              Protegemos suas informações com criptografia de ponta a ponta e
-              nunca as compartilhamos sem sua permissão.
+              Protegemos suas informações e nunca as compartilhamos sem sua
+              permissão.
             </p>
           </div>
         </div>

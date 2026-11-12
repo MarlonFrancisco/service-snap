@@ -35,8 +35,8 @@ const getBadgeLabel = (store: ISearchResult, rating: number) => {
   const reviewCount = store.metadata.reviews.length;
 
   if (rating >= 4.9 && reviewCount >= 50) return 'Preferido dos clientes';
-  if (store.metadata.gallery?.length) return 'Espaço verificado';
 
+  // Não há verificação de espaços: ter foto não é motivo para um selo de confiança
   return 'Agende agora';
 };
 

@@ -5,7 +5,7 @@ export const PARTNER_DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 export const MODULE_CONFIG: Record<string, TModuleConfig> = {
   '/partner/dashboard': {
     title: 'Início',
-    description: 'Visão geral e métricas em tempo real',
+    description: 'Visão geral e métricas do seu negócio',
     showStoreSelector: true,
   },
   '/partner/dashboard/sales': {

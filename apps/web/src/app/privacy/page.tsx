@@ -368,7 +368,7 @@ export default function PrivacyPage() {
     <LegalDocument
       activeTab="privacy"
       title="Política de Privacidade"
-      updatedAt="Última atualização: 3 de novembro de 2026"
+      updatedAt="Última atualização: 12 de novembro de 2026"
       sections={SECTIONS}
     />
   );

@@ -299,33 +299,8 @@ const SECTIONS: TLegalSection[] = [
     ),
   },
   {
-    id: 'verificacao-de-profissionais',
-    title: '7. Verificação de Profissionais',
-    content: (
-      <>
-        <p>
-          Todos os profissionais cadastrados passam por processo de verificação:
-        </p>
-        <ul>
-          <li>Validação de documentação obrigatória</li>
-          <li>Verificação de informações de contato e endereço</li>
-          <li>Aprovação manual pela equipe ServiceSnap antes de ativação</li>
-          <li>
-            Profissionais verificados recebem selo de confiança visível no
-            perfil
-          </li>
-        </ul>
-        <p className={LEGAL_NOTE_CLASS}>
-          <strong>Importante:</strong> A verificação confirma identidade e
-          documentação, mas não garante qualidade do serviço. Consulte sempre as
-          avaliações de outros clientes.
-        </p>
-      </>
-    ),
-  },
-  {
     id: 'limitacao-de-responsabilidade',
-    title: '8. Limitação de Responsabilidade',
+    title: '7. Limitação de Responsabilidade',
     content: (
       <>
         <p>
@@ -371,7 +346,7 @@ const SECTIONS: TLegalSection[] = [
   },
   {
     id: 'propriedade-intelectual',
-    title: '9. Propriedade Intelectual',
+    title: '8. Propriedade Intelectual',
     content: (
       <>
         <p>
@@ -389,7 +364,7 @@ const SECTIONS: TLegalSection[] = [
   },
   {
     id: 'modificacoes-dos-termos',
-    title: '10. Modificações dos Termos',
+    title: '9. Modificações dos Termos',
     content: (
       <>
         <p>
@@ -415,7 +390,7 @@ const SECTIONS: TLegalSection[] = [
   },
   {
     id: 'lei-aplicavel-e-foro',
-    title: '11. Lei Aplicável e Foro',
+    title: '10. Lei Aplicável e Foro',
     content: (
       <>
         <p>
@@ -438,7 +413,7 @@ const SECTIONS: TLegalSection[] = [
   },
   {
     id: 'contato',
-    title: '12. Contato',
+    title: '11. Contato',
     content: (
       <>
         <p>
@@ -472,7 +447,7 @@ export default function TermsPage() {
     <LegalDocument
       activeTab="terms"
       title="Termos de Serviço"
-      updatedAt="Última atualização: 3 de novembro de 2026"
+      updatedAt="Última atualização: 12 de novembro de 2026"
       sections={SECTIONS}
     />
   );
