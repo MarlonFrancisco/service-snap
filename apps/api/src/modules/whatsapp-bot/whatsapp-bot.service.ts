@@ -599,7 +599,7 @@ export class WhatsappBotService {
         ctx,
         `Não há horários livres nos próximos ${DAY_SEARCH_HORIZON} dias para essa escolha. 😕\nPosso te avisar se vagar um horário 👇`,
       );
-      return this.enterWaitlistDays(ctx);
+      return this.enterWaitlistDays(ctx, { hasFreeDays: false });
     }
 
     // Uma linha fica sempre para a lista de espera
@@ -659,8 +659,16 @@ export class WhatsappBotService {
 
   /** Dias de expediente sem nenhum horário livre: os que têm fila de espera. */
   private findFullDays(ctx: IBotContext, today: string) {
+    // Depois do fechamento, os horários de hoje passaram: nada vai vagar
+    const { closeTime } = ctx.config.store;
+    const { minutes } = getStoreNow(
+      getStoreTimezone(ctx.config.store),
+      new Date(),
+    );
+    const isTodayOver = !closeTime || minutes >= timeToMinutes(closeTime);
+
     return this.findDays(ctx, {
-      start: today,
+      start: isTodayOver ? addDays(today, 1) : today,
       limit: addDays(today, WAITLIST_SEARCH_HORIZON),
       wanted: WHATSAPP_LIMITS.listRows,
       // Sem horário nenhum, a loja não abre ou o dia já acabou
@@ -1429,7 +1437,14 @@ export class WhatsappBotService {
   // Lista de espera
   // ---------------------------------------------------------------------------
 
-  private async enterWaitlistDays(ctx: IBotContext) {
+  /**
+   * `hasFreeDays: false` quando a lista de datas veio vazia: sem dia cheio
+   * também, voltar às datas faria um ciclo, então volta para a escolha anterior.
+   */
+  private async enterWaitlistDays(
+    ctx: IBotContext,
+    { hasFreeDays = true }: { hasFreeDays?: boolean } = {},
+  ) {
     const { service } = ctx.session;
     if (!service || ctx.session.professionalId === undefined) {
       return this.expired(ctx);
@@ -1438,12 +1453,21 @@ export class WhatsappBotService {
     const today = this.today(ctx);
     const days = await this.findFullDays(ctx, today);
 
-    if (days.length === 0) {
+    if (days.length === 0 && hasFreeDays) {
       await this.sendText(
         ctx,
         `Os próximos ${WAITLIST_SEARCH_HORIZON} dias ainda têm horário livre 🙂 Escolha um deles 👇`,
       );
       return this.enterDays(ctx);
+    }
+
+    if (days.length === 0) {
+      await this.sendText(
+        ctx,
+        'Também não encontrei dias para a lista de espera. Escolha outra opção, por favor.',
+      );
+      if (!ctx.session.professionalSkipped) return this.enterProfessionals(ctx);
+      return this.enterServices(ctx);
     }
 
     await this.saveSession(ctx, {

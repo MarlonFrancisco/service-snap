@@ -8,7 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { In, IsNull, Repository } from 'typeorm';
 import { getStoreTimezone } from '../../../../utils/helpers/region.helpers';
-import { getStoreNow } from '../../../../utils/helpers/schedule.helpers';
+import {
+  getStoreNow,
+  timeToMinutes,
+} from '../../../../utils/helpers/schedule.helpers';
 import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
 import { addDays } from '../../../../utils/helpers/whatsapp.helpers';
 import { ScheduleService } from '../schedule/schedule.service';
@@ -52,7 +55,8 @@ export class WaitlistService {
     });
     if (!store) throw new NotFoundException('Store not found');
 
-    const today = getStoreNow(getStoreTimezone(store), new Date()).date;
+    const now = getStoreNow(getStoreTimezone(store), new Date());
+    const today = now.date;
     if (date < today || date > addDays(today, WAITLIST_HORIZON_DAYS)) {
       throw new BadRequestException(
         `Choose a day between today and ${WAITLIST_HORIZON_DAYS} days ahead`,
@@ -69,7 +73,11 @@ export class WaitlistService {
     });
 
     // Sem nenhum horário no dia, a loja está fechada: não há o que vagar
-    if (slots.length === 0) {
+    // Hoje, com todos os horários já passados, também não há o que vagar
+    const isOver =
+      date === today &&
+      slots.every((slot) => timeToMinutes(slot.time) <= now.minutes);
+    if (slots.length === 0 || isOver) {
       throw new BadRequestException('The store is closed on this day');
     }
     if (slots.some((slot) => slot.available)) {
