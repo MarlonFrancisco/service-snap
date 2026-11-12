@@ -10,6 +10,9 @@ import {
 import { NotificationService } from '../../../notification/notification.service';
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
+import { WebhookDispatchService } from '../webhooks/webhook-dispatch.service';
+import { hasScheduleChanged } from '../webhooks/webhooks.helpers';
+import type { TWebhookEvent } from '../webhooks/webhooks.types';
 import { Schedule } from './schedule.entity';
 import {
   buildBookingCalendarLink,
@@ -45,6 +48,7 @@ export class ScheduleNotificationsService {
     private readonly notificationsHistoryService: NotificationsHistoryService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+    private readonly webhookDispatch: WebhookDispatchService,
   ) {}
 
   load(id: string) {
@@ -65,6 +69,8 @@ export class ScheduleNotificationsService {
       });
 
       if (!schedules[0]?.store) return;
+
+      await this.emitWebhook('schedule.created', schedules[0].store.id, ids);
 
       await this.confirmBooking(schedules);
       await this.notifyStoreOfBooking(schedules, createdByStore);
@@ -108,6 +114,10 @@ export class ScheduleNotificationsService {
 
   @InBackground()
   async notifyCancellation(schedule: Schedule, cancelledByCustomer: boolean) {
+    await this.emitWebhook('schedule.cancelled', schedule.store?.id, [
+      schedule.id,
+    ]);
+
     await this.notifyCustomer(
       schedule,
       {
@@ -142,6 +152,10 @@ export class ScheduleNotificationsService {
     if (before.status !== 'cancelled' && after.status === 'cancelled') {
       await this.notifyCancellation(after, false);
       return;
+    }
+
+    if (hasScheduleChanged(before, after)) {
+      await this.emitWebhook('schedule.updated', after.store?.id, [after.id]);
     }
 
     if (after.status !== 'scheduled') return;
@@ -209,6 +223,17 @@ export class ScheduleNotificationsService {
 
     await this.attempt(`Histórico do agendamento ${schedule.id}`, () =>
       this.notificationsHistoryService.create(history),
+    );
+  }
+
+  /** Webhook com erro não impede o e-mail: cada efeito tem a sua tentativa. */
+  private emitWebhook(
+    event: TWebhookEvent,
+    storeId: string | undefined,
+    ids: string[],
+  ) {
+    return this.attempt(`Webhook ${event} ${ids.join(', ')}`, () =>
+      this.webhookDispatch.emitScheduleEvent(event, storeId, ids),
     );
   }
 

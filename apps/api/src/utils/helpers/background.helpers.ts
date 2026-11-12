@@ -9,10 +9,7 @@ const logger = new Logger('Background');
  * promessa segue sozinha no processo. O erro só vai para o log: quem chamou já
  * respondeu e não tem como tratá-lo.
  */
-export const runInBackground = (
-  label: string,
-  task: () => unknown,
-): void => {
+export const runInBackground = (label: string, task: () => unknown): void => {
   let promise: Promise<unknown>;
 
   try {
@@ -37,8 +34,7 @@ export const runInBackground = (
  * a requisição: quem chama recebe uma promessa já resolvida.
  */
 export const InBackground =
-  (): MethodDecorator =>
-  (target, key, descriptor: PropertyDescriptor) => {
+  (): MethodDecorator => (target, key, descriptor: PropertyDescriptor) => {
     const original = descriptor.value as (...args: unknown[]) => unknown;
     const label = `${target.constructor.name}.${String(key)}`;
 

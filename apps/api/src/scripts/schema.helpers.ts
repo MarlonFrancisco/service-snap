@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import { createConnection, type Connection } from 'typeorm';
 
+/** O que os scripts usam: `query` corre dentro da transação do `--apply`. */
+export type TSchemaDb = Pick<Connection, 'namingStrategy' | 'query'>;
+
 /**
  * Base dos scripts de schema da Fase 4. Sem `--apply` só mostra o que existe;
  * com ele roda o SQL. Os nomes de chave saem do `namingStrategy`, os mesmos que
@@ -9,7 +12,7 @@ import { createConnection, type Connection } from 'typeorm';
 export async function runSchemaScript(
   title: string,
   tables: string[],
-  apply: (connection: Connection) => Promise<void>,
+  apply: (db: TSchemaDb) => Promise<void>,
 ) {
   if (!process.env.DB_URL) {
     throw new Error('DB_URL is not set. Check apps/api/.env');
@@ -35,8 +38,13 @@ export async function runSchemaScript(
       return;
     }
 
-    await connection.transaction(async (manager) =>
-      apply(manager.connection),
+    // Tudo ou nada: uma falha no meio não deixa metade do schema aplicado
+    await connection.transaction((manager) =>
+      apply({
+        namingStrategy: connection.namingStrategy,
+        query: (sql: string, parameters?: unknown[]) =>
+          manager.query(sql, parameters),
+      }),
     );
     console.log(`✅ ${title}`);
   } finally {
@@ -45,7 +53,7 @@ export async function runSchemaScript(
 }
 
 /** `id`, `created_at` e `updated_at` do `BaseEntity`, com a chave primária. */
-export const baseColumns = (connection: Connection, table: string) => `
+export const baseColumns = (connection: TSchemaDb, table: string) => `
   "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
   "created_at" TIMESTAMP NOT NULL DEFAULT now(),
   "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
@@ -53,7 +61,7 @@ export const baseColumns = (connection: Connection, table: string) => `
 
 /** Chave estrangeira com o nome do TypeORM, criada só se ainda não existir. */
 export async function addForeignKey(
-  connection: Connection,
+  connection: TSchemaDb,
   table: string,
   column: string,
   referenced: string,
@@ -81,14 +89,14 @@ export async function addForeignKey(
 
 /** Índice com o nome do TypeORM quando a entidade não dá um nome próprio. */
 export const indexName = (
-  connection: Connection,
+  connection: TSchemaDb,
   table: string,
   columns: string[],
 ) => connection.namingStrategy.indexName(table, columns);
 
 /** Restrição única com o nome do TypeORM, criada só se ainda não existir. */
 export async function addUnique(
-  connection: Connection,
+  connection: TSchemaDb,
   table: string,
   columns: string[],
   name = connection.namingStrategy.uniqueConstraintName(table, columns),

@@ -27,9 +27,7 @@ export const sanitizeForAudit = (value: unknown, depth = 0): unknown => {
     return value;
 
   if (typeof value === 'string') {
-    return value.length > MAX_STRING
-      ? `${value.slice(0, MAX_STRING)}…`
-      : value;
+    return value.length > MAX_STRING ? `${value.slice(0, MAX_STRING)}…` : value;
   }
 
   if (depth >= MAX_DEPTH) return '[…]';
@@ -78,8 +76,7 @@ export const resolveAuditTarget = (
 
   // Último trecho fixo da rota: `schedules`, `payments`, `reply`...
   const resourceType =
-    [...segments].reverse().find((segment) => !segment.startsWith(':')) ??
-    null;
+    [...segments].reverse().find((segment) => !segment.startsWith(':')) ?? null;
   const createdId =
     responseBody && typeof responseBody === 'object' && 'id' in responseBody
       ? String((responseBody as { id: unknown }).id)

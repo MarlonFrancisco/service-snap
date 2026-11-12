@@ -8,6 +8,7 @@ import { NotificationsHistoryModule } from '../notifications/history/history.mod
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
+import { WebhookDispatchModule } from '../webhooks/webhook-dispatch.module';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
 import { ScheduleController } from './schedule.controller';
 import { Schedule } from './schedule.entity';
@@ -26,6 +27,7 @@ import { ScheduleService } from './schedule.service';
     UsersModule,
     NotificationsHistoryModule,
     NotificationModule,
+    WebhookDispatchModule,
   ],
   controllers: [ScheduleController],
   providers: [ScheduleService, ScheduleNotificationsService],
