@@ -1,3 +1,4 @@
+import { useAgendaMemberRole } from '@/hooks/partner/use-agenda-member-role';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useAgendaStore } from '@/store/admin/agenda';
 import { useIsMobile } from '@repo/ui';
@@ -6,6 +7,7 @@ import { useCallback } from 'react';
 export function useAgendaDefaultView() {
   const analytics = useAnalytics();
   const isMobile = useIsMobile();
+  const { isProfessional } = useAgendaMemberRole();
   const viewMode = useAgendaStore((state) => state.viewMode);
   const setIsAddAppointmentOpen = useAgendaStore(
     (state) => state.setIsAddAppointmentOpen,
@@ -16,9 +18,12 @@ export function useAgendaDefaultView() {
     setIsAddAppointmentOpen({ isAddAppointmentOpen: true });
   }, [analytics, setIsAddAppointmentOpen]);
 
+  // No mobile a agenda já é por dia; dia e mês em grade só existem no desktop.
+  const view = isMobile ? 'week' : viewMode;
+
   return {
-    // No mobile a agenda já é por dia; a visão de colunas só existe no desktop.
-    showDayView: viewMode === 'day' && !isMobile,
+    view,
+    showProfessionalNote: isProfessional,
     handleOpenAddAppointment,
   };
 }

@@ -1,4 +1,6 @@
 import { useBlockedTimeMutations } from '@/hooks';
+import { useAgendaMemberRole } from '@/hooks/partner/use-agenda-member-role';
+import { useStoreMembersQuery } from '@/hooks/use-query/use-store-members-query/use-store-members-query.hook';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { usePartnerStore } from '@/store';
 import {
@@ -7,23 +9,32 @@ import {
   selectWeekDates,
   useAgendaStore,
 } from '@/store/admin/agenda';
+import type { TAgendaVisit, TWorkingDayKey } from '@/store/admin/agenda';
 import type { IBlockedTime } from '@/types/api/blocked-times.types';
-import type { IAppointment } from '@/types/api/schedule.types';
 import type { IProfessional } from '@/types/api/users.types';
+import { useIsMobile } from '@repo/ui';
 import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
+import { useAgendaHolidaysQuery } from '../agenda-data-state/agenda-data-state.hook';
 import { useAgendaGridBulkBlock } from './agenda-grid-bulk-block.hook';
 import type { TSelectedSlot } from './agenda-grid-bulk-block.types';
+import { useAgendaGridDrag } from './agenda-grid-drag.hook';
 import {
+  blockedTimeAppliesOn,
   buildAppointmentLayout,
   dateToISOString,
+  formatBlockedRange,
+  getBlockedRows,
   getProfessionalFullName,
   getProfessionalInitials,
   groupSlotsByProfessional,
+  groupVisits,
   isBlockedTime,
   isToday,
 } from './agenda-grid.helpers';
 import type {
+  TAgendaBlockedBlock,
+  TAgendaClosedNotice,
   TAgendaColumn,
   TAgendaSlot,
   TAgendaSlotState,
@@ -72,13 +83,55 @@ const getSlotAriaLabel = (
   }
 };
 
+/** Folga fixa: o dia do profissional é `null` no expediente dele. */
+const isProfessionalOff = (
+  professional: IProfessional,
+  dayKey: TWorkingDayKey,
+): boolean => professional.workingHours?.[dayKey] === null;
+
+/**
+ * Bloqueios de mais de um slot viram um bloco na coluna; os de um slot
+ * continuam como estado do slot (o clique do modo de bloqueio desfaz).
+ */
+const getBlockedBlocks = (
+  professional: IProfessional,
+  dateStr: string,
+  timeSlots: string[],
+): TAgendaBlockedBlock[] =>
+  (professional.blockedTimes ?? []).flatMap((blockedTime) => {
+    if (!blockedTimeAppliesOn(blockedTime, dateStr)) return [];
+
+    const rows = getBlockedRows(blockedTime, timeSlots);
+    const [rowStart] = rows;
+
+    if (rows.length < 2 || rowStart === undefined) return [];
+
+    return [
+      {
+        // O bloqueio chega aninhado no profissional, sem a referência a ele.
+        blockedTime: { ...blockedTime, storeMember: professional },
+        rowStart,
+        rowSpan: rows.length,
+        label: formatBlockedRange(blockedTime),
+      },
+    ];
+  });
+
+const isRowInBlocks = (blocks: TAgendaBlockedBlock[], rowIndex: number) =>
+  blocks.some(
+    ({ rowStart, rowSpan }) =>
+      rowIndex >= rowStart && rowIndex < rowStart + rowSpan,
+  );
+
 /**
  * Hook base compartilhado para as visões da agenda (semana, dia e mobile)
  * Contém toda a lógica comum de manipulação de slots, appointments e blocked times
  */
 export const useAgendaGrid = () => {
   const analytics = useAnalytics();
-  const professionals = usePartnerStore(
+  const isMobile = useIsMobile();
+  const { isProfessional, ownMember } = useAgendaMemberRole();
+  const storeProfessionals = usePartnerStore(
     (state) => state.activeStore.storeMembers ?? EMPTY_PROFESSIONALS,
   );
   const storeId = usePartnerStore((state) => state.activeStore.id);
@@ -86,6 +139,9 @@ export const useAgendaGrid = () => {
     (state) => state.activeStore.businessDays,
   );
   const timeSlots = usePartnerStore(selectTimeSlots);
+  // A loja não traz o expediente de cada um; a lista da equipe traz.
+  const { storeMembers } = useStoreMembersQuery({ storeId });
+  const holidays = useAgendaHolidaysQuery();
 
   const days = useAgendaStore((state) => state.days);
   const weekDates = useAgendaStore(selectWeekDates);
@@ -107,6 +163,11 @@ export const useAgendaGrid = () => {
   const setIsAddAppointmentOpen = useAgendaStore(
     (state) => state.setIsAddAppointmentOpen,
   );
+  const setSelectedBlockedTime = useAgendaStore(
+    (state) => state.setSelectedBlockedTime,
+  );
+
+  const drag = useAgendaGridDrag({ isEnabled: !isBlockMode && !isMobile });
 
   const {
     createBlockedTime,
@@ -161,17 +222,44 @@ export const useAgendaGrid = () => {
     clearSelection();
   }, [currentWeek, storeId, clearSelection]);
 
+  const professionals = useMemo(() => {
+    const workingHoursById = new Map(
+      storeMembers.map((member) => [member.id, member.workingHours]),
+    );
+    const withHours = storeProfessionals.map((professional) => ({
+      ...professional,
+      workingHours:
+        workingHoursById.get(professional.id) ?? professional.workingHours,
+    }));
+
+    // O profissional só vê (e mexe em) a própria agenda.
+    if (isProfessional) {
+      return withHours.filter(
+        (professional) => professional.id === ownMember?.id,
+      );
+    }
+
+    return withHours;
+  }, [storeProfessionals, storeMembers, isProfessional, ownMember?.id]);
+
   const filteredProfessionals = useMemo(() => {
-    if (selectedProfessionalId === 'all') {
+    if (selectedProfessionalId === 'all' || isProfessional) {
       return professionals;
     }
     return professionals.filter(
       (professional) => professional.id === selectedProfessionalId,
     );
-  }, [professionals, selectedProfessionalId]);
+  }, [professionals, selectedProfessionalId, isProfessional]);
 
   const visibleMemberId =
-    selectedProfessionalId === 'all' ? undefined : selectedProfessionalId;
+    selectedProfessionalId === 'all' || isProfessional
+      ? undefined
+      : selectedProfessionalId;
+
+  const holidaysByDate = useMemo(
+    () => new Map(holidays.map((holiday) => [holiday.date, holiday])),
+    [holidays],
+  );
 
   const hasTodayInWeek = useMemo(
     () => weekDates.some((date) => isToday(date)),
@@ -186,16 +274,40 @@ export const useAgendaGrid = () => {
 
         if (!dayKey || !label) return null;
 
+        const holiday = holidaysByDate.get(dateToISOString(date));
+        const isOff =
+          filteredProfessionals.length > 0 &&
+          filteredProfessionals.every((professional) =>
+            isProfessionalOff(professional, dayKey),
+          );
+        const isWorkingDay = workingDays[dayKey];
+
+        const getHeaderNote = () => {
+          if (holiday) return 'Feriado';
+          if (isOff && isWorkingDay) return 'Folga';
+          return undefined;
+        };
+
         return {
           date,
           dayIndex,
           isToday: isToday(date),
-          isWorkingDay: workingDays[dayKey],
+          isWorkingDay,
           dayKey,
           label,
+          holiday,
+          isOff,
+          headerNote: getHeaderNote(),
         };
       }),
-    [weekDates, workingDayKeys, workingDays, days],
+    [
+      weekDates,
+      workingDayKeys,
+      workingDays,
+      days,
+      holidaysByDate,
+      filteredProfessionals,
+    ],
   );
 
   const selectedDayData = dayData[selectedDayIndex] ?? null;
@@ -220,21 +332,59 @@ export const useAgendaGrid = () => {
   );
 
   const getDayAppointments = useCallback(
-    (date: Date, memberId?: string): IAppointment[] => {
+    (date: Date, memberId?: string): TAgendaVisit[] => {
       const targetDate = dateToISOString(date);
 
-      return appointments
-        .filter(
+      return groupVisits(
+        appointments.filter(
           (appointment) =>
             appointment.date === targetDate &&
             appointment.status !== 'cancelled' &&
             (!memberId || appointment.storeMember.id === memberId),
-        )
-        .sort((first, second) =>
-          first.startTime.localeCompare(second.startTime),
-        );
+        ),
+      ).sort((first, second) =>
+        first.startTime.localeCompare(second.startTime),
+      );
     },
     [appointments],
+  );
+
+  const getClosedNotice = useCallback(
+    (
+      dateStr: string,
+      dayKey: TWorkingDayKey,
+      columnProfessionals: IProfessional[],
+    ): TAgendaClosedNotice | undefined => {
+      const holiday = holidaysByDate.get(dateStr);
+
+      if (holiday) {
+        return {
+          variant: 'holiday',
+          title: holiday.name ? `Feriado · ${holiday.name}` : 'Feriado',
+          text: 'Loja fechada o dia todo',
+        };
+      }
+
+      const isEveryoneOff =
+        columnProfessionals.length > 0 &&
+        columnProfessionals.every((professional) =>
+          isProfessionalOff(professional, dayKey),
+        );
+
+      if (!isEveryoneOff) return undefined;
+
+      const [onlyProfessional] = columnProfessionals;
+
+      return {
+        variant: 'off',
+        title: 'Folga',
+        text:
+          columnProfessionals.length === 1 && onlyProfessional
+            ? `${getProfessionalFullName(onlyProfessional)} não atende neste dia`
+            : 'Ninguém da equipe atende neste dia',
+      };
+    },
+    [holidaysByDate],
   );
 
   const handleSlotClick = useCallback(
@@ -252,11 +402,7 @@ export const useAgendaGrid = () => {
       if (isBlockMode) {
         if (blockedTime) {
           deleteBlockedTime({
-            id: blockedTime.id,
-            date: dateStr,
-            time,
-            isRecurring: false,
-            dayOfWeek: dayIndex,
+            ...blockedTime,
             storeMember: professional,
           });
         } else {
@@ -303,7 +449,12 @@ export const useAgendaGrid = () => {
       dayIndex: number,
       dateStr: string,
       time: string,
-      options: { showInitials?: boolean; isGutter?: boolean } = {},
+      options: {
+        showInitials?: boolean;
+        isGutter?: boolean;
+        /** Soltar aqui leva a visita para este profissional. */
+        isMemberDrop?: boolean;
+      } = {},
     ): TAgendaSlot => {
       const blockedTime = isBlockedTime(
         professional.blockedTimes,
@@ -313,16 +464,18 @@ export const useAgendaGrid = () => {
       const isSelected =
         isBlockMode && isSlotSelected(professional.id, dayIndex, time);
       const state = getSlotState(!!blockedTime, isSelected);
+      const professionalName = getProfessionalFullName(professional);
 
       const [, month, day] = dateStr.split('-');
       const ariaLabel = `${getSlotAriaLabel(
         state,
         isBlockMode,
         time,
-        getProfessionalFullName(professional),
+        professionalName,
       )}, dia ${day}/${month}`;
 
       const stateText = state === 'free' ? time : SLOT_STATE_TEXT[state];
+      const canDrop = state === 'free' && !isBlockMode && !options.isGutter;
 
       return {
         state,
@@ -333,6 +486,19 @@ export const useAgendaGrid = () => {
         isInteractive: isBlockMode || !blockedTime,
         isPressed: isBlockMode ? isSelected : undefined,
         isGutter: options.isGutter,
+        dropTarget: canDrop
+          ? {
+              key: options.isMemberDrop
+                ? `${dateStr}|${time}|${professional.id}`
+                : `${dateStr}|${time}`,
+              date: dateStr,
+              time,
+              storeMemberId: options.isMemberDrop ? professional.id : undefined,
+              professionalName: options.isMemberDrop
+                ? professionalName
+                : undefined,
+            }
+          : undefined,
         handlers: {
           onClick: (event: MouseEvent<HTMLButtonElement>) => {
             if (shouldIgnoreSlotClick(event.detail)) return;
@@ -382,20 +548,30 @@ export const useAgendaGrid = () => {
       options: { isCompact?: boolean } = {},
     ): TAgendaColumn | null => {
       const date = weekDates[dayIndex];
-      if (!date) return null;
+      const dayKey = workingDayKeys[dayIndex];
+      if (!date || !dayKey) return null;
 
       const dateStr = dateToISOString(date);
+      const closedNotice = getClosedNotice(dateStr, dayKey, [professional]);
       const positioned = buildAppointmentLayout(
         getDayAppointments(date, professional.id),
         timeSlots,
       );
+      const blockedBlocks = closedNotice
+        ? []
+        : getBlockedBlocks(professional, dateStr, timeSlots);
 
       return {
+        closedNotice,
+        blockedBlocks,
         rows: timeSlots.map((time, rowIndex) => {
-          const isOccupied = positioned.some(
-            ({ rowStart, rowEnd }) =>
-              rowStart <= rowIndex && rowIndex <= rowEnd,
-          );
+          const isOccupied =
+            !!closedNotice ||
+            isRowInBlocks(blockedBlocks, rowIndex) ||
+            positioned.some(
+              ({ rowStart, rowEnd }) =>
+                rowStart <= rowIndex && rowIndex <= rowEnd,
+            );
 
           return {
             time,
@@ -403,6 +579,7 @@ export const useAgendaGrid = () => {
               ? null
               : getSlot(professional, dayIndex, dateStr, time, {
                   showInitials: options.isCompact,
+                  isMemberDrop: true,
                 }),
           };
         }),
@@ -413,7 +590,14 @@ export const useAgendaGrid = () => {
         })),
       };
     },
-    [weekDates, timeSlots, getDayAppointments, getSlot],
+    [
+      weekDates,
+      workingDayKeys,
+      timeSlots,
+      getClosedNotice,
+      getDayAppointments,
+      getSlot,
+    ],
   );
 
   /**
@@ -424,12 +608,27 @@ export const useAgendaGrid = () => {
   const getMergedDayColumn = useCallback(
     (dayIndex: number): TAgendaColumn | null => {
       const date = weekDates[dayIndex];
-      if (!date) return null;
+      const dayKey = workingDayKeys[dayIndex];
+      if (!date || !dayKey) return null;
 
       const dateStr = dateToISOString(date);
+      const closedNotice = getClosedNotice(
+        dateStr,
+        dayKey,
+        filteredProfessionals,
+      );
       const positioned = buildAppointmentLayout(
         getDayAppointments(date, visibleMemberId),
         timeSlots,
+      );
+      const [onlyProfessional] = filteredProfessionals;
+      // Com vários na faixa, o bloqueio de um não fecha a linha para os outros.
+      const blockedBlocks =
+        !closedNotice && filteredProfessionals.length === 1 && onlyProfessional
+          ? getBlockedBlocks(onlyProfessional, dateStr, timeSlots)
+          : [];
+      const workingProfessionals = filteredProfessionals.filter(
+        (professional) => !isProfessionalOff(professional, dayKey),
       );
 
       const rowStatus = timeSlots.map((time, rowIndex) => {
@@ -439,9 +638,13 @@ export const useAgendaGrid = () => {
               rowStart <= rowIndex && rowIndex <= rowEnd,
           )
           .map(({ appointment }) => appointment.storeMember.id);
-        const candidates = filteredProfessionals.filter(
-          (professional) => !busyIds.includes(professional.id),
-        );
+        const isClosedRow =
+          !!closedNotice || isRowInBlocks(blockedBlocks, rowIndex);
+        const candidates = isClosedRow
+          ? []
+          : workingProfessionals.filter(
+              (professional) => !busyIds.includes(professional.id),
+            );
         const bookable = candidates.find(
           (professional) =>
             !isBlockedTime(professional.blockedTimes, dateStr, time),
@@ -451,6 +654,8 @@ export const useAgendaGrid = () => {
       });
 
       return {
+        closedNotice,
+        blockedBlocks,
         rows: rowStatus.map(({ time, hasBusy, candidates, bookable }) => {
           if (bookable) {
             return {
@@ -481,9 +686,11 @@ export const useAgendaGrid = () => {
     },
     [
       weekDates,
+      workingDayKeys,
       timeSlots,
       filteredProfessionals,
       visibleMemberId,
+      getClosedNotice,
       getDayAppointments,
       getSlot,
     ],
@@ -520,10 +727,17 @@ export const useAgendaGrid = () => {
   );
 
   const handleAppointmentClick = useCallback(
-    (appointment: IAppointment) => {
+    (appointment: TAgendaVisit) => {
       setDetailsAppointment(appointment);
     },
     [setDetailsAppointment],
+  );
+
+  const handleBlockedBlockClick = useCallback(
+    (blockedTime: IBlockedTime) => {
+      setSelectedBlockedTime(blockedTime);
+    },
+    [setSelectedBlockedTime],
   );
 
   const handleSelectDay = useCallback(
@@ -559,9 +773,13 @@ export const useAgendaGrid = () => {
     handleSlotClick,
     handleQuickAdd,
     handleAppointmentClick,
+    handleBlockedBlockClick,
     handleSelectDay,
 
     // Bulk block hook
     bulkBlockHook,
+
+    // Arrastar para remarcar
+    drag,
   };
 };

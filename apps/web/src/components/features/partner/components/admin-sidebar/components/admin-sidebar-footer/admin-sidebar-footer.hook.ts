@@ -1,4 +1,9 @@
+import {
+  MEMBER_ROLE_LABEL,
+  useAgendaMemberRole,
+} from '@/hooks/partner/use-agenda-member-role';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
+import { usePartnerStore } from '@/store/partner';
 import { usePathname } from 'next/navigation';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -21,6 +26,8 @@ export const useAdminSidebarFooter = () => {
   const pathname = usePathname();
   const analytics = useAnalytics();
   const hasTrackedWarningRef = useRef(false);
+  const { role, isProfessional } = useAgendaMemberRole();
+  const storeName = usePartnerStore((state) => state.activeStore.name);
 
   const isHidden =
     pathname === PLAN_ROUTE || pathname.startsWith(`${PLAN_ROUTE}/`);
@@ -94,6 +101,10 @@ export const useAdminSidebarFooter = () => {
   }, [isAtLimit, isNearLimit, analytics]);
 
   return {
+    // O profissional não vê o plano: vê a loja e o papel dele nela.
+    memberCard: isProfessional
+      ? { storeName, roleLabel: MEMBER_ROLE_LABEL[role] }
+      : null,
     currentPlan,
     isHidden,
     handlePlanActionClick,

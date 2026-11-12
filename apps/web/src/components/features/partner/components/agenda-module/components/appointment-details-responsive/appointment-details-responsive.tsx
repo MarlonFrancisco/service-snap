@@ -37,13 +37,17 @@ export function AppointmentDetailsResponsive() {
     isUpdatingStatus,
     isConfirmingCancel,
     cancelTriggerRef,
+    visitItems,
+    totalPrice,
     handleClose,
     handleStatusChange,
+    handleOpenReschedule,
     handleRequestCancel,
     handleDismissCancel,
   } = useAppointmentDetails();
 
-  const { user, service, storeMember, notes, status, id } = detailsAppointment;
+  const { user, storeMember, notes, status, id } = detailsAppointment;
+  const isVisit = visitItems.length > 1;
 
   const content = (
     <div className="flex flex-col gap-3.5">
@@ -77,8 +81,17 @@ export function AppointmentDetailsResponsive() {
           </div>
         ) : null}
         <div className={DETAIL_ROW_CLASS}>
-          <dt className={DETAIL_TERM_CLASS}>Serviço</dt>
-          <dd className={DETAIL_VALUE_CLASS}>{service.name}</dd>
+          <dt className={DETAIL_TERM_CLASS}>
+            {isVisit ? `${visitItems.length} serviços` : 'Serviço'}
+          </dt>
+          <dd className={DETAIL_VALUE_CLASS}>
+            {visitItems.map((item) => (
+              <span key={item.id} className="block">
+                {item.service.name}
+                {isVisit ? ` · ${item.startTime}` : ''}
+              </span>
+            ))}
+          </dd>
         </div>
         <div className={DETAIL_ROW_CLASS}>
           <dt className={DETAIL_TERM_CLASS}>Profissional</dt>
@@ -100,7 +113,7 @@ export function AppointmentDetailsResponsive() {
         <div className={DETAIL_ROW_CLASS}>
           <dt className={DETAIL_TERM_CLASS}>Preço</dt>
           <dd className={DETAIL_VALUE_CLASS}>
-            {formatPriceByCountry(service.price)}
+            {formatPriceByCountry(totalPrice)}
           </dd>
         </div>
         {notes ? (
@@ -133,6 +146,17 @@ export function AppointmentDetailsResponsive() {
             Cliente não compareceu
           </button>
         </div>
+      ) : null}
+
+      {status === 'scheduled' && !isConfirmingCancel ? (
+        <button
+          type="button"
+          onClick={handleOpenReschedule}
+          disabled={isUpdatingStatus}
+          className={cn(AGENDA_MODAL_BUTTON_CLASS, 'flex-none')}
+        >
+          Remarcar
+        </button>
       ) : null}
 
       {status !== 'cancelled' && !isConfirmingCancel ? (

@@ -1,5 +1,9 @@
 'use client';
 
+import {
+  MEMBER_ROLE_LABEL,
+  useAgendaMemberRole,
+} from '@/hooks/partner/use-agenda-member-role';
 import { useStoresQuery } from '@/hooks/use-query/use-stores-query/use-stores-query.hook';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { usePartnerStore } from '@/store/partner';
@@ -12,6 +16,7 @@ export const useStoreSelector = () => {
   const activeStore = usePartnerStore((state) => state.activeStore);
   const setActiveStore = usePartnerStore((state) => state.setActiveStore);
   const [isOpen, setIsOpen] = useState(false);
+  const { role } = useAgendaMemberRole();
 
   const handleSelectStore = useCallback(
     (store: IStore) => {
@@ -28,8 +33,22 @@ export const useStoreSelector = () => {
     [analytics, activeStore.id, stores, setActiveStore],
   );
 
+  /** O papel aparece só quando não é dono (o caso comum fica limpo). */
+  const getRoleLabel = useCallback(
+    (store: IStore) =>
+      store.memberRole && store.memberRole !== 'owner'
+        ? MEMBER_ROLE_LABEL[store.memberRole]
+        : undefined,
+    [],
+  );
+
+  const activeRoleLabel =
+    role !== 'owner' ? MEMBER_ROLE_LABEL[role] : undefined;
+
   return {
     stores,
+    activeRoleLabel,
+    getRoleLabel,
     activeStore,
     isOpen,
     setIsOpen,
