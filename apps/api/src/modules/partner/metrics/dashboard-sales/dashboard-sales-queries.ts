@@ -9,7 +9,7 @@ export const DashboardSalesQueries = {
    * Resumo do período atual vs anterior em uma única leitura de `schedules`:
    * receita, ticket médio, conversão, receita por hora e progresso da meta.
    * $1: store_id, $2: current_start, $3: current_end, $4: prev_start, $5: prev_end
-   * $6: period_type (week/month/quarter)
+   * $6: period_type (week/month/quarter), $7: hoje no fuso da loja
    */
   calculatePeriodSummary: `
     WITH base AS (
@@ -49,7 +49,8 @@ export const DashboardSalesQueries = {
           WHEN $6::text = 'month' THEN COALESCE("monthlyGoal", 0)
           WHEN $6::text = 'quarter' THEN COALESCE("quarterlyGoal", 0)
           ELSE 0
-        END AS target_goal
+        END AS target_goal,
+        "businessDays" AS business_days
       FROM stores
       WHERE id = $1::uuid
     )
@@ -71,10 +72,12 @@ export const DashboardSalesQueries = {
             GREATEST((SELECT hours_per_day FROM store) *
                      (($5::date - $4::date) + 1), 1)::NUMERIC) AS prev_revenue_per_hour,
       (SELECT target_goal FROM store) AS target_goal,
+      (SELECT business_days FROM store) AS business_days,
+      -- A semana vai de segunda a domingo: ISODOW dá 7 no domingo (0 dias restantes)
       GREATEST(0, CASE
-        WHEN $6::text = 'week' THEN (7 - EXTRACT(DOW FROM CURRENT_DATE)::INT)
-        WHEN $6::text = 'month' THEN ((DATE_TRUNC('month', CURRENT_DATE + '1 month'::interval)::date - CURRENT_DATE)::INT)
-        WHEN $6::text = 'quarter' THEN ((DATE_TRUNC('quarter', CURRENT_DATE + '3 months'::interval)::date - CURRENT_DATE)::INT)
+        WHEN $6::text = 'week' THEN (7 - EXTRACT(ISODOW FROM $7::date)::INT)
+        WHEN $6::text = 'month' THEN ((DATE_TRUNC('month', $7::date + '1 month'::interval)::date - $7::date)::INT)
+        WHEN $6::text = 'quarter' THEN ((DATE_TRUNC('quarter', $7::date + '3 months'::interval)::date - $7::date)::INT)
         ELSE 0
       END)::INT AS days_remaining
     FROM totals t
@@ -82,12 +85,12 @@ export const DashboardSalesQueries = {
 
   /**
    * Calcula evolução de receita para últimos 6 meses
-   * $1: store_id
+   * $1: store_id, $2: hoje no fuso da loja
    */
   calculateRevenueEvolution: `
     WITH months AS (
       SELECT
-        DATE_TRUNC('month', CURRENT_DATE - (interval '1 month' * (row_number() OVER () - 1)))::date as month_date,
+        DATE_TRUNC('month', $2::date - (interval '1 month' * (row_number() OVER () - 1)))::date as month_date,
         row_number() OVER () as month_num
       FROM generate_series(0, 5)
     ),
@@ -100,12 +103,12 @@ export const DashboardSalesQueries = {
       LEFT JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
         AND sch.status = 'completed'
-        AND sch.date >= DATE_TRUNC('month', CURRENT_DATE - interval '6 months')
+        AND sch.date >= DATE_TRUNC('month', $2::date - interval '6 months')
       GROUP BY DATE_TRUNC('month', sch.date)
     ),
     goals_per_month AS (
       SELECT
-        DATE_TRUNC('month', CURRENT_DATE - (interval '1 month' * (row_number() OVER () - 1)))::date as month_date,
+        DATE_TRUNC('month', $2::date - (interval '1 month' * (row_number() OVER () - 1)))::date as month_date,
         COALESCE("monthlyGoal", 0) as goal
       FROM stores, generate_series(0, 5)
       WHERE id = $1::uuid

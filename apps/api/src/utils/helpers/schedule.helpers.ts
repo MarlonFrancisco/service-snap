@@ -155,7 +155,7 @@ interface AvailabilityParams {
   now?: Date;
 }
 
-const WEEK_DAYS = [
+export const WEEK_DAYS = [
   'sunday',
   'monday',
   'tuesday',

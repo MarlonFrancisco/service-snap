@@ -98,11 +98,11 @@ export class DashboardCustomersService {
       ),
       this.scheduleRepository.query(
         DashboardCustomersQueries.calculateCustomerEvolution,
-        [storeId, this.getSixMonthsAgo()],
+        [storeId, this.getSixMonthsAgo(now)],
       ),
       this.scheduleRepository.query(
         DashboardCustomersQueries.calculateLTVBySegment,
-        [storeId],
+        [storeId, now],
       ),
       this.scheduleRepository.query(
         DashboardCustomersQueries.calculateTopVIPCustomers,
@@ -282,8 +282,8 @@ export class DashboardCustomersService {
   /**
    * Retorna a data de 6 meses atrás
    */
-  private getSixMonthsAgo(): Date {
-    const date = new Date();
+  private getSixMonthsAgo(today: Date): Date {
+    const date = new Date(today);
     date.setMonth(date.getMonth() - 6);
     return date;
   }

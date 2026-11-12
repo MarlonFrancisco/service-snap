@@ -14,6 +14,7 @@ export interface PeriodSummaryResult {
   current_revenue_per_hour: number;
   prev_revenue_per_hour: number;
   target_goal: number;
+  business_days: Record<string, boolean> | null;
   days_remaining: number;
 }
 

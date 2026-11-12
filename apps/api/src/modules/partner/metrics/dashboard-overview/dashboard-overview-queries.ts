@@ -57,7 +57,8 @@ export const DashboardOverviewQueries = {
     )
     SELECT
       COUNT(*) FILTER (
-        WHERE first_visit_date >= $2::date AND first_visit_date <= $3::date
+        WHERE first_visit_date >= $2::date
+          AND first_visit_date < ($3::date + 1)
       ) AS new_customers_count,
       COUNT(*) FILTER (WHERE period_bookings > 1) AS recurring_count
     FROM per_user
@@ -127,7 +128,9 @@ export const DashboardOverviewQueries = {
         COUNT(*) as total_appointments,
         SUM(CASE WHEN sch.status = 'completed' THEN 1 ELSE 0 END) as completed_count,
         SUM(CASE WHEN sch.status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_count,
-        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
+        COALESCE(SUM(COALESCE(sch.price, s.price)) FILTER (
+          WHERE sch.status = 'completed'
+        ), 0) as total_revenue
       FROM schedules sch
       LEFT JOIN services s ON sch."serviceId" = s.id
       WHERE sch."storeId" = $1::uuid
@@ -155,7 +158,9 @@ export const DashboardOverviewQueries = {
       s.id as service_id,
       s.name as service_name,
       COUNT(*) as bookings_count,
-      COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_revenue
+      COALESCE(SUM(COALESCE(sch.price, s.price)) FILTER (
+        WHERE sch.status = 'completed'
+      ), 0) as total_revenue
     FROM schedules sch
     INNER JOIN services s ON sch."serviceId" = s.id
     WHERE sch."storeId" = $1::uuid

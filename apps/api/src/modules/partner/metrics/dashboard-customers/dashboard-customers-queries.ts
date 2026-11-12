@@ -116,7 +116,7 @@ export const DashboardCustomersQueries = {
       FROM reviews
       WHERE "storeId" = $1::uuid
         AND created_at >= $2::date
-        AND created_at <= $3::date
+        AND created_at < ($3::date + 1)
     ),
     previous_reviews AS (
       SELECT
@@ -124,7 +124,7 @@ export const DashboardCustomersQueries = {
       FROM reviews
       WHERE "storeId" = $1::uuid
         AND created_at >= $4::date
-        AND created_at <= $5::date
+        AND created_at < ($5::date + 1)
     )
     SELECT
       ROUND(CAST((SELECT avg_rating FROM current_reviews) AS NUMERIC), 1) as current_nps,
@@ -135,7 +135,7 @@ export const DashboardCustomersQueries = {
   /**
    * Calcula evolução de clientes para últimos 6 meses
    * Retorna: novos, recorrentes, churn e total por mês
-   * $1: store_id, $2: start_date (6 meses atrás)
+   * $1: store_id, $2: start_date (6 meses atrás; a janela começa no dia 1 desse mês)
    */
   calculateCustomerEvolution: `
     WITH customer_first_visit AS (
@@ -144,7 +144,6 @@ export const DashboardCustomersQueries = {
         DATE_TRUNC('month', MIN(sch.date))::date as first_month
       FROM schedules sch
       WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $2::date
         AND sch."userId" IS NOT NULL
       GROUP BY sch."userId"
     ),
@@ -154,7 +153,7 @@ export const DashboardCustomersQueries = {
         COUNT(DISTINCT sch."userId") as total_customers
       FROM schedules sch
       WHERE sch."storeId" = $1::uuid
-        AND sch.date >= $2::date
+        AND sch.date >= DATE_TRUNC('month', $2::date)
         AND sch."userId" IS NOT NULL
       GROUP BY DATE_TRUNC('month', sch.date)
     ),
@@ -163,6 +162,7 @@ export const DashboardCustomersQueries = {
         first_month,
         COUNT(*) as new_customers
       FROM customer_first_visit
+      WHERE first_month >= DATE_TRUNC('month', $2::date)
       GROUP BY first_month
     )
     SELECT
@@ -179,7 +179,7 @@ export const DashboardCustomersQueries = {
   /**
    * Calcula LTV por segmento de cliente
    * Segmentação: VIPs (>R$1000), Frequentes (2+/mês), Regulares (1+/mês), Ocasionais (2+), Novos (1)
-   * $1: store_id
+   * $1: store_id, $2: hoje no fuso da loja
    */
   calculateLTVBySegment: `
     WITH customer_stats AS (
@@ -187,7 +187,9 @@ export const DashboardCustomersQueries = {
         sch."userId",
         COUNT(*) as total_visits,
         COUNT(CASE WHEN sch.status = 'completed' THEN 1 END) as completed_visits,
-        COALESCE(SUM(COALESCE(sch.price, s.price)), 0) as total_spent,
+        COALESCE(SUM(COALESCE(sch.price, s.price)) FILTER (
+          WHERE sch.status = 'completed'
+        ), 0) as total_spent,
         MIN(sch.date) as first_visit,
         MAX(sch.date) as last_visit,
         CASE
@@ -212,9 +214,9 @@ export const DashboardCustomersQueries = {
         END as segment,
         total_spent,
         total_visits,
-        GREATEST(months_since_first, 1) as monthly_visits_calc,
+        total_visits / GREATEST(months_since_first, 1) as monthly_visits_calc,
         last_visit,
-        (CURRENT_DATE - last_visit) as days_since_last
+        ($2::date - last_visit) as days_since_last
       FROM customer_stats
     )
     SELECT
@@ -251,6 +253,7 @@ export const DashboardCustomersQueries = {
     LEFT JOIN users u ON sch."userId" = u.id
     WHERE sch."storeId" = $1::uuid
       AND sch."userId" IS NOT NULL
+      AND sch.status = 'completed'
     GROUP BY sch."userId", u.first_name, u.last_name
     ORDER BY total_spent DESC
     LIMIT 5

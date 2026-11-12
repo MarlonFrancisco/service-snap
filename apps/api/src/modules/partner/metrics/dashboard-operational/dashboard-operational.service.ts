@@ -5,6 +5,7 @@ import {
   PeriodType,
   getPeriodDateRange,
   getPreviousPeriodStart,
+  isStoreDayOpen,
   toStoreLocalToday,
 } from '../../../../utils/helpers/metrics.helpers';
 import { getStoreTimezone } from '../../../../utils/helpers/region.helpers';
@@ -232,7 +233,10 @@ export class DashboardOperationalService {
       usedCapacity: Number(result.appointments) || 0,
       emptyCapacity: 0,
       utilizationPercentage: Number(result.utilization_percentage) || 0,
-      isOpen: this.isDayOpen(Number(result.day_of_week) || 0, store),
+      isOpen: isStoreDayOpen(
+        Number(result.day_of_week) || 0,
+        store.businessDays,
+      ),
       revenue: 0,
     }));
   }
@@ -280,7 +284,10 @@ export class DashboardOperationalService {
       night: 'Noite (18h-20h)',
     };
     const total =
-      results.reduce((sum, r) => sum + r.current_appointments, 0) || 1;
+      results.reduce(
+        (sum, r) => sum + (Number(r.current_appointments) || 0),
+        0,
+      ) || 1;
 
     return results.map((result) => {
       const currentAppts = Number(result.current_appointments) || 0;
@@ -364,23 +371,5 @@ export class DashboardOperationalService {
         ((Number(result.total_appointments) || 0) * 100) / 30,
       ),
     }));
-  }
-
-  private isDayOpen(dayOfWeek: number, store: Store): boolean {
-    if (!store.businessDays) return true;
-    const dayNames = [
-      'sunday',
-      'monday',
-      'tuesday',
-      'wednesday',
-      'thursday',
-      'friday',
-      'saturday',
-    ];
-    return (
-      store.businessDays[
-        dayNames[dayOfWeek] as keyof typeof store.businessDays
-      ] ?? true
-    );
   }
 }

@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import {
   PeriodType,
   getPeriodDateRange,
+  isStoreDayOpen,
   resolveStoreToday,
   getPreviousPeriodStart,
 } from '../../../../utils/helpers/metrics.helpers';
@@ -68,11 +69,11 @@ export class DashboardSalesService {
     ] = await Promise.all([
       this.scheduleRepository.query(
         DashboardSalesQueries.calculatePeriodSummary,
-        [...bothPeriods, period],
+        [...bothPeriods, period, now],
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateRevenueEvolution,
-        [storeId],
+        [storeId, now],
       ),
       this.scheduleRepository.query(
         DashboardSalesQueries.calculateRevenueByDayOfWeek,
@@ -132,7 +133,10 @@ export class DashboardSalesService {
     );
 
     // Insights
-    const insights = this.generateInsights(revenueByDayOfWeek);
+    const insights = this.generateInsights(
+      revenueByDayOfWeek,
+      summary.business_days,
+    );
 
     return {
       revenue,
@@ -320,6 +324,7 @@ export class DashboardSalesService {
       averageTicket: number;
       appointments: number;
     }>,
+    businessDays: Record<string, boolean> | null,
   ) {
     // Dia mais rentável: maior ticket médio entre os dias com atendimento
     // concluído. Sem nenhum, cai no primeiro dia da lista.
@@ -332,13 +337,19 @@ export class DashboardSalesService {
       revenueByDayOfWeek[0],
     );
 
-    const opportunities = [];
+    // Dia fechado não é oportunidade nem puxa a média para baixo. A lista vem
+    // na ordem do DOW (0 = domingo), então o índice é o dia da semana.
+    const openDays = revenueByDayOfWeek.filter((_, dayOfWeek) =>
+      isStoreDayOpen(dayOfWeek, businessDays),
+    );
+
+    const opportunities: string[] = [];
     // Identificar dias com receita baixa
     const avgRevenue =
-      revenueByDayOfWeek.reduce((sum, day) => sum + day.averageRevenue, 0) /
-      revenueByDayOfWeek.length;
+      openDays.reduce((sum, day) => sum + day.averageRevenue, 0) /
+      Math.max(openDays.length, 1);
 
-    for (const day of revenueByDayOfWeek) {
+    for (const day of openDays) {
       if (day.averageRevenue < avgRevenue * 0.7) {
         const percentage = Math.round(
           ((avgRevenue - day.averageRevenue) / avgRevenue) * 100,

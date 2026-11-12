@@ -1,7 +1,7 @@
 import type { EntityManager } from 'typeorm';
 import { Store } from '../../modules/partner/stores/store.entity';
 import { getStoreTimezone } from './region.helpers';
-import { getStoreNow } from './schedule.helpers';
+import { WEEK_DAYS, getStoreNow } from './schedule.helpers';
 
 /**
  * Helpers Utilitários para Cálculo de Períodos em Métricas
@@ -118,20 +118,25 @@ export function getPreviousPeriodStart(date: Date, period: PeriodType): Date {
   return d;
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
 /**
- * Retorna a quantidade de dias em um período
- * @param period - Tipo de período
- * @returns Número de dias no período (7, 30 ou 90)
+ * Quantidade real de dias do intervalo (28 a 31 num mês, 90 a 92 num
+ * trimestre), contando o primeiro e o último dia.
  */
-export function getDaysInPeriod(period: PeriodType): number {
-  switch (period) {
-    case 'week':
-      return 7;
-    case 'month':
-      return 30;
-    case 'quarter':
-      return 90;
-  }
+export function getDaysInRange(range: DateRange): number {
+  return Math.round((range.end.getTime() - range.start.getTime()) / MS_PER_DAY);
+}
+
+/**
+ * A loja abre neste dia da semana? `dayOfWeek` segue o DOW do Postgres e o
+ * `getDay()` do JS (0 = domingo). Sem configuração, o dia conta como aberto.
+ */
+export function isStoreDayOpen(
+  dayOfWeek: number,
+  businessDays?: Record<string, boolean> | null,
+): boolean {
+  return businessDays?.[WEEK_DAYS[dayOfWeek]] !== false;
 }
 
 /**

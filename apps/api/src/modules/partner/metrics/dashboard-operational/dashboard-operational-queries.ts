@@ -112,17 +112,27 @@ export const DashboardOperationalQueries = {
         CAST(SUBSTRING("openTime", 1, 2) AS INT) as hours_per_day
       FROM stores
       WHERE id = $1::uuid
+    ),
+    -- Quantas segundas, terças etc. existem no período
+    days_count AS (
+      SELECT
+        EXTRACT(DOW FROM date_val)::INT as day_of_week,
+        COUNT(*) as num_days
+      FROM generate_series($2::date, $3::date, '1 day'::interval) as date_val
+      GROUP BY EXTRACT(DOW FROM date_val)
     )
     SELECT
       ad.day_of_week,
       COALESCE(dc.total_appointments, 0) as appointments,
       ROUND(GREATEST(0, LEAST(100,
         COALESCE(dc.total_appointments, 0)::NUMERIC /
-        GREATEST((SELECT hours_per_day FROM business_hours), 1)::NUMERIC * 100
+        GREATEST((SELECT hours_per_day FROM business_hours) *
+                 COALESCE(dn.num_days, 0), 1)::NUMERIC * 100
       )))::INT as utilization_percentage,
       ROUND(COALESCE(dc.avg_duration, 30))::INT as avg_duration
     FROM all_days ad
     LEFT JOIN daily_counts dc ON ad.day_of_week = dc.day_of_week
+    LEFT JOIN days_count dn ON ad.day_of_week = dn.day_of_week
     ORDER BY ad.day_of_week
   `,
 
@@ -183,7 +193,7 @@ export const DashboardOperationalQueries = {
       GROUP BY period_part
     )
     SELECT
-      cp.period_part,
+      COALESCE(cp.period_part, pp.period_part) as period_part,
       COALESCE(cp.appointments, 0) as current_appointments,
       COALESCE(pp.appointments, 0) as prev_appointments
     FROM current_period cp

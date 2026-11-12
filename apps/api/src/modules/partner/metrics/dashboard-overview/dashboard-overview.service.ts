@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   PeriodType,
-  getDaysInPeriod,
+  getDaysInRange,
   getPeriodDateRange,
   resolveStoreToday,
   getPreviousPeriodStart,
@@ -94,7 +94,11 @@ export class DashboardOverviewService {
       | undefined;
 
     const weeklyRevenue = this.formatRevenueResult(summary);
-    const occupationRate = this.formatOccupationRateResult(summary, period);
+    const occupationRate = this.formatOccupationRateResult(
+      summary,
+      getDaysInRange(currentPeriod),
+      getDaysInRange(previousPeriod),
+    );
     const averageTicket = this.formatAverageTicketResult(summary);
     const averageRating = this.formatAverageRatingResult(
       averageRatingResult[0] as AverageRatingResult,
@@ -155,17 +159,17 @@ export class DashboardOverviewService {
    */
   private formatOccupationRateResult(
     result: PeriodSummaryResult,
-    period: PeriodType,
+    currentDays: number,
+    prevDays: number,
   ) {
     const slotsPerDay = 10;
-    const daysInPeriod = getDaysInPeriod(period);
-    const totalSlots = slotsPerDay * daysInPeriod;
 
     const currentOccupied = Number(result.current_occupied) || 0;
     const prevOccupied = Number(result.prev_occupied) || 0;
 
-    const currentRate = (currentOccupied / totalSlots) * 100;
-    const prevRate = (prevOccupied / totalSlots) * 100;
+    // Cada período usa a própria duração: fevereiro não tem os dias de março
+    const currentRate = (currentOccupied / (slotsPerDay * currentDays)) * 100;
+    const prevRate = (prevOccupied / (slotsPerDay * prevDays)) * 100;
     const percentageChange = (currentRate - prevRate).toFixed(1);
 
     return {
