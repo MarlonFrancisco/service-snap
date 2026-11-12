@@ -114,3 +114,24 @@ export async function addUnique(
       .join(', ')})`,
   );
 }
+
+/** Coluna de dinheiro (`numeric(12,2)`), igual à das entidades. */
+export const MONEY = 'numeric(12,2)';
+
+export type TForeignKey = [string, string, 'CASCADE' | 'SET NULL'];
+
+/** Cria a tabela e as chaves estrangeiras `[coluna, tabela, ao apagar]`. */
+export async function createTable(
+  db: TSchemaDb,
+  table: string,
+  columns: string,
+  foreignKeys: TForeignKey[],
+) {
+  await db.query(
+    `CREATE TABLE IF NOT EXISTS "${table}" (${baseColumns(db, table)}, ${columns})`,
+  );
+
+  for (const [column, referenced, onDelete] of foreignKeys) {
+    await addForeignKey(db, table, column, referenced, onDelete);
+  }
+}

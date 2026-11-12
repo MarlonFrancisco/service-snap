@@ -8,32 +8,7 @@ import { COMMISSION_RULE_STORE_INDEX } from '../modules/partner/stores/commissio
 import { LOYALTY_PROGRAM_STORE_INDEX } from '../modules/partner/stores/loyalty/loyalty-program.entity';
 import { LOYALTY_REWARD_SEQUENCE_INDEX } from '../modules/partner/stores/loyalty/loyalty-reward.entity';
 import { CUSTOMER_PACKAGE_CUSTOMER_INDEX } from '../modules/partner/stores/packages/customer-package.entity';
-import {
-  addForeignKey,
-  baseColumns,
-  runSchemaScript,
-  type TSchemaDb,
-} from './schema.helpers';
-
-const MONEY = 'numeric(12,2)';
-
-type TForeignKey = [string, string, 'CASCADE' | 'SET NULL'];
-
-/** Cria a tabela e as chaves estrangeiras `[coluna, tabela, ao apagar]`. */
-async function createTable(
-  db: TSchemaDb,
-  table: string,
-  columns: string,
-  foreignKeys: TForeignKey[],
-) {
-  await db.query(
-    `CREATE TABLE IF NOT EXISTS "${table}" (${baseColumns(db, table)}, ${columns})`,
-  );
-
-  for (const [column, referenced, onDelete] of foreignKeys) {
-    await addForeignKey(db, table, column, referenced, onDelete);
-  }
-}
+import { MONEY, createTable, runSchemaScript } from './schema.helpers';
 
 /**
  * Gestão da loja (Fase 4): comissões, caixa, pagamentos, pacotes, fidelidade e

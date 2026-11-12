@@ -6,6 +6,7 @@ import { CheckoutModule } from './checkout/checkout.module';
 import { CommissionsModule } from './commissions/commissions.module';
 import { LoyaltyModule } from './loyalty/loyalty.module';
 import { PackagesModule } from './packages/packages.module';
+import { ScheduleSeriesModule } from './schedule-series/schedule-series.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 
 /**
@@ -22,6 +23,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     LoyaltyModule,
     CheckoutModule,
     CommissionsModule,
+    ScheduleSeriesModule,
   ],
 })
 export class StoreManagementModule {}

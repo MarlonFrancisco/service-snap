@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { InBackground } from '../../../../utils/helpers/background.helpers';
+import { areNotificationsMuted } from '../../../../utils/helpers/notification-scope.helpers';
 import {
   formatScheduleMoment,
   toDateKey,
@@ -72,6 +73,9 @@ export class ScheduleNotificationsService {
 
       await this.emitWebhook('schedule.created', schedules[0].store.id, ids);
 
+      // Lote (ex.: série recorrente) manda um aviso só, no fim
+      if (areNotificationsMuted()) return;
+
       await this.confirmBooking(schedules);
       await this.notifyStoreOfBooking(schedules, createdByStore);
     });
@@ -117,6 +121,8 @@ export class ScheduleNotificationsService {
     await this.emitWebhook('schedule.cancelled', schedule.store?.id, [
       schedule.id,
     ]);
+
+    if (areNotificationsMuted()) return;
 
     await this.notifyCustomer(
       schedule,
