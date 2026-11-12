@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationModule } from '../notification';
 import { ScheduleModule } from '../partner/stores/schedule';
+import { StoreSearchSyncModule } from '../partner/stores/search-sync/store-search-sync.module';
 import { StoresModule } from '../partner/stores/stores.module';
 import { StripeModule } from '../stripe';
 import { UsersModule } from '../users';
@@ -18,6 +19,7 @@ import { SubscriptionService } from './subscription.service';
     UsersModule,
     ScheduleModule,
     StoresModule,
+    StoreSearchSyncModule,
     ConfigModule,
   ],
   providers: [SubscriptionService],

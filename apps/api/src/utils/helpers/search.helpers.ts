@@ -7,6 +7,47 @@ import type {
   IStoreSearchContent,
   IStoreSearchMetadata,
 } from '../../modules/search/search.types';
+import type { Subscription } from '../../modules/subscription/subscription.entity';
+import { getStoreTimezone } from './region.helpers';
+
+/** Loja cujo dono não tem plano ativo fica depois de todos os planos. */
+export const NO_PLAN_RANK_TIER = 4;
+
+const RANK_TIERS: Record<string, number> = {
+  TIER_1: 1,
+  TIER_2: 2,
+  TIER_3: 3,
+};
+
+/** `RANK_TIER` vem dos metadados do produto na Stripe; ausente ou inválido conta como sem plano. */
+export const toRankTier = (
+  subscription: Pick<Subscription, 'features'> | null | undefined,
+): number => RANK_TIERS[subscription?.features?.RANK_TIER ?? ''] ?? NO_PLAN_RANK_TIER;
+
+const roundTo = (value: number, digits: number) =>
+  Math.round(value * 10 ** digits) / 10 ** digits;
+
+const summarizeReviews = (store: Store) => {
+  const ratings = (store.reviews || [])
+    .map((review) => Number(review.rating))
+    .filter((rating) => Number.isFinite(rating) && rating > 0);
+
+  return {
+    reviewCount: ratings.length,
+    averageRating: ratings.length
+      ? roundTo(ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length, 2)
+      : 0,
+  };
+};
+
+const getMinPrice = (store: Store): number | null => {
+  const prices = (store.services || [])
+    .filter((service) => service.isActive)
+    .map((service) => Number(service.price))
+    .filter((price) => Number.isFinite(price) && price > 0);
+
+  return prices.length ? Math.min(...prices) : null;
+};
 
 /**
  * Só entra na busca quem o cliente consegue agendar: serviço ativo e profissional
@@ -23,6 +64,7 @@ export const availableToIndexStore = (store: Store): boolean => {
 
 export const mountStoreSearchIndex = (
   store: Store,
+  rankTier: number = NO_PLAN_RANK_TIER,
 ): {
   content: IStoreSearchContent;
   metadata: IStoreSearchMetadata;
@@ -78,6 +120,10 @@ export const mountStoreSearchIndex = (
       gallery: store.gallery,
       reviews: store.reviews,
       currency: store.currency,
+      rankTier,
+      ...summarizeReviews(store),
+      minPrice: getMinPrice(store),
+      timezone: getStoreTimezone(store),
     },
   };
 };

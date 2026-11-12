@@ -8,13 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 
-import {
-  In,
-  MoreThanOrEqual,
-  Not,
-  QueryFailedError,
-  type Repository,
-} from 'typeorm';
+import { In, MoreThanOrEqual, Not, type Repository } from 'typeorm';
 
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,9 +18,11 @@ import {
   getSubscriptionIdFromInvoice,
   normalizeSubscriptionMetadata,
 } from '../../utils';
+import { isUniqueViolation } from '../../utils/helpers/database.helpers';
 import { formatCurrency } from '../../utils/helpers/format.helpers';
 import { NotificationService } from '../notification';
 import { ScheduleService } from '../partner/stores/schedule/schedule.service';
+import { StoreSearchSyncService } from '../partner/stores/search-sync/store-search-sync.service';
 import { StoresService } from '../partner/stores/stores.services';
 import { StripeService } from '../stripe';
 import { UsersService } from '../users';
@@ -38,15 +34,10 @@ import { TCheckoutSessionStatus } from './subscription.types';
 /** Stripe retenta webhooks por ~3 dias; TTL cobre retries sem acumular chaves. */
 const WEBHOOK_EVENT_TTL_MS = 72 * 60 * 60 * 1000;
 
-const PG_UNIQUE_VIOLATION = '23505';
-
 const isStripeResourceMissing = (error: unknown) =>
   error instanceof Stripe.errors.StripeError &&
   error.code === 'resource_missing';
 
-const isUniqueViolation = (error: unknown) =>
-  error instanceof QueryFailedError &&
-  (error.driverError as { code?: string })?.code === PG_UNIQUE_VIOLATION;
 
 @Injectable()
 export class SubscriptionService {
@@ -59,6 +50,7 @@ export class SubscriptionService {
     private readonly stripeService: StripeService,
     private readonly scheduleService: ScheduleService,
     private readonly storesService: StoresService,
+    private readonly storeSearchSync: StoreSearchSyncService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
@@ -389,6 +381,11 @@ export class SubscriptionService {
 
     if (subscription && ['active', 'trialing'].includes(dto.status)) {
       await this.cancelOlderSubscriptions(subscription, stripeSubscription);
+    }
+
+    // O nível do plano define a posição das lojas na busca
+    if (subscription?.user?.id) {
+      await this.storeSearchSync.syncOwnerStores(subscription.user.id);
     }
 
     return subscription;

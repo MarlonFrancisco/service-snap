@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { Repository } from 'typeorm';
+import { In, MoreThanOrEqual, type Repository } from 'typeorm';
 import {
   availableToIndexStore,
   mountStoreSearchIndex,
+  toRankTier,
 } from '../../../../utils/helpers/search.helpers';
 import { SearchService } from '../../../search/search.service';
+import { Subscription } from '../../../subscription/subscription.entity';
 import { Store } from '../store.entity';
 
 /**
@@ -19,6 +21,8 @@ export class StoreSearchSyncService {
   constructor(
     @InjectRepository(Store)
     private readonly storesRepository: Repository<Store>,
+    @InjectRepository(Subscription)
+    private readonly subscriptionRepository: Repository<Subscription>,
     private readonly searchService: SearchService,
   ) {}
 
@@ -44,7 +48,10 @@ export class StoreSearchSyncService {
       });
 
       if (store && availableToIndexStore(store)) {
-        const { content, metadata } = mountStoreSearchIndex(store);
+        const { content, metadata } = mountStoreSearchIndex(
+          store,
+          await this.getOwnerRankTier(store.owner.id),
+        );
 
         await this.searchService.indexStore(id, content, metadata);
       } else {
@@ -55,6 +62,20 @@ export class StoreSearchSyncService {
     }
   }
 
+  /** Plano mudou (assinou, trocou, venceu): a posição de todas as lojas do dono muda junto. */
+  async syncOwnerStores(ownerId: string): Promise<void> {
+    try {
+      const stores = await this.storesRepository.find({
+        where: { owner: { id: ownerId } },
+        select: { id: true },
+      });
+
+      for (const { id } of stores) await this.sync(id);
+    } catch (error) {
+      this.logger.error(`Failed to sync stores of owner ${ownerId}:`, error);
+    }
+  }
+
   /** Para a loja que já saiu do banco. Também nunca rejeita. */
   async remove(id: string): Promise<void> {
     try {
@@ -62,5 +83,19 @@ export class StoreSearchSyncService {
     } catch (error) {
       this.logger.error(`Failed to remove store ${id} from index:`, error);
     }
+  }
+
+  /** Mesmo critério de plano ativo dos limites e do `PlanFeatureGuard`. */
+  private async getOwnerRankTier(ownerId: string): Promise<number> {
+    const subscription = await this.subscriptionRepository.findOne({
+      where: {
+        user: { id: ownerId },
+        status: In(['active', 'paid', 'trialing']),
+        currentPeriodEnd: MoreThanOrEqual(new Date()),
+      },
+      order: { createdAt: 'DESC' },
+    });
+
+    return toRankTier(subscription);
   }
 }
