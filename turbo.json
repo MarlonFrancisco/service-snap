@@ -35,7 +35,11 @@
 
     "RESEND_API_KEY",
 
-    "WHATSAPP_VERIFY_TOKEN"
+    "WHATSAPP_VERIFY_TOKEN",
+
+    "VAPID_PUBLIC_KEY",
+    "VAPID_PRIVATE_KEY",
+    "VAPID_SUBJECT"
   ],
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
@@ -81,7 +85,11 @@
         "GOOGLE_CLIENT_SECRET",
 
         "RESEND_API_KEY",
-        "WHATSAPP_VERIFY_TOKEN"
+        "WHATSAPP_VERIFY_TOKEN",
+
+        "VAPID_PUBLIC_KEY",
+        "VAPID_PRIVATE_KEY",
+        "VAPID_SUBJECT"
       ]
     },
     "lint": {}
