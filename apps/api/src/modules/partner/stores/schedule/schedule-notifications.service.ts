@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { InBackground } from '../../../../utils/helpers/background.helpers';
 import {
   formatScheduleMoment,
   toDateKey,
@@ -31,7 +32,8 @@ const RELATIONS = [
 
 /**
  * Avisos de agendamento, chamados depois de salvar. Falha de envio nunca desfaz
- * a operação: a mudança na agenda já está salva.
+ * a operação: a mudança na agenda já está salva. Os públicos rodam depois da
+ * resposta (`@InBackground`), para o envio não atrasar quem agendou.
  */
 @Injectable()
 export class ScheduleNotificationsService {
@@ -53,6 +55,7 @@ export class ScheduleNotificationsService {
   }
 
   /** Uma reserva com vários serviços vira várias linhas, mas um aviso só. */
+  @InBackground()
   async notifyBookingCreated(ids: string[], createdByStore: boolean) {
     await this.attempt(`Novo agendamento ${ids.join(', ')}`, async () => {
       const schedules = await this.scheduleRepository.find({
@@ -103,6 +106,7 @@ export class ScheduleNotificationsService {
     });
   }
 
+  @InBackground()
   async notifyCancellation(schedule: Schedule, cancelledByCustomer: boolean) {
     await this.notifyCustomer(
       schedule,
@@ -133,6 +137,7 @@ export class ScheduleNotificationsService {
     );
   }
 
+  @InBackground()
   async notifyUpdate(before: Schedule, after: Schedule) {
     if (before.status !== 'cancelled' && after.status === 'cancelled') {
       await this.notifyCancellation(after, false);
