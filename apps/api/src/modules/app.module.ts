@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 
+import { AuditModule } from './audit';
 import { AuthModule } from './auth';
 import { CacheModule } from './cache';
 import { DatabaseModule } from './database';
@@ -25,6 +26,7 @@ import { WhatsappBotModule } from './whatsapp-bot';
       envFilePath: ['.env.local', '.env'],
     }),
     HealthModule,
+    AuditModule,
     CacheModule,
     AuthModule,
     DatabaseModule,
