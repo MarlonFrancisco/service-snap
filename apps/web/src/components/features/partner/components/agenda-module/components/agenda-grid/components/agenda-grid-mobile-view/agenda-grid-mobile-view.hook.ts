@@ -1,7 +1,13 @@
 import { useMemo } from 'react';
-import { capitalizeFirst } from '../../agenda-grid.helpers';
+import {
+  capitalizeFirst,
+  getAppointmentCardAriaLabel,
+} from '../../agenda-grid.helpers';
 import type { useAgendaGrid } from '../../agenda-grid.hook';
-import type { TMobileBlockItem } from './agenda-grid-mobile-view.types';
+import type {
+  TMobileBlockItem,
+  TMobileDayAppointment,
+} from './agenda-grid-mobile-view.types';
 
 /**
  * Hook para a agenda no mobile: lista do dia ou, em modo de bloqueio, os
@@ -14,6 +20,7 @@ export const useAgendaGridMobileView = (
     filteredProfessionals,
     getProfessionalColumn,
     getSelectedDayAppointments,
+    getPresence,
     isBlockMode,
     selectedDayData,
   } = gridHook;
@@ -74,9 +81,21 @@ export const useAgendaGridMobileView = (
         })
       : [];
 
+  const dayAppointments: TMobileDayAppointment[] = isBlockMode
+    ? []
+    : getSelectedDayAppointments().map((appointment) => {
+        const presence = getPresence(appointment);
+
+        return {
+          appointment,
+          presence,
+          ariaLabel: getAppointmentCardAriaLabel(appointment, presence),
+        };
+      });
+
   return {
     dayTitle,
     blockSections,
-    dayAppointments: isBlockMode ? [] : getSelectedDayAppointments(),
+    dayAppointments,
   };
 };

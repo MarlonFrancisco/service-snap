@@ -61,9 +61,20 @@ export type TAgendaColumnRow = {
   slot: TAgendaSlot | null;
 };
 
+/**
+ * Resposta ao lembrete do WhatsApp. Só existe para agendamentos com status
+ * `scheduled`: confirmado vence aguardando quando os dois aparecem.
+ */
+export type TAppointmentPresence =
+  | { kind: 'confirmed'; confirmedAt: string }
+  | { kind: 'awaiting'; reminderSentAt: string };
+
+export type TAppointmentPresenceKind = TAppointmentPresence['kind'];
+
 export type TAgendaColumnBlock = TPositionedAppointment & {
   hasGutter: boolean;
   isCompact: boolean;
+  presence: TAppointmentPresence | null;
 };
 
 export type TAgendaColumn = {

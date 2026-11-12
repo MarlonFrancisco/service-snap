@@ -7,6 +7,7 @@ import { FavoritesSection } from './components/favorites-section';
 import { ProfileHeader } from './components/profile-header';
 import { ProfileTabs } from './components/profile-tabs';
 import { SettingsSection } from './components/settings-section';
+import { WaitlistSection } from './components/waitlist-section';
 import { useProfile } from './profile.hook';
 import { ProfileSkeleton } from './profile.skeleton';
 import type { TProfilePageConfig } from './profile.types';
@@ -32,7 +33,12 @@ export const Profile = ({ initialTab }: TProfilePageConfig) => {
 
         <div className="grid grid-cols-1 items-start gap-9 pt-6 pb-8 md:gap-10 md:pt-8 md:pb-0 min-[1021px]:grid-cols-[minmax(0,1fr)_380px]">
           <div className="min-w-0">
-            {activeTab === 'bookings' && <BookingsSection />}
+            {activeTab === 'bookings' && (
+              <>
+                <BookingsSection />
+                <WaitlistSection />
+              </>
+            )}
             {activeTab === 'favorites' && <FavoritesSection />}
             {activeTab === 'settings' && <SettingsSection />}
           </div>

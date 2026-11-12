@@ -11,6 +11,7 @@ export { ServicesModule } from './components/services-module';
 export { StoreSelector } from './components/store-selector';
 export { StoresModule } from './components/stores-module';
 export {
+  WhatsappBotHomeCard,
   WhatsappConnectGuide,
   WhatsappSettingsModule,
 } from './components/whatsapp-settings-module';

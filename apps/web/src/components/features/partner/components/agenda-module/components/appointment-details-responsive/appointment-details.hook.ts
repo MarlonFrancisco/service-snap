@@ -2,12 +2,21 @@ import { useAnalytics } from '@/providers/analytics.provider';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
 import { useAgendaStore } from '@/store/admin/agenda';
-import { IAppointment, TAppointmentStatus } from '@/types/api/schedule.types';
+import {
+  IAppointment,
+  IPresenceAwaiting,
+  TAppointmentStatus,
+} from '@/types/api/schedule.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useAgendaPresence } from '../agenda-data-state/agenda-data-state.hook';
 import { STATUS_CONFIG } from '../agenda-grid/agenda-grid.constants';
+import {
+  getPresenceConfirmedText,
+  getReminderSentText,
+} from './appointment-details.helpers';
 
 const calculateDuration = (startTime: string, endTime: string): string => {
   const [startHour, startMin] = startTime.split(':').map(Number);
@@ -121,6 +130,15 @@ export const useAppointmentDetailsMutations = () => {
           },
         );
 
+        // Fora de `scheduled` o horário não espera mais resposta ao lembrete.
+        if (data.status !== 'scheduled') {
+          queryClient.setQueryData(
+            CACHE_QUERY_KEYS.presenceAwaiting(storeId),
+            (old: IPresenceAwaiting[] | undefined) =>
+              old?.filter(({ scheduleId }) => scheduleId !== data.id),
+          );
+        }
+
         // Show success message based on status
         const statusMessages = {
           completed: 'Agendamento marcado como concluído',
@@ -158,6 +176,7 @@ export const useAppointmentDetails = () => {
 
   const { updateAppointmentStatus, isUpdatingStatus } =
     useAppointmentDetailsMutations();
+  const { getPresence } = useAgendaPresence();
 
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
@@ -170,6 +189,19 @@ export const useAppointmentDetails = () => {
   }, [detailsAppointment?.id]);
 
   const statusBadge = STATUS_CONFIG[detailsAppointment.status];
+
+  const presence = useMemo(
+    () => (isOpen ? getPresence(detailsAppointment) : null),
+    [isOpen, getPresence, detailsAppointment],
+  );
+
+  const presenceText = useMemo(() => {
+    if (presence?.kind === 'confirmed') {
+      return getPresenceConfirmedText(presence.confirmedAt);
+    }
+
+    return presence ? getReminderSentText(presence.reminderSentAt) : '';
+  }, [presence]);
 
   const duration = useMemo(
     () =>
@@ -223,6 +255,9 @@ export const useAppointmentDetails = () => {
     detailsAppointment,
     isOpen,
     statusBadge,
+    isPresenceConfirmed: presence?.kind === 'confirmed',
+    isPresenceAwaiting: presence?.kind === 'awaiting',
+    presenceText,
     duration,
     formattedDate,
     isUpdatingStatus,

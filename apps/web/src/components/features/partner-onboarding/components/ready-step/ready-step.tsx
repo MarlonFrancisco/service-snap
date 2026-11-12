@@ -8,6 +8,7 @@ import {
 } from '../../partner-onboarding.styles';
 import { OnboardingHeader } from '../onboarding-header';
 import { useReadyStep } from './ready-step.hook';
+import { ReadyStepWhatsapp } from './ready-step-whatsapp';
 
 type TReadyStepProps = {
   result: TOnboardingResult;
@@ -62,6 +63,8 @@ export const ReadyStep = ({ result }: TReadyStepProps) => {
           <p className="mt-2.5 mb-6 text-sm leading-normal text-[#5F5C6E]">
             Cole este link na bio do Instagram e no seu Google Perfil da Empresa.
           </p>
+
+          <ReadyStepWhatsapp store={result.store} />
 
           <div className="flex flex-wrap gap-2.5">
             <Link

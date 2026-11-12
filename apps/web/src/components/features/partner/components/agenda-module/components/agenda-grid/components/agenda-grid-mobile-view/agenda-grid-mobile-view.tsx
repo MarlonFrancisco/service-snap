@@ -10,6 +10,7 @@ import {
   getClientName,
 } from '../../agenda-grid.helpers';
 import { AgendaDayStrip } from '../agenda-day-strip';
+import { AgendaPresenceChip } from '../agenda-presence-chip';
 import { AgendaSlotButton } from '../agenda-slot-button';
 import { useAgendaGridMobileView } from './agenda-grid-mobile-view.hook';
 import type { TMobileViewConfig } from './agenda-grid-mobile-view.types';
@@ -119,7 +120,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
 
       {isWorkingDay && !isBlockMode && dayAppointments.length > 0 && (
         <ul className="space-y-2">
-          {dayAppointments.map((appointment) => {
+          {dayAppointments.map(({ appointment, presence, ariaLabel }) => {
             const status = STATUS_CONFIG[appointment.status];
 
             return (
@@ -127,7 +128,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                 <button
                   type="button"
                   onClick={() => handleAppointmentClick(appointment)}
-                  aria-label={`${getAppointmentAriaLabel(appointment)}, ${status.label}`}
+                  aria-label={ariaLabel}
                   className={APPOINTMENT_CARD_CLASS}
                 >
                   <time className="text-sm font-extrabold">
@@ -145,13 +146,18 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                     <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
                       {formatPriceByCountry(appointment.service.price)}
                     </span>
-                    <span
-                      className={cn(
-                        'mt-1.5 inline-block rounded-full px-[9px] py-[3px] text-xs font-bold',
-                        status.className,
+                    <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <span
+                        className={cn(
+                          'inline-block rounded-full px-[9px] py-[3px] text-xs font-bold',
+                          status.className,
+                        )}
+                      >
+                        {status.label}
+                      </span>
+                      {presence && (
+                        <AgendaPresenceChip kind={presence.kind} isBordered />
                       )}
-                    >
-                      {status.label}
                     </span>
                   </span>
                 </button>

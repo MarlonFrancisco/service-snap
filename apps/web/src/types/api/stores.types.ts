@@ -32,6 +32,13 @@ export interface TWorkingDays {
   sunday: boolean;
 }
 
+/** Bot de WhatsApp da loja, só quando a integração está ativa e o número conferido. */
+export interface IStoreWhatsappBot {
+  displayPhoneNumber: string;
+  /** `https://wa.me/<dígitos>?text=...`, com a mensagem de agendamento já digitada. */
+  link: string;
+}
+
 export interface IStore extends TWorkingHours {
   id: string;
   name: string;
@@ -64,4 +71,6 @@ export interface IStore extends TWorkingHours {
   notificationsHistory: INotificationsHistory[];
   notificationsSettings: INotificationsSettings;
   reviews: IReview[];
+  /** Vem no detalhe público (`GET /partner/stores/:id`); `null` sem WhatsApp conectado. */
+  whatsappBot?: IStoreWhatsappBot | null;
 }

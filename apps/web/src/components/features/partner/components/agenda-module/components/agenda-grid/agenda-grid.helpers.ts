@@ -2,9 +2,14 @@ import type { IBlockedTime } from '@/types/api/blocked-times.types';
 import type { IAppointment } from '@/types/api/schedule.types';
 import type { IProfessional } from '@/types/api/users.types';
 import type { TSelectedSlot } from './agenda-grid-bulk-block.types';
-import { GRID_CONSTANTS } from './agenda-grid.constants';
+import {
+  GRID_CONSTANTS,
+  PRESENCE_CONFIG,
+  STATUS_CONFIG,
+} from './agenda-grid.constants';
 import type {
   TAgendaColumnBlock,
+  TAppointmentPresence,
   TPositionedAppointment,
 } from './agenda-grid.types';
 
@@ -183,6 +188,38 @@ export const getAppointmentAriaLabel = (appointment: IAppointment): string => {
   const { user, service, storeMember, startTime, endTime } = appointment;
   return `${getClientName(user)}, ${service.name}, ${startTime} a ${endTime}, ${getProfessionalFullName(storeMember)}`;
 };
+
+/**
+ * Presença só vale enquanto o horário está de pé: concluído, cancelado ou falta
+ * já dizem o que aconteceu. `awaitingById` mapeia `scheduleId` → envio do lembrete.
+ */
+export const getAppointmentPresence = (
+  appointment: IAppointment,
+  awaitingById: ReadonlyMap<string, string>,
+): TAppointmentPresence | null => {
+  if (appointment.status !== 'scheduled') return null;
+
+  if (appointment.presenceConfirmedAt) {
+    return { kind: 'confirmed', confirmedAt: appointment.presenceConfirmedAt };
+  }
+
+  const reminderSentAt = awaitingById.get(appointment.id);
+
+  return reminderSentAt ? { kind: 'awaiting', reminderSentAt } : null;
+};
+
+/** Rótulo do cartão para leitor de tela: dados, status e, se houver, presença. */
+export const getAppointmentCardAriaLabel = (
+  appointment: IAppointment,
+  presence: TAppointmentPresence | null,
+): string =>
+  [
+    getAppointmentAriaLabel(appointment),
+    STATUS_CONFIG[appointment.status].label,
+    presence && PRESENCE_CONFIG[presence.kind].label,
+  ]
+    .filter(Boolean)
+    .join(', ');
 
 export const getBulkActionLabel = (slots: TSelectedSlot[]): string => {
   const unblockCount = slots.filter((slot) => slot.isBlocked).length;

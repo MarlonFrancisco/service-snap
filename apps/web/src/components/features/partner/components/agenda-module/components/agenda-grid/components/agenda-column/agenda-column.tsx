@@ -27,6 +27,7 @@ export const AgendaColumn = ({
         isCompact={block.isCompact}
         showInitials={showInitials}
         rowSpan={block.rowSpan}
+        presence={block.presence}
         style={getBlockStyle(block, slotHeight)}
         onClick={onAppointmentClick}
       />

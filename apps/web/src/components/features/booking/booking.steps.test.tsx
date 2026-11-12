@@ -41,6 +41,9 @@ vi.mock('./components/date-time-selection-step/booking-calendar', () => ({
 vi.mock('./components/date-time-selection-step/date-picker-horizontal', () => ({
   DatePickerHorizontal: () => null,
 }));
+vi.mock('./components/date-time-selection-step/waitlist-notice', () => ({
+  WaitlistNotice: () => null,
+}));
 vi.mock('@/hooks', () => ({
   useScheduleMutations: () => ({ createSchedule, isCreatingSchedule: false }),
 }));

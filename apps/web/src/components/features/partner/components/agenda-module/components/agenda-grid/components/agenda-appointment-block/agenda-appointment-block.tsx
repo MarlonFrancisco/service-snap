@@ -2,10 +2,11 @@ import { PARTNER_FOCUS_CLASS } from '@/components/features/partner/partner.style
 import { cn } from '@repo/ui';
 import { STATUS_CONFIG } from '../../agenda-grid.constants';
 import {
-  getAppointmentAriaLabel,
+  getAppointmentCardAriaLabel,
   getClientName,
   getProfessionalInitials,
 } from '../../agenda-grid.helpers';
+import { AgendaPresenceChip } from '../agenda-presence-chip';
 import type { TAgendaAppointmentBlockConfig } from './agenda-appointment-block.types';
 
 export const AgendaAppointmentBlock = ({
@@ -13,6 +14,7 @@ export const AgendaAppointmentBlock = ({
   isCompact,
   showInitials,
   rowSpan,
+  presence,
   style,
   onClick,
 }: TAgendaAppointmentBlockConfig) => {
@@ -26,7 +28,7 @@ export const AgendaAppointmentBlock = ({
     <button
       type="button"
       onClick={() => onClick(appointment)}
-      aria-label={`${getAppointmentAriaLabel(appointment)}, ${status.label}`}
+      aria-label={getAppointmentCardAriaLabel(appointment, presence)}
       className={cn(
         'absolute z-10 block overflow-hidden rounded-[9px] px-[7px] py-[3px] text-left text-[11px] leading-[14px] transition-[filter] hover:brightness-95',
         status.className,
@@ -53,7 +55,12 @@ export const AgendaAppointmentBlock = ({
           {appointment.service.name} · {schedule}
         </span>
       )}
-      <span className="block truncate">{status.label}</span>
+      {/* A cor já diz o status: com presença, a linha dele vira o selo. */}
+      {presence ? (
+        <AgendaPresenceChip kind={presence.kind} />
+      ) : (
+        <span className="block truncate">{status.label}</span>
+      )}
     </button>
   );
 };

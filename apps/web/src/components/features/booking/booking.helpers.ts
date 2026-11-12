@@ -108,3 +108,7 @@ export const groupSlotsByPeriod = <T extends ITimeSlot>(slots: T[]) =>
       ),
     },
   ].filter((period) => period.slots.length > 0);
+
+/** Dia com horários, mas todos ocupados: cabe a lista de espera. */
+export const isFullyBookedDay = <T extends ITimeSlot>(slots: T[]) =>
+  slots.length > 0 && slots.every((slot) => !slot.available);

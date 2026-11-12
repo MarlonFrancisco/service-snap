@@ -53,6 +53,11 @@ export const CACHE_QUERY_KEYS = {
     storeId: string,
     params: { date: string; serviceIds: string[]; memberId?: string },
   ) => [`partner/schedules/${storeId}/availability`, params],
+  presenceAwaiting: (storeId: string) => [
+    `partner/stores/${storeId}/schedules/presence/awaiting`,
+  ],
+  waitlist: (storeId: string) => [`partner/stores/${storeId}/waitlist`],
+  myWaitlist: () => ['users/me/waitlist'],
   blockedTimes: (storeId: string) => [
     `partner/schedules/blocked-times/${storeId}`,
   ],

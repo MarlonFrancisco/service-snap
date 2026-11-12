@@ -12,6 +12,7 @@ import type { IAppointment } from '@/types/api/schedule.types';
 import type { IProfessional } from '@/types/api/users.types';
 import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
+import { useAgendaPresence } from '../agenda-data-state/agenda-data-state.hook';
 import { useAgendaGridBulkBlock } from './agenda-grid-bulk-block.hook';
 import type { TSelectedSlot } from './agenda-grid-bulk-block.types';
 import {
@@ -114,6 +115,7 @@ export const useAgendaGrid = () => {
     createBulkBlockedTime,
     deleteBulkBlockedTime,
   } = useBlockedTimeMutations({ storeId });
+  const { getPresence } = useAgendaPresence();
 
   /**
    * As mutações em lote recebem um único `storeMemberId`, então a seleção é
@@ -410,10 +412,11 @@ export const useAgendaGrid = () => {
           ...item,
           hasGutter: false,
           isCompact: !!options.isCompact || item.laneCount > 1,
+          presence: getPresence(item.appointment),
         })),
       };
     },
-    [weekDates, timeSlots, getDayAppointments, getSlot],
+    [weekDates, timeSlots, getDayAppointments, getSlot, getPresence],
   );
 
   /**
@@ -476,6 +479,7 @@ export const useAgendaGrid = () => {
             .slice(item.clusterStart, item.clusterEnd + 1)
             .some(({ hasBusy, bookable }) => hasBusy && !!bookable),
           isCompact: item.laneCount > 1,
+          presence: getPresence(item.appointment),
         })),
       };
     },
@@ -486,6 +490,7 @@ export const useAgendaGrid = () => {
       visibleMemberId,
       getDayAppointments,
       getSlot,
+      getPresence,
     ],
   );
 
@@ -556,6 +561,7 @@ export const useAgendaGrid = () => {
     getProfessionalColumn,
     getMergedDayColumn,
     getSelectedDayAppointments,
+    getPresence,
     handleSlotClick,
     handleQuickAdd,
     handleAppointmentClick,
