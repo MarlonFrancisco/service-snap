@@ -58,7 +58,8 @@ const limitMetadata = (metadata: Record<string, unknown>) =>
 
 /**
  * `/partner/stores/:storeId/schedules/:id` → loja, recurso `schedules` e o id.
- * Rotas da própria loja (`/partner/stores/:id`) usam `id` como loja.
+ * Rotas da própria loja (`/partner/stores/:id`, `/admin/stores/:id`) usam `id`
+ * como loja.
  */
 export const resolveAuditTarget = (
   request: TAuditedRequest,
@@ -67,7 +68,10 @@ export const resolveAuditTarget = (
   const path = request.route?.path ?? '';
   const params = request.params ?? {};
   const segments = path.split('/').filter(Boolean);
-  const isStoreRoot = path.startsWith('/partner/stores/:id');
+  // Rotas da própria loja: no painel e no admin da plataforma
+  const isStoreRoot = ['/partner/stores/:id', '/admin/stores/:id'].some(
+    (prefix) => path.startsWith(prefix),
+  );
   const storeId =
     params.storeId ??
     (isStoreRoot ? params.id : undefined) ??
