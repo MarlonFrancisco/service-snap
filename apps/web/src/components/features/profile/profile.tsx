@@ -4,6 +4,7 @@ import { ReferralShareCard } from '@/components/features/referral/referral-share
 import { Footer, Header, MobileTabBar } from '@/components/layout';
 import { BookingsSection } from './components/bookings-section';
 import { FavoritesSection } from './components/favorites-section';
+import { PersonalDataSection } from './components/personal-data-section';
 import { ProfileHeader } from './components/profile-header';
 import { ProfileTabs } from './components/profile-tabs';
 import { SettingsSection } from './components/settings-section';
@@ -35,6 +36,7 @@ export const Profile = ({ initialTab }: TProfilePageConfig) => {
             {activeTab === 'bookings' && <BookingsSection />}
             {activeTab === 'favorites' && <FavoritesSection />}
             {activeTab === 'settings' && <SettingsSection />}
+            {activeTab === 'personal' && <PersonalDataSection />}
           </div>
 
           <ReferralShareCard variant="client" />

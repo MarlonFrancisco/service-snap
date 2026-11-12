@@ -7,13 +7,20 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const PROFILE_TABS: TProfileTab[] = ['bookings', 'favorites', 'settings'];
+const PROFILE_TABS: TProfileTab[] = [
+  'bookings',
+  'favorites',
+  'settings',
+  'personal',
+];
 
 type TProfilePageParams = {
   searchParams: Promise<{ tab?: string }>;
 };
 
-export default async function ProfilePage({ searchParams }: TProfilePageParams) {
+export default async function ProfilePage({
+  searchParams,
+}: TProfilePageParams) {
   const { tab } = await searchParams;
   const initialTab = PROFILE_TABS.find((profileTab) => profileTab === tab);
   const cookieStore = await cookies();

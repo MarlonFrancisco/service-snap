@@ -17,7 +17,8 @@ import {
 } from './booking.helpers';
 import { useStoreViewTracking } from './booking.hook';
 import { BookingFormSchema, TBookingFormData } from './booking.schema';
-import { TBookingStep } from './booking.types';
+import { TBookingConfirmation, TBookingStep } from './booking.types';
+import { BookingConfirmation } from './components/booking-confirmation';
 import { BookingNotFound } from './components/booking-not-found';
 import { BookingSidebar } from './components/booking-sidebar';
 import { BookingSkeleton } from './components/booking-skeleton';
@@ -51,6 +52,22 @@ export function BookingFlow() {
   });
 
   const [currentStep, setCurrentStep] = useState<TBookingStep>('services');
+  const [confirmation, setConfirmation] = useState<TBookingConfirmation | null>(
+    null,
+  );
+
+  const handleConfirmed = (created: TBookingConfirmation) => {
+    setConfirmation(created);
+    window.scrollTo({ top: 0 });
+  };
+
+  // "Voltar para a loja" fica na mesma página: recomeça o fluxo do zero
+  const handleBackToStore = () => {
+    form.reset();
+    setCurrentStep('services');
+    setConfirmation(null);
+    window.scrollTo({ top: 0 });
+  };
 
   const selectedServices = form.watch('selectedServices');
   const selectedProfessional = form.watch('selectedProfessional');
@@ -167,7 +184,7 @@ export function BookingFlow() {
       case 'datetime':
         return <DateTimeSelectionStep />;
       case 'checkout':
-        return <CheckoutStep />;
+        return <CheckoutStep onConfirmed={handleConfirmed} />;
       default:
         return null;
     }
@@ -186,6 +203,18 @@ export function BookingFlow() {
     return (
       <Header showSearchBar>
         <BookingNotFound />
+        <Footer compact />
+      </Header>
+    );
+  }
+
+  if (confirmation) {
+    return (
+      <Header>
+        <BookingConfirmation
+          confirmation={confirmation}
+          onBackToStore={handleBackToStore}
+        />
         <Footer compact />
       </Header>
     );

@@ -41,8 +41,8 @@ vi.mock('./components/date-time-selection-step/booking-calendar', () => ({
 vi.mock('./components/date-time-selection-step/date-picker-horizontal', () => ({
   DatePickerHorizontal: () => null,
 }));
-vi.mock('@/hooks', () => ({
-  useScheduleMutations: () => ({ createSchedule, isCreatingSchedule: false }),
+vi.mock('@tanstack/react-query', () => ({
+  useMutation: () => ({ mutate: createSchedule, isPending: false }),
 }));
 vi.mock('@/hooks/use-query/use-user-query', () => ({
   useUserQuery: () => ({
@@ -146,7 +146,7 @@ describe('CheckoutStep', () => {
   };
 
   it('sends the professional assigned to the slot for "any professional"', async () => {
-    const container = await render(<CheckoutStep />, {
+    const container = await render(<CheckoutStep onConfirmed={vi.fn()} />, {
       ...checkoutValues,
       isAnyProfessional: true,
       assignedProfessionalId: 'p1',
@@ -163,7 +163,7 @@ describe('CheckoutStep', () => {
   });
 
   it('does not submit "any professional" without an assigned professional', async () => {
-    const container = await render(<CheckoutStep />, {
+    const container = await render(<CheckoutStep onConfirmed={vi.fn()} />, {
       ...checkoutValues,
       isAnyProfessional: true,
     });
@@ -175,7 +175,7 @@ describe('CheckoutStep', () => {
   });
 
   it('keeps the chosen professional and sends the real end time', async () => {
-    const container = await render(<CheckoutStep />, {
+    const container = await render(<CheckoutStep onConfirmed={vi.fn()} />, {
       ...checkoutValues,
       selectedProfessional: makeMember('p2', [SERVICE_A]) as never,
     });
