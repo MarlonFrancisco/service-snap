@@ -30,7 +30,7 @@ export const formatBusinessHours = (
 
   // Converter horários para formato 12h
   const formatTime = (time: string): string => {
-    const [hours, minutes] = time.split(':');
+    const [hours = '0', minutes] = time.split(':');
     const h = parseInt(hours, 10);
     const m = minutes || '00';
     return `${h}h${m !== '00' ? m : ''}`;
@@ -55,7 +55,8 @@ export const formatBusinessHours = (
   openDays.forEach((day, index) => {
     const prevIndex = index - 1;
     const isDayAfterPrevious =
-      prevIndex >= 0 && dayNames.indexOf(openDays[prevIndex]) === dayNames.indexOf(day) - 1;
+      prevIndex >= 0 &&
+      dayNames.indexOf(openDays[prevIndex]!) === dayNames.indexOf(day) - 1;
 
     if (prevIndex === -1 || isDayAfterPrevious) {
       currentGroup.push(day.short);

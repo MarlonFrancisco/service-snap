@@ -15,6 +15,9 @@ export interface IAppointment {
   date: string;
   status: TAppointmentStatus;
   notes?: string;
+  /** Preço e moeda gravados na reserva; nulos em agendamentos antigos. */
+  price?: number | null;
+  currency?: string | null;
   user: IUser;
   service: IService;
   storeMember: IProfessional;

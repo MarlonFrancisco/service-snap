@@ -1,4 +1,4 @@
-import type { TWorkingHours } from './agenda.types';
+import type { TWorkingHours } from '@/types/api/stores.types';
 
 export const generateTimeSlots = (workingHours: TWorkingHours): string[] => {
   const slots: string[] = [];
