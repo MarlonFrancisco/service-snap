@@ -29,6 +29,7 @@ import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
 import { isStoreDraft } from '../../onboarding/onboarding.helpers';
 import { Service } from '../category/service/service.entity';
+import { HolidayService } from '../holiday/holiday.service';
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
@@ -77,6 +78,7 @@ export class ScheduleService {
     private readonly blockedTimeRepository: Repository<BlockedTime>,
     private readonly usersService: UsersService,
     private readonly scheduleNotifications: ScheduleNotificationsService,
+    private readonly holidayService: HolidayService,
   ) {}
 
   async getAvailability(
@@ -133,7 +135,7 @@ export class ScheduleService {
     );
     const memberIds = eligibleMembers.map((member) => member.id);
 
-    const [schedules, blockedTimes] = await Promise.all([
+    const [schedules, blockedTimes, isHoliday] = await Promise.all([
       this.scheduleRepository.find({
         where: {
           storeMember: { id: In(memberIds) },
@@ -151,14 +153,17 @@ export class ScheduleService {
         ],
         relations: ['storeMember'],
       }),
+      this.holidayService.isHoliday(storeId, date),
     ]);
 
     return buildAvailabilitySlots({
       store,
       date,
       durationMinutes,
+      isHoliday,
       members: eligibleMembers.map((member) => ({
         id: member.id,
+        workingHours: member.workingHours,
         schedules: schedules.filter((s) => s.storeMember.id === member.id),
         blockedTimes: blockedTimes.filter(
           (blocked) => blocked.storeMember.id === member.id,
@@ -270,6 +275,7 @@ export class ScheduleService {
     }
 
     await this.assertMemberInStore(storeId, storeMemberId);
+    await this.assertMemberPerformsServices(storeMemberId, serviceIds);
 
     let endTime = '';
 
@@ -385,6 +391,27 @@ export class ScheduleService {
     }
   }
 
+  /** O profissional precisa ter todos os serviços pedidos no cadastro dele. */
+  private async assertMemberPerformsServices(
+    storeMemberId: string,
+    serviceIds: string[],
+  ) {
+    const ids = [...new Set(serviceIds.filter(Boolean))];
+
+    if (!ids.length) return;
+
+    const performed = await this.serviceRepository.find({
+      where: { id: In(ids), storeMembers: { id: storeMemberId } },
+      select: { id: true },
+    });
+
+    if (performed.length !== ids.length) {
+      throw new BadRequestException(
+        'Professional does not perform the requested service',
+      );
+    }
+  }
+
   /**
    * Trava o profissional, para duas reservas simultâneas não passarem juntas, e
    * recusa o horário que cruza outro atendimento. A trava busca só pelo id:
@@ -401,7 +428,7 @@ export class ScheduleService {
       enforceAvailability,
     }: TSlotRequest,
   ) {
-    await manager.findOne(StoreMember, {
+    const member = await manager.findOne(StoreMember, {
       where: { id: storeMemberId },
       lock: { mode: 'pessimistic_write' },
     });
@@ -422,21 +449,32 @@ export class ScheduleService {
 
     if (!enforceAvailability) return;
 
-    const blockedTimes = await manager.find(BlockedTime, {
-      where: [
-        { storeMember: { id: storeMemberId }, date: date as unknown as Date },
-        { storeMember: { id: storeMemberId }, isRecurring: true },
-      ],
-    });
+    const [blockedTimes, isHoliday] = await Promise.all([
+      manager.find(BlockedTime, {
+        where: [
+          { storeMember: { id: storeMemberId }, date: date as unknown as Date },
+          { storeMember: { id: storeMemberId }, isRecurring: true },
+        ],
+      }),
+      this.holidayService.isHoliday(store.id, date),
+    ]);
     const [first] = items;
     const last = items[items.length - 1];
     const isBookable = isSlotBookable(
       {
         store,
         date,
+        isHoliday,
         durationMinutes:
           timeToMinutes(last.endTime) - timeToMinutes(first.startTime),
-        members: [{ id: storeMemberId, blockedTimes, schedules: existing }],
+        members: [
+          {
+            id: storeMemberId,
+            workingHours: member?.workingHours,
+            blockedTimes,
+            schedules: existing,
+          },
+        ],
       },
       first.startTime,
     );
@@ -483,6 +521,9 @@ export class ScheduleService {
 
     if (storeMemberId !== before.storeMember?.id) {
       await this.assertMemberInStore(schedule.store.id, storeMemberId);
+      await this.assertMemberPerformsServices(storeMemberId, [
+        before.service?.id,
+      ]);
     }
 
     await this.inSlotTransaction(async (manager) => {
@@ -596,6 +637,12 @@ export class ScheduleService {
     }
 
     await this.assertMemberInStore(storeId, storeMemberId);
+
+    if (storeMemberId !== before.storeMember?.id) {
+      await this.assertMemberPerformsServices(storeMemberId, [
+        before.service?.id,
+      ]);
+    }
 
     const next = {
       startTime,

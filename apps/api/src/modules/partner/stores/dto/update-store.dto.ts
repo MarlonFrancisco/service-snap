@@ -3,10 +3,14 @@ import {
   IsArray,
   IsBoolean,
   IsEmail,
+  IsIn,
+  IsInt,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import type { User } from '../../../users/user.entity';
@@ -135,4 +139,43 @@ export class UpdateStoreDto {
   @ValidateNested()
   @Type(() => Store['businessDays'])
   businessDays: Store['businessDays'];
+
+  // regras de agenda
+
+  @IsIn([5, 10, 15, 20, 30, 45, 60, 90, 120])
+  @IsOptional()
+  slotIntervalMinutes: number;
+
+  @IsInt()
+  @Min(0)
+  @Max(240)
+  @IsOptional()
+  bufferMinutes: number;
+
+  /** Até 30 dias, em minutos. */
+  @IsInt()
+  @Min(0)
+  @Max(43200)
+  @IsOptional()
+  minAdvanceMinutes: number;
+
+  @IsInt()
+  @Min(0)
+  @Max(730)
+  @IsOptional()
+  maxAdvanceDays: number;
+
+  // política de cancelamento e remarcação
+
+  @IsInt()
+  @Min(0)
+  @Max(720)
+  @IsOptional()
+  cancellationNoticeHours: number;
+
+  @IsInt()
+  @Min(0)
+  @Max(720)
+  @IsOptional()
+  rescheduleNoticeHours: number;
 }

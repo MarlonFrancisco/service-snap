@@ -66,6 +66,7 @@ const makeService = () => {
     blockedTimeRepository as never,
     usersService as never,
     notifications as never,
+    { isHoliday: vi.fn().mockResolvedValue(false) } as never,
   );
 
   return {

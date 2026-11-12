@@ -67,6 +67,32 @@ export class Store extends BaseEntity {
     sunday: boolean;
   };
 
+  // schedule rules (ver `pnpm migrate:schedule-rules`)
+
+  /** Passo da grade de horários oferecidos ao cliente. */
+  @Column({ type: 'int', default: 30 })
+  slotIntervalMinutes: number;
+
+  /** Folga mínima entre dois atendimentos do mesmo profissional. */
+  @Column({ type: 'int', default: 0 })
+  bufferMinutes: number;
+
+  /** Antecedência mínima para o cliente reservar. */
+  @Column({ type: 'int', default: 0 })
+  minAdvanceMinutes: number;
+
+  /** Até quantos dias à frente o cliente reserva. 0 é sem limite. */
+  @Column({ type: 'int', default: 0 })
+  maxAdvanceDays: number;
+
+  /** Horas antes do início até quando o cliente cancela. 0 é até o início. */
+  @Column({ type: 'int', default: 0 })
+  cancellationNoticeHours: number;
+
+  /** Horas antes do início até quando o cliente remarca. 0 é até o início. */
+  @Column({ type: 'int', default: 0 })
+  rescheduleNoticeHours: number;
+
   // location & internationalization
 
   @Column({ type: 'char', length: 2, default: 'BR', nullable: true })

@@ -4,6 +4,7 @@ import { AuthModule } from '../../auth';
 import { Subscription } from '../../subscription/subscription.entity';
 import { CategoryModule } from './category';
 import { GalleryModule } from './gallery';
+import { HolidayModule } from './holiday';
 import { StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard } from './guards';
 import { NotificationsModule } from './notifications/notifications.module';
 import { ReviewModule } from './review';
@@ -22,6 +23,7 @@ import { StoresService } from './stores.services';
     StoreMemberModule,
     BlockedTimeModule,
     GalleryModule,
+    HolidayModule,
     CategoryModule,
     ScheduleModule,
     NotificationsModule,

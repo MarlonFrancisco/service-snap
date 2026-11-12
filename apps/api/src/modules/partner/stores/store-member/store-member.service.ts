@@ -14,6 +14,7 @@ import { Store } from '../store.entity';
 import { CreateStoreMemberDto } from './dto/create-store-member.dto';
 import { UpdateStoreMemberDto } from './dto/update-store-member.dto';
 import { StoreMember } from './store-member.entity';
+import { normalizeWorkingHours } from './store-member.helpers';
 
 @Injectable()
 export class StoreMemberService {
@@ -170,6 +171,12 @@ export class StoreMemberService {
 
     if (typeof storeMemberDto.isActive === 'boolean') {
       storeMember.isActive = storeMemberDto.isActive;
+    }
+
+    if (storeMemberDto.workingHours !== undefined) {
+      storeMember.workingHours = normalizeWorkingHours(
+        storeMemberDto.workingHours,
+      );
     }
 
     const saved = await this.storeMemberRepository.save(storeMember);
