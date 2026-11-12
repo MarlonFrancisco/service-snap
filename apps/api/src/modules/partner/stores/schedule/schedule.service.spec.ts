@@ -9,8 +9,11 @@ const makeService = () => {
   const manager = {
     findOne: vi.fn().mockResolvedValue({ id: 'm1' }),
     find: vi.fn().mockResolvedValue([]),
+    // A visita (objeto) é salva antes das linhas (lista)
     save: vi.fn(async (_entity, rows) =>
-      rows.map((row: object, index: number) => ({ ...row, id: `s${index}` })),
+      Array.isArray(rows)
+        ? rows.map((row: object, index: number) => ({ ...row, id: `s${index}` }))
+        : { ...rows, id: 'b1' },
     ),
     update: vi.fn().mockResolvedValue({ affected: 1 }),
     transaction: vi.fn(async (callback) => callback(manager)),
@@ -166,12 +169,14 @@ describe('ScheduleService.create', () => {
       ],
     } as never);
 
-    const rows = ctx.manager.save.mock.calls[0]![1];
+    // A última gravação são as linhas; antes vem a visita
+    const rows = ctx.manager.save.mock.calls.at(-1)![1];
     expect(rows.map((row: { endTime: string }) => row.endTime)).toEqual([
       '10:30',
       '11:00',
     ]);
     expect(rows[0].user).toEqual({ id: 'u1' });
+    expect(rows[0].booking).toEqual({ id: 'b1' });
   });
 });
 

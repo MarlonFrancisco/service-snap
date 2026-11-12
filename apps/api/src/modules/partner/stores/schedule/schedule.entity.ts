@@ -1,9 +1,21 @@
-import { Column, Entity, Exclusion, Index, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Exclusion,
+  Index,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
 import { BaseEntity } from '../../../database/base.entity';
 import { User } from '../../../users/user.entity';
 import { Service } from '../category/service/service.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
+import {
+  Booking,
+  SCHEDULE_BOOKING_FK,
+  SCHEDULE_BOOKING_INDEX,
+} from './booking.entity';
 
 export const SCHEDULE_OVERLAP_CONSTRAINT = 'excl_schedules_member_overlap';
 
@@ -31,6 +43,7 @@ export const SCHEDULE_OVERLAP_EXCLUSION = `USING gist (
 @Index('idx_schedules_store_member', ['storeMember.id'])
 // Busca de conflito e de disponibilidade: profissional + dia
 @Index('idx_schedules_member_date', ['storeMember.id', 'date'])
+@Index(SCHEDULE_BOOKING_INDEX, ['booking'])
 export class Schedule extends BaseEntity {
   @Column({ type: 'char', length: 5, nullable: true })
   startTime: string;
@@ -88,4 +101,12 @@ export class Schedule extends BaseEntity {
     onDelete: 'CASCADE',
   })
   store: Store;
+
+  /** Visita a que este serviço pertence. Nulo em agendamentos antigos de um serviço. */
+  @ManyToOne(() => Booking, (booking) => booking.schedules, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  @JoinColumn({ foreignKeyConstraintName: SCHEDULE_BOOKING_FK })
+  booking: Booking | null;
 }

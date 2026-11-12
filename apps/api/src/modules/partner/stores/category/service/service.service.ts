@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
+import type { PaginationQueryDto } from '../../../../../utils/dto/pagination.dto';
+import { toPage, toSkipTake } from '../../../../../utils/helpers/pagination.helpers';
+import type { TPage } from '../../../../../utils/helpers/pagination.types';
 import { StoreSearchSyncService } from '../../search-sync/store-search-sync.service';
 import { Category } from '../category.entity';
 import { ServiceDto } from './service.dto';
@@ -30,10 +33,28 @@ export class ServiceService {
     return created;
   }
 
-  async findAll(storeId: string): Promise<Service[]> {
-    return this.serviceRepository.find({
-      where: { store: { id: storeId } },
+  /** Com `page`, uma página em ordem de nome (e busca pelo nome); sem, a lista inteira. */
+  async findAll(
+    storeId: string,
+    { page, limit, search }: PaginationQueryDto = {},
+  ): Promise<Service[] | TPage<Service>> {
+    if (!page) {
+      return this.serviceRepository.find({ where: { store: { id: storeId } } });
+    }
+
+    const { skip, take } = toSkipTake(page, limit);
+    const [services, total] = await this.serviceRepository.findAndCount({
+      where: {
+        store: { id: storeId },
+        ...(search && { name: ILike(`%${search.trim()}%`) }),
+      },
+      relations: ['category'],
+      order: { name: 'ASC' },
+      skip,
+      take,
     });
+
+    return toPage(services, total, page, take);
   }
 
   async findOne(id: string): Promise<Service> {

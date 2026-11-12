@@ -1,3 +1,4 @@
+import { ForbiddenException } from '@nestjs/common';
 import { formatCurrency } from '../../../../utils/helpers/format.helpers';
 import {
   getStoreCurrency,
@@ -6,11 +7,16 @@ import {
 } from '../../../../utils/helpers/region.helpers';
 import {
   buildGoogleCalendarLink,
+  calculateEndTime,
   formatLongDate,
+  storeTimeToDate,
+  timeToMinutes,
+  toDateKey,
 } from '../../../../utils/helpers/schedule.helpers';
 import { getUserFullName } from '../../../../utils/helpers/user.helpers';
 import type { Store } from '../store.entity';
 import type { Schedule } from './schedule.entity';
+import { SCHEDULE_POLICY_CODE, type TPolicyAction } from './schedule.types';
 
 export const getBookingServiceNames = (schedules: Schedule[]) =>
   schedules.map(({ service }) => service?.name || 'Serviço').join(', ');
@@ -106,3 +112,70 @@ export const buildStoreEmailData = (
   scheduleTime: schedule.startTime,
   agendaLink: `${frontendUrl}/partner/agenda`,
 });
+
+const POLICY_LABEL: Record<TPolicyAction, string> = {
+  cancel: 'cancelar',
+  reschedule: 'remarcar',
+};
+
+/**
+ * Política da loja para o cliente: só cancela ou remarca até `noticeHours` antes
+ * do início, e nunca depois que o atendimento começou. A loja não passa por aqui.
+ */
+export function assertWithinNotice(
+  action: TPolicyAction,
+  store: Pick<
+    Store,
+    'timezone' | 'country' | 'cancellationNoticeHours' | 'rescheduleNoticeHours'
+  >,
+  first: Pick<Schedule, 'date' | 'startTime'>,
+  now = new Date(),
+) {
+  const noticeHours =
+    (action === 'cancel'
+      ? store.cancellationNoticeHours
+      : store.rescheduleNoticeHours) ?? 0;
+  const startsAt = storeTimeToDate(
+    toDateKey(first.date),
+    first.startTime,
+    getStoreTimezone(store),
+  );
+  const deadline = startsAt.getTime() - noticeHours * 3_600_000;
+
+  if (now.getTime() < deadline) return;
+
+  throw new ForbiddenException({
+    statusCode: 403,
+    error: 'Forbidden',
+    code: SCHEDULE_POLICY_CODE,
+    action,
+    noticeHours,
+    message: noticeHours
+      ? `Pela política da loja, só dá para ${POLICY_LABEL[action]} até ${noticeHours}h antes do horário.`
+      : `Não dá para ${POLICY_LABEL[action]} um atendimento que já começou.`,
+  });
+}
+
+/**
+ * Novos horários de um grupo que começa em `startTime`: cada serviço mantém a
+ * distância do primeiro e a duração reservada, mesmo que o serviço mude depois.
+ */
+export function shiftItems(
+  items: Pick<Schedule, 'id' | 'startTime' | 'endTime'>[],
+  startTime: string,
+) {
+  const origin = timeToMinutes(items[0].startTime);
+  const delta = timeToMinutes(startTime) - origin;
+
+  return items.map((item) => {
+    const start = timeToMinutes(item.startTime) + delta;
+    const duration = timeToMinutes(item.endTime) - timeToMinutes(item.startTime);
+    const nextStart = calculateEndTime('00:00', start);
+
+    return {
+      id: item.id,
+      startTime: nextStart,
+      endTime: calculateEndTime(nextStart, duration),
+    };
+  });
+}

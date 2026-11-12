@@ -50,8 +50,8 @@ export type TSlotRequest = {
   storeMemberId: string;
   date: string; // formato YYYY-MM-DD
   items: { startTime: string; endTime: string }[];
-  /** Atendimento que está sendo movido: não conta como conflito consigo mesmo. */
-  excludeId?: string;
+  /** Linhas que estão sendo movidas: não contam como conflito consigo mesmas. */
+  excludeIds?: string[];
   /** Exige um horário que a loja ofereceria (expediente, bloqueios, não passado). */
   enforceAvailability: boolean;
 };

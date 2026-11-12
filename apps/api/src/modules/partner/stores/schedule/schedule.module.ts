@@ -11,6 +11,7 @@ import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
 import { ScheduleController } from './schedule.controller';
+import { Booking } from './booking.entity';
 import { Schedule } from './schedule.entity';
 import { ScheduleService } from './schedule.service';
 
@@ -18,6 +19,7 @@ import { ScheduleService } from './schedule.service';
   imports: [
     TypeOrmModule.forFeature([
       Schedule,
+      Booking,
       Store,
       Service,
       StoreMember,

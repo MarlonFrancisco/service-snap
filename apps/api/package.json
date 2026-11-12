@@ -18,6 +18,7 @@
     "migrate:schedule-reminders": "ts-node --project tsconfig.scripts.json src/scripts/create-schedule-reminders-table.ts",
     "migrate:schedule-overlap": "ts-node --project tsconfig.scripts.json src/scripts/create-schedule-overlap-constraint.ts",
     "migrate:schedule-rules": "ts-node --project tsconfig.scripts.json src/scripts/create-schedule-rules.ts",
+    "migrate:bookings": "ts-node --project tsconfig.scripts.json src/scripts/create-bookings.ts",
     "migrate:multiregional": "ts-node --project tsconfig.scripts.json src/scripts/migrate-multiregional-foundation.ts",
     "seed:stores:json": "ts-node --project tsconfig.scripts.json src/scripts/seed-stores.ts",
     "reset:db": "ts-node --project tsconfig.scripts.json src/scripts/reset-db.ts",

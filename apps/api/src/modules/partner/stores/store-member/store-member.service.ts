@@ -6,6 +6,12 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
+import type { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
+import {
+  toPage,
+  toSkipTake,
+} from '../../../../utils/helpers/pagination.helpers';
+import type { TPage } from '../../../../utils/helpers/pagination.types';
 import { Subscription } from '../../../subscription/subscription.entity';
 import { UsersService } from '../../../users/users.service';
 import { Service } from '../category/service/service.entity';
@@ -67,6 +73,33 @@ export class StoreMemberService {
         },
       },
     });
+  }
+
+  /** Uma página da equipe, em ordem de entrada, com busca por nome ou e-mail. */
+  async findStoreMembersPage(
+    storeId: string,
+    { page, limit, search }: PaginationQueryDto,
+  ): Promise<TPage<StoreMember>> {
+    const { skip, take } = toSkipTake(page, limit);
+    const query = this.storeMemberRepository
+      .createQueryBuilder('member')
+      .leftJoinAndSelect('member.user', 'user')
+      .leftJoinAndSelect('member.services', 'service')
+      .where('member.storeId = :storeId', { storeId })
+      .orderBy('member.createdAt', 'ASC')
+      .skip(skip)
+      .take(take);
+
+    if (search?.trim()) {
+      query.andWhere(
+        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search.trim()}%` },
+      );
+    }
+
+    const [members, total] = await query.getManyAndCount();
+
+    return toPage(members, total, page, take);
   }
 
   async create(storeMemberDto: CreateStoreMemberDto): Promise<StoreMember> {

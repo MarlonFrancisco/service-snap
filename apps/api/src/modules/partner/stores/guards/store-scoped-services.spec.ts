@@ -194,7 +194,7 @@ describe('store-scoped services with an id from another store', () => {
         services: [{ id: 'service-1', duration: 30 }],
       } as never);
 
-      expect(manager.save.mock.calls[0][1][0].id).toBeUndefined();
+      expect(manager.save.mock.calls.at(-1)[1][0].id).toBeUndefined();
     });
   });
 
