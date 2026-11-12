@@ -18,10 +18,31 @@ export interface IUser {
   createdAt: Date;
 }
 
+/** Expediente de um dia, HH:MM. */
+export type TDayHours = {
+  openTime: string;
+  closeTime: string;
+  lunchStartTime?: string | null;
+  lunchEndTime?: string | null;
+};
+
+export type TWeekDay =
+  | 'sunday'
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday';
+
+/** Dia ausente segue a loja; `null` é folga fixa. O objeto nulo segue a loja toda. */
+export type TMemberWorkingHours = Partial<Record<TWeekDay, TDayHours | null>>;
+
 export interface IProfessional {
   id: string;
   role: TProfessionalRole;
   isActive: boolean;
+  workingHours?: TMemberWorkingHours | null;
   user: IUser;
   createdAt: Date;
   store?: IStore;

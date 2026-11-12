@@ -48,7 +48,35 @@ export const CACHE_QUERY_KEYS = {
   ],
   stores: () => ['partner/stores'],
   storeMembers: (storeId: string) => [`partner/stores/${storeId}/members`],
+  /** Prefixo de toda a agenda da loja: invalide este para recarregar qualquer período. */
   schedules: (storeId: string) => [`partner/schedules/${storeId}`],
+  schedulesRange: (
+    storeId: string,
+    range: { from: string; to: string; memberId?: string },
+  ) => [`partner/schedules/${storeId}`, range],
+  holidays: (storeId: string, range?: { from?: string; to?: string }) => [
+    `partner/stores/${storeId}/holidays`,
+    range ?? {},
+  ],
+  customers: (storeId: string, params?: Record<string, unknown>) => [
+    `partner/stores/${storeId}/customers`,
+    params ?? {},
+  ],
+  customer: (storeId: string, userId: string) => [
+    `partner/stores/${storeId}/customers`,
+    'record',
+    userId,
+  ],
+  customerHistory: (storeId: string, userId: string, page: number) => [
+    `partner/stores/${storeId}/customers`,
+    'history',
+    userId,
+    page,
+  ],
+  customerTags: (storeId: string) => [
+    `partner/stores/${storeId}/customers`,
+    'tags',
+  ],
   availability: (
     storeId: string,
     params: { date: string; serviceIds: string[]; memberId?: string },
