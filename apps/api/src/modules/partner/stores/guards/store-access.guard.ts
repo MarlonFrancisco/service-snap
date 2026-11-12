@@ -45,11 +45,14 @@ export class StoreAccessGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // Busca relação user-store
-    const storeMember = await this.storeMemberService.findStoreMember(
-      storeId as string,
-      user.sub,
-    );
+    // As duas checagens saem juntas: o dono costuma não ser membro, e em
+    // sequência ele pagava duas idas ao banco em toda rota da loja.
+    const [storeMember, isOwner] = await Promise.all([
+      this.storeMemberService.findStoreMember(storeId as string, user.sub),
+      this.storeRepository.exists({
+        where: { id: storeId as string, owner: { id: user.sub } },
+      }),
+    ]);
 
     if (storeMember) {
       // Injeta dados extras no request para uso posterior
@@ -58,10 +61,6 @@ export class StoreAccessGuard implements CanActivate {
 
       return true;
     }
-
-    const isOwner = await this.storeRepository.exists({
-      where: { id: storeId as string, owner: { id: user.sub } },
-    });
 
     if (!isOwner) {
       throw new ForbiddenException('You do not have access to this store');

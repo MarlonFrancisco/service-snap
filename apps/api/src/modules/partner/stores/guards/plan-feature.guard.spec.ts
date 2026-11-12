@@ -1,6 +1,7 @@
 import { ForbiddenException, type ExecutionContext } from '@nestjs/common';
 import type { Reflector } from '@nestjs/core';
 import { describe, expect, it, vi } from 'vitest';
+import { Store } from '../store.entity';
 import { PlanFeatureGuard, type TPlanFeatureFlag } from './plan-feature.guard';
 
 const STORE_ID = 'store-1';
@@ -8,18 +9,21 @@ const STORE_ID = 'store-1';
 const setup = ({
   required,
   features,
-  store = { id: STORE_ID, owner: { id: 'owner-1' } },
 }: {
   required?: TPlanFeatureFlag[];
   features?: Partial<Record<TPlanFeatureFlag, boolean>> | null;
-  store?: unknown;
 }) => {
   const reflector = {
     getAllAndOverride: vi.fn().mockReturnValue(required),
   } as unknown as Reflector;
-  const storeRepository = { findOne: vi.fn().mockResolvedValue(store) };
+  const builder = {
+    innerJoin: vi.fn().mockReturnThis(),
+    where: vi.fn().mockReturnThis(),
+    andWhere: vi.fn().mockReturnThis(),
+    getOne: vi.fn().mockResolvedValue(features === null ? null : { features }),
+  };
   const subscriptionRepository = {
-    findOne: vi.fn().mockResolvedValue(features === null ? null : { features }),
+    createQueryBuilder: vi.fn().mockReturnValue(builder),
   };
   const context = {
     getHandler: () => undefined,
@@ -30,23 +34,19 @@ const setup = ({
   } as unknown as ExecutionContext;
 
   return {
-    guard: new PlanFeatureGuard(
-      reflector,
-      storeRepository as never,
-      subscriptionRepository as never,
-    ),
+    guard: new PlanFeatureGuard(reflector, subscriptionRepository as never),
     context,
-    storeRepository,
+    builder,
     subscriptionRepository,
   };
 };
 
 describe('PlanFeatureGuard', () => {
   it('lets routes without plan requirements through without queries', async () => {
-    const { guard, context, storeRepository } = setup({});
+    const { guard, context, subscriptionRepository } = setup({});
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
-    expect(storeRepository.findOne).not.toHaveBeenCalled();
+    expect(subscriptionRepository.createQueryBuilder).not.toHaveBeenCalled();
   });
 
   it('allows the route when the owner plan has every feature', async () => {
@@ -88,17 +88,21 @@ describe('PlanFeatureGuard', () => {
   });
 
   it('reads the plan of the store owner, not of the caller', async () => {
-    const { guard, context, subscriptionRepository } = setup({
+    const { guard, context, builder } = setup({
       required: ['WHATSAPP_INTEGRATION'],
       features: { WHATSAPP_INTEGRATION: true },
     });
 
     await guard.canActivate(context);
 
-    expect(subscriptionRepository.findOne).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ user: { id: 'owner-1' } }),
-      }),
+    // A assinatura vem do dono da loja da rota, nunca de quem fez a chamada
+    expect(builder.innerJoin).toHaveBeenCalledWith(
+      Store,
+      'store',
+      'store."ownerId" = subscription."userId"',
     );
+    expect(builder.where).toHaveBeenCalledWith('store.id = :storeId', {
+      storeId: STORE_ID,
+    });
   });
 });

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, MoreThanOrEqual, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Subscription } from '../../../subscription/subscription.entity';
 import { Store } from '../store.entity';
 
@@ -28,6 +28,8 @@ export const RequiresPlanFeatures = (...features: TPlanFeatureFlag[]) =>
 
 export const PLAN_FEATURE_REQUIRED = 'PLAN_FEATURE_REQUIRED';
 
+const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'paid', 'trialing'];
+
 /**
  * Vem depois de `StoreAccessGuard`: o plano é do dono da loja, porque quem chama
  * pode ser um gerente ou profissional sem assinatura (como em `PRO_LIMIT`).
@@ -36,8 +38,6 @@ export const PLAN_FEATURE_REQUIRED = 'PLAN_FEATURE_REQUIRED';
 export class PlanFeatureGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    @InjectRepository(Store)
-    private readonly storeRepository: Repository<Store>,
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
   ) {}
@@ -76,23 +76,21 @@ export class PlanFeatureGuard implements CanActivate {
     storeId: string | undefined,
     required: readonly TPlanFeatureFlag[],
   ): Promise<TPlanFeatureFlag[]> {
-    const store = storeId
-      ? await this.storeRepository.findOne({
-          where: { id: storeId },
-          relations: ['owner'],
-          select: { id: true, owner: { id: true } },
-        })
-      : null;
+    if (!storeId) {
+      return [...required];
+    }
 
-    const subscription = store?.owner
-      ? await this.subscriptionRepository.findOne({
-          where: {
-            user: { id: store.owner.id },
-            status: In(['active', 'paid', 'trialing']),
-            currentPeriodEnd: MoreThanOrEqual(new Date()),
-          },
-        })
-      : null;
+    // Uma ida ao banco: a assinatura ativa do dono sai do join com a loja, em
+    // vez de buscar o dono primeiro e a assinatura depois.
+    const subscription = await this.subscriptionRepository
+      .createQueryBuilder('subscription')
+      .innerJoin(Store, 'store', 'store."ownerId" = subscription."userId"')
+      .where('store.id = :storeId', { storeId })
+      .andWhere('subscription.status IN (:...statuses)', {
+        statuses: ACTIVE_SUBSCRIPTION_STATUSES,
+      })
+      .andWhere('subscription."currentPeriodEnd" >= :now', { now: new Date() })
+      .getOne();
 
     return required.filter((flag) => subscription?.features?.[flag] !== true);
   }
