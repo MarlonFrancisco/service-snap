@@ -396,6 +396,11 @@ export interface IAnalyticsEventMap {
   };
   plan_limit_warning_viewed: { is_at_limit: boolean; is_near_limit: boolean };
   plan_upgrade_cta_clicked: { source: string };
+
+  // ── Erros de página ─────────────────────────────────────────────────
+  /** `digest` liga o evento ao log do servidor; nunca a mensagem do erro. */
+  error_page_viewed: { path: string; digest?: string };
+  error_page_retry_clicked: { path: string; digest?: string };
 }
 
 export type TAuthMethod = 'google' | 'email';
