@@ -14,8 +14,10 @@ import { BasicInfoTab } from './basic-info-tab';
 import { BusinessHoursTab } from './business-hours-tab/business-hours-tab';
 import { ContactTab } from './contact-tab';
 import { GalleryTab } from './gallery-tab';
+import { HolidaysTab } from './holidays-tab';
 import { ProfessionalTab } from './professionals-tab/professional-tab';
 import { RegionTab } from './region-tab';
+import { ScheduleRulesTab } from './schedule-rules-tab';
 import { useStoreFormTabs } from './store-form-tabs.hook';
 
 export const StoreFormTabs = () => {
@@ -71,7 +73,7 @@ export const StoreFormTabs = () => {
 
             {isEditingStore ? null : (
               <p className={cn('mt-2 text-xs', PARTNER_MUTED_TEXT_CLASS)}>
-                Galeria e equipe ficam disponíveis depois de criar a loja.
+                Agenda, feriados, galeria e equipe ficam disponíveis depois de criar a loja.
               </p>
             )}
           </div>
@@ -90,6 +92,10 @@ export const StoreFormTabs = () => {
             <ContactTab />
 
             <BusinessHoursTab />
+
+            <ScheduleRulesTab />
+
+            <HolidaysTab />
 
             <GalleryTab />
 

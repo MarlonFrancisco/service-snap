@@ -1,11 +1,15 @@
 import { useStoreMutations } from '@/hooks/partner/store/use-store-mutations/use-store-mutations.hook';
+import { isApiHttpError } from '@/service/api';
 import { useStoresStore } from '@/store/admin/stores';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, type FieldErrors } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useRefreshCurrentPlan } from '../../../utils/use-refresh-current-plan.hook';
-import { STORE_FORM_TABS } from './store-form-tabs.constants';
+import {
+  SAVED_STORE_ONLY_FIELDS,
+  STORE_FORM_TABS,
+} from './store-form-tabs.constants';
 import { getTabsWithErrors, toStoreFormValues } from './store-form-tabs.helpers';
 import type { TStoreFormTab } from './store-form-tabs.types';
 import { storeFormSchema, type TStoreFormSchema } from './store-form.schema';
@@ -62,10 +66,12 @@ export const useStoreFormTabs = () => {
       const fn = isEditingStore
         ? updateStoreMutation.mutate
         : createStoreMutation.mutate;
+      const skippedFields: readonly string[] = isEditingStore
+        ? ['gallery', 'storeMembers']
+        : ['gallery', 'storeMembers', ...SAVED_STORE_ONLY_FIELDS];
       const normalizeData = Object.fromEntries(
         Object.entries(data).filter(
-          ([key, value]) =>
-            value !== '' && !['gallery', 'storeMembers'].includes(key),
+          ([key, value]) => value !== '' && !skippedFields.includes(key),
         ),
       );
 
@@ -73,6 +79,16 @@ export const useStoreFormTabs = () => {
         onSuccess: () => {
           setIsAddModalOpen({ isOpen: false });
           refreshCurrentPlan();
+        },
+        onError: (error) => {
+          // 409 do PUT é o link curto já usado por outra loja
+          if (!isApiHttpError(error) || error.status !== 409) return;
+
+          setActiveTab('basic');
+          form.setError('slug', {
+            message: 'Este link já é usado por outra loja',
+          });
+          requestAnimationFrame(() => form.setFocus('slug'));
         },
       });
     }, handleInvalid)();
