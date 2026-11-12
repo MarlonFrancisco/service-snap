@@ -12,6 +12,7 @@ import { PartnerModule } from './partner/partner.module';
 import { PlansModule } from './plans';
 import { RecomendationModule } from './recomendation';
 import { SearchModule } from './search';
+import { StoreDiscoveryModule } from './store-discovery/store-discovery.module';
 import { SubscriptionModule } from './subscription';
 import { UpstashSearchModule } from './upstash-search';
 import { UsersModule } from './users';
@@ -33,6 +34,7 @@ import { WhatsappBotModule } from './whatsapp-bot';
     NotificationModule,
     PartnerModule,
     SearchModule,
+    StoreDiscoveryModule,
     RecomendationModule,
     UpstashSearchModule,
     WhatsappBotModule,

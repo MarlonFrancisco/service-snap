@@ -1,3 +1,9 @@
+import type {
+  IStoreSearchMetadata,
+  TSearchFilters,
+} from '../../modules/search/search.types';
+import { NO_PLAN_RANK_TIER } from './search.helpers';
+
 export type TSearchIntent = {
   rawQuery: string;
   /** Query cleaned of location/noise phrases for the search engine */
@@ -18,10 +24,26 @@ export type TSearchHit = {
     zipCode?: string;
     categoryNames?: string[];
     serviceNames?: string[];
+    country?: string;
     categories?: Array<{ name?: string } | string>;
-    services?: Array<{ name?: string } | string>;
+    services?: Array<
+      | {
+          id?: string;
+          name?: string;
+          price?: number | string;
+          duration?: number;
+          isActive?: boolean;
+        }
+      | string
+    >;
   };
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown> &
+    Partial<
+      Pick<
+        IStoreSearchMetadata,
+        'rankTier' | 'averageRating' | 'reviewCount' | 'minPrice' | 'timezone'
+      >
+    >;
 };
 
 /** Known category labels + aliases (lowercase, no accents in keys after normalize). */
@@ -236,9 +258,32 @@ function relevanceBoost(hit: TSearchHit, intent: TSearchIntent): number {
   return boost;
 }
 
+/** Peso da nota no rank: uma loja 5 estrelas ganha o mesmo que o nome bater com a busca. */
+const RATING_BOOST_WEIGHT = 0.4;
+/** Nota de partida e quantas avaliações ela "vale": poucas avaliações puxam para perto dela. */
+const RATING_PRIOR = 4;
+const RATING_PRIOR_WEIGHT = 5;
+
 /**
- * Keep only hits that satisfy explicit location/category constraints,
- * then re-rank by Upstash score + local boosts. Prefer empty over irrelevant.
+ * Média bayesiana: uma loja com uma única nota 5 não passa à frente de outra
+ * com 4,8 em 60 avaliações.
+ */
+export function weightedRating(average = 0, count = 0): number {
+  return (
+    (average * count + RATING_PRIOR * RATING_PRIOR_WEIGHT) /
+    (count + RATING_PRIOR_WEIGHT)
+  );
+}
+
+/** Documento indexado antes do `rankTier` conta como sem plano até ser ressincronizado. */
+const getRankTier = (hit: TSearchHit) =>
+  hit.metadata?.rankTier ?? NO_PLAN_RANK_TIER;
+
+/**
+ * Keep only hits that satisfy explicit location/category constraints, then
+ * order by plan tier (docs/ranqueamento-busca.md: o nível do plano vem
+ * primeiro) and, inside a tier, by Upstash score + local boosts + rating.
+ * Prefer empty over irrelevant.
  */
 export function filterAndRankSearchHits(
   hits: TSearchHit[],
@@ -259,11 +304,90 @@ export function filterAndRankSearchHits(
   return filtered
     .map((hit) => ({
       hit,
-      rank: (hit.score ?? 0) + relevanceBoost(hit, intent),
+      tier: getRankTier(hit),
+      rank:
+        (hit.score ?? 0) +
+        relevanceBoost(hit, intent) +
+        weightedRating(getHitAverageRating(hit), getHitReviewCount(hit)) *
+          RATING_BOOST_WEIGHT,
     }))
-    .sort((a, b) => b.rank - a.rank || a.hit.id.localeCompare(b.hit.id))
+    .sort(
+      (a, b) =>
+        a.tier - b.tier ||
+        b.rank - a.rank ||
+        a.hit.id.localeCompare(b.hit.id),
+    )
     .map(({ hit, rank }) => ({
       ...hit,
       score: rank,
     }));
+}
+
+/** Serviços ativos da loja no documento, com id, para preço e disponibilidade. */
+export function getActiveHitServices(hit: TSearchHit) {
+  return (hit.content?.services ?? []).filter(
+    (service): service is Exclude<typeof service, string> =>
+      typeof service !== 'string' && Boolean(service.id) && service.isActive !== false,
+  );
+}
+
+/**
+ * Menor preço da loja. Documento indexado antes de `minPrice` calcula a partir
+ * dos serviços, para o filtro não esconder lojas só por falta de reindexação.
+ */
+export function getHitMinPrice(hit: TSearchHit): number | null {
+  if (hit.metadata?.minPrice !== undefined) return hit.metadata.minPrice;
+
+  const prices = getActiveHitServices(hit)
+    .map((service) => Number(service.price))
+    .filter((price) => Number.isFinite(price) && price > 0);
+
+  return prices.length ? Math.min(...prices) : null;
+}
+
+/** Nota média; mesmo cuidado com documentos antigos, que só têm a lista de avaliações. */
+export function getHitAverageRating(hit: TSearchHit): number {
+  if (hit.metadata?.averageRating !== undefined) {
+    return hit.metadata.averageRating;
+  }
+
+  const reviews = Array.isArray(hit.metadata?.reviews)
+    ? (hit.metadata.reviews as Array<{ rating?: number | string }>)
+    : [];
+  const ratings = reviews
+    .map((review) => Number(review.rating))
+    .filter((rating) => Number.isFinite(rating) && rating > 0);
+
+  return ratings.length
+    ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+    : 0;
+}
+
+export function getHitReviewCount(hit: TSearchHit): number {
+  if (hit.metadata?.reviewCount !== undefined) return hit.metadata.reviewCount;
+
+  return Array.isArray(hit.metadata?.reviews) ? hit.metadata.reviews.length : 0;
+}
+
+/**
+ * Preço e nota escolhidos pelo cliente. Loja sem preço cadastrado sai quando há
+ * filtro de preço: não dá para garantir que ela cabe na faixa.
+ */
+export function matchesSearchFilters(
+  hit: TSearchHit,
+  { minPrice, maxPrice, minRating }: TSearchFilters,
+): boolean {
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    const price = getHitMinPrice(hit);
+
+    if (price === null) return false;
+    if (minPrice !== undefined && price < minPrice) return false;
+    if (maxPrice !== undefined && price > maxPrice) return false;
+  }
+
+  if (minRating !== undefined && getHitAverageRating(hit) < minRating) {
+    return false;
+  }
+
+  return true;
 }
