@@ -292,6 +292,8 @@ export class UsersService {
         'schedules.store.gallery',
         'schedules.storeMember',
         'schedules.storeMember.user',
+        // A tela agrupa os serviços da mesma visita
+        'schedules.booking',
       ],
       select: [
         'id',
