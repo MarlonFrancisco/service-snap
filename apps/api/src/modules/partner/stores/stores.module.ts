@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../auth';
 import { Subscription } from '../../subscription/subscription.entity';
+import { CalendarFeedModule } from './calendar-feed/calendar-feed.module';
 import { CategoryModule } from './category';
 import { GalleryModule } from './gallery';
 import { StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard } from './guards';
@@ -26,6 +27,7 @@ import { StoresService } from './stores.services';
     ScheduleModule,
     NotificationsModule,
     ReviewModule,
+    CalendarFeedModule,
     StoreSearchSyncModule,
   ],
   controllers: [StoresController],
