@@ -1,5 +1,8 @@
 import type { AvailabilitySlot } from '../../../../utils/helpers/schedule.helpers';
-import { formatLongDate } from '../../../../utils/helpers/schedule.helpers';
+import {
+  formatLongDate,
+  timeToMinutes,
+} from '../../../../utils/helpers/schedule.helpers';
 import { getUserFullName } from '../../../../utils/helpers/user.helpers';
 import { toParam } from '../whatsapp/whatsapp-reminder-template';
 import type { WaitlistEntry } from './waitlist-entry.entity';
@@ -27,6 +30,33 @@ export const WAITLIST_MAX_ACTIVE_PER_CUSTOMER = 5;
 
 /** Quantos horários livres o aviso cita. */
 const NOTICE_FREE_TIMES = 3;
+
+/**
+ * Horários que um cancelamento ainda poderia liberar: os que cabem antes do
+ * fechamento e, hoje, os que ainda não passaram. Dia sem nenhum não tem fila.
+ */
+export const countFreeableSlots = (
+  slots: Pick<AvailabilitySlot, 'time'>[],
+  {
+    date,
+    today,
+    nowMinutes,
+    closeTime,
+    durationMinutes,
+  }: {
+    date: string;
+    today: string;
+    nowMinutes: number;
+    closeTime?: string | null;
+    durationMinutes: number;
+  },
+) =>
+  slots.filter((slot) => {
+    const start = timeToMinutes(slot.time);
+    const fits =
+      !closeTime || start + durationMinutes <= timeToMinutes(closeTime);
+    return fits && (date !== today || start > nowMinutes);
+  }).length;
 
 /** Payload do botão "Ver horários": volta no webhook com a entrada junto. */
 export const buildWaitlistPayload = (entryId: string) =>

@@ -44,7 +44,10 @@ import type { TPresenceAnswer } from '../partner/stores/schedule/schedule-presen
 import type { Schedule } from '../partner/stores/schedule/schedule.entity';
 import { ScheduleService } from '../partner/stores/schedule/schedule.service';
 import { StoreMemberService } from '../partner/stores/store-member/store-member.service';
-import { parseWaitlistPayload } from '../partner/stores/waitlist/waitlist.helpers';
+import {
+  countFreeableSlots,
+  parseWaitlistPayload,
+} from '../partner/stores/waitlist/waitlist.helpers';
 import { WaitlistService } from '../partner/stores/waitlist/waitlist.service';
 import { WhatsappConfig } from '../partner/stores/whatsapp/whatsapp.entity';
 import { WhatsappService } from '../partner/stores/whatsapp/whatsapp.service';
@@ -659,20 +662,12 @@ export class WhatsappBotService {
 
   /** Dias de expediente sem nenhum horário livre: os que têm fila de espera. */
   private findFullDays(ctx: IBotContext, today: string) {
-    // Depois do fechamento, os horários de hoje passaram: nada vai vagar
-    const { closeTime } = ctx.config.store;
-    const { minutes } = getStoreNow(
-      getStoreTimezone(ctx.config.store),
-      new Date(),
-    );
-    const isTodayOver = !closeTime || minutes >= timeToMinutes(closeTime);
-
     return this.findDays(ctx, {
-      start: isTodayOver ? addDays(today, 1) : today,
+      start: today,
       limit: addDays(today, WAITLIST_SEARCH_HORIZON),
       wanted: WHATSAPP_LIMITS.listRows,
-      // Sem horário nenhum, a loja não abre ou o dia já acabou
-      match: (day) => day.total > 0 && day.free === 0,
+      // Sem horário que um cancelamento libere, a loja não abre ou o dia acabou
+      match: (day) => day.freeable > 0 && day.free === 0,
     });
   }
 
@@ -687,7 +682,7 @@ export class WhatsappBotService {
       start: string;
       limit: string;
       wanted: number;
-      match: (day: { total: number; free: number }) => boolean;
+      match: (day: { freeable: number; free: number }) => boolean;
     },
   ) {
     const found: { date: string; slots: number }[] = [];
@@ -1530,18 +1525,17 @@ export class WhatsappBotService {
       throw error;
     }
 
+    // O nome sai da sessão: monta o texto antes de limpá-la
+    const text = buildWaitlistJoinedText({
+      serviceName: service.name,
+      professionalName: professionalId
+        ? this.professionalName(ctx, professionalId)
+        : undefined,
+      date,
+    });
+
     await this.clearSession(ctx);
-    await this.sendButtons(
-      ctx,
-      buildWaitlistJoinedText({
-        serviceName: service.name,
-        professionalName: professionalId
-          ? this.professionalName(ctx, professionalId)
-          : undefined,
-        date,
-      }),
-      [{ id: 'menu:home', title: '🏠 Menu' }],
-    );
+    await this.sendButtons(ctx, text, [{ id: 'menu:home', title: '🏠 Menu' }]);
   }
 
   /** Toque em "Ver horários" no aviso de vaga: abre direto os horários do dia. */
@@ -1664,12 +1658,19 @@ export class WhatsappBotService {
       .map((slot) => ({ time: slot.time, memberId: slot.storeMemberId }));
   }
 
-  /** Horários que o dia tem e quantos estão livres. */
+  /** Quantos horários estão livres e quantos um cancelamento poderia liberar. */
   private async countSlots(ctx: IBotContext, date: string) {
     const slots = await this.fetchDay(ctx, date);
+    const now = getStoreNow(getStoreTimezone(ctx.config.store), new Date());
 
     return {
-      total: slots.length,
+      freeable: countFreeableSlots(slots, {
+        date,
+        today: now.date,
+        nowMinutes: now.minutes,
+        closeTime: ctx.config.store.closeTime,
+        durationMinutes: ctx.session.service?.duration ?? 0,
+      }),
       free: slots.filter((slot) => slot.available && slot.storeMemberId).length,
     };
   }

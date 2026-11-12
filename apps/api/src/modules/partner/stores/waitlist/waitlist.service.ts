@@ -8,12 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isUUID } from 'class-validator';
 import { In, IsNull, Repository } from 'typeorm';
 import { getStoreTimezone } from '../../../../utils/helpers/region.helpers';
-import {
-  getStoreNow,
-  timeToMinutes,
-} from '../../../../utils/helpers/schedule.helpers';
+import { getStoreNow } from '../../../../utils/helpers/schedule.helpers';
 import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
 import { addDays } from '../../../../utils/helpers/whatsapp.helpers';
+import { Service } from '../category/service/service.entity';
 import { ScheduleService } from '../schedule/schedule.service';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
@@ -22,6 +20,7 @@ import {
   WAITLIST_HORIZON_DAYS,
   WAITLIST_MAX_ACTIVE_PER_CUSTOMER,
   WAITLIST_RELATIONS,
+  countFreeableSlots,
   toWaitlistEntryResponse,
 } from './waitlist.helpers';
 import type { TJoinWaitlist } from './waitlist.types';
@@ -35,6 +34,8 @@ export class WaitlistService {
     private readonly storeRepository: Repository<Store>,
     @InjectRepository(StoreMember)
     private readonly storeMemberRepository: Repository<StoreMember>,
+    @InjectRepository(Service)
+    private readonly serviceRepository: Repository<Service>,
     private readonly scheduleService: ScheduleService,
   ) {}
 
@@ -72,12 +73,19 @@ export class WaitlistService {
       ...(storeMemberId && { memberId: storeMemberId }),
     });
 
-    // Sem nenhum horário no dia, a loja está fechada: não há o que vagar
-    // Hoje, com todos os horários já passados, também não há o que vagar
-    const isOver =
-      date === today &&
-      slots.every((slot) => timeToMinutes(slot.time) <= now.minutes);
-    if (slots.length === 0 || isOver) {
+    const service = await this.serviceRepository.findOne({
+      where: { id: serviceId },
+    });
+    const freeable = countFreeableSlots(slots, {
+      date,
+      today,
+      nowMinutes: now.minutes,
+      closeTime: store.closeTime,
+      durationMinutes: service?.duration ?? 0,
+    });
+
+    // Loja fechada, ou hoje já sem horário que caiba: não há o que vagar
+    if (freeable === 0) {
       throw new BadRequestException('The store is closed on this day');
     }
     if (slots.some((slot) => slot.available)) {

@@ -5,6 +5,7 @@ import { UsersModule } from '../../../users/users.module';
 import { PlanFeatureGuard } from '../guards';
 import { StoreGuardsModule } from '../guards/store-guards.module';
 import { ScheduleModule } from '../schedule';
+import { Service } from '../category/service/service.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
 import { WhatsappModule } from '../whatsapp';
@@ -15,7 +16,7 @@ import { WaitlistService } from './waitlist.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([WaitlistEntry, Store, StoreMember]),
+    TypeOrmModule.forFeature([WaitlistEntry, Store, StoreMember, Service]),
     ScheduleModule,
     WhatsappModule,
     NotificationModule,
