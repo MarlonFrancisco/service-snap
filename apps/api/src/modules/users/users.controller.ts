@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Patch,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
-import type { Response } from 'express';
+import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
 import type { JwtPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -36,15 +27,5 @@ export class UsersController {
     return await this.usersService.updateAvatar(user.sub, body.avatar);
   }
 
-  @Delete('/me')
-  async deleteUser(
-    @CurrentUser() user: JwtPayload,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    await this.usersService.delete(user.sub);
-    res.clearCookie('user_identification');
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
-    return { id: user.sub };
-  }
+  // DELETE /users/me (exclusão de verdade) fica no PrivacyController
 }

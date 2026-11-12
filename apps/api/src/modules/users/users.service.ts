@@ -262,16 +262,6 @@ export class UsersService {
     return user;
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    await this.userRepository.update(id, { isDeleted: true });
-    await this.storageService.deleteFile({
-      folder: 'users',
-      path: `${id}/avatar.webp`,
-    });
-
-    return { id };
-  }
-
   async updateLastLogin(id: string): Promise<void> {
     await this.userRepository.update(id, { updatedAt: new Date() });
   }

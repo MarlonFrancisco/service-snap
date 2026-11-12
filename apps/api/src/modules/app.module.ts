@@ -11,6 +11,7 @@ import { NotificationModule } from './notification';
 import { PartnerRoutesGuard } from './partner/guards';
 import { PartnerModule } from './partner/partner.module';
 import { PlansModule } from './plans';
+import { PrivacyModule } from './privacy/privacy.module';
 import { PublicApiModule } from './public-api/public-api.module';
 import { RecomendationModule } from './recomendation';
 import { SearchModule } from './search';
@@ -42,6 +43,7 @@ import { WhatsappBotModule } from './whatsapp-bot';
     UpstashSearchModule,
     WhatsappBotModule,
     PublicApiModule,
+    PrivacyModule,
   ],
   providers: [
     {
