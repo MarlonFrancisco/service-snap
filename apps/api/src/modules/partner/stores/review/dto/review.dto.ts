@@ -1,4 +1,13 @@
-import { IsNumber, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Max,
+  MaxLength,
+  Min,
+} from 'class-validator';
 import type { User } from '../../../../users/user.entity';
 import type { Store } from '../../store.entity';
 
@@ -15,10 +24,25 @@ export class ReviewDto {
   @IsString()
   comment: string;
 
+  /**
+   * Atendimento avaliado. Sem ele, vale o atendimento concluído mais recente
+   * do cliente nesta loja que ainda não foi avaliado.
+   */
+  @IsUUID()
+  @IsOptional()
+  scheduleId?: string;
+
   @IsObject()
   user: Partial<User>;
 
   @IsObject()
   @IsOptional()
   store: Partial<Store>;
+}
+
+export class ReviewReplyDto {
+  /** Texto vazio apaga a resposta. */
+  @IsString()
+  @MaxLength(1000)
+  reply: string;
 }

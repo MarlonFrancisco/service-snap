@@ -357,7 +357,22 @@ describe('store-scoped services with an id from another store', () => {
   describe('ReviewService', () => {
     const USER = 'user-1';
     const authored = { ...scoped, user: { id: USER } };
-    const create = () => new ReviewService(repository as never);
+    // Atendimento concluído que o autor ainda não avaliou
+    const getOne = vi.fn().mockResolvedValue({ id: 'schedule-1' });
+    const builder = {
+      leftJoin: () => builder,
+      where: () => builder,
+      andWhere: () => builder,
+      orderBy: () => builder,
+      addOrderBy: () => builder,
+      getOne,
+    };
+    const create = () =>
+      new ReviewService(
+        repository as never,
+        { createQueryBuilder: () => builder } as never,
+        { sync: vi.fn() } as never,
+      );
 
     it('findOneInStore returns 404 for a review from another store', async () => {
       repository.findOne.mockResolvedValue({
@@ -396,6 +411,5 @@ describe('store-scoped services with an id from another store', () => {
     it('create ignores an id sent in the body', async () => {
       await create().create(authored as never);
       expect(repository.save.mock.calls[0][0].id).toBeUndefined();
-    });
-  });
+    });  });
 });
