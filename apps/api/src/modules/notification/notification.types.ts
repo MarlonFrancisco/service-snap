@@ -74,3 +74,14 @@ export type TSubscriptionCancelScheduledEmail = {
   accessUntil: string;
   manageLink: string;
 };
+
+export type TTeamInviteEmail = {
+  storeName: string;
+  /** "profissional", "gerente" ou "sócio". */
+  roleLabel: string;
+  inviterName: string;
+  /** Conta criada pelo convite: o texto explica como entrar pela primeira vez. */
+  isNewAccount: boolean;
+  email: string;
+  accessLink: string;
+};

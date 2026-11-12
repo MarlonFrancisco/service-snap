@@ -16,6 +16,7 @@ import {
   storeFooter,
 } from './notification.helpers';
 import type {
+  TTeamInviteEmail,
   TEmailConfirmationCode,
   TEmailLayout,
   TScheduleCancelledEmail,
@@ -273,6 +274,20 @@ export class NotificationService {
     return this.sendEmail(
       to,
       `Cancelamento agendado: acesso até ${data.accessUntil}`,
+      body,
+    );
+  }
+
+  async teamInvite(to: string, data: TTeamInviteEmail) {
+    const body = await this.renderEmail('team-invite', data, {
+      title: 'Convite para a equipe',
+      preheader: `${data.inviterName} adicionou você à equipe de ${data.storeName}.`,
+      footerNote: `Você recebeu este e-mail porque foi adicionado à equipe de ${data.storeName}.`,
+    });
+
+    return this.sendEmail(
+      to,
+      `Você agora faz parte da equipe de ${data.storeName}`,
       body,
     );
   }

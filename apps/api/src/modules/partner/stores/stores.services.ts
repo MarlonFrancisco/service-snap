@@ -16,8 +16,9 @@ import { isStoreDraft } from '../onboarding/onboarding.helpers';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
 import { StoreSearchSyncService } from './search-sync/store-search-sync.service';
-import type { StoreMember } from './store-member/store-member.entity';
+import { StoreMember } from './store-member/store-member.entity';
 import { Store } from './store.entity';
+import type { TStoreWithRole } from './stores.types';
 
 /**
  * Lista do que sai na rota pública, para coluna nova em `User` não vazar sozinha:
@@ -72,14 +73,38 @@ export class StoresService {
     };
   }
 
+  /**
+   * Lojas do painel: as próprias e aquelas em que a pessoa está ativa na equipe.
+   * A equipe entra sem assinatura própria: o plano que vale é o do dono.
+   */
   async findAll(
     userId: string,
     config: { relations?: string[] } = {},
-  ): Promise<Store[]> {
-    return this.storesRepository.find({
-      where: { owner: { id: userId } },
-      relations: config.relations,
-    });
+  ): Promise<TStoreWithRole[]> {
+    const relations = config.relations ?? [];
+    const [owned, memberships] = await Promise.all([
+      this.storesRepository.find({
+        where: { owner: { id: userId } },
+        relations,
+      }),
+      this.storesRepository.manager.find(StoreMember, {
+        where: {
+          user: { id: userId },
+          isActive: true,
+          isDeleted: false,
+          store: { isDeleted: false },
+        },
+        relations: ['store', ...relations.map((name) => `store.${name}`)],
+      }),
+    ]);
+    const ownedIds = new Set(owned.map(({ id }) => id));
+
+    return [
+      ...owned.map((store) => ({ ...store, memberRole: 'owner' as const })),
+      ...memberships
+        .filter(({ store }) => store && !ownedIds.has(store.id))
+        .map(({ store, role }) => ({ ...store, memberRole: role })),
+    ] as TStoreWithRole[];
   }
 
   async findOne(

@@ -28,9 +28,10 @@ export class ScheduleController {
   @UseGuards(StoreAccessGuard)
   findAll(
     @Param('storeId') storeId: string,
+    @CurrentUser('sub') requesterId: string,
     @Query() query: ScheduleListQueryDto,
   ) {
-    return this.scheduleService.findAll(storeId, query);
+    return this.scheduleService.findAll(storeId, query, requesterId);
   }
 
   @Public()
@@ -60,13 +61,13 @@ export class ScheduleController {
   update(
     @Param('storeId') storeId: string,
     @Param('id') id: string,
+    @CurrentUser('sub') requesterId: string,
     @Body() schedule: ScheduleDto,
   ) {
-    return this.scheduleService.update({
-      ...schedule,
-      id,
-      store: { id: storeId },
-    });
+    return this.scheduleService.update(
+      { ...schedule, id, store: { id: storeId } },
+      requesterId,
+    );
   }
 
   // Mesmo acesso do cancelamento: o cliente dono do agendamento ou a equipe

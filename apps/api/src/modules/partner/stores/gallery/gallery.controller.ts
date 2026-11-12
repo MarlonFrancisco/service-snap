@@ -8,7 +8,11 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { StoreAccessGuard } from '../guards';
+import {
+  RequireStoreRoles,
+  StoreAccessGuard,
+  StoreRoleGuard,
+} from '../guards';
 import { CreateGalleryDto } from './dto/create-gallery.dto';
 import { UpdateGalleryDto } from './dto/update-gallery.dto';
 import { GalleryService } from './gallery.service';
@@ -23,6 +27,8 @@ export class GalleryController {
     return this.galleryService.findAll(storeId);
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Post()
   async create(
     @Param('storeId') storeId: string,
@@ -34,6 +40,8 @@ export class GalleryController {
     });
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Patch(':id')
   async update(
     @Param('storeId') storeId: string,
@@ -47,6 +55,8 @@ export class GalleryController {
     });
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Delete(':id')
   async delete(@Param('storeId') storeId: string, @Param('id') id: string) {
     return await this.galleryService.delete(storeId, id);

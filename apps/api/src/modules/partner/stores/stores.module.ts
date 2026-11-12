@@ -12,6 +12,7 @@ import { StoreSearchSyncModule } from './search-sync/store-search-sync.module';
 import { ScheduleModule } from './schedule';
 import { BlockedTimeModule } from './store-member/blocked-time/blocked-time.module';
 import { StoreMemberModule } from './store-member/store-member.module';
+import { TeamModule } from './team/team.module';
 import { Store } from './store.entity';
 import { StoresController } from './stores.controller';
 import { StoresService } from './stores.services';
@@ -29,6 +30,7 @@ import { StoresService } from './stores.services';
     NotificationsModule,
     ReviewModule,
     StoreSearchSyncModule,
+    TeamModule,
   ],
   controllers: [StoresController],
   providers: [StoresService, StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard],

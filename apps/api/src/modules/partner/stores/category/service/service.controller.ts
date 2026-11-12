@@ -10,7 +10,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { StoreAccessGuard } from '../../guards';
+import {
+  RequireStoreRoles,
+  StoreAccessGuard,
+  StoreRoleGuard,
+} from '../../guards';
 import { PaginationQueryDto } from '../../../../../utils/dto/pagination.dto';
 import { ServiceDto } from './service.dto';
 import { ServiceService } from './service.service';
@@ -33,6 +37,8 @@ export class ServiceController {
     return this.serviceService.findOneInStore(storeId, id);
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Post()
   async create(
     @Param('storeId') storeId: string,
@@ -48,6 +54,8 @@ export class ServiceController {
     );
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Put(':id')
   async update(
     @Param('storeId') storeId: string,
@@ -65,6 +73,8 @@ export class ServiceController {
     );
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Delete(':id')
   async delete(
     @Param('storeId') storeId: string,

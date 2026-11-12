@@ -12,14 +12,17 @@ import { plainToInstance } from 'class-transformer';
 import {
   PlanFeatureGuard,
   RequiresPlanFeatures,
-  StoreAccessGuard,
+  RequireStoreRoles,
+  StoreRoleGuard,
 } from '../guards';
 import { SaveWhatsappConfigDto } from './dto/save-whatsapp-config.dto';
 import { TestWhatsappDto } from './dto/test-whatsapp.dto';
 import { WhatsappService } from './whatsapp.service';
 
 @Controller('partner/stores/:storeId/whatsapp')
-@UseGuards(StoreAccessGuard, PlanFeatureGuard)
+// Gestão da loja: só dono e gerente
+@RequireStoreRoles('owner', 'manager')
+@UseGuards(StoreRoleGuard, PlanFeatureGuard)
 @RequiresPlanFeatures('WHATSAPP_INTEGRATION')
 export class WhatsappController {
   constructor(

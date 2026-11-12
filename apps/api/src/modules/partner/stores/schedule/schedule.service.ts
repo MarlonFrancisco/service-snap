@@ -31,6 +31,11 @@ import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
 import { isStoreDraft } from '../../onboarding/onboarding.helpers';
 import { Service } from '../category/service/service.entity';
+import {
+  assertOwnAgenda,
+  isProfessionalOnly,
+  type TStoreActor,
+} from '../guards';
 import { HolidayService } from '../holiday/holiday.service';
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
@@ -205,7 +210,11 @@ export class ScheduleService {
     scheduleDto: CreateSchedulesDto,
     requesterId: string,
   ): Promise<Schedule[]> {
-    const isStaff = await this.isStoreStaff(scheduleDto.store?.id, requesterId);
+    const actor = await this.getStaffActor(scheduleDto.store?.id, requesterId);
+    const isStaff = !!actor;
+
+    // Profissional marca só na própria agenda
+    assertOwnAgenda(actor, scheduleDto.storeMember?.id);
 
     return this.createSchedules(
       scheduleDto,
@@ -218,25 +227,36 @@ export class ScheduleService {
     );
   }
 
-  private async isStoreStaff(
+  /** Papel de quem pede na loja; `null` para quem é de fora (o cliente). */
+  private async getStaffActor(
     storeId: string,
     userId: string,
-  ): Promise<boolean> {
-    const isMember = await this.storeMemberRepository.exists({
-      where: {
-        store: { id: storeId },
-        user: { id: userId },
-        isActive: true,
-        isDeleted: false,
-      },
-    });
+  ): Promise<TStoreActor | null> {
+    if (!storeId || !userId) return null;
 
-    return (
-      isMember ||
+    const [member, isOwner] = await Promise.all([
+      this.storeMemberRepository.findOne({
+        where: {
+          store: { id: storeId },
+          user: { id: userId },
+          isActive: true,
+          isDeleted: false,
+        },
+        select: { id: true, role: true },
+      }),
       this.storeRepository.exists({
         where: { id: storeId, owner: { id: userId } },
-      })
-    );
+      }),
+    ]);
+
+    // O dono vale como dono mesmo cadastrado como profissional na equipe
+    if (isOwner) return { role: 'owner', storeMemberId: member?.id };
+
+    return member ? { role: member.role, storeMemberId: member.id } : null;
+  }
+
+  private async isStoreStaff(storeId: string, userId: string) {
+    return !!(await this.getStaffActor(storeId, userId));
   }
 
   /** Telefone sem DDI é lido como do país da loja. */
@@ -384,8 +404,16 @@ export class ScheduleService {
    */
   async findAll(
     storeId: string,
-    { from, to, memberId, page, limit }: TScheduleListQuery = {},
+    { from, to, memberId: requestedMemberId, page, limit }: TScheduleListQuery = {},
+    requesterId?: string,
   ): Promise<Schedule[] | TPage<Schedule>> {
+    const actor = requesterId
+      ? await this.getStaffActor(storeId, requesterId)
+      : null;
+    // Profissional vê só a própria agenda, peça o filtro que pedir
+    const memberId = isProfessionalOnly(actor)
+      ? actor.storeMemberId
+      : requestedMemberId;
     const date =
       from && to
         ? Between(from, to)
@@ -618,11 +646,19 @@ export class ScheduleService {
    * Mover ou mudar o status age sobre a visita inteira; a observação é da linha.
    * O resto do corpo (cliente, serviço, preço, loja) nunca é escrito por aqui.
    */
-  async update(schedule: ScheduleDto): Promise<Schedule> {
+  async update(schedule: ScheduleDto, requesterId?: string): Promise<Schedule> {
     const before = await this.scheduleNotifications.load(schedule.id);
 
     if (!before || before.store?.id !== schedule.store.id) {
       throw new NotFoundException('Schedule not found');
+    }
+
+    if (requesterId) {
+      assertOwnAgenda(
+        await this.getStaffActor(schedule.store.id, requesterId),
+        before.storeMember?.id,
+        schedule.storeMember?.id ?? before.storeMember?.id,
+      );
     }
 
     const group = await this.loadGroup(before);
@@ -714,13 +750,20 @@ export class ScheduleService {
     const schedule = await this.scheduleNotifications.load(id);
     const group = schedule ? await this.loadGroup(schedule) : [];
     const isActive = !!schedule && schedule.status !== 'cancelled';
+    const actor =
+      schedule?.store?.id === storeId
+        ? await this.getStaffActor(storeId, requesterId)
+        : null;
+
+    // O profissional cancela só o que é da agenda dele; o cliente passou no guard
+    if (actor) assertOwnAgenda(actor, schedule.storeMember?.id);
 
     if (
       isActive &&
       schedule?.store?.id === storeId &&
       schedule.date &&
       group[0]?.startTime &&
-      !(await this.isStoreStaff(storeId, requesterId))
+      !actor
     ) {
       assertWithinNotice('cancel', schedule.store, {
         date: schedule.date,
@@ -788,7 +831,7 @@ export class ScheduleService {
     storeId: string,
     scheduleId: string,
     { date, startTime, storeMemberId: requestedMemberId }: TRescheduleRequest,
-    { asCustomer }: TScheduleActor = { asCustomer: true },
+    { asCustomer, staff }: TScheduleActor = { asCustomer: true },
   ): Promise<Schedule> {
     const before = await this.scheduleNotifications.load(scheduleId);
 
@@ -801,6 +844,9 @@ export class ScheduleService {
     }
 
     const storeMemberId = requestedMemberId ?? before.storeMember?.id;
+
+    assertOwnAgenda(staff, before.storeMember?.id, storeMemberId);
+
     const group = await this.loadGroup(before);
     const items = this.toSlotItems(group, startTime);
 
@@ -849,10 +895,11 @@ export class ScheduleService {
     request: TRescheduleRequest,
     requesterId: string,
   ): Promise<Schedule> {
-    const isStaff = await this.isStoreStaff(storeId, requesterId);
+    const staff = await this.getStaffActor(storeId, requesterId);
 
     return this.reschedule(storeId, scheduleId, request, {
-      asCustomer: !isStaff,
+      asCustomer: !staff,
+      staff,
     });
   }
 

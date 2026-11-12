@@ -1,3 +1,5 @@
+import type { TStoreActor } from '../guards/store-guards.types';
+
 /** Por onde a reserva entrou. */
 export type TBookingSource = 'customer' | 'store' | 'whatsapp';
 
@@ -13,6 +15,8 @@ export type TRescheduleRequest = {
 export type TScheduleActor = {
   /** Cliente (ou o bot em nome dele): vale a política e a agenda oferecida. */
   asCustomer: boolean;
+  /** Papel na equipe, quando é alguém da loja: profissional só mexe no que é dele. */
+  staff?: TStoreActor | null;
 };
 
 export type TPolicyAction = 'cancel' | 'reschedule';

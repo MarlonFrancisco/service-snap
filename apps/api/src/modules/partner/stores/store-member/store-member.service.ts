@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -20,6 +21,7 @@ import { Store } from '../store.entity';
 import { CreateStoreMemberDto } from './dto/create-store-member.dto';
 import { UpdateStoreMemberDto } from './dto/update-store-member.dto';
 import { StoreMember } from './store-member.entity';
+import type { TCreatedMember } from './store-member.types';
 import { normalizeWorkingHours } from './store-member.helpers';
 
 @Injectable()
@@ -102,7 +104,12 @@ export class StoreMemberService {
     return toPage(members, total, page, take);
   }
 
-  async create(storeMemberDto: CreateStoreMemberDto): Promise<StoreMember> {
+  /**
+   * Adiciona alguém à equipe pelo e-mail. Sem conta, a pessoa é cadastrada aqui
+   * (como o cliente que a loja agenda): o login é por código no e-mail, então
+   * basta ela entrar com esse endereço. Quem chama manda o aviso por e-mail.
+   */
+  async create(storeMemberDto: CreateStoreMemberDto): Promise<TCreatedMember> {
     const storeId = storeMemberDto.store?.id;
 
     await this.assertWithinProfessionalLimit(
@@ -111,12 +118,27 @@ export class StoreMemberService {
     );
     await this.assertServicesBelongToStore(storeId, storeMemberDto.services);
 
-    const user = await this.userService.findByOne({
-      email: storeMemberDto.user?.email,
+    const email = storeMemberDto.user?.email?.trim();
+
+    // Sem e-mail, a busca do usuário fica sem filtro
+    if (!email) {
+      throw new BadRequestException('E-mail is required');
+    }
+
+    const existing = await this.userService.findByOne({ email });
+    const user =
+      existing ??
+      (await this.userService.upsert({
+        email,
+        firstName: storeMemberDto.user?.firstName,
+        lastName: storeMemberDto.user?.lastName,
+      }));
+    const alreadyMember = await this.storeMemberRepository.exists({
+      where: { store: { id: storeId }, user: { id: user.id } },
     });
 
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+    if (alreadyMember) {
+      throw new ConflictException('Esta pessoa já faz parte da equipe');
     }
 
     const storeMember = this.storeMemberRepository.create({
@@ -124,6 +146,8 @@ export class StoreMemberService {
       // Com `id` no corpo, o save sobrescreveria um membro existente
       id: undefined,
       user: { id: user.id },
+      // Sem `isActive` no corpo, quem foi convidado já entra ativo
+      isActive: storeMemberDto.isActive ?? true,
       services: [],
     });
 
@@ -139,10 +163,12 @@ export class StoreMemberService {
 
     await this.storeSearchSync.sync(storeId);
 
-    return this.storeMemberRepository.findOne({
+    const member = await this.storeMemberRepository.findOne({
       where: { id: storeMember.id },
       relations: ['user', 'services', 'store'],
     });
+
+    return { member, isNewAccount: !existing };
   }
 
   /** Para quem já se sabe o id: nem toda conta tem e-mail (login por telefone). */

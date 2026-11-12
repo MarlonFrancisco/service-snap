@@ -9,7 +9,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { StoreAccessGuard } from '../guards';
+import {
+  RequireStoreRoles,
+  StoreAccessGuard,
+  StoreRoleGuard,
+} from '../guards';
 import { CategoryDto } from './category.dto';
 import { CategoryService } from './category.service';
 
@@ -28,6 +32,8 @@ export class CategoryController {
     return this.categoryService.findOne(storeId, id);
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Post()
   async create(
     @Param('storeId') storeId: string,
@@ -38,6 +44,8 @@ export class CategoryController {
     );
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Put(':id')
   async update(
     @Param('storeId') storeId: string,
@@ -49,6 +57,8 @@ export class CategoryController {
     );
   }
 
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   @Delete(':id')
   async delete(@Param('storeId') storeId: string, @Param('id') id: string) {
     return this.categoryService.delete(storeId, id);

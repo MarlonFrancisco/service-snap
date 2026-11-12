@@ -4,15 +4,20 @@ import {
   Delete,
   Get,
   Param,
-  Post,
   Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { RequireStoreRoles, StoreAccessGuard, StoreRoleGuard } from '../guards';
+import {
+  RequireStoreRoles,
+  StoreAccessGuard,
+  StoreActor,
+  StoreRoleGuard,
+  type TStoreActor,
+} from '../guards';
+import { assertCanGrantRole } from '../team/team.helpers';
 import { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
-import { CreateStoreMemberDto } from './dto/create-store-member.dto';
 import { UpdateStoreMemberDto } from './dto/update-store-member.dto';
 import { StoreMemberService } from './store-member.service';
 
@@ -32,20 +37,7 @@ export class StoreMemberController {
       : this.storeMemberService.findStoreMembers(storeId);
   }
 
-  @Post()
-  @RequireStoreRoles('owner', 'manager')
-  @UseGuards(StoreRoleGuard)
-  async create(
-    @Param('storeId') storeId: string,
-    @Body() storeMemberDto: CreateStoreMemberDto,
-  ) {
-    return this.storeMemberService.create(
-      plainToInstance(CreateStoreMemberDto, {
-        ...storeMemberDto,
-        store: { id: storeId },
-      }),
-    );
-  }
+  // A entrada na equipe (POST) fica em `TeamController`, que manda o convite
 
   @Put(':id')
   @RequireStoreRoles('owner', 'manager')
@@ -53,8 +45,11 @@ export class StoreMemberController {
   async update(
     @Param('storeId') storeId: string,
     @Param('id') id: string,
+    @StoreActor() actor: TStoreActor,
     @Body() storeMemberDto: UpdateStoreMemberDto,
   ) {
+    assertCanGrantRole(actor, storeMemberDto.role);
+
     return this.storeMemberService.update(
       plainToInstance(UpdateStoreMemberDto, {
         ...storeMemberDto,
