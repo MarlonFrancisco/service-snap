@@ -12,6 +12,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 /** Path do webhook Stripe — body deve permanecer bytes exatos (HMAC). */
 const STRIPE_WEBHOOK_PATH = '/subscription/webhook';
 
+/** Chamadas do QStash (campanhas): body cru para conferir a assinatura. */
+const QUEUE_PATH_PREFIX = '/queue';
+
 export async function createApp(): Promise<INestApplication> {
   // Cache da app APENAS em produção serverless
   // Em dev, sempre recria para permitir hot reload
@@ -33,6 +36,8 @@ export async function createApp(): Promise<INestApplication> {
     STRIPE_WEBHOOK_PATH,
     raw({ type: 'application/json', limit: '10mb' }),
   );
+  // Entrada do QStash: a assinatura é sobre o corpo cru, como no Stripe
+  http.use(QUEUE_PATH_PREFIX, raw({ type: 'application/json', limit: '1mb' }));
   http.use(json({ limit: '10mb' }));
   http.use(urlencoded({ extended: true, limit: '10mb' }));
 

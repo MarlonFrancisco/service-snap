@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { AnamnesisModule } from './anamnesis/anamnesis.module';
 import { ApiKeysModule } from './api-keys/api-keys.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { CampaignsModule } from './campaigns/campaigns.module';
 import { CashModule } from './cash/cash.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { CommissionsModule } from './commissions/commissions.module';
@@ -26,6 +27,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     CommissionsModule,
     ScheduleSeriesModule,
     AnamnesisModule,
+    CampaignsModule,
   ],
 })
 export class StoreManagementModule {}
