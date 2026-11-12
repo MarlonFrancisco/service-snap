@@ -27,10 +27,11 @@ export const useScheduleMutations = ({ storeId }: { storeId: string }) => {
       mutationFn: (schedule: IAppointment) =>
         ScheduleService.delete(schedule.store.id || storeId, schedule.id),
       onSuccess: () => {
-        toast.success('Agendamento deletado com sucesso');
+        // A API cancela (status `cancelled`), não apaga o agendamento
+        toast.success('Agendamento cancelado');
       },
       onError: () => {
-        toast.error('Erro ao deletar agendamento');
+        toast.error('Não foi possível cancelar o agendamento');
       },
     },
   );

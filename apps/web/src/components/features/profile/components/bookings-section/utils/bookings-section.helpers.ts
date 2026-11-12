@@ -1,4 +1,7 @@
-import type { IAppointment } from '@/types/api/schedule.types';
+import type {
+  IAppointment,
+  TAppointmentStatus,
+} from '@/types/api/schedule.types';
 import { formatStorePrice } from '@/utils/helpers/price.helper';
 
 const LOCALE = 'pt-BR';
@@ -90,5 +93,30 @@ export const formatBookingPrice = ({ service, store }: IAppointment) =>
     store.country ?? undefined,
   );
 
-export const getProfessionalName = ({ storeMember }: IAppointment) =>
+/** O que entra no histórico: tudo que não está mais marcado. */
+export const HISTORY_STATUSES: TAppointmentStatus[] = [
+  'completed',
+  'cancelled',
+  'no-show',
+];
+
+const HISTORY_BADGES: Partial<
+  Record<TAppointmentStatus, { label: string; className: string }>
+> = {
+  completed: { label: 'Concluído', className: 'bg-white text-[#0B0B0F]' },
+  cancelled: { label: 'Cancelado', className: 'bg-white text-[#5F5C6E]' },
+  'no-show': {
+    label: 'Não compareceu',
+    className: 'bg-[#FDECEC] text-[#A11A12]',
+  },
+};
+
+export const getHistoryBadge = ({ status }: IAppointment) =>
+  HISTORY_BADGES[status] ?? HISTORY_BADGES.completed!;
+
+/** Só quem foi atendido avalia. */
+export const canReviewBooking = ({ status }: IAppointment) =>
+  status === 'completed';
+
+export const getProfessionalName =({ storeMember }: IAppointment) =>
   `${storeMember.user.firstName} ${storeMember.user.lastName}`;

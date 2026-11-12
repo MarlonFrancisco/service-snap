@@ -39,6 +39,8 @@ import {
   formatBookingPrice,
   formatPastBookingDateLong,
   formatPastBookingDateShort,
+  canReviewBooking,
+  getHistoryBadge,
   getProfessionalName,
 } from './utils/bookings-section.helpers';
 
@@ -163,7 +165,7 @@ export const BookingsSection = () => {
         <section className={cn(upcomingBookings.length > 0 && 'mt-9 md:mt-11')}>
           <h2 className={PROFILE_SECTION_TITLE_CLASS}>Histórico</h2>
           <p className={PROFILE_SECTION_LEAD_CLASS}>
-            Seus agendamentos concluídos
+            Concluídos, cancelados e faltas
           </p>
           <div className={PROFILE_CARDS_GRID_CLASS}>
             {pastBookings.map((booking) => (
@@ -176,8 +178,13 @@ export const BookingsSection = () => {
                     sizes="(min-width: 768px) 400px, 100vw"
                     className="object-cover"
                   />
-                  <span className="absolute top-2.5 left-2.5 rounded-full bg-white px-2.5 py-[5px] text-xs font-bold md:top-3 md:left-3 md:px-[11px]">
-                    Concluído
+                  <span
+                    className={cn(
+                      'absolute top-2.5 left-2.5 rounded-full px-2.5 py-[5px] text-xs font-bold md:top-3 md:left-3 md:px-[11px]',
+                      getHistoryBadge(booking).className,
+                    )}
+                  >
+                    {getHistoryBadge(booking).label}
                   </span>
                 </div>
                 <h3 className="mt-2.5 text-[15px] font-bold md:mt-3">
@@ -201,13 +208,15 @@ export const BookingsSection = () => {
                   >
                     Reservar novamente
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => handleReview(booking)}
-                    className={PROFILE_ACTION_CLASS}
-                  >
-                    Avaliar
-                  </button>
+                  {canReviewBooking(booking) && (
+                    <button
+                      type="button"
+                      onClick={() => handleReview(booking)}
+                      className={PROFILE_ACTION_CLASS}
+                    >
+                      Avaliar
+                    </button>
+                  )}
                 </div>
               </article>
             ))}

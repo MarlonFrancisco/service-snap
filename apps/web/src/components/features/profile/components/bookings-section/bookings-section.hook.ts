@@ -7,6 +7,7 @@ import { IUser } from '@/types/api/users.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useCallback, useMemo, useState } from 'react';
+import { HISTORY_STATUSES } from './utils/bookings-section.helpers';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 
@@ -46,8 +47,9 @@ export const useBookingsSection = () => {
 
   const pastBookings = useMemo(() => {
     return (
-      user?.schedules?.filter((schedule) => schedule.status === 'completed') ??
-      []
+      user?.schedules?.filter((schedule) =>
+        HISTORY_STATUSES.includes(schedule.status),
+      ) ?? []
     );
   }, [user?.schedules]);
 
@@ -94,10 +96,13 @@ export const useBookingsSection = () => {
         const queryClient = getQueryClient();
         queryClient.setQueryData(
           CACHE_QUERY_KEYS.user(cookies.get('user_identification')!),
+          // Continua no histórico, agora como cancelado
           (old: IUser) => ({
             ...old,
-            schedules: old.schedules.filter(
-              (schedule) => schedule.id !== bookingToCancel!.id,
+            schedules: old.schedules.map((schedule) =>
+              schedule.id === booking.id
+                ? { ...schedule, status: 'cancelled' as const }
+                : schedule,
             ),
           }),
         );
