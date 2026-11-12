@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -18,6 +19,7 @@ import { UpdateStoreDto } from './dto/update-store.dto';
 import { StoreSearchSyncService } from './search-sync/store-search-sync.service';
 import { StoreMember } from './store-member/store-member.entity';
 import { Store } from './store.entity';
+import { buildSlugCandidates, isStoreId } from './stores.helpers';
 import type { TStoreWithRole } from './stores.types';
 
 /**
@@ -63,6 +65,8 @@ export class StoresService {
       owner: { id: ownerId },
     });
     const savedStore = await this.storesRepository.save(store);
+
+    savedStore.slug = await this.ensureSlug(savedStore);
 
     return {
       ...savedStore,
@@ -129,11 +133,33 @@ export class StoresService {
     return store;
   }
 
-  /** Mesma leitura de `findOne`, mas um rascunho do assistente não existe aqui. */
-  async findOnePublic(id: string, relations: string[]): Promise<Store> {
+  /**
+   * Mesma leitura de `findOne`, mas um rascunho do assistente não existe aqui.
+   * Aceita o id ou o link curto (slug); loja antiga ganha o slug na primeira visita.
+   */
+  async findOnePublic(idOrSlug: string, relations: string[]): Promise<Store> {
+    const id = isStoreId(idOrSlug)
+      ? idOrSlug
+      : (
+          await this.storesRepository.findOne({
+            where: { slug: idOrSlug.toLowerCase() },
+            select: { id: true },
+          })
+        )?.id;
+
+    if (!id) {
+      throw new NotFoundException('Store not found');
+    }
+
     const { onboarding, ...store } = await this.findOne(id, {
       relations: [...relations, 'onboarding'],
     });
+
+    if (!store.slug && !isStoreDraft({ onboarding })) {
+      const slug = await this.ensureSlug(store as Store);
+
+      if (slug) store.slug = slug;
+    }
 
     if (isStoreDraft({ onboarding })) {
       throw new NotFoundException('Store not found');
@@ -164,7 +190,20 @@ export class StoresService {
       }
     }
 
+    if (storeDto.slug) {
+      await this.assertSlugAvailable(id, storeDto.slug);
+    }
+
     await this.storesRepository.update(id, storeDto);
+
+    if (!storeDto.slug) {
+      await this.ensureSlug(
+        await this.storesRepository.findOne({
+          where: { id },
+          select: { id: true, name: true, city: true, slug: true },
+        }),
+      );
+    }
 
     await this.syncSearchIndex(id);
 
@@ -206,6 +245,45 @@ export class StoresService {
         `Limite de lojas do plano atingido (${count}/${limit}). Faça upgrade para ativar mais.`,
       );
     }
+  }
+
+  /** Slug escolhido pela loja: não pode ser o de outra. */
+  private async assertSlugAvailable(id: string, slug: string) {
+    const owner = await this.storesRepository.findOne({
+      where: { slug },
+      select: { id: true },
+    });
+
+    if (owner && owner.id !== id) {
+      throw new ConflictException('Este link já é usado por outra loja');
+    }
+  }
+
+  /**
+   * Dá um slug à loja que tem nome e ainda não tem link curto, usando o
+   * primeiro candidato livre. Sem nome, fica sem: o endereço pelo id continua.
+   */
+  async ensureSlug(
+    store: Pick<Store, 'id' | 'name' | 'city' | 'slug'> | null,
+  ): Promise<string | null> {
+    if (!store || store.slug) return store?.slug ?? null;
+
+    for (const candidate of buildSlugCandidates(store.name, store.city)) {
+      const taken = await this.storesRepository.exists({
+        where: { slug: candidate },
+      });
+
+      if (taken) continue;
+
+      try {
+        await this.storesRepository.update(store.id, { slug: candidate });
+        return candidate;
+      } catch {
+        // Outra loja levou o mesmo slug ao mesmo tempo: tenta o próximo
+      }
+    }
+
+    return null;
   }
 
   /** Ver `StoreSearchSyncService.sync`: nunca rejeita. */

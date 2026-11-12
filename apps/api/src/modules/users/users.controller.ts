@@ -11,6 +11,7 @@ import type { Response } from 'express';
 import type { JwtPayload } from '../auth/auth.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UsersService } from './users.service';
 
 @Controller('users')
@@ -26,6 +27,15 @@ export class UsersController {
   @Get('/me/referral')
   async getReferral(@CurrentUser() user: JwtPayload) {
     return this.usersService.getReferralSummary(user.sub);
+  }
+
+  @Patch('/me')
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: UpdateProfileDto,
+  ) {
+    await this.usersService.updateProfile(user.sub, body);
+    return this.usersService.getUserDetails(user.sub);
   }
 
   @Patch('/me/avatar')

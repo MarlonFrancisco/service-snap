@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../auth';
 import { Subscription } from '../../subscription/subscription.entity';
 import { CategoryModule } from './category';
+import { CustomerModule } from './customer/customer.module';
 import { GalleryModule } from './gallery';
 import { HolidayModule } from './holiday';
 import { StoreAccessGuard, StoreOwnerGuard, StoreRoleGuard } from './guards';
@@ -26,6 +27,7 @@ import { StoresService } from './stores.services';
     GalleryModule,
     HolidayModule,
     CategoryModule,
+    CustomerModule,
     ScheduleModule,
     NotificationsModule,
     ReviewModule,

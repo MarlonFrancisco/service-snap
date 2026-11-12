@@ -13,12 +13,19 @@ import { Schedule } from './schedule/schedule.entity';
 import { StoreMember } from './store-member/store-member.entity';
 import { WhatsappConfig } from './whatsapp/whatsapp.entity';
 
+export const STORE_SLUG_UNIQUE = 'UQ_stores_slug';
+
 @Entity('stores')
+@Index(STORE_SLUG_UNIQUE, ['slug'], { unique: true })
 export class Store extends BaseEntity {
   // general information
 
   @Column({ type: 'varchar', nullable: true })
   name: string;
+
+  /** Link curto: `/booking/<slug>` (ver `pnpm migrate:store-slugs`). */
+  @Column({ type: 'varchar', length: 80, nullable: true })
+  slug: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   description: string;

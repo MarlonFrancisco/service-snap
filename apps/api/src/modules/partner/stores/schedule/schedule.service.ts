@@ -31,6 +31,7 @@ import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
 import { isStoreDraft } from '../../onboarding/onboarding.helpers';
 import { Service } from '../category/service/service.entity';
+import { StoreCustomer } from '../customer/customer.entity';
 import {
   assertOwnAgenda,
   isProfessionalOnly,
@@ -220,7 +221,7 @@ export class ScheduleService {
       scheduleDto,
       (store) =>
         isStaff
-          ? this.upsertCustomer(scheduleDto.user, store.country)
+          ? this.resolveStaffCustomer(scheduleDto.user, store)
           : this.usersService.findById(requesterId),
       isStaff,
       isStaff ? 'store' : 'customer',
@@ -257,6 +258,33 @@ export class ScheduleService {
 
   private async isStoreStaff(storeId: string, userId: string) {
     return !!(await this.getStaffActor(storeId, userId));
+  }
+
+  /**
+   * Cliente do agendamento manual: um já cadastrado na loja (pelo `id`, vindo
+   * da busca de clientes) ou um contato novo, mesmo sem conta.
+   */
+  private async resolveStaffCustomer(
+    contact: Partial<User> | undefined,
+    store: Store,
+  ): Promise<User> {
+    if (!contact?.id) return this.upsertCustomer(contact, store.country);
+
+    // Só quem já é cliente da loja: um id qualquer ligaria a reserva a outra conta
+    const manager = this.scheduleRepository.manager;
+    const isCustomer =
+      (await manager.exists(Schedule, {
+        where: { store: { id: store.id }, user: { id: contact.id } },
+      })) ||
+      (await manager.exists(StoreCustomer, {
+        where: { store: { id: store.id }, user: { id: contact.id } },
+      }));
+
+    if (!isCustomer) {
+      throw new BadRequestException('Customer not found in this store');
+    }
+
+    return this.usersService.findById(contact.id);
   }
 
   /** Telefone sem DDI é lido como do país da loja. */

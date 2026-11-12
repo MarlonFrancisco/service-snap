@@ -9,6 +9,8 @@ import {
   IsObject,
   IsOptional,
   IsString,
+  Length,
+  Matches,
   Max,
   Min,
   ValidateNested,
@@ -16,6 +18,7 @@ import {
 import type { User } from '../../../users/user.entity';
 import type { Gallery } from '../gallery/gallery.entity';
 import { Store } from '../store.entity';
+import { STORE_SLUG_PATTERN } from '../stores.helpers';
 import {
   IsSupportedCountry,
   IsSupportedCurrency,
@@ -30,6 +33,13 @@ export class UpdateStoreDto {
   @IsString()
   @IsOptional()
   name: string;
+
+  @Matches(STORE_SLUG_PATTERN, {
+    message: 'slug must use lowercase letters, numbers and hyphens',
+  })
+  @Length(3, 60)
+  @IsOptional()
+  slug: string;
 
   @IsString()
   @IsOptional()

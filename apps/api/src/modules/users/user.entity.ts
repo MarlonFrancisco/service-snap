@@ -47,6 +47,30 @@ export class User extends BaseEntity {
   })
   authCodeExpiresAt: Date;
 
+  /**
+   * Troca de e-mail esperando confirmação. Código próprio, fora de `authCode`:
+   * o código que vai para o e-mail novo não pode servir para entrar na conta.
+   */
+  @Column({ name: 'pending_email', type: 'varchar', nullable: true, select: false })
+  pendingEmail: string | null;
+
+  @Column({
+    name: 'pending_email_code',
+    type: 'char',
+    length: 6,
+    nullable: true,
+    select: false,
+  })
+  pendingEmailCode: string | null;
+
+  @Column({
+    name: 'pending_email_expires_at',
+    type: 'timestamp',
+    nullable: true,
+    select: false,
+  })
+  pendingEmailExpiresAt: Date | null;
+
   @Column({ type: 'boolean', default: false, nullable: true })
   isDeleted: boolean;
 
