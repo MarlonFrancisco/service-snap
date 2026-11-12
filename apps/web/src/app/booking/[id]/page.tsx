@@ -5,9 +5,10 @@ import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
 import { buildStoreJsonLd } from '@/utils/helpers/social.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import {
   loadStorePage,
+  STORE_ID,
   storePageDescription,
   storePageTitle,
 } from './store-page.data';
@@ -18,8 +19,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const path = `/booking/${id}`;
   const loaded = await loadStorePage(id);
+  const path = `/booking/${(loaded.status === 'ok' && loaded.store.slug) || id}`;
 
   if (loaded.status !== 'ok') {
     return createPageMetadata({
@@ -51,11 +52,18 @@ export default async function BookingPage({
   if (loaded.status === 'missing') notFound();
 
   const store = loaded.status === 'ok' ? loaded.store : undefined;
+
+  // Endereço antigo (com o id) vai para o link curto, sem perder SEO
+  if (store?.slug && STORE_ID.test(id)) {
+    permanentRedirect(`/booking/${store.slug}`);
+  }
+
   if (store) queryClient.setQueryData(CACHE_QUERY_KEYS.store(id), store);
   const galleryImage = store?.gallery?.find((item) => item.url)?.url;
   const jsonLd = store
     ? buildStoreJsonLd({
         id: store.id,
+        slug: store.slug,
         name: store.name,
         description: store.description,
         telephone: store.telephone,

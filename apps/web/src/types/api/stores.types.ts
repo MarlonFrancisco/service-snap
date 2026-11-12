@@ -36,6 +36,8 @@ export interface IStore extends TWorkingHours {
   id: string;
   /** Papel de quem está logado nesta loja (vem em `GET partner/stores`). */
   memberRole?: 'owner' | 'manager' | 'professional';
+  /** Link curto: `/booking/<slug>`. Lojas sem nome ainda não têm. */
+  slug?: string | null;
   name: string;
   description: string;
   country: TCountryCode;
