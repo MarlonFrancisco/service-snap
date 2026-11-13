@@ -2,8 +2,7 @@ import { useReviewsMutations } from '@/hooks/use-mutations/use-reviews-mutations
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useReviewsStore } from '@/store';
-import { IReview } from '@/types/reviews.types';
-import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
+import { formatDayMonth, getHttpStatus } from '@/utils/helpers/review.helper';
 import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -12,6 +11,7 @@ export const useWriteReviewForm = () => {
   const [comment, setComment] = useState('');
   const storeId = useReviewsStore((state) => state.storeId);
   const businessName = useReviewsStore((state) => state.businessName);
+  const reviewTarget = useReviewsStore((state) => state.reviewTarget);
   const setReviewsAttributesAction = useReviewsStore(
     (state) => state.setReviewsAttributesAction,
   );
@@ -44,7 +44,6 @@ export const useWriteReviewForm = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const queryClient = getQueryClient();
       const trackFailure = (reason: string) =>
         analytics.track('review_failed', {
           reason,
@@ -69,33 +68,55 @@ export const useWriteReviewForm = () => {
         return;
       }
 
+      if (!reviewTarget) {
+        toast.error(
+          'Só quem foi atendido nesta loja pode avaliar, uma vez por atendimento.',
+        );
+        trackFailure('not_served');
+        return;
+      }
+
       createReview(
         {
           store: { id: storeId },
           user: { id: user.id },
           rating,
           comment,
+          scheduleId: reviewTarget.scheduleId,
         },
         {
-          onSuccess: (data: IReview) => {
+          // A lista e o botão se atualizam pela invalidação feita na mutation
+          onSuccess: () => {
             // Só o tamanho do comentário: o texto é livre e pode ter dados pessoais
             analytics.track('review_submitted', {
               store_id: storeId,
               rating,
               comment_length: comment.trim().length,
             });
-            queryClient.setQueryData(
-              CACHE_QUERY_KEYS.reviews(storeId),
-              (old: IReview[]) => {
-                setReviewsAttributesAction({ reviews: [data, ...old] });
-                return [...old, data];
-              },
-            );
             setRating(0);
             setComment('');
-            handleCancel();
+            setReviewsAttributesAction({
+              showWriteReview: false,
+              reviewTarget: null,
+            });
           },
-          onError: () => trackFailure('api_error'),
+          onError: (error) => {
+            const status = getHttpStatus(error);
+            trackFailure(
+              status === 403
+                ? 'not_served'
+                : status === 409
+                  ? 'already_reviewed'
+                  : 'api_error',
+            );
+            // O atendimento oferecido já não vale: volta para o resumo
+            if (status === 403 || status === 409) {
+              setReviewsAttributesAction({
+                showWriteReview: false,
+                reviewTarget: null,
+              });
+            }
+          },
         },
       );
     },
@@ -107,8 +128,8 @@ export const useWriteReviewForm = () => {
       comment,
       createReview,
       storeId,
+      reviewTarget,
       setReviewsAttributesAction,
-      handleCancel,
     ],
   );
 
@@ -116,6 +137,7 @@ export const useWriteReviewForm = () => {
     rating,
     comment,
     businessName,
+    reviewDateLabel: reviewTarget ? formatDayMonth(reviewTarget.date) : '',
     isCreatingReview,
     isFormValid,
     commentLength: comment.length,

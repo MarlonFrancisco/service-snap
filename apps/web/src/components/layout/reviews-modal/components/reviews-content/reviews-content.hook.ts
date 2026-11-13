@@ -1,14 +1,43 @@
+import { useReviewableQuery } from '@/hooks/use-query/use-reviews-query';
+import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useAnalytics } from '@/providers/analytics.provider';
-import { useReviewsStore } from '@/store';
+import { useAuthStore, useReviewsStore } from '@/store';
+import { formatDayMonth } from '@/utils/helpers/review.helper';
 import { useCallback, useMemo } from 'react';
+import type { TReviewsShareState } from './reviews-content.types';
 
 const RATING_VALUES = [5, 4, 3, 2, 1];
 
 export const useReviewsContent = () => {
-  const { reviews, showWriteReview, setReviewsAttributesAction } =
-    useReviewsStore();
-  const storeId = useReviewsStore((state) => state.storeId);
+  const {
+    reviews,
+    showWriteReview,
+    storeId,
+    reviewTarget,
+    setReviewsAttributesAction,
+    toggleReviewsModalAction,
+  } = useReviewsStore();
+  const openAuthAction = useAuthStore((state) => state.openAuthAction);
   const analytics = useAnalytics();
+  const { isLoggedIn } = useUserQuery();
+  const { reviewable, isPendingReviewable } = useReviewableQuery({
+    storeId,
+    enabled: isLoggedIn,
+  });
+
+  // O atendimento vindo do perfil só vale enquanto ainda não tem avaliação
+  const reviewableSchedule = useMemo(() => {
+    const isTargetReviewed = reviews.some(
+      (review) => review.schedule?.id === reviewTarget?.scheduleId,
+    );
+    return reviewTarget && !isTargetReviewed ? reviewTarget : reviewable;
+  }, [reviews, reviewTarget, reviewable]);
+
+  const getShareState = (): TReviewsShareState => {
+    if (!isLoggedIn) return 'logged-out';
+    if (reviewableSchedule) return 'reviewable';
+    return isPendingReviewable ? 'loading' : 'not-served';
+  };
 
   const averageRating = useMemo(() => {
     if (reviews.length === 0) return 0;
@@ -39,14 +68,28 @@ export const useReviewsContent = () => {
   }, [reviews, totalReviews]);
 
   const handleShowWriteReview = useCallback(() => {
-    setReviewsAttributesAction({ showWriteReview: true });
+    if (!reviewableSchedule) return;
+
+    setReviewsAttributesAction({
+      showWriteReview: true,
+      reviewTarget: reviewableSchedule,
+    });
     if (storeId) {
       analytics.track('review_started', {
         store_id: storeId,
         source: 'reviews_modal',
       });
     }
-  }, [analytics, setReviewsAttributesAction, storeId]);
+  }, [analytics, reviewableSchedule, setReviewsAttributesAction, storeId]);
+
+  // O login abre por cima da página: o modal fecha e volta depois de entrar
+  const handleLogin = useCallback(() => {
+    void toggleReviewsModalAction(false);
+    void openAuthAction({
+      source: 'other',
+      onAuth: () => void toggleReviewsModalAction(true),
+    });
+  }, [openAuthAction, toggleReviewsModalAction]);
 
   return {
     reviews,
@@ -58,6 +101,11 @@ export const useReviewsContent = () => {
     }),
     totalLabel: `${totalReviews} ${totalReviews === 1 ? 'avaliação' : 'avaliações'}`,
     ratingBars,
+    shareState: getShareState(),
+    reviewableDateLabel: reviewableSchedule
+      ? formatDayMonth(reviewableSchedule.date)
+      : '',
     handleShowWriteReview,
+    handleLogin,
   };
 };

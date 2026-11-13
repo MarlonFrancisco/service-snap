@@ -3,9 +3,16 @@ import { IReviewsStore } from './reviews.types';
 
 export const toggleReviewsModalAction: TStoreAction<IReviewsStore, boolean> =
   (set) => async (open: boolean) => {
-    set({
-      isOpen: open,
-    } as Partial<IReviewsStore>);
+    // Fechar descarta o formulário e o atendimento escolhido
+    set(
+      (open
+        ? { isOpen: true }
+        : {
+            isOpen: false,
+            showWriteReview: false,
+            reviewTarget: null,
+          }) as Partial<IReviewsStore>,
+    );
   };
 
 export const setReviewsAttributesAction: TStoreAction<

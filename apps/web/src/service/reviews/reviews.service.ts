@@ -1,13 +1,13 @@
-import { IReview } from '@/types/reviews.types';
+import type {
+  ICreateReviewPayload,
+  IReplyReviewPayload,
+  IReview,
+  IReviewableSchedule,
+} from '@/types/reviews.types';
 import { apiClient } from '../api';
 import { HttpClientService } from '../api/http-client.service';
 
-export interface ICreateReviewPayload {
-  store: { id: string };
-  user: { id: string };
-  rating: number;
-  comment: string;
-}
+export type { ICreateReviewPayload, IReplyReviewPayload };
 
 export interface ICreateReviewResponse {
   review: IReview;
@@ -24,6 +24,15 @@ export class ReviewsService {
     );
   }
 
+  /** Atendimento do cliente logado que ainda pode ser avaliado, ou `null`. */
+  static async getReviewable(storeId: string) {
+    const reviewable = await this.apiClient.get<IReviewableSchedule | null>(
+      `/partner/stores/${storeId}/reviews/reviewable`,
+    );
+    // Sem atendimento, a API responde sem corpo
+    return reviewable ?? null;
+  }
+
   static async create(payload: ICreateReviewPayload) {
     return await this.apiClient.post<IReview>(
       `/partner/stores/${payload.store.id}/reviews`,
@@ -35,6 +44,14 @@ export class ReviewsService {
     return await this.apiClient.put<IReview>(
       `/partner/stores/${payload.store.id}/reviews/${reviewId}`,
       payload,
+    );
+  }
+
+  /** Resposta pública da loja; só dono e gerente. Texto vazio apaga. */
+  static async reply({ storeId, reviewId, reply }: IReplyReviewPayload) {
+    return await this.apiClient.put<IReview>(
+      `/partner/stores/${storeId}/reviews/${reviewId}/reply`,
+      { reply },
     );
   }
 

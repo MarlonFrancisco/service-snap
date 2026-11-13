@@ -2,6 +2,7 @@ import { cn } from '@repo/ui';
 import {
   REVIEWS_PRIMARY_BUTTON_CLASS,
   REVIEWS_SCROLL_AREA_CLASS,
+  REVIEWS_SECONDARY_BUTTON_CLASS,
   REVIEWS_SECTION_TITLE_CLASS,
 } from '../../reviews-modal.styles';
 import { RatingBar } from '../rating-bar';
@@ -17,7 +18,10 @@ export const ReviewsContent = () => {
     formattedAverage,
     totalLabel,
     ratingBars,
+    shareState,
+    reviewableDateLabel,
     handleShowWriteReview,
+    handleLogin,
   } = useReviewsContent();
 
   if (!reviews) return null;
@@ -59,19 +63,44 @@ export const ReviewsContent = () => {
                 Compartilhe sua opinião
               </h3>
               <p className="mb-3.5 text-sm leading-[1.55] text-[#5F5C6E]">
-                Se você usou este estabelecimento, conte como foi para outros
-                clientes.
+                Só quem foi atendido aqui avalia, uma vez por atendimento. Assim
+                toda nota vem de uma visita real.
               </p>
-              <button
-                type="button"
-                onClick={handleShowWriteReview}
-                className={cn(
-                  REVIEWS_PRIMARY_BUTTON_CLASS,
-                  'w-full md:w-auto',
-                )}
-              >
-                Escrever uma avaliação
-              </button>
+              {shareState === 'reviewable' && (
+                <button
+                  type="button"
+                  onClick={handleShowWriteReview}
+                  className={cn(
+                    REVIEWS_PRIMARY_BUTTON_CLASS,
+                    'w-full md:w-auto',
+                  )}
+                >
+                  Avaliar meu atendimento de {reviewableDateLabel}
+                </button>
+              )}
+              {shareState === 'not-served' && (
+                <p className="text-[13px] leading-[1.5] text-[#5F5C6E]">
+                  Depois de ser atendido aqui, você pode avaliar a visita.
+                </p>
+              )}
+              {shareState === 'logged-out' && (
+                <div className="grid gap-2.5 md:justify-items-start">
+                  <p className="text-[13px] leading-[1.5] text-[#5F5C6E]">
+                    Já foi atendido aqui? Entre na sua conta para avaliar a
+                    visita.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleLogin}
+                    className={cn(
+                      REVIEWS_SECONDARY_BUTTON_CLASS,
+                      'w-full md:w-auto',
+                    )}
+                  >
+                    Entrar para avaliar
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 

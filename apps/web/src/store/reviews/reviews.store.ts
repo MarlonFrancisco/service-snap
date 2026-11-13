@@ -11,6 +11,7 @@ export const useReviewsStore = create<IReviewsStore>((set, get) => ({
   reviews: [],
   storeId: '',
   businessName: '',
+  reviewTarget: null,
   toggleReviewsModalAction: toggleReviewsModalAction(set, get),
   setReviewsAttributesAction: setReviewsAttributesAction(set, get),
 }));
