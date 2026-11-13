@@ -8,8 +8,6 @@ const toOptionalNumber = (value?: string) =>
   value === undefined || value === '' ? undefined : Number(value);
 
 export const toSearchFilters = (dto: SearchQueryDto): TSearchFilters => ({
-  minPrice: toOptionalNumber(dto.minPrice),
-  maxPrice: toOptionalNumber(dto.maxPrice),
   minRating: toOptionalNumber(dto.minRating),
 });
 

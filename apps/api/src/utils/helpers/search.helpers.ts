@@ -40,15 +40,6 @@ const summarizeReviews = (store: Store) => {
   };
 };
 
-const getMinPrice = (store: Store): number | null => {
-  const prices = (store.services || [])
-    .filter((service) => service.isActive)
-    .map((service) => Number(service.price))
-    .filter((price) => Number.isFinite(price) && price > 0);
-
-  return prices.length ? Math.min(...prices) : null;
-};
-
 /**
  * Só entra na busca quem o cliente consegue agendar: serviço ativo e profissional
  * que faça algum serviço. Fotos não contam, porque são opcionais no onboarding.
@@ -122,7 +113,6 @@ export const mountStoreSearchIndex = (
       currency: store.currency,
       rankTier,
       ...summarizeReviews(store),
-      minPrice: getMinPrice(store),
       timezone: getStoreTimezone(store),
     },
   };
