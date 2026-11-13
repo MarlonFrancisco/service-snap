@@ -30,6 +30,15 @@ export class ScheduleSeriesController {
     return this.seriesService.create(storeId, dto, userId);
   }
 
+  /** De qual série o agendamento faz parte; `series: null` se avulso. */
+  @Get('by-schedule/:scheduleId')
+  findBySchedule(
+    @Param('storeId') storeId: string,
+    @Param('scheduleId', ParseUUIDPipe) scheduleId: string,
+  ) {
+    return this.seriesService.findBySchedule(storeId, scheduleId);
+  }
+
   @Get(':id')
   findOne(
     @Param('storeId') storeId: string,

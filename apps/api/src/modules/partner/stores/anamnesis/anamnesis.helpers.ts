@@ -6,8 +6,9 @@ import type {
   TAnamnesisField,
 } from './anamnesis.types';
 
-export const ANAMNESIS_CONSENT_TEXT =
-  'Autorizo a loja a guardar estas informações de saúde para o meu atendimento. Só a loja tem acesso, e posso pedir a exclusão a qualquer momento.';
+/** Fica gravado com a resposta: é o texto que o cliente aceitou. */
+export const buildAnamnesisConsentText = (storeName?: string | null) =>
+  `Autorizo ${storeName?.trim() || 'a loja'} a guardar estas informações de saúde para o meu atendimento. Só a loja tem acesso, e posso pedir a exclusão a qualquer momento.`;
 
 const MAX_TEXT = 2000;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;

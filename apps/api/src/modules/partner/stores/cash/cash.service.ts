@@ -4,9 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
 import { sumMoney } from '../../../../utils/helpers/money.helpers';
+import { getUserFullName } from '../../../../utils/helpers/user.helpers';
+import { User } from '../../../users/user.entity';
 import { CashSession } from './cash-session.entity';
 import { summarizePayments } from './cash.helpers';
 import type { CloseCashSessionDto, OpenCashSessionDto } from './dto/cash.dto';
@@ -112,6 +114,18 @@ export class CashService {
     return session;
   }
 
+  private async findUserNames(ids: (string | null)[]) {
+    const userIds = [...new Set(ids.filter(Boolean))];
+    const users = userIds.length
+      ? await this.sessionRepository.manager.find(User, {
+          where: { id: In(userIds) },
+          select: { id: true, firstName: true, lastName: true },
+        })
+      : [];
+
+    return new Map(users.map((user) => [user.id, getUserFullName(user)]));
+  }
+
   private async withSummary(session: CashSession, withPayments = false) {
     const payments = await this.paymentRepository.find({
       where: { cashSession: { id: session.id } },
@@ -119,9 +133,16 @@ export class CashService {
       order: { paidAt: 'ASC' },
     });
     const summary = summarizePayments(payments, session.openingAmount);
+    const names = await this.findUserNames([
+      session.openedById,
+      session.closedById,
+    ]);
 
     return {
       ...session,
+      // O dono nem sempre está na equipe: o nome vem do usuário
+      openedByName: names.get(session.openedById) ?? null,
+      closedByName: names.get(session.closedById) ?? null,
       summary,
       difference:
         session.countedCash == null

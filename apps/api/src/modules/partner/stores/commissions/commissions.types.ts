@@ -22,7 +22,8 @@ export type TCommissionSource = {
   customerName: string;
   /** Do fechamento quando há; senão o preço reservado. */
   baseAmount: number;
-  baseSource: 'checkout' | 'price';
+  /** `package`: o fechamento deu baixa numa sessão, a base é o valor dela. */
+  baseSource: 'checkout' | 'package' | 'price';
 };
 
 export type TCommissionLine = TCommissionSource & {

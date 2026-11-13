@@ -11,6 +11,8 @@ import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
 import { sumMoney } from '../../../../utils/helpers/money.helpers';
 import { getStoreToday } from '../../../../utils/helpers/store-date.helpers';
 import { getUserFullName } from '../../../../utils/helpers/user.helpers';
+import { User } from '../../../users/user.entity';
+import { StorePayment } from '../cash/store-payment.entity';
 import { PaymentsService } from '../cash/payments.service';
 import { getRewardDiscount } from '../loyalty/loyalty.helpers';
 import { LoyaltyService } from '../loyalty/loyalty.service';
@@ -97,6 +99,7 @@ export class CheckoutService {
           package: packageItem && {
             customerPackageId: packageItem.customerPackage.id,
             name: packageItem.customerPackage.name,
+            quantity: packageItem.quantity,
             remaining: packageItem.quantity - packageItem.used,
           },
         };
@@ -166,8 +169,29 @@ export class CheckoutService {
 
     if (!checkout) throw new NotFoundException('Checkout not found');
 
+    // Como foi pago e quem fechou: o profissional não lê a lista de pagamentos
+    const [payments, closedBy] = await Promise.all([
+      this.checkoutRepository.manager.find(StorePayment, {
+        where: { checkout: { id } },
+        order: { createdAt: 'ASC' },
+      }),
+      checkout.closedById
+        ? this.checkoutRepository.manager.findOne(User, {
+            where: { id: checkout.closedById },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : null,
+    ]);
+
     return {
       ...checkout,
+      closedByName: closedBy ? getUserFullName(closedBy) : null,
+      payments: payments.map((payment) => ({
+        id: payment.id,
+        method: payment.method,
+        amount: payment.amount,
+        voidedAt: payment.voidedAt,
+      })),
       customer: checkout.customer && {
         id: checkout.customer.id,
         name: getUserFullName(checkout.customer),

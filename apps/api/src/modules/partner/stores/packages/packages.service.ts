@@ -14,6 +14,7 @@ import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
 import { UsersService } from '../../../users/users.service';
 import { PaymentsService } from '../cash/payments.service';
 import { Service } from '../category/service/service.entity';
+import { CheckoutItem } from '../checkout/checkout.entity';
 import { Store } from '../store.entity';
 import {
   CustomerPackage,
@@ -25,7 +26,7 @@ import type {
   SellPackageDto,
   UpdateServicePackageDto,
 } from './dto/package.dto';
-import { toPackageBalance } from './packages.helpers';
+import { toPackageBalance, toPackageUsage } from './packages.helpers';
 import { ServicePackage, ServicePackageItem } from './service-package.entity';
 
 /**
@@ -43,6 +44,8 @@ export class PackagesService {
     private readonly serviceRepository: Repository<Service>,
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
+    @InjectRepository(CheckoutItem)
+    private readonly checkoutItemRepository: Repository<CheckoutItem>,
     private readonly paymentsService: PaymentsService,
     private readonly usersService: UsersService,
   ) {}
@@ -168,7 +171,10 @@ export class PackagesService {
       }),
     ]);
     const today = getStoreToday(store);
-    const balances = packages.map((item) => toPackageBalance(item, today));
+    const usages = await this.findUsages(packages);
+    const balances = packages.map((item) =>
+      toPackageBalance(item, today, usages.get(item.id)),
+    );
 
     return onlyUsable
       ? balances.filter(
@@ -178,6 +184,43 @@ export class PackagesService {
             balance.items.some((item) => item.remaining > 0),
         )
       : balances;
+  }
+
+  /** Sessões usadas por pacote, a partir dos fechamentos que deram baixa. */
+  private async findUsages(packages: CustomerPackage[]) {
+    const itemIds = packages.flatMap((pkg) =>
+      (pkg.items ?? []).map((item) => item.id),
+    );
+    const byPackage = new Map<string, ReturnType<typeof toPackageUsage>[]>();
+
+    if (!itemIds.length) return byPackage;
+
+    const packageOfItem = new Map(
+      packages.flatMap((pkg) =>
+        (pkg.items ?? []).map((item) => [item.id, pkg.id] as const),
+      ),
+    );
+    const checkoutItems = await this.checkoutItemRepository.find({
+      where: { customerPackageItem: { id: In(itemIds) } },
+      relations: [
+        'customerPackageItem',
+        'schedule',
+        'schedule.service',
+        'schedule.storeMember',
+        'schedule.storeMember.user',
+      ],
+      order: { schedule: { date: 'DESC', startTime: 'DESC' } },
+    });
+
+    for (const item of checkoutItems) {
+      const packageId = packageOfItem.get(item.customerPackageItem.id);
+      byPackage.set(packageId, [
+        ...(byPackage.get(packageId) ?? []),
+        toPackageUsage(item),
+      ]);
+    }
+
+    return byPackage;
   }
 
   /** Cancela o saldo restante; o que já foi usado continua no histórico. */

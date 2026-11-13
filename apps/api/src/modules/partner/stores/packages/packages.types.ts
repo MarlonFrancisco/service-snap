@@ -17,4 +17,13 @@ export type TCustomerPackageBalance = {
     used: number;
     remaining: number;
   }[];
+  /** Sessões usadas, das mais recentes: vêm dos fechamentos de atendimento. */
+  usages: TCustomerPackageUsage[];
+};
+
+export type TCustomerPackageUsage = {
+  checkoutItemId: string;
+  date: string;
+  serviceName: string;
+  professionalName: string | null;
 };

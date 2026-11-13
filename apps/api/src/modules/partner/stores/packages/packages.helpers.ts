@@ -1,9 +1,15 @@
 import { roundMoney } from '../../../../utils/helpers/money.helpers';
+import { toDateKey } from '../../../../utils/helpers/schedule.helpers';
+import { getUserFullName } from '../../../../utils/helpers/user.helpers';
+import type { CheckoutItem } from '../checkout/checkout.entity';
 import type {
   CustomerPackage,
   CustomerPackageItem,
 } from './customer-package.entity';
-import type { TCustomerPackageBalance } from './packages.types';
+import type {
+  TCustomerPackageBalance,
+  TCustomerPackageUsage,
+} from './packages.types';
 
 export const isPackageExpired = (
   customerPackage: Pick<CustomerPackage, 'expiresOn'>,
@@ -13,6 +19,7 @@ export const isPackageExpired = (
 export const toPackageBalance = (
   customerPackage: CustomerPackage,
   today: string,
+  usages: TCustomerPackageUsage[] = [],
 ): TCustomerPackageBalance => ({
   id: customerPackage.id,
   name: customerPackage.name,
@@ -29,6 +36,18 @@ export const toPackageBalance = (
     used: item.used,
     remaining: Math.max(item.quantity - item.used, 0),
   })),
+  usages,
+});
+
+/** Uso de uma sessão a partir do item do fechamento que a consumiu. */
+export const toPackageUsage = (item: CheckoutItem): TCustomerPackageUsage => ({
+  checkoutItemId: item.id,
+  date: toDateKey(item.schedule.date),
+  serviceName:
+    item.schedule.service?.name ?? item.customerPackageItem?.serviceName ?? '',
+  professionalName: item.schedule.storeMember?.user
+    ? getUserFullName(item.schedule.storeMember.user)
+    : null,
 });
 
 /**

@@ -169,6 +169,7 @@ export class CommissionsService {
           .createQueryBuilder('item')
           .innerJoin('item.checkout', 'checkout')
           .leftJoinAndSelect('item.schedule', 'schedule')
+          .leftJoinAndSelect('item.customerPackageItem', 'packageItem')
           .where('item.scheduleId IN (:...ids)', {
             ids: schedules.map((schedule) => schedule.id),
           })
@@ -176,6 +177,11 @@ export class CommissionsService {
       : [];
     const baseOf = new Map(
       items.map((item) => [item.schedule.id, item.baseAmount]),
+    );
+    const fromPackage = new Set(
+      items
+        .filter((item) => item.customerPackageItem)
+        .map((item) => item.schedule.id),
     );
 
     return buildCommissionReport(
@@ -204,7 +210,11 @@ export class CommissionsService {
           serviceName: schedule.service?.name ?? 'Serviço',
           customerName: getUserFullName(schedule.user) || 'Cliente',
           baseAmount: fromCheckout ?? schedule.price ?? 0,
-          baseSource: fromCheckout !== undefined ? 'checkout' : 'price',
+          baseSource: fromPackage.has(schedule.id)
+            ? 'package'
+            : fromCheckout !== undefined
+              ? 'checkout'
+              : 'price',
         };
       }),
     );

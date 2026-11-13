@@ -130,6 +130,26 @@ export class ScheduleSeriesService {
     return { id: series.id, created, conflicts };
   }
 
+  async findBySchedule(storeId: string, scheduleId: string) {
+    const item = await this.itemRepository.findOne({
+      where: {
+        schedule: { id: scheduleId },
+        series: { store: { id: storeId } },
+      },
+      relations: ['series'],
+    });
+
+    return {
+      series: item && {
+        id: item.series.id,
+        occurrence: item.occurrence,
+        occurrences: item.series.occurrences,
+        intervalWeeks: item.series.intervalWeeks,
+        cancelledAt: item.series.cancelledAt,
+      },
+    };
+  }
+
   async findOne(storeId: string, id: string) {
     const series = await this.seriesRepository.findOne({
       where: { id, store: { id: storeId } },

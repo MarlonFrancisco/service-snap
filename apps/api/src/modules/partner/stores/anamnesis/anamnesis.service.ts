@@ -24,7 +24,7 @@ import { Schedule } from '../schedule/schedule.entity';
 import { AnamnesisForm } from './anamnesis-form.entity';
 import { AnamnesisResponse } from './anamnesis-response.entity';
 import {
-  ANAMNESIS_CONSENT_TEXT,
+  buildAnamnesisConsentText,
   deriveAnamnesisLinkSecret,
   formAppliesTo,
   normalizeFields,
@@ -142,7 +142,7 @@ export class AnamnesisService {
       customerFirstName: schedule.user?.firstName ?? null,
       date: toDateKey(schedule.date),
       startTime: schedule.startTime,
-      consentText: ANAMNESIS_CONSENT_TEXT,
+      consentText: buildAnamnesisConsentText(schedule.store.name),
       forms: forms.map((form) => ({
         id: form.id,
         name: form.name,
@@ -179,7 +179,7 @@ export class AnamnesisService {
       fields: form.fields,
       answersEncrypted: encryptText(JSON.stringify(answers), this.key),
       consentAt: new Date(),
-      consentText: ANAMNESIS_CONSENT_TEXT,
+      consentText: buildAnamnesisConsentText(schedule.store.name),
       store: { id: schedule.store.id },
       form: { id: form.id },
       schedule: { id: schedule.id },

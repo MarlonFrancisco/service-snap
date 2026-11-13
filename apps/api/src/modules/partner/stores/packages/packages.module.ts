@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from '../../../users/users.module';
 import { CashModule } from '../cash/cash.module';
+import { CheckoutItem } from '../checkout/checkout.entity';
 import { Service } from '../category/service/service.entity';
 import { StoreGuardsModule } from '../guards/store-guards.module';
 import { Store } from '../store.entity';
@@ -22,6 +23,7 @@ import { ServicePackage, ServicePackageItem } from './service-package.entity';
       CustomerPackageItem,
       Service,
       Store,
+      CheckoutItem,
     ]),
     StoreGuardsModule,
     CashModule,
