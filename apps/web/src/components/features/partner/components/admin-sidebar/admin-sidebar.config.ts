@@ -7,9 +7,12 @@ import {
   CreditCard,
   Home,
   Lock,
+  Percent,
   Plug,
+  ShieldCheck,
   Store,
   Users,
+  Wallet,
 } from 'lucide-react';
 import type { TNavItem, TNavLinkItem } from './admin-sidebar.types';
 
@@ -36,6 +39,40 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     label: 'Clientes',
     icon: Users,
     href: '/partner/clientes',
+  },
+  {
+    kind: 'group',
+    id: 'management',
+    label: 'Gestão',
+    icon: Wallet,
+    children: [
+      { id: 'management-cash', label: 'Caixa', href: '/partner/caixa' },
+      {
+        id: 'management-commissions',
+        label: 'Comissões',
+        href: '/partner/comissoes',
+      },
+      {
+        id: 'management-packages',
+        label: 'Pacotes',
+        href: '/partner/pacotes',
+      },
+      {
+        id: 'management-loyalty',
+        label: 'Fidelidade',
+        href: '/partner/fidelidade',
+      },
+      {
+        id: 'management-campaigns',
+        label: 'Campanhas',
+        href: '/partner/campanhas',
+      },
+      {
+        id: 'management-anamnesis',
+        label: 'Anamnese',
+        href: '/partner/anamnese',
+      },
+    ],
   },
   {
     kind: 'group',
@@ -125,7 +162,6 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     id: 'integrations',
     label: 'Integrações',
     icon: Plug,
-    requires: ['WHATSAPP_INTEGRATION'],
     children: [
       {
         id: 'integrations-whatsapp',
@@ -133,7 +169,19 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         href: '/partner/settings/whatsapp',
         requires: ['WHATSAPP_INTEGRATION'],
       },
+      {
+        id: 'integrations-api',
+        label: 'API e webhooks',
+        href: '/partner/integracoes',
+      },
     ],
+  },
+  {
+    kind: 'link',
+    id: 'audit-logs',
+    label: 'Histórico de ações',
+    icon: ShieldCheck,
+    href: '/partner/historico-de-acoes',
   },
 ];
 
@@ -169,5 +217,12 @@ export const PROFESSIONAL_NAV_ITEMS: readonly TNavLinkItem[] = [
     label: 'Meu horário',
     icon: Clock,
     href: '/partner/agenda?painel=horario',
+  },
+  {
+    kind: 'link',
+    id: 'my-commissions',
+    label: 'Minhas comissões',
+    icon: Percent,
+    href: '/partner/comissoes',
   },
 ];

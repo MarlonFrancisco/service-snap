@@ -2,6 +2,9 @@ import { isNotFoundError, isUnauthorizedError } from '@/service/api';
 import { TCurrencyCode } from '@repo/shared/constants';
 import { isServer, QueryClient } from '@tanstack/react-query';
 
+/** Filtros e paginação que entram na chave de cache. */
+type TQueryParams = Record<string, string | number | boolean | undefined>;
+
 export const maxAgeCache = 5 * 60 * 1000;
 
 const makeQueryClient = () => {
@@ -115,11 +118,10 @@ export const CACHE_QUERY_KEYS = {
     `partner/stores/${storeId}/metrics/customers`,
     { period },
   ],
-  search: (params: {
-    query: string;
-    location?: string;
-    category?: string;
-  }) => ['search', params],
+  search: (params: { query: string; location?: string; category?: string }) => [
+    'search',
+    params,
+  ],
   whatsappConfig: (storeId: string) => [`partner/stores/${storeId}/whatsapp`],
   whatsappStatus: (storeId: string) => [
     `partner/stores/${storeId}/whatsapp/status`,
@@ -130,4 +132,82 @@ export const CACHE_QUERY_KEYS = {
   whatsappReminderTemplate: (storeId: string) => [
     `partner/stores/${storeId}/whatsapp/reminder-template`,
   ],
+
+  // Fase 4: gestão, retenção e plataforma
+  checkoutPreview: (storeId: string, scheduleIds: string[]) => [
+    `partner/stores/${storeId}/checkouts/preview`,
+    { scheduleIds },
+  ],
+  checkout: (storeId: string, id: string) => [
+    `partner/stores/${storeId}/checkouts/${id}`,
+  ],
+  cashCurrent: (storeId: string) => [`partner/stores/${storeId}/cash/current`],
+  cashSessions: (storeId: string, params?: TQueryParams) => [
+    `partner/stores/${storeId}/cash/sessions`,
+    { params },
+  ],
+  cashSession: (storeId: string, id: string) => [
+    `partner/stores/${storeId}/cash/sessions/${id}`,
+  ],
+  payments: (storeId: string, params?: TQueryParams) => [
+    `partner/stores/${storeId}/payments`,
+    { params },
+  ],
+  commissionRules: (storeId: string) => [
+    `partner/stores/${storeId}/commissions/rules`,
+  ],
+  commissionReport: (storeId: string, params?: TQueryParams) => [
+    `partner/stores/${storeId}/commissions/report`,
+    { params },
+  ],
+  myCommissions: (storeId: string, params?: TQueryParams) => [
+    `partner/stores/${storeId}/commissions/me`,
+    { params },
+  ],
+  servicePackages: (storeId: string) => [`partner/stores/${storeId}/packages`],
+  customerPackages: (storeId: string, customerId: string) => [
+    `partner/stores/${storeId}/packages/customers/${customerId}`,
+  ],
+  loyaltyProgram: (storeId: string) => [`partner/stores/${storeId}/loyalty`],
+  loyaltyProgress: (storeId: string, customerId: string) => [
+    `partner/stores/${storeId}/loyalty/customers/${customerId}`,
+  ],
+  campaigns: (storeId: string) => [`partner/stores/${storeId}/campaigns`],
+  campaign: (storeId: string, id: string) => [
+    `partner/stores/${storeId}/campaigns/${id}`,
+  ],
+  inactiveCustomers: (storeId: string, inactiveDays: number) => [
+    `partner/stores/${storeId}/campaigns/inactive-customers`,
+    { inactiveDays },
+  ],
+  scheduleSeriesBySchedule: (storeId: string, scheduleId: string) => [
+    `partner/stores/${storeId}/schedule-series/by-schedule/${scheduleId}`,
+  ],
+  scheduleSeries: (storeId: string, id: string) => [
+    `partner/stores/${storeId}/schedule-series/${id}`,
+  ],
+  anamnesisForms: (storeId: string) => [
+    `partner/stores/${storeId}/anamnesis/forms`,
+  ],
+  customerAnamnesis: (storeId: string, customerId: string) => [
+    `partner/stores/${storeId}/anamnesis/customers/${customerId}`,
+  ],
+  anamnesisResponse: (storeId: string, id: string) => [
+    `partner/stores/${storeId}/anamnesis/responses/${id}`,
+  ],
+  anamnesisInvite: (token: string) => ['anamnesis', token],
+  apiKeys: (storeId: string) => [`partner/stores/${storeId}/api-keys`],
+  webhooks: (storeId: string) => [`partner/stores/${storeId}/webhooks`],
+  webhookDeliveries: (storeId: string, id: string) => [
+    `partner/stores/${storeId}/webhooks/${id}/deliveries`,
+  ],
+  auditLogs: (storeId: string, params?: TQueryParams) => [
+    `partner/stores/${storeId}/audit-logs`,
+    { params },
+  ],
+  adminOverview: () => ['admin/overview'],
+  adminStores: (params?: TQueryParams) => ['admin/stores', { params }],
+  adminStore: (id: string) => [`admin/stores/${id}`],
+  adminUsers: (params?: TQueryParams) => ['admin/users', { params }],
+  adminAuditLogs: (params?: TQueryParams) => ['admin/audit-logs', { params }],
 };
