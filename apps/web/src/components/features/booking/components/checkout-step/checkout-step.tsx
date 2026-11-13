@@ -20,6 +20,7 @@ import {
 } from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
+import type { TCheckoutStepConfig } from './checkout-step.types';
 
 const SUBTITLE_CLASS = 'mt-1.5 mb-6 text-[15px] text-[#5F5C6E]';
 const NOTICE_CLASS =
@@ -27,7 +28,7 @@ const NOTICE_CLASS =
 const PRIMARY_BUTTON_CLASS =
   'mt-6 flex h-14 w-full max-w-[420px] items-center justify-center gap-2 rounded-full bg-[#0B0B0F] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-60';
 
-export function CheckoutStep() {
+export function CheckoutStep({ onBooked }: TCheckoutStepConfig = {}) {
   const store = useGetStore();
   const router = useRouter();
   const { user, isLoggedIn } = useUserQuery();
@@ -111,6 +112,10 @@ export function CheckoutStep() {
                 }),
               );
 
+              if (onBooked) {
+                onBooked(data);
+                return;
+              }
               router.push('/profile');
             },
             onError: (error) => {

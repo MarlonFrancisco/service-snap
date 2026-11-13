@@ -4,6 +4,11 @@ export type TBookingStep =
   | 'datetime'
   | 'checkout';
 
+export type TBookingFlowConfig = {
+  /** Versão compacta para o iframe do widget, sem header, vitrine e rodapé do site. */
+  embedded?: boolean;
+};
+
 export type TBookingSummaryConfig = {
   totalPrice: number;
   totalDuration: number;

@@ -7,7 +7,7 @@ import { cn } from '@repo/ui';
 import { AlertTriangle } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useParams } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useRef, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { STEPS } from './booking.constants';
@@ -17,7 +17,11 @@ import {
 } from './booking.helpers';
 import { useStoreViewTracking } from './booking.hook';
 import { BookingFormSchema, TBookingFormData } from './booking.schema';
-import { TBookingStep } from './booking.types';
+import { TBookingFlowConfig, TBookingStep } from './booking.types';
+import {
+  BookingEmbedShell,
+  useBookingEmbedCompletion,
+} from './components/booking-embed-shell';
 import { BookingNotFound } from './components/booking-not-found';
 import { BookingSidebar } from './components/booking-sidebar';
 import { BookingSkeleton } from './components/booking-skeleton';
@@ -29,10 +33,12 @@ import { ProfessionalSelectionStep } from './components/professional-selection-s
 import { ServiceSelectionStep } from './components/service-selection-step';
 import { StepIndicator } from './components/step-indicator';
 
-export function BookingFlow() {
+export function BookingFlow({ embedded = false }: TBookingFlowConfig = {}) {
   const params = useParams();
   const storeId = params.id as string;
   const analytics = useAnalytics();
+  const embedScrollAreaRef = useRef<HTMLElement>(null);
+  const { isBooked, handleBooked } = useBookingEmbedCompletion();
 
   const { isPendingStore, isError } = useStoreQuery({ storeId });
   useStoreViewTracking(storeId);
@@ -96,6 +102,15 @@ export function BookingFlow() {
     }
   })();
 
+  // No widget quem rola é a área do casco, não a janela.
+  const scrollToTop = () => {
+    if (embedded) {
+      embedScrollAreaRef.current?.scrollTo({ top: 0 });
+      return;
+    }
+    window.scrollTo({ top: 0 });
+  };
+
   // A reserva tem um único profissional: o pedido fica só com o que ele realiza.
   const removeServicesUnavailableForProfessional = () => {
     if (currentStep !== 'professional' || !selectedProfessional) {
@@ -131,7 +146,7 @@ export function BookingFlow() {
       const nextStep = steps[stepIndex + 1]!.id;
       const totals = getBookingTotals(bookedServices);
       setCurrentStep(nextStep);
-      window.scrollTo({ top: 0 });
+      scrollToTop();
       analytics.track('booking_step_completed', {
         store_id: storeId,
         from_step: currentStep,
@@ -152,7 +167,7 @@ export function BookingFlow() {
         from_step: currentStep,
       });
       setCurrentStep(steps[stepIndex - 1]!.id);
-      window.scrollTo({ top: 0 });
+      scrollToTop();
     }
   };
 
@@ -167,11 +182,15 @@ export function BookingFlow() {
       case 'datetime':
         return <DateTimeSelectionStep />;
       case 'checkout':
-        return <CheckoutStep />;
+        return <CheckoutStep onBooked={embedded ? handleBooked : undefined} />;
       default:
         return null;
     }
   };
+
+  if (embedded && (isPendingStore || isError)) {
+    return <BookingEmbedShell state={isPendingStore ? 'loading' : 'error'} />;
+  }
 
   if (isPendingStore) {
     return (
@@ -191,45 +210,79 @@ export function BookingFlow() {
     );
   }
 
+  if (embedded && isBooked) return <BookingEmbedShell state="booked" />;
+
   const isServicesStep = currentStep === 'services';
   const isCheckoutStep = currentStep === 'checkout';
   const isNextDisabled = !canProceedToNext || !!form.formState.errors.root;
 
+  const renderShell = (content: ReactNode) =>
+    embedded ? (
+      <BookingEmbedShell
+        subtitle={steps[currentStepIndex]?.description}
+        scrollAreaRef={embedScrollAreaRef}
+      >
+        {content}
+      </BookingEmbedShell>
+    ) : (
+      <Header showSearchBar={isServicesStep}>
+        {content}
+        <Footer compact />
+      </Header>
+    );
+
   return (
     <FormProvider {...form}>
-      <Header showSearchBar={isServicesStep}>
-        {/* A altura mínima mantém a barra inferior do mobile no fim da tela. */}
-        <div className="flex min-h-[calc(100dvh-5rem)] flex-col md:min-h-[calc(100dvh-6rem)]">
-          {isServicesStep && <BusinessShowcase />}
+      {renderShell(
+        /* A altura mínima mantém a barra inferior do mobile no fim da tela. */
+        <div
+          className={cn(
+            'flex flex-col',
+            embedded
+              ? 'min-h-full'
+              : 'min-h-[calc(100dvh-5rem)] md:min-h-[calc(100dvh-6rem)]',
+          )}
+        >
+          {isServicesStep && !embedded && <BusinessShowcase />}
 
-          <div className="mx-auto w-full max-w-[82.5rem] px-5 pb-5 md:px-10 md:pb-0">
+          <div
+            className={cn(
+              'mx-auto w-full max-w-[82.5rem] px-5 pb-5 md:px-10 md:pb-0',
+              embedded && 'pt-2',
+            )}
+          >
             {!isServicesStep && (
               <>
                 <button
                   type="button"
                   onClick={handlePrevStep}
-                  className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[#0B0B0F] hover:underline"
+                  className={cn(
+                    'mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[#0B0B0F] hover:underline',
+                    embedded && 'mb-3',
+                  )}
                 >
                   ← Voltar para{' '}
                   {steps[currentStepIndex - 1]?.title.toLowerCase()}
                 </button>
-                <StepIndicator
-                  className="mt-3 mb-8"
-                  steps={steps}
-                  currentStep={currentStep}
-                  currentStepIndex={currentStepIndex}
-                />
+                {!embedded && (
+                  <StepIndicator
+                    className="mt-3 mb-8"
+                    steps={steps}
+                    currentStep={currentStep}
+                    currentStepIndex={currentStepIndex}
+                  />
+                )}
               </>
             )}
 
             <div
               className={cn(
                 'grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_420px]',
-                isServicesStep && 'pt-4 md:pt-8',
+                isServicesStep && (embedded ? 'pt-3' : 'pt-4 md:pt-8'),
               )}
             >
               <section className="min-w-0">
-                {isServicesStep && (
+                {isServicesStep && !embedded && (
                   <>
                     <BusinessInfo />
                     <StepIndicator
@@ -296,10 +349,8 @@ export function BookingFlow() {
               onNext={handleNextStep}
             />
           )}
-        </div>
-
-        <Footer compact />
-      </Header>
+        </div>,
+      )}
     </FormProvider>
   );
 }
