@@ -6,6 +6,7 @@ import {
   CreditCard,
   Home,
   Plug,
+  Star,
   Store,
 } from 'lucide-react';
 import type { TNavItem } from './admin-sidebar.types';
@@ -69,6 +70,13 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     href: '/partner/services',
   },
   {
+    kind: 'link',
+    id: 'reviews',
+    label: 'Avaliações',
+    icon: Star,
+    href: '/partner/reviews',
+  },
+  {
     kind: 'group',
     id: 'notifications',
     label: 'Notificações',
@@ -115,13 +123,23 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     id: 'integrations',
     label: 'Integrações',
     icon: Plug,
-    requires: ['WHATSAPP_INTEGRATION'],
+    // Sem `requires` no grupo: só o WhatsApp depende do plano
     children: [
       {
         id: 'integrations-whatsapp',
         label: 'WhatsApp',
         href: '/partner/settings/whatsapp',
         requires: ['WHATSAPP_INTEGRATION'],
+      },
+      {
+        id: 'integrations-calendar',
+        label: 'Agenda no Google',
+        href: '/partner/settings/calendar',
+      },
+      {
+        id: 'integrations-widget',
+        label: 'Widget no site',
+        href: '/partner/settings/widget',
       },
     ],
   },
