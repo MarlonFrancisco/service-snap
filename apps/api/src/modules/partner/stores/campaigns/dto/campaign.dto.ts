@@ -12,8 +12,10 @@ import {
   MaxLength,
   Min,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
+import { CAMPAIGN_CHANNELS } from '../campaigns.helpers';
 import type { TCampaignChannel } from '../campaigns.types';
 
 export class InactiveCustomersQueryDto {
@@ -45,7 +47,7 @@ export class CreateCampaignDto {
   @MaxLength(100)
   name: string;
 
-  @IsIn(['whatsapp'])
+  @IsIn(CAMPAIGN_CHANNELS)
   channel: TCampaignChannel;
 
   @IsInt()
@@ -53,9 +55,16 @@ export class CreateCampaignDto {
   @Max(730)
   inactiveDays: number;
 
+  @ValidateIf((dto: CreateCampaignDto) => dto.channel === 'whatsapp')
   @ValidateNested()
   @Type(() => CampaignTemplateDto)
-  template: CampaignTemplateDto;
+  template?: CampaignTemplateDto;
+
+  @ValidateIf((dto: CreateCampaignDto) => dto.channel === 'email')
+  @IsString()
+  @MinLength(10)
+  @MaxLength(1000)
+  message?: string;
 
   /** Só parte da lista de sumidos; sem ela, vão todos os que podem receber. */
   @IsOptional()

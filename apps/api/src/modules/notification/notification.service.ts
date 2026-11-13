@@ -13,9 +13,12 @@ import {
   CODE_FOOTER,
   CUSTOMER_FOOTER,
   LOGIN_CODE_MINUTES,
+  campaignFooter,
   storeFooter,
+  toSenderName,
 } from './notification.helpers';
 import type {
+  TCampaignMessageEmail,
   TTeamInviteEmail,
   TEmailConfirmationCode,
   TEmailLayout,
@@ -42,10 +45,16 @@ export class NotificationService {
     this.resend = new Resend(configService.get<string>('RESEND_API_KEY'));
   }
 
-  async sendEmail(to: string | string[], subject: string, body: string) {
+  /** `fromName`: e-mail em nome da loja sai como "Loja via ServiceSnap". */
+  async sendEmail(
+    to: string | string[],
+    subject: string,
+    body: string,
+    fromName?: string,
+  ) {
     const recipients = [to].flat();
     const { data, error } = await this.resend.emails.send({
-      from: this.fromEmail,
+      from: fromName ? `${fromName} <general@ssnap.io>` : this.fromEmail,
       to: recipients,
       subject,
       html: body,
@@ -289,6 +298,25 @@ export class NotificationService {
       to,
       `Você agora faz parte da equipe de ${data.storeName}`,
       body,
+    );
+  }
+
+  async campaignMessage(to: string, data: TCampaignMessageEmail) {
+    const body = await this.renderEmail('campaign-message', data, {
+      title: `Sentimos sua falta em ${data.storeName}`,
+      preheader:
+        'Faz tempo desde a sua última visita. Que tal marcar um horário?',
+      headerTitle: data.storeName,
+      footerNote: campaignFooter(data.storeName),
+      unsubscribeNote: `Não quer mais receber mensagens de ${data.storeName}?`,
+      unsubscribeLink: data.unsubscribeLink,
+    });
+
+    return this.sendEmail(
+      to,
+      `${data.customerName}, sentimos sua falta em ${data.storeName}`,
+      body,
+      `${toSenderName(data.storeName)} via ServiceSnap`,
     );
   }
 

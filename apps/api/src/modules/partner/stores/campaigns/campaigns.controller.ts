@@ -10,12 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import {
-  PlanFeatureGuard,
-  RequireStoreRoles,
-  RequiresPlanFeatures,
-  StoreRoleGuard,
-} from '../guards';
+import { RequireStoreRoles, StoreRoleGuard } from '../guards';
 import { CampaignsService } from './campaigns.service';
 import {
   CreateCampaignDto,
@@ -53,9 +48,8 @@ export class CampaignsController {
     return this.campaignsService.findOne(storeId, id);
   }
 
+  /** O plano só pesa no WhatsApp: o serviço confere conforme o canal. */
   @Post('campaigns')
-  @RequiresPlanFeatures('WHATSAPP_INTEGRATION')
-  @UseGuards(PlanFeatureGuard)
   create(
     @Param('storeId') storeId: string,
     @CurrentUser('sub') userId: string,

@@ -1,21 +1,32 @@
 import {
   BadRequestException,
+  ForbiddenException,
+  GoneException,
   Injectable,
   Logger,
   NotFoundException,
   ServiceUnavailableException,
   type OnModuleInit,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import {
+  createSignedToken,
+  parseEncryptionKey,
+  readSignedToken,
+} from '../../../../utils/helpers/crypto.helpers';
 import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
 import {
   addDaysToDateKey,
+  formatDateKey,
   getStoreToday,
 } from '../../../../utils/helpers/store-date.helpers';
+import { NotificationService } from '../../../notification/notification.service';
 import { QSTASH_BATCH_SIZE, chunk } from '../../../queue/queue.helpers';
 import { QueueService } from '../../../queue/queue.service';
 import type { TQueueAttempt, TQueueJobMap } from '../../../queue/queue.types';
+import { PLAN_FEATURE_REQUIRED, PlanFeatureGuard } from '../guards';
 import { Store } from '../store.entity';
 import { toWhatsappRecipient } from '../whatsapp/whatsapp-reminder-template';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
@@ -26,9 +37,14 @@ import {
 } from './campaign.entity';
 import {
   MAX_CAMPAIGN_RECIPIENTS,
+  OPT_OUT_LINK_DAYS,
   buildCampaignParams,
+  deriveOptOutLinkSecret,
+  parseOptOutSubject,
+  toMessageLines,
+  toOptOutSubject,
 } from './campaigns.helpers';
-import type { TInactiveCustomer } from './campaigns.types';
+import type { TInactiveCustomer, TOptOutSubject } from './campaigns.types';
 import type { CreateCampaignDto } from './dto/campaign.dto';
 
 const DEFAULT_INACTIVE_DAYS = 60;
@@ -52,7 +68,10 @@ export class CampaignsService implements OnModuleInit {
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
     private readonly whatsappService: WhatsappService,
+    private readonly notificationService: NotificationService,
+    private readonly planFeatureGuard: PlanFeatureGuard,
     private readonly queueService: QueueService,
+    private readonly configService: ConfigService,
   ) {}
 
   onModuleInit() {
@@ -165,7 +184,15 @@ export class CampaignsService implements OnModuleInit {
       throw new ServiceUnavailableException('Campaign queue is not configured');
     }
 
-    await this.assertMarketingTemplate(storeId, dto.template.name);
+    const isEmail = dto.channel === 'email';
+
+    if (isEmail) {
+      // Sem a chave o e-mail sairia sem o link de sair da lista
+      void this.optOutSecret;
+    } else {
+      await this.assertWhatsappPlan(storeId);
+      await this.assertMarketingTemplate(storeId, dto.template.name);
+    }
 
     const inactive = await this.findInactiveCustomers(
       storeId,
@@ -174,7 +201,8 @@ export class CampaignsService implements OnModuleInit {
     const chosen = dto.customerIds ? new Set(dto.customerIds) : null;
     const audience = inactive.filter(
       (customer) =>
-        customer.hasWhatsapp && (!chosen || chosen.has(customer.id)),
+        (isEmail ? customer.hasEmail : customer.hasWhatsapp) &&
+        (!chosen || chosen.has(customer.id)),
     );
 
     if (!audience.length) {
@@ -185,7 +213,8 @@ export class CampaignsService implements OnModuleInit {
       name: dto.name,
       channel: dto.channel,
       inactiveDays: dto.inactiveDays,
-      template: dto.template,
+      template: isEmail ? null : dto.template,
+      message: isEmail ? dto.message.trim() : null,
       status: 'sending',
       recipientsCount: audience.length,
       createdById: userId,
@@ -228,38 +257,28 @@ export class CampaignsService implements OnModuleInit {
 
     const { campaign, customer } = recipient;
     const store = campaign.store;
+    const isEmail = campaign.channel === 'email';
     const phone = toWhatsappRecipient(customer.telephone, store.country);
     const optedOut = await this.optOutRepository.exists({
       where: { store: { id: store.id }, customer: { id: customer.id } },
     });
+    const hasContact = isEmail ? Boolean(customer.email) : Boolean(phone);
 
-    if (optedOut || !phone || customer.isDeleted) {
+    if (optedOut || !hasContact || customer.isDeleted) {
       await this.finish(
         recipient,
         'skipped',
-        optedOut ? 'opt-out' : 'no-phone',
+        optedOut ? 'opt-out' : isEmail ? 'no-email' : 'no-phone',
       );
       return { status: 'skipped' };
     }
 
     try {
-      const config = store.whatsappConfig;
-
-      if (!config?.isActive) throw new Error('WhatsApp disconnected');
-
-      await this.whatsappService.sendTemplate(
-        config.phoneNumberId,
-        phone,
-        {
-          name: campaign.template.name,
-          language: campaign.template.language,
-          bodyParams: buildCampaignParams(campaign.template, {
-            customerName: customer.firstName || 'cliente',
-            storeName: store.name || 'a loja',
-          }),
-        },
-        config.accessToken,
-      );
+      if (isEmail) {
+        await this.sendEmail(campaign, store, customer);
+      } else {
+        await this.sendWhatsapp(campaign, store, customer.firstName, phone);
+      }
       await this.finish(recipient, 'sent');
 
       return { status: 'sent' };
@@ -283,17 +302,35 @@ export class CampaignsService implements OnModuleInit {
 
   /** A loja anota que o cliente não quer mais campanhas. */
   async optOut(storeId: string, customerId: string) {
-    try {
-      await this.optOutRepository.insert({
-        source: 'store',
-        store: { id: storeId },
-        customer: { id: customerId },
-      });
-    } catch (error) {
-      if (!isUniqueViolation(error)) throw error;
-    }
+    await this.insertOptOut({ storeId, customerId }, 'store');
 
     return { customerId, optedOut: true };
+  }
+
+  /** Página do link do e-mail: diz de qual loja o cliente vai sair. */
+  async getOptOutByToken(token: string) {
+    const subject = this.readOptOutToken(token);
+    const [storeName, optedOut] = await Promise.all([
+      this.findStoreName(subject.storeId),
+      this.optOutRepository.exists({
+        where: {
+          store: { id: subject.storeId },
+          customer: { id: subject.customerId },
+        },
+      }),
+    ]);
+
+    return { storeName, optedOut };
+  }
+
+  /** O próprio cliente sai pelo link. Repetir não muda nada. */
+  async optOutByToken(token: string) {
+    const subject = this.readOptOutToken(token);
+    const storeName = await this.findStoreName(subject.storeId);
+
+    await this.insertOptOut(subject, 'email');
+
+    return { storeName, optedOut: true };
   }
 
   async optIn(storeId: string, customerId: string) {
@@ -349,6 +386,146 @@ export class CampaignsService implements OnModuleInit {
 
     if (!pending) {
       await this.campaignRepository.update(campaignId, { status: 'done' });
+    }
+  }
+
+  private async sendWhatsapp(
+    campaign: Campaign,
+    store: Store,
+    firstName: string | null,
+    phone: string,
+  ) {
+    const config = store.whatsappConfig;
+
+    if (!config?.isActive) throw new Error('WhatsApp disconnected');
+
+    await this.whatsappService.sendTemplate(
+      config.phoneNumberId,
+      phone,
+      {
+        name: campaign.template.name,
+        language: campaign.template.language,
+        bodyParams: buildCampaignParams(campaign.template, {
+          customerName: firstName || 'cliente',
+          storeName: store.name || 'a loja',
+        }),
+      },
+      config.accessToken,
+    );
+  }
+
+  private async sendEmail(
+    campaign: Campaign,
+    store: Store,
+    customer: CampaignRecipient['customer'],
+  ) {
+    const lastVisit = await this.findLastVisit(store.id, customer.id);
+
+    await this.notificationService.campaignMessage(customer.email, {
+      storeName: store.name || 'a loja',
+      customerName: customer.firstName || 'cliente',
+      messageLines: toMessageLines(campaign.message ?? ''),
+      bookingLink: `${this.frontendUrl}/booking/${store.id}`,
+      lastVisit: lastVisit ? formatDateKey(lastVisit) : null,
+      unsubscribeLink: this.buildOptOutLink({
+        storeId: store.id,
+        customerId: customer.id,
+      }),
+    });
+  }
+
+  /** Só atendimento concluído conta como visita. */
+  private async findLastVisit(storeId: string, customerId: string) {
+    const [row]: { lastVisit: string | null }[] =
+      await this.campaignRepository.query(
+        `SELECT max(date)::text AS "lastVisit" FROM schedules
+          WHERE "storeId" = $1 AND "userId" = $2 AND status = 'completed'`,
+        [storeId, customerId],
+      );
+
+    return row?.lastVisit ?? null;
+  }
+
+  private async insertOptOut(
+    { storeId, customerId }: TOptOutSubject,
+    source: MarketingOptOut['source'],
+  ) {
+    try {
+      await this.optOutRepository.insert({
+        source,
+        store: { id: storeId },
+        customer: { id: customerId },
+      });
+    } catch (error) {
+      if (!isUniqueViolation(error)) throw error;
+    }
+  }
+
+  private async findStoreName(storeId: string) {
+    const store = await this.storeRepository.findOne({
+      where: { id: storeId },
+      select: { id: true, name: true },
+    });
+
+    if (!store) throw new GoneException('Opt-out link is no longer valid');
+
+    return store.name;
+  }
+
+  private buildOptOutLink(subject: TOptOutSubject) {
+    const expiresAt = new Date(Date.now() + OPT_OUT_LINK_DAYS * 86_400_000);
+    const token = createSignedToken(
+      this.optOutSecret,
+      toOptOutSubject(subject),
+      expiresAt,
+    );
+
+    return `${this.frontendUrl}/sair-da-lista/${token}`;
+  }
+
+  /** Link adulterado ou vencido: 410, como o da anamnese. */
+  private readOptOutToken(token: string): TOptOutSubject {
+    const subject = readSignedToken(this.optOutSecret, token);
+    const parsed = subject && parseOptOutSubject(subject);
+
+    if (!parsed) throw new GoneException('Opt-out link is invalid or expired');
+
+    return parsed;
+  }
+
+  private get optOutSecret() {
+    const key = parseEncryptionKey(
+      this.configService.get<string>('DATA_ENCRYPTION_KEY'),
+    );
+
+    if (!key) {
+      throw new ServiceUnavailableException(
+        'Data encryption is not configured',
+      );
+    }
+
+    return deriveOptOutLinkSecret(key);
+  }
+
+  private get frontendUrl() {
+    return this.configService.get<string>('FRONTEND_URL')?.replace(/\/$/, '');
+  }
+
+  /** Campanha pelo WhatsApp depende do plano; e-mail, não. */
+  private async assertWhatsappPlan(storeId: string) {
+    const missing = await this.planFeatureGuard.getMissingFeatures(storeId, [
+      'WHATSAPP_INTEGRATION',
+    ]);
+
+    if (missing.length) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'Forbidden',
+        code: PLAN_FEATURE_REQUIRED,
+        message:
+          'Este recurso não está incluído no seu plano. Faça upgrade para liberar o acesso.',
+        missingFeatures: missing,
+      });
     }
   }
 

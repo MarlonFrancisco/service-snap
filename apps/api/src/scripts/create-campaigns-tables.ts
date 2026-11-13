@@ -15,12 +15,20 @@ void runSchemaScript(
       `"name" character varying(100) NOT NULL,
        "channel" character varying(20) NOT NULL,
        "inactiveDays" integer NOT NULL,
-       "template" jsonb NOT NULL,
+       "template" jsonb,
+       "message" text,
        "status" character varying(20) NOT NULL DEFAULT 'queued',
        "recipientsCount" integer NOT NULL DEFAULT '0',
        "createdById" uuid,
        "storeId" uuid NOT NULL`,
       [['storeId', 'stores', 'CASCADE']],
+    );
+    // Bancos que criaram a tabela antes do canal de e-mail
+    await db.query(
+      `ALTER TABLE "campaigns" ADD COLUMN IF NOT EXISTS "message" text`,
+    );
+    await db.query(
+      `ALTER TABLE "campaigns" ALTER COLUMN "template" DROP NOT NULL`,
     );
 
     await createTable(

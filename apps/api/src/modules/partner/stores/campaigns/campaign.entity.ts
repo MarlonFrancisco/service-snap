@@ -25,8 +25,13 @@ export class Campaign extends BaseEntity {
   @Column({ type: 'int' })
   inactiveDays: number;
 
-  @Column({ type: 'jsonb' })
-  template: TCampaignTemplate;
+  /** Template aprovado pela Meta; só no WhatsApp. */
+  @Column({ type: 'jsonb', nullable: true })
+  template: TCampaignTemplate | null;
+
+  /** Texto escrito pela loja; só no e-mail. */
+  @Column({ type: 'text', nullable: true })
+  message: string | null;
 
   @Column({ type: 'varchar', length: 20, default: 'queued' })
   status: TCampaignStatus;

@@ -15,3 +15,7 @@ export const addDaysToDateKey = (date: string, days: number): string => {
 
   return next.toISOString().slice(0, 10);
 };
+
+/** "2026-11-13" → "13/11/2026", o formato dos textos em português. */
+export const formatDateKey = (dateKey: string) =>
+  dateKey.split('-').reverse().join('/');

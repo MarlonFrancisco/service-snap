@@ -1,5 +1,4 @@
-/** Só WhatsApp por enquanto: o e-mail de campanha espera o desenho aprovado. */
-export type TCampaignChannel = 'whatsapp';
+export type TCampaignChannel = 'whatsapp' | 'email';
 
 export type TCampaignStatus = 'queued' | 'sending' | 'done';
 
@@ -22,3 +21,6 @@ export type TInactiveCustomer = {
   lastVisit: string;
   daysAway: number;
 };
+
+/** Quem saiu da lista pelo link do e-mail: assunto do token assinado. */
+export type TOptOutSubject = { storeId: string; customerId: string };
