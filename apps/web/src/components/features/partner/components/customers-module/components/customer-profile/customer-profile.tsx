@@ -5,6 +5,9 @@ import { ArrowLeft, MessageCircle, Plus, User } from 'lucide-react';
 import Link from 'next/link';
 import { PARTNER_FOCUS_CLASS } from '../../../../partner.styles';
 import { AddAppointmentResponsive } from '../../../agenda-module/components/add-appointment-responsive/add-appointment-responsive';
+import { CustomerAnamnesisPanel } from '../../../anamnesis-module/components/customer-anamnesis-panel';
+import { CustomerLoyaltyPanel } from '../../../loyalty-module';
+import { CustomerPackagesPanel } from '../../../packages-module';
 import {
   ModuleErrorState,
   NoStoreState,
@@ -164,6 +167,9 @@ export const CustomerProfile = ({ userId }: TCustomerProfileConfig) => {
               userId={customer.id}
               notes={customer.notes}
             />
+            <CustomerPackagesPanel customerId={customer.id} />
+            <CustomerLoyaltyPanel customerId={customer.id} />
+            <CustomerAnamnesisPanel customerId={customer.id} />
           </div>
         </div>
 

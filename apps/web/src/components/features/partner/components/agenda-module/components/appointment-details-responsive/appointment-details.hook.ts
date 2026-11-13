@@ -1,3 +1,4 @@
+import { useScheduleSeriesByScheduleQuery } from '@/hooks/partner/use-schedule-series-by-schedule-query';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
@@ -158,6 +159,7 @@ export const useAppointmentDetails = () => {
     useAppointmentDetailsMutations();
 
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
 
   const isOpen = !!detailsAppointment?.id;
@@ -165,6 +167,7 @@ export const useAppointmentDetails = () => {
   // Reabrir outro agendamento não pode herdar a confirmação do anterior.
   useEffect(() => {
     setIsConfirmingCancel(false);
+    setIsCheckingOut(false);
   }, [detailsAppointment?.id]);
 
   const statusBadge = STATUS_CONFIG[detailsAppointment.status];
@@ -200,10 +203,7 @@ export const useAppointmentDetails = () => {
         startTime: detailsAppointment.startTime,
       });
     },
-    [
-      updateAppointmentStatus,
-      detailsAppointment,
-    ],
+    [updateAppointmentStatus, detailsAppointment],
   );
 
   const setRescheduleVisit = useAgendaStore(
@@ -235,7 +235,27 @@ export const useAppointmentDetails = () => {
     requestAnimationFrame(() => cancelTriggerRef.current?.focus());
   }, []);
 
+  // Fechar atendimento troca os detalhes pelo formulário, no mesmo diálogo
+  const handleOpenCheckout = useCallback(() => setIsCheckingOut(true), []);
+  const handleCloseCheckout = useCallback(() => setIsCheckingOut(false), []);
+  const handleCheckoutDone = useCallback(() => {
+    setIsCheckingOut(false);
+    setDetailsAppointment();
+  }, [setDetailsAppointment]);
+
+  // Parte de uma série: o cancelamento oferece "este e os próximos"
+  const { seriesMembership } = useScheduleSeriesByScheduleQuery({
+    storeId: usePartnerStore.getState().activeStore?.id,
+    scheduleId: detailsAppointment?.id,
+    enabled: isOpen && detailsAppointment?.status === 'scheduled',
+  });
+
   return {
+    seriesId: seriesMembership?.id ?? null,
+    isCheckingOut,
+    handleOpenCheckout,
+    handleCloseCheckout,
+    handleCheckoutDone,
     detailsAppointment,
     isOpen,
     statusBadge,
