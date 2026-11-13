@@ -770,10 +770,12 @@ export class ScheduleService {
    * Cancela a visita inteira. Quem não é da equipe (o cliente, ou o bot em nome
    * dele) só cancela dentro da política da loja.
    */
+  /** `asStore`: a própria loja cancela (ex.: integração pela API pública). */
   async delete(
     storeId: string,
     id: string,
     requesterId: string,
+    { asStore = false }: { asStore?: boolean } = {},
   ): Promise<{ id: string }> {
     const schedule = await this.scheduleNotifications.load(id);
     const group = schedule ? await this.loadGroup(schedule) : [];
@@ -791,7 +793,8 @@ export class ScheduleService {
       schedule?.store?.id === storeId &&
       schedule.date &&
       group[0]?.startTime &&
-      !actor
+      !actor &&
+      !asStore
     ) {
       assertWithinNotice('cancel', schedule.store, {
         date: schedule.date,

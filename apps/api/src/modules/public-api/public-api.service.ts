@@ -171,10 +171,13 @@ export class PublicApiService {
     return { data: schedules.map(toPublicSchedule) };
   }
 
-  /** Cancelado pela loja: o cliente recebe o aviso de cancelamento da loja. */
+  /**
+   * Cancelado pela loja: vale como a equipe (sem a política de antecedência do
+   * cliente) e o cliente recebe o aviso de cancelamento da loja.
+   */
   async cancelSchedule(storeId: string, id: string) {
     await this.getSchedule(storeId, id);
-    await this.scheduleService.delete(storeId, id, null);
+    await this.scheduleService.delete(storeId, id, null, { asStore: true });
 
     return this.getSchedule(storeId, id);
   }
