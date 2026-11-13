@@ -4,16 +4,18 @@ import {
   Logger,
   NotFoundException,
   ServiceUnavailableException,
+  type OnModuleInit,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Client } from '@upstash/qstash';
 import { In, Repository } from 'typeorm';
 import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
 import {
   addDaysToDateKey,
   getStoreToday,
 } from '../../../../utils/helpers/store-date.helpers';
+import { QSTASH_BATCH_SIZE, chunk } from '../../../queue/queue.helpers';
+import { QueueService } from '../../../queue/queue.service';
+import type { TQueueAttempt, TQueueJobMap } from '../../../queue/queue.types';
 import { Store } from '../store.entity';
 import { toWhatsappRecipient } from '../whatsapp/whatsapp-reminder-template';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
@@ -23,14 +25,10 @@ import {
   MarketingOptOut,
 } from './campaign.entity';
 import {
-  CAMPAIGN_MESSAGE_PATH,
-  CAMPAIGN_MESSAGE_RETRIES,
   MAX_CAMPAIGN_RECIPIENTS,
-  QSTASH_BATCH_SIZE,
   buildCampaignParams,
-  chunk,
 } from './campaigns.helpers';
-import type { TCampaignMessageJob, TInactiveCustomer } from './campaigns.types';
+import type { TInactiveCustomer } from './campaigns.types';
 import type { CreateCampaignDto } from './dto/campaign.dto';
 
 const DEFAULT_INACTIVE_DAYS = 60;
@@ -41,7 +39,7 @@ const DEFAULT_INACTIVE_DAYS = 60;
  * volta, com novas tentativas por conta dele.
  */
 @Injectable()
-export class CampaignsService {
+export class CampaignsService implements OnModuleInit {
   private readonly logger = new Logger(CampaignsService.name);
 
   constructor(
@@ -54,8 +52,14 @@ export class CampaignsService {
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
     private readonly whatsappService: WhatsappService,
-    private readonly configService: ConfigService,
+    private readonly queueService: QueueService,
   ) {}
+
+  onModuleInit() {
+    this.queueService.register('campaign.message', (data, attempt) =>
+      this.deliver(data, attempt),
+    );
+  }
 
   /** Quem veio e não voltou: última visita antes do corte e nada marcado depois. */
   async findInactiveCustomers(
@@ -156,7 +160,11 @@ export class CampaignsService {
   }
 
   async create(storeId: string, dto: CreateCampaignDto, userId: string) {
-    const qstash = this.qstashClient;
+    // Sem QStash a campanha rodaria inteira dentro da requisição
+    if (!this.queueService.isConfigured) {
+      throw new ServiceUnavailableException('Campaign queue is not configured');
+    }
+
     await this.assertMarketingTemplate(storeId, dto.template.name);
 
     const inactive = await this.findInactiveCustomers(
@@ -190,7 +198,7 @@ export class CampaignsService {
       })),
     );
 
-    await this.publish(qstash, recipients);
+    await this.publish(recipients);
 
     return this.findOne(storeId, campaign.id);
   }
@@ -200,7 +208,10 @@ export class CampaignsService {
    * ainda está na fila. Erro antes da última tentativa volta 503 para o QStash
    * tentar de novo; na última, fica como falha.
    */
-  async deliver({ recipientId }: TCampaignMessageJob, retried: number) {
+  async deliver(
+    { recipientId }: TQueueJobMap['campaign.message'],
+    { isLastAttempt }: TQueueAttempt,
+  ) {
     const recipient = await this.recipientRepository.findOne({
       where: { id: recipientId },
       relations: [
@@ -260,7 +271,7 @@ export class CampaignsService {
         1,
       );
 
-      if (retried < CAMPAIGN_MESSAGE_RETRIES) {
+      if (!isLastAttempt) {
         throw new ServiceUnavailableException(message);
       }
 
@@ -294,16 +305,13 @@ export class CampaignsService {
     return { customerId, optedOut: false };
   }
 
-  private async publish(qstash: Client, recipients: CampaignRecipient[]) {
-    const url = `${this.apiPublicUrl}${CAMPAIGN_MESSAGE_PATH}`;
-
+  private async publish(recipients: CampaignRecipient[]) {
     for (const group of chunk(recipients, QSTASH_BATCH_SIZE)) {
       try {
-        await qstash.batchJSON(
+        await this.queueService.enqueue(
           group.map((recipient) => ({
-            url,
-            body: { recipientId: recipient.id } satisfies TCampaignMessageJob,
-            retries: CAMPAIGN_MESSAGE_RETRIES,
+            type: 'campaign.message' as const,
+            data: { recipientId: recipient.id },
           })),
         );
       } catch (error) {
@@ -355,22 +363,5 @@ export class CampaignsService {
     if (template.category && template.category !== 'MARKETING') {
       throw new BadRequestException('Campaigns need a MARKETING template');
     }
-  }
-
-  private get qstashClient() {
-    const token = this.configService.get<string>('QSTASH_TOKEN');
-
-    if (!token || !this.apiPublicUrl) {
-      throw new ServiceUnavailableException('Campaign queue is not configured');
-    }
-
-    return new Client({
-      token,
-      baseUrl: this.configService.get<string>('QSTASH_URL') || undefined,
-    });
-  }
-
-  private get apiPublicUrl() {
-    return this.configService.get<string>('API_PUBLIC_URL')?.replace(/\/$/, '');
   }
 }

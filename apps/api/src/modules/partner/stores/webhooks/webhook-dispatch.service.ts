@@ -1,10 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ServiceUnavailableException,
+  type OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomUUID } from 'crypto';
-import { setTimeout as sleep } from 'timers/promises';
 import { In, Repository } from 'typeorm';
-import { runInBackground } from '../../../../utils/helpers/background.helpers';
 import {
   decryptText,
   parseEncryptionKey,
@@ -13,12 +16,13 @@ import {
   PUBLIC_SCHEDULE_RELATIONS,
   toPublicSchedule,
 } from '../../../public-api/public-api.helpers';
+import { QueueService } from '../../../queue/queue.service';
+import type { TQueueAttempt } from '../../../queue/queue.types';
 import { Schedule } from '../schedule/schedule.entity';
 import { WebhookDelivery } from './webhook-delivery.entity';
 import { WebhookEndpoint } from './webhook-endpoint.entity';
 import {
   WEBHOOK_MAX_CONSECUTIVE_FAILURES,
-  WEBHOOK_RETRY_DELAYS_MS,
   WEBHOOK_SIGNATURE_HEADER,
   WEBHOOK_TIMEOUT_MS,
   assertWebhookUrl,
@@ -32,10 +36,11 @@ import type {
 
 /**
  * Envia os eventos aos endpoints das lojas. Sem dependência de guard nem de
- * agenda: a agenda importa este módulo, então ele não pode importá-la.
+ * agenda: a agenda importa este módulo, então ele não pode importá-la. Cada
+ * entrega é um trabalho no QStash, que tenta de novo enquanto o endpoint falha.
  */
 @Injectable()
-export class WebhookDispatchService {
+export class WebhookDispatchService implements OnModuleInit {
   private readonly logger = new Logger(WebhookDispatchService.name);
 
   constructor(
@@ -46,7 +51,14 @@ export class WebhookDispatchService {
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
     private readonly configService: ConfigService,
+    private readonly queueService: QueueService,
   ) {}
+
+  onModuleInit() {
+    this.queueService.register('webhook.delivery', (data, attempt) =>
+      this.deliverQueued(data.deliveryId, attempt),
+    );
+  }
 
   /** Uma reserva com vários serviços vira um evento só, com todas as linhas. */
   async emitScheduleEvent(
@@ -94,14 +106,13 @@ export class WebhookDispatchService {
       })
       .getMany();
 
-    await Promise.all(
-      endpoints.map(async (endpoint) => {
-        const delivery = await this.createDelivery(endpoint, storeId, event, {
-          data,
-        });
-        await this.deliver(endpoint, delivery);
-      }),
+    const deliveries = await Promise.all(
+      endpoints.map((endpoint) =>
+        this.createDelivery(endpoint, storeId, event, { data }),
+      ),
     );
+
+    await this.enqueueDeliveries(deliveries.map((delivery) => delivery.id));
   }
 
   /** Evento `ping` para a loja testar o endpoint; espera o resultado. */
@@ -109,15 +120,78 @@ export class WebhookDispatchService {
     const delivery = await this.createDelivery(endpoint, storeId, 'ping', {
       data: { message: 'ServiceSnap webhook test' },
     });
+    const result = await this.attemptDelivery(endpoint, delivery, true);
 
-    return this.deliver(endpoint, delivery, 1);
+    await this.trackHealth(endpoint, result.ok);
+
+    return result;
   }
 
   /** Reenvio manual: mesmo `id` de evento, para quem recebe ignorar duplicata. */
-  redeliverInBackground(endpoint: WebhookEndpoint, delivery: WebhookDelivery) {
-    runInBackground(`Reenvio do webhook ${delivery.id}`, () =>
-      this.deliver(endpoint, delivery),
+  async redeliver(deliveryId: string) {
+    await this.deliveryRepository.update(deliveryId, { status: 'pending' });
+    await this.enqueueDeliveries([deliveryId]);
+  }
+
+  /** Chamado pela fila: uma tentativa só; as próximas ficam com o QStash. */
+  private async deliverQueued(deliveryId: string, attempt: TQueueAttempt) {
+    const delivery = await this.deliveryRepository.findOne({
+      where: { id: deliveryId },
+      relations: ['endpoint'],
+    });
+
+    if (!delivery || delivery.status === 'delivered') {
+      return { status: delivery?.status ?? 'missing' };
+    }
+
+    const endpoint = await this.endpointRepository
+      .createQueryBuilder('endpoint')
+      .addSelect('endpoint.secretEncrypted')
+      .where('endpoint.id = :id', { id: delivery.endpoint.id })
+      .getOne();
+
+    // Endpoint apagado ou desligado depois de publicar: não insiste
+    if (!endpoint?.isActive) {
+      await this.deliveryRepository.update(delivery.id, {
+        status: 'failed',
+        error: 'Endpoint disabled',
+      });
+      return { status: 'failed' };
+    }
+
+    const result = await this.attemptDelivery(
+      endpoint,
+      delivery,
+      attempt.isLastAttempt,
     );
+
+    if (!result.ok && !attempt.isLastAttempt) {
+      // 503 para o QStash: a entrega volta mais tarde
+      throw new ServiceUnavailableException(result.error ?? 'Webhook failed');
+    }
+
+    await this.trackHealth(endpoint, result.ok);
+
+    return { status: result.ok ? 'delivered' : 'failed' };
+  }
+
+  /** QStash fora do ar: a entrega fica marcada, a loja vê e pode reenviar. */
+  private async enqueueDeliveries(deliveryIds: string[]) {
+    try {
+      await this.queueService.enqueue(
+        deliveryIds.map((deliveryId) => ({
+          type: 'webhook.delivery' as const,
+          data: { deliveryId },
+        })),
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Webhooks não publicados no QStash: ${message}`);
+      await this.deliveryRepository.update(
+        { id: In(deliveryIds) },
+        { status: 'failed', error: `QStash: ${message}`.slice(0, 500) },
+      );
+    }
   }
 
   /** O id do evento é o da entrega: estável entre tentativas e reenvios. */
@@ -145,34 +219,24 @@ export class WebhookDispatchService {
     });
   }
 
-  private async deliver(
+  /** Falha que ainda vai ser tentada de novo fica `pending`. */
+  private async attemptDelivery(
     endpoint: WebhookEndpoint,
     delivery: WebhookDelivery,
-    maxAttempts = WEBHOOK_RETRY_DELAYS_MS.length + 1,
+    isLastAttempt: boolean,
   ): Promise<TWebhookAttempt> {
     const secret = this.readSecret(endpoint);
-    let result: TWebhookAttempt = {
-      ok: false,
-      status: null,
-      error: 'Webhook secret unavailable',
-    };
+    const result: TWebhookAttempt = secret
+      ? await this.post(endpoint.url, secret, delivery.payload)
+      : { ok: false, status: null, error: 'Webhook secret unavailable' };
 
-    for (let attempt = 0; secret && attempt < maxAttempts; attempt += 1) {
-      if (attempt > 0) await sleep(WEBHOOK_RETRY_DELAYS_MS[attempt - 1]);
-
-      result = await this.post(endpoint.url, secret, delivery.payload);
-      await this.deliveryRepository.update(delivery.id, {
-        attempts: delivery.attempts + attempt + 1,
-        status: result.ok ? 'delivered' : 'failed',
-        responseStatus: result.status,
-        error: result.error?.slice(0, 500) ?? null,
-        deliveredAt: result.ok ? new Date() : null,
-      });
-
-      if (result.ok) break;
-    }
-
-    await this.trackHealth(endpoint, result.ok);
+    await this.deliveryRepository.update(delivery.id, {
+      attempts: () => '"attempts" + 1',
+      status: result.ok ? 'delivered' : isLastAttempt ? 'failed' : 'pending',
+      responseStatus: result.status,
+      error: result.error?.slice(0, 500) ?? null,
+      deliveredAt: result.ok ? new Date() : null,
+    });
 
     return result;
   }

@@ -4,8 +4,7 @@ import {
   type ExecutionContext,
   type NestInterceptor,
 } from '@nestjs/common';
-import { tap, type Observable } from 'rxjs';
-import { runInBackground } from '../../utils/helpers/background.helpers';
+import { mergeMap, type Observable } from 'rxjs';
 import { buildRequestAuditEntry, shouldAudit } from './audit.helpers';
 import { AuditService } from './audit.service';
 import type { TAuditedRequest } from './audit.types';
@@ -13,7 +12,8 @@ import type { TAuditedRequest } from './audit.types';
 /**
  * Registra toda alteração feita pelo painel, pela API pública e pelo painel da
  * plataforma, sem cada controller precisar lembrar. Só o que deu certo: o que
- * falhou não mudou nada. A gravação roda depois da resposta.
+ * falhou não mudou nada. Um insert antes de responder: erro dele só vai para o
+ * log (`AuditService.record`), nunca para quem chamou.
  */
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -28,14 +28,14 @@ export class AuditInterceptor implements NestInterceptor {
     if (!shouldAudit(request)) return next.handle();
 
     return next.handle().pipe(
-      tap((body) => {
+      mergeMap(async (body) => {
         const { statusCode } = http.getResponse<{ statusCode: number }>();
 
-        runInBackground('Auditoria da requisição', () =>
-          this.auditService.record(
-            buildRequestAuditEntry(request, statusCode, body),
-          ),
+        await this.auditService.record(
+          buildRequestAuditEntry(request, statusCode, body),
         );
+
+        return body;
       }),
     );
   }

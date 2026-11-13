@@ -134,14 +134,14 @@ export class WebhooksService {
   }
 
   async redeliver(storeId: string, id: string, deliveryId: string) {
-    const endpoint = await this.findInStore(storeId, id, true);
+    await this.findInStore(storeId, id);
     const delivery = await this.deliveryRepository.findOne({
       where: { id: deliveryId, endpoint: { id } },
     });
 
     if (!delivery) throw new NotFoundException('Delivery not found');
 
-    this.dispatchService.redeliverInBackground(endpoint, delivery);
+    await this.dispatchService.redeliver(delivery.id);
 
     return { id: delivery.id, status: 'queued' };
   }

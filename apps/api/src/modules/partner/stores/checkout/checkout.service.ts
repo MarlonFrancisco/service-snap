@@ -2,11 +2,11 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository, type EntityManager } from 'typeorm';
-import { runInBackground } from '../../../../utils/helpers/background.helpers';
 import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
 import { sumMoney } from '../../../../utils/helpers/money.helpers';
 import { getStoreToday } from '../../../../utils/helpers/store-date.helpers';
@@ -43,6 +43,8 @@ const CHECKOUT_RELATIONS = [
  */
 @Injectable()
 export class CheckoutService {
+  private readonly logger = new Logger(CheckoutService.name);
+
   constructor(
     @InjectRepository(Checkout)
     private readonly checkoutRepository: Repository<Checkout>,
@@ -140,11 +142,17 @@ export class CheckoutService {
       throw error;
     }
 
-    // Nova visita concluída pode ter liberado uma recompensa
+    // Nova visita concluída pode ter liberado uma recompensa. O fechamento já
+    // está salvo: erro aqui só vai para o log, e a próxima consulta refaz a conta
     if (customerId) {
-      runInBackground('Fidelidade depois do fechamento', () =>
-        this.loyaltyService.getProgress(storeId, customerId),
-      );
+      await this.loyaltyService
+        .getProgress(storeId, customerId)
+        .catch((error: unknown) =>
+          this.logger.error(
+            'Fidelidade depois do fechamento falhou',
+            error instanceof Error ? error.stack : String(error),
+          ),
+        );
     }
 
     return this.findOne(storeId, checkoutId);

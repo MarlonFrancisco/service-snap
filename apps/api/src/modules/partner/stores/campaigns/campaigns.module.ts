@@ -4,7 +4,6 @@ import { PlanFeatureGuard } from '../guards';
 import { StoreGuardsModule } from '../guards/store-guards.module';
 import { Store } from '../store.entity';
 import { WhatsappModule } from '../whatsapp';
-import { CampaignQueueController } from './campaign-queue.controller';
 import {
   Campaign,
   CampaignRecipient,
@@ -24,7 +23,7 @@ import { CampaignsService } from './campaigns.service';
     StoreGuardsModule,
     WhatsappModule,
   ],
-  controllers: [CampaignsController, CampaignQueueController],
+  controllers: [CampaignsController],
   providers: [CampaignsService, PlanFeatureGuard],
 })
 export class CampaignsModule {}

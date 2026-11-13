@@ -14,6 +14,7 @@ import { PartnerModule } from './partner/partner.module';
 import { PlansModule } from './plans';
 import { PrivacyModule } from './privacy/privacy.module';
 import { PublicApiModule } from './public-api/public-api.module';
+import { QueueModule } from './queue';
 import { RecomendationModule } from './recomendation';
 import { SearchModule } from './search';
 import { StoreDiscoveryModule } from './store-discovery/store-discovery.module';
@@ -30,6 +31,7 @@ import { WhatsappBotModule } from './whatsapp-bot';
     }),
     HealthModule,
     AuditModule,
+    QueueModule,
     CacheModule,
     AuthModule,
     DatabaseModule,

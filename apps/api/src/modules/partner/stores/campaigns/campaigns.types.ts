@@ -22,6 +22,3 @@ export type TInactiveCustomer = {
   lastVisit: string;
   daysAway: number;
 };
-
-/** Corpo que o QStash devolve para a API, um por destinatário. */
-export type TCampaignMessageJob = { recipientId: string };

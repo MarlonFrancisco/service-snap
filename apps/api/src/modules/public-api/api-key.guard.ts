@@ -1,10 +1,10 @@
 import {
   Injectable,
+  Logger,
   UnauthorizedException,
   type CanActivate,
   type ExecutionContext,
 } from '@nestjs/common';
-import { runInBackground } from '../../utils/helpers/background.helpers';
 import { readApiKey } from '../partner/stores/api-keys/api-keys.helpers';
 import { ApiKeysService } from '../partner/stores/api-keys/api-keys.service';
 import type { TApiKeyContext } from '../partner/stores/api-keys/api-keys.types';
@@ -15,6 +15,8 @@ import type { TApiKeyContext } from '../partner/stores/api-keys/api-keys.types';
  */
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
+  private readonly logger = new Logger(ApiKeyGuard.name);
+
   constructor(private readonly apiKeysService: ApiKeysService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -28,9 +30,15 @@ export class ApiKeyGuard implements CanActivate {
     if (!apiKey) throw new UnauthorizedException('Invalid API key');
 
     request.apiKey = apiKey;
-    runInBackground('Último uso da chave de API', () =>
-      this.apiKeysService.touch(apiKey.id),
-    );
+    // No máximo um UPDATE a cada 5 minutos por chave; falhar não barra a integração
+    await this.apiKeysService
+      .touch(apiKey.id)
+      .catch((error: unknown) =>
+        this.logger.error(
+          'Último uso da chave de API não registrado',
+          error instanceof Error ? error.stack : String(error),
+        ),
+      );
 
     return true;
   }

@@ -7,7 +7,6 @@ import type { Schedule } from '../schedule/schedule.entity';
 
 export const WEBHOOK_SIGNATURE_HEADER = 'ServiceSnap-Signature';
 export const WEBHOOK_TIMEOUT_MS = 5000;
-export const WEBHOOK_RETRY_DELAYS_MS = [2000, 6000];
 export const WEBHOOK_MAX_CONSECUTIVE_FAILURES = 20;
 
 /**
