@@ -1,5 +1,10 @@
 export { AgendaDataState } from './agenda-data-state';
-export { useAgendaDataState } from './agenda-data-state.hook';
+export {
+  useAgendaDataState,
+  useAgendaHolidaysQuery,
+  useAgendaRange,
+  useAgendaSchedulesQuery,
+} from './agenda-data-state.hook';
 export type {
   TAgendaDataStateConfig,
   TAgendaDataStatus,

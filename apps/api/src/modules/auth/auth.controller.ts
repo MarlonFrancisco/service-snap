@@ -14,10 +14,15 @@ import type { Request, Response } from 'express';
 import { getAccessTokenFromCookie } from '../../utils';
 import { buildSessionCookieOptions } from './auth.helpers';
 import { AuthService, type TokenResponse } from './auth.service';
+import {
+  EmailChangeConfirmDto,
+  EmailChangeDto,
+} from './dto/email-change.dto';
 import { LoginFirstStepDto } from './dto/login-first-step.dto';
 import { RegisterDto } from './dto/register.dto';
 import { ValidationCodeDto } from './dto/validation-code.dto';
 import { GoogleSSOService } from './google-sso.service';
+import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
@@ -55,6 +60,34 @@ export class AuthController {
 
       throw new UnauthorizedException(error);
     }
+  }
+
+  @Post('email-change')
+  @UseGuards(JwtAuthGuard)
+  async requestEmailChange(
+    @CurrentUser('sub') userId: string,
+    @Body() body: EmailChangeDto,
+  ) {
+    return this.authService.requestEmailChange(userId, body.email);
+  }
+
+  /** O token carrega o e-mail: depois da troca, a sessão é renovada. */
+  @HttpCode(200)
+  @Post('email-change/confirm')
+  @UseGuards(JwtAuthGuard)
+  async confirmEmailChange(
+    @CurrentUser('sub') userId: string,
+    @Body() body: EmailChangeConfirmDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { tokens, user } = await this.authService.confirmEmailChange(
+      userId,
+      body.code,
+    );
+
+    this.setSessionCookies(res, tokens, user.id);
+
+    return { user: { id: user.id, email: user.email } };
   }
 
   /** `user_identification` é lido pelo front; só vai quando o cadastro está completo. */

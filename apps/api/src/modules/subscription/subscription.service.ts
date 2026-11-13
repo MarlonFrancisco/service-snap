@@ -56,6 +56,25 @@ export class SubscriptionService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
+  /**
+   * Sessão do portal de cobrança do Stripe, onde o dono troca o cartão, vê as
+   * faturas e atualiza os dados de cobrança. Volta para a tela de planos.
+   */
+  async createBillingPortalSession(userId: string): Promise<{ url: string }> {
+    const user = await this.userService.findById(userId);
+
+    if (!user?.paymentCustomerId) {
+      throw new BadRequestException('No billing account for this user');
+    }
+
+    const session = await this.stripeService.billingPortal.sessions.create({
+      customer: user.paymentCustomerId,
+      return_url: `${this.configService.get<string>('FRONTEND_URL')}/partner/plans`,
+    });
+
+    return { url: session.url };
+  }
+
   async cancel(userId: string) {
     const subscription = await this.subscriptionRepository.findOne({
       where: {

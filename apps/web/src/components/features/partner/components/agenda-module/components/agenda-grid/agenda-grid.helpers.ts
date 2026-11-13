@@ -1,9 +1,11 @@
+import type { TAgendaVisit } from '@/store/admin/agenda';
 import type { IBlockedTime } from '@/types/api/blocked-times.types';
 import type { IAppointment } from '@/types/api/schedule.types';
 import type { IProfessional } from '@/types/api/users.types';
 import type { TSelectedSlot } from './agenda-grid-bulk-block.types';
 import { GRID_CONSTANTS } from './agenda-grid.constants';
 import type {
+  TAgendaBlockedBlock,
   TAgendaColumnBlock,
   TPositionedAppointment,
 } from './agenda-grid.types';
@@ -21,7 +23,10 @@ export const isToday = (date: Date): boolean => {
 export const getProfessionalFullName = (
   professional: IProfessional,
 ): string => {
-  return `${professional.user.firstName} ${professional.user.lastName}`;
+  // Convidado só com e-mail chega sem sobrenome (`null`).
+  return [professional.user.firstName, professional.user.lastName]
+    .filter(Boolean)
+    .join(' ');
 };
 
 export const getProfessionalInitials = (
@@ -54,22 +59,129 @@ export const dateToISOString = (date: Date): string => {
   return `${date.getFullYear()}-${month}-${day}`;
 };
 
+export const timeToMinutes = (time: string): number => {
+  const [hours = 0, minutes = 0] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+/** Bloqueio antigo, sem fim, ocupa um slot de 30 minutos. */
+const LEGACY_BLOCK_MINUTES = 30;
+
+/** Dia da semana de YYYY-MM-DD no padrão da API: domingo é 0. */
+export const getApiDayOfWeek = (date: string): number =>
+  new Date(`${date}T12:00:00`).getDay();
+
+/** O bloqueio semanal vale em todo dia da semana dele; o comum, só na data. */
+export const blockedTimeAppliesOn = (
+  blockedTime: IBlockedTime,
+  date: string,
+): boolean =>
+  blockedTime.isRecurring
+    ? // O enum do Postgres chega como texto ("2")
+      Number(blockedTime.dayOfWeek) === getApiDayOfWeek(date)
+    : String(blockedTime.date).slice(0, 10) === date;
+
+export const getBlockedRangeMinutes = (
+  blockedTime: IBlockedTime,
+): [number, number] => {
+  const start = timeToMinutes(blockedTime.time);
+  const end = blockedTime.endTime
+    ? timeToMinutes(blockedTime.endTime)
+    : start + LEGACY_BLOCK_MINUTES;
+  return [start, end];
+};
+
 /**
- * Verifica se um horário está bloqueado
+ * Bloqueio que cobre o slot: o início do slot cai dentro do intervalo
+ * `[time, endTime)` de um bloqueio que vale no dia.
  */
 export const isBlockedTime = (
   blockedTimes: IBlockedTime[] | undefined,
   date: string,
   time: string,
 ): IBlockedTime | undefined => {
-  return blockedTimes?.find(
-    (blockedTime) => blockedTime.date === date && blockedTime.time === time,
-  );
+  const slotMinutes = timeToMinutes(time);
+
+  return blockedTimes?.find((blockedTime) => {
+    if (!blockedTimeAppliesOn(blockedTime, date)) return false;
+    const [start, end] = getBlockedRangeMinutes(blockedTime);
+    return slotMinutes >= start && slotMinutes < end;
+  });
 };
 
-const timeToMinutes = (time: string): number => {
-  const [hours = 0, minutes = 0] = time.split(':').map(Number);
-  return hours * 60 + minutes;
+/** Linhas da grade cobertas por um bloqueio no dia (vazio se nenhuma). */
+export const getBlockedRows = (
+  blockedTime: IBlockedTime,
+  timeSlots: string[],
+): number[] => {
+  const [start, end] = getBlockedRangeMinutes(blockedTime);
+
+  return timeSlots.flatMap((time, rowIndex) => {
+    const minutes = timeToMinutes(time);
+    return minutes >= start && minutes < end ? [rowIndex] : [];
+  });
+};
+
+export const formatBlockedRange = (blockedTime: IBlockedTime): string => {
+  const end = blockedTime.endTime?.trim();
+
+  if (blockedTime.time === '00:00' && end === '24:00') return 'dia inteiro';
+
+  return end ? `${blockedTime.time}–${end}` : blockedTime.time;
+};
+
+/**
+ * Junta os serviços de uma mesma reserva num bloco só (início do primeiro,
+ * fim do último). Cancelados ficam de fora antes de chegar aqui.
+ */
+export const groupVisits = (appointments: IAppointment[]): TAgendaVisit[] => {
+  const groups = appointments.reduce((visits, appointment) => {
+    const key = `${appointment.booking?.id ?? appointment.id}|${appointment.date}|${appointment.storeMember.id}`;
+    visits.set(key, [...(visits.get(key) ?? []), appointment]);
+    return visits;
+  }, new Map<string, IAppointment[]>());
+
+  return [...groups.values()].map((items) => {
+    const sorted = [...items].sort((first, second) =>
+      first.startTime.localeCompare(second.startTime),
+    );
+    const [first] = sorted;
+    const last = sorted.at(-1);
+
+    if (!first || !last || sorted.length === 1) {
+      return first as TAgendaVisit;
+    }
+
+    return { ...first, endTime: last.endTime, visitItems: sorted };
+  });
+};
+
+export const getVisitItems = (visit: TAgendaVisit): IAppointment[] =>
+  visit.visitItems ?? [visit];
+
+export const getVisitServiceNames = (visit: TAgendaVisit): string =>
+  getVisitItems(visit)
+    .map((item) => item.service.name)
+    .join(' + ');
+
+/** "30min", "1h", "1h 30min". */
+export const formatDuration = (minutes: number): string => {
+  if (minutes < 60) return `${minutes}min`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  return rest > 0 ? `${hours}h ${rest}min` : `${hours}h`;
+};
+
+export const getVisitDuration = (visit: TAgendaVisit): string =>
+  formatDuration(timeToMinutes(visit.endTime) - timeToMinutes(visit.startTime));
+
+/** "qui, 5": dia da semana abreviado, sem o ponto do `pt-BR`. */
+export const formatShortDay = (date: string): string => {
+  const parsed = new Date(`${date.slice(0, 10)}T12:00:00`);
+  const weekday = parsed
+    .toLocaleDateString('pt-BR', { weekday: 'short' })
+    .replace('.', '');
+  return `${weekday}, ${parsed.getDate()}`;
 };
 
 /**
@@ -78,7 +190,7 @@ const timeToMinutes = (time: string): number => {
  * dividir a duração por 30.
  */
 const getAppointmentRows = (
-  appointment: IAppointment,
+  appointment: TAgendaVisit,
   timeSlots: string[],
 ): { rowStart: number; rowEnd: number } => {
   const slotMinutes = timeSlots.map(timeToMinutes);
@@ -98,7 +210,7 @@ const getAppointmentRows = (
 };
 
 type TPlacedAppointment = {
-  appointment: IAppointment;
+  appointment: TAgendaVisit;
   rowStart: number;
   rowEnd: number;
 };
@@ -108,7 +220,7 @@ type TPlacedAppointment = {
  * se cruzam divide a largura pelo número de faixas de que precisa.
  */
 export const buildAppointmentLayout = (
-  appointments: IAppointment[],
+  appointments: TAgendaVisit[],
   timeSlots: string[],
 ): TPositionedAppointment[] => {
   const placed: TPlacedAppointment[] = appointments
@@ -174,14 +286,30 @@ export const getBlockStyle = (
   };
 };
 
+/** Bloqueio em faixa: ocupa a largura toda da coluna, nas linhas que cobre. */
+export const getBlockedBlockStyle = (
+  block: TAgendaBlockedBlock,
+  slotHeight: number,
+) => ({
+  top: block.rowStart * slotHeight + 2,
+  height: block.rowSpan * slotHeight - 5,
+  left: 2,
+  width: 'calc(100% - 4px)',
+});
+
 /** Cliente criado só com e-mail chega sem nome: a API devolve `null`. */
 export const getClientName = (user: IAppointment['user']): string =>
   [user.firstName, user.lastName].filter(Boolean).join(' ') ||
   'Cliente sem nome';
 
-export const getAppointmentAriaLabel = (appointment: IAppointment): string => {
-  const { user, service, storeMember, startTime, endTime } = appointment;
-  return `${getClientName(user)}, ${service.name}, ${startTime} a ${endTime}, ${getProfessionalFullName(storeMember)}`;
+export const getAppointmentAriaLabel = (appointment: TAgendaVisit): string => {
+  const { user, storeMember, startTime, endTime } = appointment;
+  const items = getVisitItems(appointment);
+  const services =
+    items.length > 1
+      ? `${items.length} serviços: ${items.map((item) => item.service.name).join(' e ')}`
+      : appointment.service.name;
+  return `${getClientName(user)}, ${services}, ${startTime} a ${endTime}, ${getProfessionalFullName(storeMember)}`;
 };
 
 export const getBulkActionLabel = (slots: TSelectedSlot[]): string => {

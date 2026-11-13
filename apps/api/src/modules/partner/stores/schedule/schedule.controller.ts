@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -14,6 +15,7 @@ import { Public } from '../../../auth/decorators/public.decorator';
 import { StoreAccessGuard } from '../guards';
 import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { CreateSchedulesDto } from './dto/create-schedule.dto';
+import { RescheduleDto, ScheduleListQueryDto } from './dto/schedule-query.dto';
 import { ScheduleDto } from './dto/schedule.dto';
 import { ScheduleCancelGuard } from './schedule-cancel.guard';
 import { ScheduleService } from './schedule.service';
@@ -24,8 +26,12 @@ export class ScheduleController {
 
   @Get()
   @UseGuards(StoreAccessGuard)
-  findAll(@Param('storeId') storeId: string) {
-    return this.scheduleService.findAll(storeId);
+  findAll(
+    @Param('storeId') storeId: string,
+    @CurrentUser('sub') requesterId: string,
+    @Query() query: ScheduleListQueryDto,
+  ) {
+    return this.scheduleService.findAll(storeId, query, requesterId);
   }
 
   @Public()
@@ -55,13 +61,30 @@ export class ScheduleController {
   update(
     @Param('storeId') storeId: string,
     @Param('id') id: string,
+    @CurrentUser('sub') requesterId: string,
     @Body() schedule: ScheduleDto,
   ) {
-    return this.scheduleService.update({
-      ...schedule,
+    return this.scheduleService.update(
+      { ...schedule, id, store: { id: storeId } },
+      requesterId,
+    );
+  }
+
+  // Mesmo acesso do cancelamento: o cliente dono do agendamento ou a equipe
+  @Patch(':id/reschedule')
+  @UseGuards(ScheduleCancelGuard)
+  reschedule(
+    @Param('storeId') storeId: string,
+    @Param('id') id: string,
+    @CurrentUser('sub') requesterId: string,
+    @Body() body: RescheduleDto,
+  ) {
+    return this.scheduleService.rescheduleForRequester(
+      storeId,
       id,
-      store: { id: storeId },
-    });
+      body,
+      requesterId,
+    );
   }
 
   @Delete(':id')

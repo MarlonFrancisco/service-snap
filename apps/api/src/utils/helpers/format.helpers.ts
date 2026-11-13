@@ -21,3 +21,17 @@ export const formatStoreCurrency = (
   store?: TRegionSource | null,
 ): string =>
   formatCurrency(Number(value), getStoreCurrency(store), getStoreLocale(store));
+
+/**
+ * "Salão de Beleza" → "salao-de-beleza". Igual ao `slugify` da web
+ * (`apps/web/src/utils/helpers/slug.helper.ts`): os dois lados geram o mesmo link.
+ */
+export function slugify(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}

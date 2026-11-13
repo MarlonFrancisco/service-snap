@@ -5,6 +5,8 @@ export type TStoreFormTab =
   | 'region'
   | 'contact'
   | 'hours'
+  | 'schedule'
+  | 'holidays'
   | 'gallery'
   | 'staff';
 

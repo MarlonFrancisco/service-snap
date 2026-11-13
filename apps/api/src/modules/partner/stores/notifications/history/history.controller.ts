@@ -9,12 +9,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { StoreAccessGuard } from '../../guards';
+import { RequireStoreRoles, StoreRoleGuard } from '../../guards';
 import { UpdateNotificationHistoryDto } from './dto/update-notifications-history.dto';
 import { NotificationsHistoryService } from './history.service';
 
 @Controller('partner/stores/:storeId/notifications/history')
-@UseGuards(StoreAccessGuard)
+// Gestão da loja: só dono e gerente
+@RequireStoreRoles('owner', 'manager')
+@UseGuards(StoreRoleGuard)
 export class NotificationsHistoryController {
   constructor(
     private readonly notificationsHistoryService: NotificationsHistoryService,

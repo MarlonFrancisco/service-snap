@@ -12,6 +12,7 @@ import { ScheduleCancelGuard } from '../schedule/schedule-cancel.guard';
 import { ScheduleController } from '../schedule/schedule.controller';
 import { BlockedTimeController } from '../store-member/blocked-time/blocked-time.controller';
 import { StoreMemberController } from '../store-member/store-member.controller';
+import { TeamController } from '../team/team.controller';
 import { StoreAccessGuard } from './store-access.guard';
 import { REQUIRED_ROLES_KEY, StoreRoleGuard } from './store-role.guard';
 
@@ -37,13 +38,25 @@ describe('partner store routes', () => {
     [ServiceController],
     [GalleryController],
     [BlockedTimeController],
-    [NotificationsHistoryController],
-    [NotificationsSettingsController],
-    [MetricsController],
   ])('%o requires store access on every route', (controller) => {
     for (const method of methodsOf(controller)) {
       expect(guardsOf(controller, method), method).toContain(StoreAccessGuard);
     }
+  });
+
+  // Gestão da loja: o papel vem no controller inteiro
+  it.each([
+    [NotificationsHistoryController],
+    [NotificationsSettingsController],
+    [MetricsController],
+  ])('%o requires owner or manager on every route', (controller) => {
+    for (const method of methodsOf(controller)) {
+      expect(guardsOf(controller, method), method).toContain(StoreRoleGuard);
+    }
+    expect(Reflect.getMetadata(REQUIRED_ROLES_KEY, controller)).toEqual([
+      'owner',
+      'manager',
+    ]);
   });
 
   it('requires store access to read or edit schedules', () => {
@@ -85,14 +98,17 @@ describe('partner store routes', () => {
     ]);
   });
 
-  it.each(['create', 'update', 'delete'])(
-    'requires owner or manager to %s a member',
-    (method) => {
-      const handler = StoreMemberController.prototype[
-        method as keyof StoreMemberController
-      ] as object;
+  // Entrar na equipe fica em `TeamController`, que manda o convite
+  it.each([
+    [TeamController, 'create'],
+    [StoreMemberController, 'update'],
+    [StoreMemberController, 'delete'],
+  ] as const)(
+    '%o requires owner or manager to %s a member',
+    (controller, method) => {
+      const handler = controller.prototype[method as never] as object;
 
-      expect(guardsOf(StoreMemberController, method)).toEqual([StoreRoleGuard]);
+      expect(guardsOf(controller, method)).toEqual([StoreRoleGuard]);
       expect(Reflect.getMetadata(REQUIRED_ROLES_KEY, handler)).toEqual([
         'owner',
         'manager',

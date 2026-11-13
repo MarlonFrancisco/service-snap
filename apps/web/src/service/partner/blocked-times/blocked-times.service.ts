@@ -24,6 +24,8 @@ export class BlockedTimesService {
     blockedTimes: Array<{
       date: Date | string;
       time: string;
+      /** Sem fim, o bloqueio ocupa um slot da grade da loja. */
+      endTime?: string;
       isRecurring?: boolean;
       dayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
     }>,

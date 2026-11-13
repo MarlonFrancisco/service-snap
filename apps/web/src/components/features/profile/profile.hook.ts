@@ -7,6 +7,7 @@ const PROFILE_TABS: readonly TProfileTab[] = [
   'bookings',
   'favorites',
   'settings',
+  'personal',
 ];
 
 export const useProfile = (initialTab: TProfileTab = 'bookings') => {

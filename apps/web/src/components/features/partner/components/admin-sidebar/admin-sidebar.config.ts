@@ -3,12 +3,15 @@ import {
   Briefcase,
   Calendar,
   ChartNoAxesColumn,
+  Clock,
   CreditCard,
   Home,
+  Lock,
   Plug,
   Store,
+  Users,
 } from 'lucide-react';
-import type { TNavItem } from './admin-sidebar.types';
+import type { TNavItem, TNavLinkItem } from './admin-sidebar.types';
 
 /** Só a estrutura: o acesso por plano é aplicado em `useAdminSidebar`. */
 export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
@@ -26,6 +29,13 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     label: 'Agenda',
     icon: Calendar,
     href: '/partner/agenda',
+  },
+  {
+    kind: 'link',
+    id: 'customers',
+    label: 'Clientes',
+    icon: Users,
+    href: '/partner/clientes',
   },
   {
     kind: 'group',
@@ -133,3 +143,31 @@ export const PARTNER_NAV_HREFS: readonly string[] = PARTNER_NAV_ITEMS.flatMap(
       ? item.children.map((child) => child.href)
       : [item.href],
 );
+
+/**
+ * Menu do profissional: só a própria agenda. Bloqueios e horário abrem os
+ * painéis da agenda pelo parâmetro `painel`.
+ */
+export const PROFESSIONAL_NAV_ITEMS: readonly TNavLinkItem[] = [
+  {
+    kind: 'link',
+    id: 'my-agenda',
+    label: 'Minha agenda',
+    icon: Calendar,
+    href: '/partner/agenda',
+  },
+  {
+    kind: 'link',
+    id: 'my-blocks',
+    label: 'Meus bloqueios',
+    icon: Lock,
+    href: '/partner/agenda?painel=bloqueios',
+  },
+  {
+    kind: 'link',
+    id: 'my-hours',
+    label: 'Meu horário',
+    icon: Clock,
+    href: '/partner/agenda?painel=horario',
+  },
+];

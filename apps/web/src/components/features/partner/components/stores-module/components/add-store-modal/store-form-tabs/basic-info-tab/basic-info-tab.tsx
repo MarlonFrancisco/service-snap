@@ -28,6 +28,7 @@ import {
   AMENITIES_LIST,
   AMENITY_LABELS,
 } from '../../../../utils/stores-module.constants';
+import { StoreSlugField } from '../store-slug-field';
 import { StoreTextField } from '../store-text-field';
 import { useBasicInfoTab } from './basic-info-tab.hook';
 
@@ -74,6 +75,8 @@ export const BasicInfoTab = () => {
             </FormItem>
           )}
         />
+
+        <StoreSlugField />
       </fieldset>
 
       <fieldset className={STORES_FIELDSET_CLASS}>

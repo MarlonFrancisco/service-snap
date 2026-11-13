@@ -2,6 +2,8 @@ import {
   IAppointment,
   IAvailabilitySlot,
   ICreateAppointment,
+  TRescheduleRequest,
+  TScheduleListQuery,
 } from '@/types/api/schedule.types';
 import { apiClient } from '../../api';
 import { HttpClientService } from '../../api/http-client.service';
@@ -17,9 +19,39 @@ export class ScheduleService {
     );
   }
 
-  static async getAll(storeId: string) {
+  /**
+   * Agenda da loja. Passe `from`/`to` para carregar só o período mostrado;
+   * profissional recebe só a própria agenda, peça o filtro que pedir.
+   */
+  static async getAll(
+    storeId: string,
+    { from, to, memberId }: Omit<TScheduleListQuery, 'page' | 'limit'> = {},
+  ) {
+    const params = new URLSearchParams({
+      ...(from && { from }),
+      ...(to && { to }),
+      ...(memberId && { memberId }),
+    });
+    const query = params.size ? `?${params}` : '';
+
     return await this.apiClient.get<IAppointment[]>(
-      `/partner/stores/${storeId}/schedules`,
+      `/partner/stores/${storeId}/schedules${query}`,
+    );
+  }
+
+  /**
+   * Muda dia, horário e (opcional) profissional da visita inteira. A equipe
+   * encaixa onde quiser; o cliente segue a política da loja (403 com
+   * `SCHEDULE_POLICY_CODE`) e só pega horário oferecido (409).
+   */
+  static async reschedule(
+    storeId: string,
+    scheduleId: string,
+    request: TRescheduleRequest,
+  ) {
+    return await this.apiClient.patch<IAppointment>(
+      `/partner/stores/${storeId}/schedules/${scheduleId}/reschedule`,
+      request,
     );
   }
 

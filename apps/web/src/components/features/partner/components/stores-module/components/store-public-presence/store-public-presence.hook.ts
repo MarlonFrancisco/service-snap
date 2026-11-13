@@ -10,10 +10,11 @@ import type { TStorePublicPresenceConfig } from './store-public-presence.types';
 
 export const useStorePublicPresence = ({
   storeId,
+  slug,
   instagram,
 }: TStorePublicPresenceConfig) => {
   const analytics = useAnalytics();
-  const publicUrl = storePublicUrl(storeId);
+  const publicUrl = storePublicUrl(slug || storeId);
 
   const handleCopyPublicUrl = useCallback(() => {
     void navigator.clipboard.writeText(publicUrl).then(

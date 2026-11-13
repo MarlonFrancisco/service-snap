@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
 import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
+import { toPage, toSkipTake } from '../../../../utils/helpers/pagination.helpers';
+import type { TPage } from '../../../../utils/helpers/pagination.types';
 import { Schedule } from '../schedule/schedule.entity';
 import { StoreSearchSyncService } from '../search-sync/store-search-sync.service';
 import { ReviewDto } from './dto/review.dto';
@@ -100,13 +103,28 @@ export class ReviewService {
     return query.getOne();
   }
 
-  async findAll(storeId: string): Promise<Review[]> {
-    return this.reviewRepository.find({
+  /** Com `page`, uma página das mais recentes; sem, a lista inteira. */
+  async findAll(
+    storeId: string,
+    { page, limit }: PaginationQueryDto = {},
+  ): Promise<Review[] | TPage<Review>> {
+    const options = {
       where: { store: { id: storeId } },
+      order: { createdAt: 'DESC' as const },
       relations: ['user', 'store'],
       select: REVIEW_SELECT,
-      order: { createdAt: 'DESC' },
+    };
+
+    if (!page) return this.reviewRepository.find(options);
+
+    const { skip, take } = toSkipTake(page, limit);
+    const [reviews, total] = await this.reviewRepository.findAndCount({
+      ...options,
+      skip,
+      take,
     });
+
+    return toPage(reviews, total, page, take);
   }
 
   async findOne(id: string): Promise<Review> {

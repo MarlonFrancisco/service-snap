@@ -58,11 +58,16 @@ export const useStoreMemberMutations = () => {
       });
       toast.success('Membro da loja atualizado com sucesso');
     },
-    onError: () => {
+    onError: (error: unknown) => {
       analytics.track('partner_mutation_failed', {
         entity: 'team_member',
         operation: 'update',
       });
+      toast.error(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Erro ao atualizar membro da loja',
+      );
     },
   });
 
@@ -104,13 +109,22 @@ export const useStoreMemberMutations = () => {
         store_id: storeId,
         role: data.role,
       });
-      toast.success('Membro da loja adicionado com sucesso');
+      // A API sempre manda o convite por e-mail, com ou sem conta prévia
+      toast.success(
+        data.user?.email
+          ? `Convite enviado para ${data.user.email}`
+          : 'Membro da loja adicionado com sucesso',
+        { description: 'A pessoa entra com o código que chega no e-mail.' },
+      );
     },
     onError: (error: unknown, variables) => {
       analytics.track('team_member_invite_failed', {
         store_id: variables.storeId,
         http_status: isApiHttpError(error) ? error.status : undefined,
       });
+      // 409 (já é da equipe) é mostrado no campo de e-mail por quem chamou
+      if (isApiHttpError(error) && error.status === 409) return;
+
       const message =
         error instanceof Error
           ? error.message

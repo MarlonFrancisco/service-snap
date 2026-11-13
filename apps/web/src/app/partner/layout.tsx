@@ -3,6 +3,7 @@ import { OnboardingService } from '@/service/partner/onboarding';
 import { StoreService } from '@/service/store';
 import { SubscriptionService } from '@/service/subscription';
 import { IMySubscription } from '@/types/api';
+import type { IStore } from '@/types/api/stores.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { cookies } from 'next/headers';
@@ -41,8 +42,13 @@ export default async function PartnerLayout({ children }: PartnerLayoutProps) {
   const subscription = queryClient.getQueryData<IMySubscription>(
     CACHE_QUERY_KEYS.currentPlan(),
   );
+  const stores = queryClient.getQueryData<IStore[]>(CACHE_QUERY_KEYS.stores());
+  // Equipe de outra loja entra pelo plano do dono, sem assinatura própria
+  const isTeamMember = !!stores?.some(
+    (store) => store.memberRole && store.memberRole !== 'owner',
+  );
 
-  if (!subscription?.isActive) {
+  if (!subscription?.isActive && !isTeamMember) {
     redirect('/pricing');
   }
 
@@ -52,7 +58,10 @@ export default async function PartnerLayout({ children }: PartnerLayoutProps) {
     () => null,
   );
 
-  if (onboarding && onboarding.status !== 'not_needed') {
+  // Quem só é da equipe não tem espaço próprio para preparar
+  const skipsWelcome = isTeamMember && onboarding?.status === 'welcome';
+
+  if (onboarding && onboarding.status !== 'not_needed' && !skipsWelcome) {
     redirect('/onboarding');
   }
 

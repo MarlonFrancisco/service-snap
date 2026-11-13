@@ -1,5 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
+  BadRequestException,
+  ConflictException,
   HttpException,
   HttpStatus,
   Inject,
@@ -204,6 +206,100 @@ export class AuthService {
       tokens,
       user: !isNewUser ? user : undefined,
     };
+  }
+
+  /**
+   * Primeiro passo da troca de e-mail: manda um código para o endereço novo.
+   * O e-mail só muda depois de confirmar, e o código não abre a conta.
+   */
+  async requestEmailChange(userId: string, email: string) {
+    const nextEmail = email.trim();
+    const sends = await this.countUsage(`auth:email-change-sends:${userId}`);
+
+    if (sends > AUTH_CODE_MAX_SENDS) {
+      throw new HttpException(
+        'Muitos códigos pedidos. Tente de novo em alguns minutos.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const owner = await this.userService.findByOne({ email: nextEmail });
+
+    if (owner && owner.id !== userId) {
+      throw new ConflictException('Este e-mail já está em uso');
+    }
+
+    const code = generateAuthCode();
+
+    await this.userService.setPendingEmail(
+      userId,
+      nextEmail,
+      code.code,
+      code.expiresIn,
+    );
+    await this.cacheManager
+      .del(this.emailChangeAttemptsKey(userId))
+      .catch(() => undefined);
+    await this.notificationService.sendEmailOTP(nextEmail, code.code);
+
+    return { email: nextEmail };
+  }
+
+  /** Confere o código do e-mail novo, troca o e-mail e devolve sessão nova. */
+  async confirmEmailChange(userId: string, code: string) {
+    const pending = await this.userService.findPendingEmail(userId);
+
+    if (!pending?.pendingEmail || !pending.pendingEmailCode) {
+      throw new BadRequestException('No e-mail change pending');
+    }
+
+    if (pending.pendingEmailCode !== code) {
+      const attempts = await this.countUsage(
+        this.emailChangeAttemptsKey(userId),
+      );
+
+      if (attempts >= AUTH_CODE_MAX_ATTEMPTS) {
+        await this.userService.resolvePendingEmail(userId);
+
+        throw new HttpException(
+          'Muitas tentativas. Peça um novo código.',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+
+      throw new BadRequestException('Invalid code');
+    }
+
+    if (pending.pendingEmailExpiresAt < new Date()) {
+      throw new BadRequestException('Code expired');
+    }
+
+    // Alguém pode ter cadastrado o endereço enquanto o código esperava
+    const owner = await this.userService.findByOne({
+      email: pending.pendingEmail,
+    });
+
+    if (owner && owner.id !== userId) {
+      await this.userService.resolvePendingEmail(userId);
+      throw new ConflictException('Este e-mail já está em uso');
+    }
+
+    const user = await this.userService.resolvePendingEmail(
+      userId,
+      pending.pendingEmail,
+    );
+    const tokens = await this.generateTokens({
+      sub: user.id,
+      email: user.email,
+      telephone: user.telephone,
+      paymentCustomerId: user.paymentCustomerId,
+    });
+
+    return { tokens, user };
+  }
+
+  private emailChangeAttemptsKey(userId: string) {
+    return `auth:email-change-attempts:${userId}`;
   }
 
   async register(body: RegisterDto, token: string) {

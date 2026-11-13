@@ -4,6 +4,25 @@ export type TBookingStep =
   | 'datetime'
   | 'checkout';
 
+/** O que a tela de confirmação mostra depois que a reserva foi criada. */
+export type TBookingConfirmation = {
+  /** Visita criada; serve de UID no calendário. */
+  bookingId: string;
+  /** YYYY-MM-DD */
+  dateKey: string;
+  startTime: string;
+  endTime: string;
+  services: {
+    id: string;
+    name: string;
+    duration: number;
+    price: number;
+    quantity: number;
+  }[];
+  professionalName: string;
+  totalPrice: number;
+};
+
 export type TBookingSummaryConfig = {
   totalPrice: number;
   totalDuration: number;

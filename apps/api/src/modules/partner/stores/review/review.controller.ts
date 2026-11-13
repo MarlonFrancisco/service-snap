@@ -7,11 +7,13 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { Public } from '../../../auth/decorators/public.decorator';
+import { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
 import { RequireStoreRoles, StoreRoleGuard } from '../guards';
 import { ReviewDto, ReviewReplyDto } from './dto/review.dto';
 import { ReviewService } from './review.service';
@@ -38,8 +40,11 @@ export class ReviewController {
 
   @Public()
   @Get()
-  async findAll(@Param('storeId') storeId: string) {
-    return this.reviewService.findAll(storeId);
+  async findAll(
+    @Param('storeId') storeId: string,
+    @Query() query: PaginationQueryDto,
+  ) {
+    return this.reviewService.findAll(storeId, query);
   }
 
   @Get(':id')

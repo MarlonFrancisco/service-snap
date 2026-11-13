@@ -1,6 +1,6 @@
-import { ICreateAppointment } from '@/types/api/schedule.types';
+import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
 import { TBookingFormData } from './booking.schema';
-import { ITimeSlot } from './booking.types';
+import { ITimeSlot, TBookingConfirmation } from './booking.types';
 
 const AFTERNOON_START_HOUR = 12;
 
@@ -108,3 +108,43 @@ export const groupSlotsByPeriod = <T extends ITimeSlot>(slots: T[]) =>
       ),
     },
   ].filter((period) => period.slots.length > 0);
+
+/** Resumo da tela de confirmação a partir do que a API criou e do pedido. */
+export const buildBookingConfirmation = ({
+  appointments,
+  services,
+  date,
+  fallbackProfessionalName,
+}: {
+  appointments: IAppointment[];
+  services: TBookingService[];
+  date: Date;
+  fallbackProfessionalName: string;
+}): TBookingConfirmation => {
+  const ordered = [...appointments].sort((a, b) =>
+    a.startTime.localeCompare(b.startTime),
+  );
+  const first = ordered[0];
+  const last = ordered[ordered.length - 1];
+  const professional = first?.storeMember?.user;
+
+  return {
+    bookingId: first?.booking?.id ?? first?.id ?? '',
+    dateKey: first?.date?.slice(0, 10) ?? getLocalDateKey(date),
+    startTime: first?.startTime.slice(0, 5) ?? '',
+    endTime: last?.endTime.slice(0, 5) ?? '',
+    services: services.map(({ id, name, duration, price, quantity }) => ({
+      id,
+      name,
+      duration,
+      price,
+      quantity,
+    })),
+    professionalName: professional
+      ? [professional.firstName, professional.lastName]
+          .filter(Boolean)
+          .join(' ')
+      : fallbackProfessionalName,
+    totalPrice: getBookingTotals(services).totalPrice,
+  };
+};

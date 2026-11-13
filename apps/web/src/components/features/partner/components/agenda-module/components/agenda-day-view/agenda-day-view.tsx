@@ -31,14 +31,16 @@ export const AgendaDayView = memo(() => {
     scrollClassName,
     handleSelectDay,
     handleAppointmentClick,
+    handleBlockedBlockClick,
     bulkBlockHook,
+    drag,
   } = useAgendaDayView();
 
   if (!selectedDayData) {
     return null;
   }
 
-  const { isToday, isWorkingDay } = selectedDayData;
+  const { isToday, isWorkingDay, holiday } = selectedDayData;
 
   return (
     <>
@@ -54,6 +56,11 @@ export const AgendaDayView = memo(() => {
         {!isWorkingDay && (
           <span className="rounded-full bg-[#F4F3F7] px-[11px] py-[5px] text-xs font-bold text-[#5F5C6E]">
             Dia não útil
+          </span>
+        )}
+        {holiday && (
+          <span className="rounded-full bg-[#DEDBE6] px-[11px] py-[5px] text-xs font-bold text-[#0B0B0F]">
+            {holiday.name ? `Feriado · ${holiday.name}` : 'Feriado'}
           </span>
         )}
       </div>
@@ -107,7 +114,9 @@ export const AgendaDayView = memo(() => {
                   column={column}
                   slotHeight={SLOT_HEIGHT}
                   showInitials={false}
+                  drag={drag}
                   onAppointmentClick={handleAppointmentClick}
+                  onBlockedClick={handleBlockedBlockClick}
                 />
               ) : (
                 <div

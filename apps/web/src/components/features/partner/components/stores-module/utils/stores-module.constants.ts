@@ -35,15 +35,52 @@ export const AMENITY_LABELS: Record<(typeof AMENITIES_LIST)[number], string> = {
 
 export const STAFF_ROLES = {
   owner: {
-    label: 'Proprietário',
-    description: 'Acesso total ao sistema',
+    label: 'Dono',
+    description: 'Acesso total à loja, como o dono',
   },
   manager: {
     label: 'Gerente',
-    description: 'Gerencia operações e equipe',
+    description: 'Cuida da agenda de todos, clientes e serviços',
   },
   professional: {
     label: 'Profissional',
-    description: 'Presta serviços aos clientes',
+    description: 'Vê e edita só a própria agenda',
   },
 } as const;
+
+/**
+ * Papéis que se dá ao adicionar ou editar alguém. `owner` aparece como "Sócio":
+ * só quem é dono da loja dá esse papel (a API recusa o gerente com 403).
+ */
+export const TEAM_ROLE_OPTIONS = [
+  {
+    role: 'manager',
+    label: STAFF_ROLES.manager.label,
+    description: STAFF_ROLES.manager.description,
+  },
+  {
+    role: 'professional',
+    label: STAFF_ROLES.professional.label,
+    description: STAFF_ROLES.professional.description,
+  },
+  {
+    role: 'owner',
+    label: 'Sócio',
+    description: STAFF_ROLES.owner.description,
+  },
+] as const;
+
+export const OWNER_ROLE_LOCKED_DESCRIPTION =
+  'Só o dono da loja pode dar este papel';
+
+/** Tabela "O que cada papel pode fazer": o mesmo que a API aplica por papel. */
+export const TEAM_ROLE_PERMISSIONS = [
+  { permission: 'Agenda de todos', owner: 'Sim', manager: 'Sim', professional: 'Só a própria' },
+  { permission: 'Própria agenda e bloqueios', owner: 'Sim', manager: 'Sim', professional: 'Sim' },
+  { permission: 'Clientes', owner: 'Sim', manager: 'Sim', professional: 'Não' },
+  { permission: 'Serviços e galeria', owner: 'Sim', manager: 'Sim', professional: 'Não' },
+  { permission: 'WhatsApp e notificações', owner: 'Sim', manager: 'Sim', professional: 'Não' },
+  { permission: 'Métricas', owner: 'Sim', manager: 'Sim', professional: 'Não' },
+  { permission: 'Configurações da loja', owner: 'Sim', manager: 'Sim', professional: 'Não' },
+  { permission: 'Plano e cobrança', owner: 'Sim', manager: 'Não', professional: 'Não' },
+] as const;

@@ -9,7 +9,9 @@ import { isUUID } from 'class-validator';
 import {
   Between,
   EntityManager,
+  type FindOperator,
   In,
+  LessThanOrEqual,
   MoreThanOrEqual,
   Not,
   Repository,
@@ -29,6 +31,13 @@ import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
 import { isStoreDraft } from '../../onboarding/onboarding.helpers';
 import { Service } from '../category/service/service.entity';
+import { StoreCustomer } from '../customer/customer.entity';
+import {
+  assertOwnAgenda,
+  isProfessionalOnly,
+  type TStoreActor,
+} from '../guards';
+import { HolidayService } from '../holiday/holiday.service';
 import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
@@ -36,8 +45,24 @@ import { AvailabilityQueryDto } from './dto/availability-query.dto';
 import { CreateSchedulesDto } from './dto/create-schedule.dto';
 import { ScheduleDto } from './dto/schedule.dto';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
+import { Booking } from './booking.entity';
 import { Schedule } from './schedule.entity';
-import { buildSchedulePriceSnapshot } from './schedule.helpers';
+import {
+  assertWithinNotice,
+  buildSchedulePriceSnapshot,
+  shiftItems,
+} from './schedule.helpers';
+import type {
+  TBookingSource,
+  TRescheduleRequest,
+  TScheduleActor,
+  TScheduleListQuery,
+} from './schedule.types';
+import {
+  toPage,
+  toSkipTake,
+} from '../../../../utils/helpers/pagination.helpers';
+import type { TPage } from '../../../../utils/helpers/pagination.types';
 
 /**
  * Lista do que sai nas respostas de agendamento, para coluna nova em `User` não
@@ -77,6 +102,7 @@ export class ScheduleService {
     private readonly blockedTimeRepository: Repository<BlockedTime>,
     private readonly usersService: UsersService,
     private readonly scheduleNotifications: ScheduleNotificationsService,
+    private readonly holidayService: HolidayService,
   ) {}
 
   async getAvailability(
@@ -133,7 +159,7 @@ export class ScheduleService {
     );
     const memberIds = eligibleMembers.map((member) => member.id);
 
-    const [schedules, blockedTimes] = await Promise.all([
+    const [schedules, blockedTimes, isHoliday] = await Promise.all([
       this.scheduleRepository.find({
         where: {
           storeMember: { id: In(memberIds) },
@@ -151,14 +177,17 @@ export class ScheduleService {
         ],
         relations: ['storeMember'],
       }),
+      this.holidayService.isHoliday(storeId, date),
     ]);
 
     return buildAvailabilitySlots({
       store,
       date,
       durationMinutes,
+      isHoliday,
       members: eligibleMembers.map((member) => ({
         id: member.id,
+        workingHours: member.workingHours,
         schedules: schedules.filter((s) => s.storeMember.id === member.id),
         blockedTimes: blockedTimes.filter(
           (blocked) => blocked.storeMember.id === member.id,
@@ -173,6 +202,7 @@ export class ScheduleService {
       scheduleDto,
       (store) => this.upsertCustomer(scheduleDto.user, store.country),
       false,
+      'whatsapp',
     );
   }
 
@@ -181,37 +211,80 @@ export class ScheduleService {
     scheduleDto: CreateSchedulesDto,
     requesterId: string,
   ): Promise<Schedule[]> {
-    const isStaff = await this.isStoreStaff(scheduleDto.store?.id, requesterId);
+    const actor = await this.getStaffActor(scheduleDto.store?.id, requesterId);
+    const isStaff = !!actor;
+
+    // Profissional marca só na própria agenda
+    assertOwnAgenda(actor, scheduleDto.storeMember?.id);
 
     return this.createSchedules(
       scheduleDto,
       (store) =>
         isStaff
-          ? this.upsertCustomer(scheduleDto.user, store.country)
+          ? this.resolveStaffCustomer(scheduleDto.user, store)
           : this.usersService.findById(requesterId),
       isStaff,
+      isStaff ? 'store' : 'customer',
     );
   }
 
-  private async isStoreStaff(
+  /** Papel de quem pede na loja; `null` para quem é de fora (o cliente). */
+  private async getStaffActor(
     storeId: string,
     userId: string,
-  ): Promise<boolean> {
-    const isMember = await this.storeMemberRepository.exists({
-      where: {
-        store: { id: storeId },
-        user: { id: userId },
-        isActive: true,
-        isDeleted: false,
-      },
-    });
+  ): Promise<TStoreActor | null> {
+    if (!storeId || !userId) return null;
 
-    return (
-      isMember ||
+    const [member, isOwner] = await Promise.all([
+      this.storeMemberRepository.findOne({
+        where: {
+          store: { id: storeId },
+          user: { id: userId },
+          isActive: true,
+          isDeleted: false,
+        },
+        select: { id: true, role: true },
+      }),
       this.storeRepository.exists({
         where: { id: storeId, owner: { id: userId } },
-      })
-    );
+      }),
+    ]);
+
+    // O dono vale como dono mesmo cadastrado como profissional na equipe
+    if (isOwner) return { role: 'owner', storeMemberId: member?.id };
+
+    return member ? { role: member.role, storeMemberId: member.id } : null;
+  }
+
+  private async isStoreStaff(storeId: string, userId: string) {
+    return !!(await this.getStaffActor(storeId, userId));
+  }
+
+  /**
+   * Cliente do agendamento manual: um já cadastrado na loja (pelo `id`, vindo
+   * da busca de clientes) ou um contato novo, mesmo sem conta.
+   */
+  private async resolveStaffCustomer(
+    contact: Partial<User> | undefined,
+    store: Store,
+  ): Promise<User> {
+    if (!contact?.id) return this.upsertCustomer(contact, store.country);
+
+    // Só quem já é cliente da loja: um id qualquer ligaria a reserva a outra conta
+    const manager = this.scheduleRepository.manager;
+    const isCustomer =
+      (await manager.exists(Schedule, {
+        where: { store: { id: store.id }, user: { id: contact.id } },
+      })) ||
+      (await manager.exists(StoreCustomer, {
+        where: { store: { id: store.id }, user: { id: contact.id } },
+      }));
+
+    if (!isCustomer) {
+      throw new BadRequestException('Customer not found in this store');
+    }
+
+    return this.usersService.findById(contact.id);
   }
 
   /** Telefone sem DDI é lido como do país da loja. */
@@ -238,6 +311,7 @@ export class ScheduleService {
     scheduleDto: CreateSchedulesDto,
     resolveCustomer: (store: Store) => Promise<User>,
     createdByStore: boolean,
+    source: TBookingSource,
   ): Promise<Schedule[]> {
     const storeId = scheduleDto.store?.id;
     const store =
@@ -270,6 +344,7 @@ export class ScheduleService {
     }
 
     await this.assertMemberInStore(storeId, storeMemberId);
+    await this.assertMemberPerformsServices(storeMemberId, serviceIds);
 
     let endTime = '';
 
@@ -311,10 +386,20 @@ export class ScheduleService {
         });
 
         const user = await resolveCustomer(store);
+        // Registro pai: os serviços desta reserva cancelam e remarcam juntos
+        const booking = await manager.save(Booking, {
+          store: { id: store.id },
+          user: { id: user.id },
+          source,
+        });
 
         return manager.save(
           Schedule,
-          schedules.map((schedule) => ({ ...schedule, user })),
+          schedules.map((schedule) => ({
+            ...schedule,
+            user,
+            booking: { id: booking.id },
+          })),
         );
       },
     );
@@ -322,7 +407,14 @@ export class ScheduleService {
     const savedIds = savedSchedules.map((schedule) => schedule.id);
     const created = await this.scheduleRepository.find({
       where: { id: In(savedIds) },
-      relations: ['storeMember', 'storeMember.user', 'user', 'service'],
+      relations: [
+        'storeMember',
+        'storeMember.user',
+        'user',
+        'service',
+        'booking',
+      ],
+      order: { startTime: 'ASC' },
     });
 
     await this.scheduleNotifications.notifyBookingCreated(
@@ -333,13 +425,55 @@ export class ScheduleService {
     return created.map(toScheduleResponse);
   }
 
-  async findAll(storeId: string): Promise<Schedule[]> {
-    const schedules = await this.scheduleRepository.find({
-      where: { store: { id: storeId } },
-      relations: ['storeMember', 'storeMember.user', 'user', 'service'],
+  /**
+   * Agenda da loja. Com `from`/`to` carrega só o período (a agenda pede a semana
+   * ou o mês que mostra); com `page`, devolve uma página e o total. Sem nada,
+   * mantém a resposta antiga: todos os agendamentos.
+   */
+  async findAll(
+    storeId: string,
+    { from, to, memberId: requestedMemberId, page, limit }: TScheduleListQuery = {},
+    requesterId?: string,
+  ): Promise<Schedule[] | TPage<Schedule>> {
+    const actor = requesterId
+      ? await this.getStaffActor(storeId, requesterId)
+      : null;
+    // Profissional vê só a própria agenda, peça o filtro que pedir
+    const memberId = isProfessionalOnly(actor)
+      ? actor.storeMemberId
+      : requestedMemberId;
+    const date =
+      from && to
+        ? Between(from, to)
+        : from
+          ? MoreThanOrEqual(from)
+          : to
+            ? LessThanOrEqual(to)
+            : undefined;
+    const options = {
+      where: {
+        store: { id: storeId },
+        ...(memberId && { storeMember: { id: memberId } }),
+        ...(date && { date: date as unknown as FindOperator<Date> }),
+      },
+      relations: ['storeMember', 'storeMember.user', 'user', 'service', 'booking'],
+      order: { date: 'ASC' as const, startTime: 'ASC' as const },
+    };
+
+    if (!page) {
+      const schedules = await this.scheduleRepository.find(options);
+
+      return schedules.map(toScheduleResponse);
+    }
+
+    const { skip, take } = toSkipTake(page, limit);
+    const [schedules, total] = await this.scheduleRepository.findAndCount({
+      ...options,
+      skip,
+      take,
     });
 
-    return schedules.map(toScheduleResponse);
+    return toPage(schedules.map(toScheduleResponse), total, page, take);
   }
 
   async findOne(id: string, relations: string[] = []): Promise<Schedule> {
@@ -385,6 +519,27 @@ export class ScheduleService {
     }
   }
 
+  /** O profissional precisa ter todos os serviços pedidos no cadastro dele. */
+  private async assertMemberPerformsServices(
+    storeMemberId: string,
+    serviceIds: string[],
+  ) {
+    const ids = [...new Set(serviceIds.filter(Boolean))];
+
+    if (!ids.length) return;
+
+    const performed = await this.serviceRepository.find({
+      where: { id: In(ids), storeMembers: { id: storeMemberId } },
+      select: { id: true },
+    });
+
+    if (performed.length !== ids.length) {
+      throw new BadRequestException(
+        'Professional does not perform the requested service',
+      );
+    }
+  }
+
   /**
    * Trava o profissional, para duas reservas simultâneas não passarem juntas, e
    * recusa o horário que cruza outro atendimento. A trava busca só pelo id:
@@ -397,18 +552,20 @@ export class ScheduleService {
       storeMemberId,
       date,
       items,
-      excludeId,
+      excludeIds = [],
       enforceAvailability,
     }: TSlotRequest,
   ) {
-    await manager.findOne(StoreMember, {
+    const member = await manager.findOne(StoreMember, {
       where: { id: storeMemberId },
       lock: { mode: 'pessimistic_write' },
     });
 
     const existing = await manager.find(Schedule, {
       where: {
-        ...(excludeId && { id: Not(excludeId) }),
+        // Um id só mantém o filtro simples; vários viram NOT IN
+        ...(excludeIds.length === 1 && { id: Not(excludeIds[0]) }),
+        ...(excludeIds.length > 1 && { id: Not(In(excludeIds)) }),
         storeMember: { id: storeMemberId },
         date: date as unknown as Date,
       },
@@ -422,21 +579,32 @@ export class ScheduleService {
 
     if (!enforceAvailability) return;
 
-    const blockedTimes = await manager.find(BlockedTime, {
-      where: [
-        { storeMember: { id: storeMemberId }, date: date as unknown as Date },
-        { storeMember: { id: storeMemberId }, isRecurring: true },
-      ],
-    });
+    const [blockedTimes, isHoliday] = await Promise.all([
+      manager.find(BlockedTime, {
+        where: [
+          { storeMember: { id: storeMemberId }, date: date as unknown as Date },
+          { storeMember: { id: storeMemberId }, isRecurring: true },
+        ],
+      }),
+      this.holidayService.isHoliday(store.id, date),
+    ]);
     const [first] = items;
     const last = items[items.length - 1];
     const isBookable = isSlotBookable(
       {
         store,
         date,
+        isHoliday,
         durationMinutes:
           timeToMinutes(last.endTime) - timeToMinutes(first.startTime),
-        members: [{ id: storeMemberId, blockedTimes, schedules: existing }],
+        members: [
+          {
+            id: storeMemberId,
+            workingHours: member?.workingHours,
+            blockedTimes,
+            schedules: existing,
+          },
+        ],
       },
       first.startTime,
     );
@@ -448,16 +616,81 @@ export class ScheduleService {
   }
 
   /**
-   * Grava só status, observação e, se vierem, dia, horário e profissional. O
-   * resto do corpo (cliente, serviço, preço, loja) nunca é escrito por aqui.
+   * Linhas da mesma visita, na ordem do atendimento. Agendamento antigo, sem
+   * `booking`, é um grupo de uma linha só.
    */
-  async update(schedule: ScheduleDto): Promise<Schedule> {
+  private async loadGroup(schedule: Schedule): Promise<Schedule[]> {
+    if (!schedule.booking?.id) return [schedule];
+
+    const group = await this.scheduleRepository.find({
+      where: { booking: { id: schedule.booking.id } },
+      relations: ['service'],
+      order: { startTime: 'ASC' },
+    });
+
+    return group.length ? group : [schedule];
+  }
+
+  /**
+   * Horário reservado de cada linha. Registro sem fim usa a duração do serviço,
+   * e sem início parte do horário pedido.
+   */
+  private toSlotItems(group: Schedule[], fallbackStart: string) {
+    return group.map((row) => {
+      const startTime = row.startTime ?? fallbackStart;
+
+      return {
+        id: row.id,
+        startTime,
+        endTime:
+          row.endTime ?? calculateEndTime(startTime, row.service?.duration ?? 0),
+      };
+    });
+  }
+
+  /** Grava os novos horários: uma atualização por linha, cada uma com o seu. */
+  private async saveMoves(
+    manager: EntityManager,
+    moves: { id: string; startTime: string; endTime: string }[],
+    date: string,
+    storeMemberId: string,
+  ) {
+    for (const move of moves) {
+      await manager.update(
+        Schedule,
+        { id: move.id },
+        {
+          date: date as unknown as Date,
+          startTime: move.startTime,
+          endTime: move.endTime,
+          storeMember: { id: storeMemberId },
+        },
+      );
+    }
+  }
+
+  /**
+   * Edição da loja: status, observação e, se vierem, dia, horário e profissional.
+   * Mover ou mudar o status age sobre a visita inteira; a observação é da linha.
+   * O resto do corpo (cliente, serviço, preço, loja) nunca é escrito por aqui.
+   */
+  async update(schedule: ScheduleDto, requesterId?: string): Promise<Schedule> {
     const before = await this.scheduleNotifications.load(schedule.id);
 
     if (!before || before.store?.id !== schedule.store.id) {
       throw new NotFoundException('Schedule not found');
     }
 
+    if (requesterId) {
+      assertOwnAgenda(
+        await this.getStaffActor(schedule.store.id, requesterId),
+        before.storeMember?.id,
+        schedule.storeMember?.id ?? before.storeMember?.id,
+      );
+    }
+
+    const group = await this.loadGroup(before);
+    const ids = group.map(({ id }) => id);
     const beforeDate = before.date && toDateKey(before.date);
     const date = schedule.date ? toDateKey(schedule.date) : beforeDate;
     const startTime = schedule.startTime ?? before.startTime;
@@ -466,16 +699,19 @@ export class ScheduleService {
       date !== beforeDate ||
       startTime !== before.startTime ||
       storeMemberId !== before.storeMember?.id;
-    // Mantém a duração reservada: a do serviço pode ter mudado desde então
-    const next = {
-      startTime,
-      endTime: isMoved
-        ? calculateEndTime(
-            startTime,
-            timeToMinutes(before.endTime) - timeToMinutes(before.startTime),
+    const items = this.toSlotItems(group, startTime);
+    // A linha editada vai para `startTime`; as outras andam a mesma distância
+    const delta =
+      before.startTime && startTime
+        ? timeToMinutes(startTime) - timeToMinutes(before.startTime)
+        : 0;
+    const moves =
+      isMoved && items[0]?.startTime
+        ? shiftItems(
+            items,
+            calculateEndTime(items[0].startTime, delta),
           )
-        : before.endTime,
-    };
+        : items;
     // Reativar um cancelado ocupa o horário de novo, então também é checado
     const needsSlot =
       schedule.status !== 'cancelled' &&
@@ -483,6 +719,10 @@ export class ScheduleService {
 
     if (storeMemberId !== before.storeMember?.id) {
       await this.assertMemberInStore(schedule.store.id, storeMemberId);
+      await this.assertMemberPerformsServices(
+        storeMemberId,
+        group.map((row) => row.service?.id),
+      );
     }
 
     await this.inSlotTransaction(async (manager) => {
@@ -491,25 +731,31 @@ export class ScheduleService {
           store: before.store,
           storeMemberId,
           date,
-          items: [next],
-          excludeId: schedule.id,
+          items: moves,
+          excludeIds: ids,
           enforceAvailability: false,
         });
       }
 
-      await manager.update(
-        Schedule,
-        { id: schedule.id },
-        {
-          status: schedule.status,
-          ...(schedule.notes !== undefined && { notes: schedule.notes }),
-          ...(isMoved && {
-            ...next,
-            date: date as unknown as Date,
-            storeMember: { id: storeMemberId },
-          }),
-        },
-      );
+      if (schedule.status && schedule.status !== before.status) {
+        await manager.update(
+          Schedule,
+          ids.length > 1 ? { id: In(ids) } : { id: schedule.id },
+          { status: schedule.status },
+        );
+      }
+
+      if (schedule.notes !== undefined) {
+        await manager.update(
+          Schedule,
+          { id: schedule.id },
+          { notes: schedule.notes },
+        );
+      }
+
+      if (isMoved) {
+        await this.saveMoves(manager, moves, date, storeMemberId);
+      }
     });
 
     await this.scheduleNotifications.notifyUpdate(
@@ -520,14 +766,45 @@ export class ScheduleService {
     return this.findOne(schedule.id);
   }
 
+  /**
+   * Cancela a visita inteira. Quem não é da equipe (o cliente, ou o bot em nome
+   * dele) só cancela dentro da política da loja.
+   */
   async delete(
     storeId: string,
     id: string,
     requesterId: string,
   ): Promise<{ id: string }> {
     const schedule = await this.scheduleNotifications.load(id);
+    const group = schedule ? await this.loadGroup(schedule) : [];
+    const isActive = !!schedule && schedule.status !== 'cancelled';
+    const actor =
+      schedule?.store?.id === storeId
+        ? await this.getStaffActor(storeId, requesterId)
+        : null;
+
+    // O profissional cancela só o que é da agenda dele; o cliente passou no guard
+    if (actor) assertOwnAgenda(actor, schedule.storeMember?.id);
+
+    if (
+      isActive &&
+      schedule?.store?.id === storeId &&
+      schedule.date &&
+      group[0]?.startTime &&
+      !actor
+    ) {
+      assertWithinNotice('cancel', schedule.store, {
+        date: schedule.date,
+        startTime: group[0].startTime,
+      });
+    }
+
+    const ids = group.length ? group.map((row) => row.id) : [id];
+    // O filtro pela loja da URL é o que impede cancelar agendamento de outra loja
     const result = await this.scheduleRepository.update(
-      { id, store: { id: storeId } },
+      ids.length > 1
+        ? { id: In(ids), store: { id: storeId } }
+        : { id, store: { id: storeId } },
       { status: 'cancelled' },
     );
 
@@ -536,7 +813,7 @@ export class ScheduleService {
     }
 
     // Repetir o cancelamento não pode reenviar os avisos
-    if (schedule.status !== 'cancelled') {
+    if (isActive) {
       await this.scheduleNotifications.notifyCancellation(
         schedule,
         schedule.user?.id === requesterId,
@@ -573,17 +850,16 @@ export class ScheduleService {
   }
 
   /**
-   * Muda dia, horário e profissional de um atendimento marcado. Mesma trava e
-   * checagem de conflito da reserva, sem contar o próprio atendimento.
+   * Muda dia, horário e profissional de uma visita marcada. Mesma trava e
+   * checagem de conflito da reserva, sem contar a própria visita. Os serviços
+   * andam juntos, cada um com a duração reservada. O cliente (e o bot, que fala
+   * por ele) passa pela política e só pega horário que a loja ofereceria.
    */
   async reschedule(
     storeId: string,
     scheduleId: string,
-    {
-      date,
-      startTime,
-      storeMemberId,
-    }: { date: string; startTime: string; storeMemberId: string },
+    { date, startTime, storeMemberId: requestedMemberId }: TRescheduleRequest,
+    { asCustomer, staff }: TScheduleActor = { asCustomer: true },
   ): Promise<Schedule> {
     const before = await this.scheduleNotifications.load(scheduleId);
 
@@ -595,33 +871,42 @@ export class ScheduleService {
       throw new NotFoundException('Schedule not found');
     }
 
+    const storeMemberId = requestedMemberId ?? before.storeMember?.id;
+
+    assertOwnAgenda(staff, before.storeMember?.id, storeMemberId);
+
+    const group = await this.loadGroup(before);
+    const items = this.toSlotItems(group, startTime);
+
+    if (asCustomer && before.date && items[0]?.startTime) {
+      assertWithinNotice('reschedule', before.store, {
+        date: before.date,
+        startTime: items[0].startTime,
+      });
+    }
+
     await this.assertMemberInStore(storeId, storeMemberId);
 
-    const next = {
-      startTime,
-      endTime: calculateEndTime(startTime, before.service?.duration ?? 0),
-    };
+    if (storeMemberId !== before.storeMember?.id) {
+      await this.assertMemberPerformsServices(
+        storeMemberId,
+        group.map((row) => row.service?.id),
+      );
+    }
+
+    const moves = shiftItems(items, startTime);
 
     await this.inSlotTransaction(async (manager) => {
-      // Só o bot remarca por aqui, em nome do cliente: vale a regra do cliente
       await this.assertMemberFree(manager, {
         store: before.store,
         storeMemberId,
         date,
-        items: [next],
-        excludeId: scheduleId,
-        enforceAvailability: true,
+        items: moves,
+        excludeIds: moves.map(({ id }) => id),
+        enforceAvailability: asCustomer,
       });
 
-      await manager.update(
-        Schedule,
-        { id: scheduleId },
-        {
-          ...next,
-          date: date as unknown as Date,
-          storeMember: { id: storeMemberId },
-        },
-      );
+      await this.saveMoves(manager, moves, date, storeMemberId);
     });
 
     const after = await this.scheduleNotifications.load(scheduleId);
@@ -629,6 +914,21 @@ export class ScheduleService {
     await this.scheduleNotifications.notifyUpdate(before, after);
 
     return toScheduleResponse(after);
+  }
+
+  /** Remarcação pela web: a equipe da loja encaixa, o cliente segue a política. */
+  async rescheduleForRequester(
+    storeId: string,
+    scheduleId: string,
+    request: TRescheduleRequest,
+    requesterId: string,
+  ): Promise<Schedule> {
+    const staff = await this.getStaffActor(storeId, requesterId);
+
+    return this.reschedule(storeId, scheduleId, request, {
+      asCustomer: !staff,
+      staff,
+    });
   }
 
   async getSchedulesByMonth(

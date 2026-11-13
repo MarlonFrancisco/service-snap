@@ -150,6 +150,7 @@ describe('store-scoped services with an id from another store', () => {
           notifyCancellation: vi.fn(),
           notifyUpdate: vi.fn(),
         } as never,
+        { isHoliday: vi.fn().mockResolvedValue(false) } as never,
       );
 
     it('update filters by store and returns 404', async () => {
@@ -193,7 +194,7 @@ describe('store-scoped services with an id from another store', () => {
         services: [{ id: 'service-1', duration: 30 }],
       } as never);
 
-      expect(manager.save.mock.calls[0][1][0].id).toBeUndefined();
+      expect(manager.save.mock.calls.at(-1)[1][0].id).toBeUndefined();
     });
   });
 
@@ -228,7 +229,11 @@ describe('store-scoped services with an id from another store', () => {
     const MEMBER = 'member-1';
     const memberScoped = { id: 'foreign-id', storeMember: { id: MEMBER } };
     const create = () =>
-      new BlockedTimeService(repository as never, related as never);
+      new BlockedTimeService(
+        repository as never,
+        related as never,
+        related as never,
+      );
 
     const calls = (service: BlockedTimeService) => [
       () => service.findAll(STORE, MEMBER),

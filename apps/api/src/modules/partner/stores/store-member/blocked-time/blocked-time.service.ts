@@ -1,6 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import {
+  blockedRangeMinutes,
+  calculateEndTime,
+  DEFAULT_SLOT_INTERVAL_MINUTES,
+} from '../../../../../utils/helpers/schedule.helpers';
+import { Store } from '../../store.entity';
 import { StoreMember } from '../store-member.entity';
 import { BlockedTime } from './blocked-time.entity';
 import {
@@ -16,6 +26,8 @@ export class BlockedTimeService {
     private readonly blockedTimeRepository: Repository<BlockedTime>,
     @InjectRepository(StoreMember)
     private readonly storeMemberRepository: Repository<StoreMember>,
+    @InjectRepository(Store)
+    private readonly storeRepository: Repository<Store>,
   ) {}
 
   async create(
@@ -24,9 +36,11 @@ export class BlockedTimeService {
   ): Promise<BlockedTime> {
     await this.assertMemberInStore(storeId, blockedTimeDto.storeMember.id);
 
+    const [range] = await this.withEndTime(storeId, [blockedTimeDto]);
+
     // Com `id` no corpo, o save sobrescreveria um bloqueio existente
     const blockedTime = await this.blockedTimeRepository.save({
-      ...blockedTimeDto,
+      ...range,
       id: undefined,
     });
     return this.findOne(blockedTime.id, ['storeMember', 'storeMember.user']);
@@ -39,7 +53,8 @@ export class BlockedTimeService {
   ): Promise<BlockedTime[]> {
     await this.assertMemberInStore(storeId, storeMemberId);
 
-    const blockedTimesToCreate = createBulkDto.blockedTimes.map((bt) => ({
+    const ranges = await this.withEndTime(storeId, createBulkDto.blockedTimes);
+    const blockedTimesToCreate = ranges.map((bt) => ({
       ...bt,
       id: undefined,
       storeMember: { id: storeMemberId },
@@ -105,9 +120,10 @@ export class BlockedTimeService {
   ): Promise<BlockedTime> {
     await this.assertMemberInStore(storeId, blockedTime.storeMember.id);
 
+    const [range] = await this.withEndTime(storeId, [blockedTime]);
     const result = await this.blockedTimeRepository.update(
       { id: blockedTime.id, storeMember: { id: blockedTime.storeMember.id } },
-      blockedTime,
+      range,
     );
 
     if (!result.affected) {
@@ -153,6 +169,41 @@ export class BlockedTimeService {
       id,
       storeMember: { id: storeMemberId },
     }));
+  }
+
+  /**
+   * Bloqueio sem fim ocupa um slot da grade da loja, como fazia o registro
+   * antigo de um horário só. Recusa fim antes do início.
+   */
+  private async withEndTime<T extends { time: string; endTime?: string }>(
+    storeId: string,
+    items: T[],
+  ): Promise<(T & { endTime: string })[]> {
+    const needsSlot = items.some((item) => item.time && !item.endTime);
+    const store =
+      needsSlot &&
+      (await this.storeRepository.findOne({
+        where: { id: storeId },
+        select: { id: true, slotIntervalMinutes: true },
+      }));
+    const slot = store?.slotIntervalMinutes || DEFAULT_SLOT_INTERVAL_MINUTES;
+
+    return items.map((item) => {
+      // Edição sem início não mexe no intervalo
+      if (!item.time) return item as T & { endTime: string };
+
+      const range = {
+        ...item,
+        endTime: item.endTime || calculateEndTime(item.time, slot),
+      };
+      const [start, end] = blockedRangeMinutes(range);
+
+      if (end <= start) {
+        throw new BadRequestException('endTime must be after time');
+      }
+
+      return range;
+    });
   }
 
   private async assertMemberInStore(

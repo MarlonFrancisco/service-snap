@@ -1,7 +1,7 @@
 'use client';
 
 import { cn, Progress } from '@repo/ui';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Store } from 'lucide-react';
 import Link from 'next/link';
 import {
   PARTNER_ICON_BUTTON_CLASS,
@@ -26,6 +26,7 @@ export const AdminSidebarFooter = ({
   isCollapsed,
 }: TAdminSidebarFooterConfig) => {
   const {
+    memberCard,
     currentPlan,
     isHidden,
     usageRows,
@@ -34,6 +35,40 @@ export const AdminSidebarFooter = ({
     planAction,
     handlePlanActionClick,
   } = useAdminSidebarFooter();
+
+  if (memberCard) {
+    if (isCollapsed) {
+      return (
+        <span
+          title={`${memberCard.storeName} · ${memberCard.roleLabel}`}
+          className={cn(PARTNER_ICON_BUTTON_CLASS, 'mt-auto')}
+        >
+          <Store className={PARTNER_NAV_ICON_CLASS} aria-hidden="true" />
+          <span className="sr-only">
+            {memberCard.storeName}, {memberCard.roleLabel}
+          </span>
+        </span>
+      );
+    }
+
+    return (
+      <div
+        className={cn(
+          PARTNER_SOFT_SURFACE_CLASS,
+          'mt-auto flex shrink-0 flex-col gap-1.5 p-4 text-[13px]',
+          PARTNER_MUTED_TEXT_CLASS,
+        )}
+      >
+        <p className="truncate text-sm font-bold text-[#0B0B0F]">
+          {memberCard.storeName}
+        </p>
+        <span className="self-start rounded-full border border-[#E3E1EA] bg-white px-[9px] py-[3px] text-xs font-bold text-[#0B0B0F]">
+          {memberCard.roleLabel}
+        </span>
+        <p>Seu acesso nesta loja</p>
+      </div>
+    );
+  }
 
   if (!currentPlan || isHidden) {
     return null;

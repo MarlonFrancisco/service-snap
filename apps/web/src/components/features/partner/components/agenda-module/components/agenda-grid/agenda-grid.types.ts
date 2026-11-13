@@ -1,4 +1,6 @@
-import type { IAppointment } from '@/types/api/schedule.types';
+import type { TAgendaDropTarget, TAgendaVisit } from '@/store/admin/agenda';
+import type { IBlockedTime } from '@/types/api/blocked-times.types';
+import type { IStoreHoliday } from '@/types/api/holidays.types';
 import type { IProfessional } from '@/types/api/users.types';
 import type { MouseEvent } from 'react';
 
@@ -12,6 +14,19 @@ export type TDayViewData = {
   isWorkingDay: boolean;
   dayKey: string;
   label: string;
+  /** Feriado da loja: ninguém atende. */
+  holiday?: IStoreHoliday;
+  /** Todos os profissionais mostrados estão de folga neste dia. */
+  isOff: boolean;
+  /** Rótulo pequeno do cabeçalho: "Feriado" ou "Folga". */
+  headerNote?: string;
+};
+
+/** Aviso que ocupa a coluna: feriado (loja fechada) ou folga do profissional. */
+export type TAgendaClosedNotice = {
+  variant: 'holiday' | 'off';
+  title: string;
+  text: string;
 };
 
 /**
@@ -23,7 +38,7 @@ export type TSelectedProfessionalData = {
 };
 
 export type TPositionedAppointment = {
-  appointment: IAppointment;
+  appointment: TAgendaVisit;
   rowStart: number;
   rowEnd: number;
   rowSpan: number;
@@ -53,6 +68,8 @@ export type TAgendaSlot = {
   isInteractive: boolean;
   isPressed?: boolean;
   isGutter?: boolean;
+  /** Presente quando dá para soltar um agendamento arrastado aqui. */
+  dropTarget?: TAgendaDropTarget;
   handlers: TAgendaSlotHandlers;
 };
 
@@ -66,7 +83,17 @@ export type TAgendaColumnBlock = TPositionedAppointment & {
   isCompact: boolean;
 };
 
+/** Bloqueio de mais de um slot, desenhado como um bloco "Bloqueado · 14:00–15:30". */
+export type TAgendaBlockedBlock = {
+  blockedTime: IBlockedTime;
+  rowStart: number;
+  rowSpan: number;
+  label: string;
+};
+
 export type TAgendaColumn = {
   rows: TAgendaColumnRow[];
   blocks: TAgendaColumnBlock[];
+  blockedBlocks: TAgendaBlockedBlock[];
+  closedNotice?: TAgendaClosedNotice;
 };

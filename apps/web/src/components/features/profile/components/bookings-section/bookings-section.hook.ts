@@ -1,4 +1,5 @@
-import { useScheduleMutations } from '@/hooks';
+import { getStoreWhatsAppUrl } from '@/components/features/booking/components/booking-confirmation/booking-confirmation.helpers';
+import { useUsersMutations } from '@/hooks/use-mutations/use-users-mutations';
 import { useUserQuery } from '@/hooks/use-query/use-user-query';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useReviewsStore } from '@/store';
@@ -7,7 +8,13 @@ import { IUser } from '@/types/api/users.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useCallback, useMemo, useState } from 'react';
-import { HISTORY_STATUSES } from './utils/bookings-section.helpers';
+import { toast } from 'sonner';
+import type { TPolicyBlock, TProfileVisit } from './bookings-section.types';
+import {
+  getPolicyBlockMessage,
+  groupVisits,
+  HISTORY_STATUSES,
+} from './utils/bookings-section.helpers';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 
@@ -19,31 +26,47 @@ const getHoursBefore = ({ date, startTime }: IAppointment) => {
     : Math.round((start - Date.now()) / MS_PER_HOUR);
 };
 
+const buildPolicyBlock = (
+  visit: TProfileVisit,
+  action: 'cancel' | 'reschedule',
+  message: string,
+): TPolicyBlock => ({
+  title:
+    action === 'cancel'
+      ? 'Não dá para cancelar pelo site'
+      : 'Não dá para remarcar pelo site',
+  message,
+  hint:
+    action === 'cancel'
+      ? 'Fale com a loja para cancelar o horário.'
+      : 'Fale com a loja para combinar um novo horário.',
+  whatsAppUrl: getStoreWhatsAppUrl(visit.appointment.store),
+});
+
 export const useBookingsSection = () => {
   const analytics = useAnalytics();
-  const [selectedBooking, setSelectedBooking] = useState<
-    IAppointment | undefined
-  >(undefined);
-  const [bookingToCancel, setBookingToCancel] = useState<
-    IAppointment | undefined
-  >(undefined);
+  const [selectedVisit, setSelectedVisit] = useState<TProfileVisit>();
+  const [visitToCancel, setVisitToCancel] = useState<TProfileVisit>();
+  const [visitToReschedule, setVisitToReschedule] = useState<TProfileVisit>();
+  const [policyBlock, setPolicyBlock] = useState<TPolicyBlock | null>(null);
 
-  const { deleteSchedule } = useScheduleMutations({
-    storeId: '',
-  });
-
+  const { cancelBooking } = useUsersMutations();
   const { user } = useUserQuery();
 
   const setReviewsAttributesAction = useReviewsStore(
     (state) => state.setReviewsAttributesAction,
   );
 
-  const upcomingBookings = useMemo(() => {
-    return (
-      user?.schedules?.filter((schedule) => schedule.status === 'scheduled') ??
-      []
-    );
-  }, [user?.schedules]);
+  // Uma visita com vários serviços aparece uma vez só
+  const upcomingVisits = useMemo(
+    () =>
+      groupVisits(
+        user?.schedules?.filter(
+          (schedule) => schedule.status === 'scheduled',
+        ) ?? [],
+      ),
+    [user?.schedules],
+  );
 
   const pastBookings = useMemo(() => {
     return (
@@ -54,25 +77,49 @@ export const useBookingsSection = () => {
   }, [user?.schedules]);
 
   const handleOpenDetails = useCallback(
-    (booking: IAppointment) => {
-      setSelectedBooking(booking);
+    (visit: TProfileVisit) => {
+      setSelectedVisit(visit);
       analytics.track('appointment_details_opened', {
-        appointment_id: booking.id,
-        store_id: booking.store?.id,
+        appointment_id: visit.id,
+        store_id: visit.appointment.store?.id,
       });
     },
     [analytics],
   );
 
   const handleStartCancel = useCallback(
-    (booking: IAppointment) => {
-      setBookingToCancel(booking);
+    (visit: TProfileVisit) => {
+      setVisitToCancel(visit);
       analytics.track('appointment_cancel_started', {
-        appointment_id: booking.id,
+        appointment_id: visit.id,
       });
     },
     [analytics],
   );
+
+  const handleStartReschedule = useCallback((visit: TProfileVisit) => {
+    setVisitToReschedule(visit);
+  }, []);
+
+  const handleCloseReschedule = useCallback(() => {
+    setVisitToReschedule(undefined);
+  }, []);
+
+  const handleReschedulePolicyBlocked = useCallback(
+    (message: string) => {
+      if (visitToReschedule) {
+        setPolicyBlock(
+          buildPolicyBlock(visitToReschedule, 'reschedule', message),
+        );
+      }
+      setVisitToReschedule(undefined);
+    },
+    [visitToReschedule],
+  );
+
+  const handleClosePolicyBlock = useCallback(() => {
+    setPolicyBlock(null);
+  }, []);
 
   const handleRebook = useCallback(
     (storeId: string) => {
@@ -82,9 +129,11 @@ export const useBookingsSection = () => {
   );
 
   const handleCancelBooking = useCallback(() => {
-    const booking = bookingToCancel!;
+    const visit = visitToCancel!;
+    const booking = visit.appointment;
+    const visitIds = new Set(visit.appointments.map(({ id }) => id));
 
-    deleteSchedule(booking, {
+    cancelBooking(booking, {
       onSuccess: () => {
         analytics.track('appointment_cancelled', {
           appointment_id: booking.id,
@@ -93,31 +142,37 @@ export const useBookingsSection = () => {
           hours_before: getHoursBefore(booking),
         });
 
-        const queryClient = getQueryClient();
-        queryClient.setQueryData(
+        getQueryClient().setQueryData(
           CACHE_QUERY_KEYS.user(cookies.get('user_identification')!),
-          // Continua no histórico, agora como cancelado
-          (old: IUser) => ({
-            ...old,
-            schedules: old.schedules.map((schedule) =>
-              schedule.id === booking.id
-                ? { ...schedule, status: 'cancelled' as const }
-                : schedule,
-            ),
-          }),
+          // Continua no histórico, agora como cancelado (a visita inteira)
+          (old: IUser | undefined) =>
+            old && {
+              ...old,
+              schedules: old.schedules.map((schedule) =>
+                visitIds.has(schedule.id)
+                  ? { ...schedule, status: 'cancelled' as const }
+                  : schedule,
+              ),
+            },
         );
-        setBookingToCancel(undefined);
       },
-      onError: () => {
+      onError: (error) => {
         analytics.track('appointment_cancel_failed', {
           appointment_id: booking.id,
           source: 'customer',
         });
+
+        const policyMessage = getPolicyBlockMessage(error);
+        if (policyMessage) {
+          setPolicyBlock(buildPolicyBlock(visit, 'cancel', policyMessage));
+          return;
+        }
+        toast.error('Não foi possível cancelar o agendamento');
       },
     });
 
-    setBookingToCancel(undefined);
-  }, [analytics, deleteSchedule, bookingToCancel]);
+    setVisitToCancel(undefined);
+  }, [analytics, cancelBooking, visitToCancel]);
 
   const handleReview = useCallback(
     (booking: IAppointment) => {
@@ -135,16 +190,22 @@ export const useBookingsSection = () => {
   );
 
   return {
-    upcomingBookings,
+    upcomingVisits,
     pastBookings,
-    selectedBooking,
-    bookingToCancel,
-    setSelectedBooking,
-    setBookingToCancel,
+    selectedVisit,
+    visitToCancel,
+    visitToReschedule,
+    policyBlock,
+    setSelectedVisit,
+    setVisitToCancel,
     handleCancelBooking,
     handleReview,
     handleOpenDetails,
     handleStartCancel,
+    handleStartReschedule,
+    handleCloseReschedule,
+    handleReschedulePolicyBlocked,
+    handleClosePolicyBlock,
     handleRebook,
   };
 };

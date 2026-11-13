@@ -33,6 +33,7 @@ const RELATIONS = [
   'service',
   'storeMember',
   'storeMember.user',
+  'booking',
 ];
 
 /**

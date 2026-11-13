@@ -68,6 +68,12 @@ export class SubscriptionController {
     );
   }
 
+  @Post('billing-portal')
+  @UseGuards(JwtAuthGuard)
+  async billingPortal(@CurrentUser() user: JwtPayload) {
+    return this.subscriptionService.createBillingPortalSession(user.sub);
+  }
+
   @Delete()
   @UseGuards(JwtAuthGuard)
   async cancel(@CurrentUser() user: JwtPayload) {

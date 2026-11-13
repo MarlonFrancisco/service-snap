@@ -9,6 +9,11 @@ export class UsersService {
     return await this.apiClient.get<IUser>('/users/me', { headers });
   }
 
+  /** Nome do perfil; e-mail muda pelo fluxo com código (`AuthService`). */
+  static async updateProfile(profile: { firstName?: string; lastName?: string }) {
+    return await this.apiClient.patch<IUser>('/users/me', profile);
+  }
+
   static async updateAvatar(avatar: string) {
     return await this.apiClient.patch<IUser>('/users/me/avatar', {
       avatar,

@@ -2,9 +2,14 @@
 
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { findLongestPathMatch } from '@/utils/constants/partner.constants';
-import { usePathname } from 'next/navigation';
+import { useAgendaMemberRole } from '@/hooks/partner/use-agenda-member-role';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PARTNER_NAV_HREFS, PARTNER_NAV_ITEMS } from './admin-sidebar.config';
+import {
+  PARTNER_NAV_HREFS,
+  PARTNER_NAV_ITEMS,
+  PROFESSIONAL_NAV_ITEMS,
+} from './admin-sidebar.config';
 import { hasPlanAccess } from '../plan-feature-gate';
 import type {
   TNavItem,
@@ -48,9 +53,24 @@ export const useAdminSidebar = ({ onNavigate }: TUseAdminSidebarConfig) => {
   const { currentPlan } = useSubscriptionQuery();
   const features = currentPlan?.features;
 
-  const items = useMemo(() => getNavItemsWithAccess(features), [features]);
+  const searchParams = useSearchParams();
+  const { isProfessional } = useAgendaMemberRole();
 
-  const activeHref = findLongestPathMatch(pathname, PARTNER_NAV_HREFS);
+  const items = useMemo<TNavItem[]>(
+    () =>
+      isProfessional
+        ? [...PROFESSIONAL_NAV_ITEMS]
+        : getNavItemsWithAccess(features),
+    [isProfessional, features],
+  );
+
+  // Os itens do profissional dividem a rota da agenda e mudam só o `painel`.
+  const panel = searchParams.get('painel');
+  const pathHref = findLongestPathMatch(pathname, PARTNER_NAV_HREFS);
+  const activeHref =
+    isProfessional && panel && pathHref === '/partner/agenda'
+      ? `${pathHref}?painel=${panel}`
+      : pathHref;
   const activeGroupId = getGroupIdByHref(activeHref);
 
   const [openGroupId, setOpenGroupId] = useState(activeGroupId);

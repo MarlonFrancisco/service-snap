@@ -1,4 +1,5 @@
 import {
+  PARTNER_FOCUS_CLASS,
   PARTNER_MUTED_TEXT_CLASS,
   PARTNER_PORTAL_CLASS,
 } from '@/components/features/partner/partner.styles';
@@ -16,6 +17,10 @@ import {
   DrawerHeader,
   DrawerTitle,
   Spinner,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
 } from '@repo/ui';
 import { FormProvider } from 'react-hook-form';
 import {
@@ -25,10 +30,20 @@ import {
   STORES_DRAWER_CLASS,
 } from '../../stores-module.styles';
 import { useAddProfessionalModal } from './add-professional-modal.hook';
-import { ProfessionalFormFields } from './professional-form-fields';
+import {
+  ProfessionalFormFields,
+  ProfessionalIdentityFields,
+  ProfessionalRoleField,
+  ProfessionalServicesField,
+} from './professional-form-fields';
+import { ProfessionalHoursFields } from './professional-hours-fields';
 
 const TITLE_CLASS = 'text-[22px] font-extrabold tracking-[-0.025em]';
 const DESCRIPTION_CLASS = cn('text-sm', PARTNER_MUTED_TEXT_CLASS);
+const TAB_TRIGGER_CLASS = cn(
+  'h-auto min-h-[46px] flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3.5 text-[13px] font-semibold text-[#5F5C6E] shadow-none data-[state=active]:border-[#0B0B0F] data-[state=active]:bg-transparent data-[state=active]:text-[#0B0B0F] data-[state=active]:shadow-none',
+  PARTNER_FOCUS_CLASS,
+);
 
 export const AddProfessionalModal = () => {
   const {
@@ -38,6 +53,9 @@ export const AddProfessionalModal = () => {
     isMobile,
     services,
     selectedServices,
+    canGrantOwner,
+    tabs,
+    activeTab,
     isLoading,
     title,
     description,
@@ -46,18 +64,58 @@ export const AddProfessionalModal = () => {
     removeService,
     handleSubmit,
     handleOpenChange,
+    handleTabChange,
     handleClose,
   } = useAddProfessionalModal();
 
+  const servicesConfig = {
+    services,
+    selectedServices,
+    addService,
+    removeService,
+  };
+
+  // Editar separa dados, serviços e horário em abas, como no desenho.
   const fields = (
     <FormProvider {...form}>
-      <ProfessionalFormFields
-        isEditing={isEditing}
-        services={services}
-        selectedServices={selectedServices}
-        addService={addService}
-        removeService={removeService}
-      />
+      {isEditing ? (
+        <Tabs
+          value={activeTab}
+          onValueChange={handleTabChange}
+          className="gap-4"
+        >
+          <TabsList
+            aria-label="Seções do profissional"
+            className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-[#EBE9F0] bg-transparent p-0"
+          >
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className={TAB_TRIGGER_CLASS}
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          <TabsContent value="data" className="mt-0 grid gap-3.5">
+            <ProfessionalIdentityFields isEditing />
+            <ProfessionalRoleField canGrantOwner={canGrantOwner} />
+          </TabsContent>
+          <TabsContent value="services" className="mt-0 grid gap-3.5">
+            <ProfessionalServicesField {...servicesConfig} />
+          </TabsContent>
+          <TabsContent value="hours" className="mt-0">
+            <ProfessionalHoursFields />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <ProfessionalFormFields
+          isEditing={false}
+          canGrantOwner={canGrantOwner}
+          {...servicesConfig}
+        />
+      )}
     </FormProvider>
   );
 
@@ -115,7 +173,8 @@ export const AddProfessionalModal = () => {
         className={cn(
           PARTNER_PORTAL_CLASS,
           STORES_DIALOG_CLOSE_CLASS,
-          'flex max-h-[90dvh] w-full flex-col gap-3.5 overflow-hidden rounded-[28px] border-0 bg-white p-7 shadow-[0_20px_60px_rgba(15,12,30,0.18)] sm:max-w-[480px]',
+          'flex max-h-[90dvh] w-full flex-col gap-3.5 overflow-hidden rounded-[28px] border-0 bg-white p-7 shadow-[0_20px_60px_rgba(15,12,30,0.18)]',
+          isEditing ? 'sm:max-w-[780px]' : 'sm:max-w-[480px]',
         )}
       >
         <DialogHeader className="gap-0.5 pr-10 text-left">

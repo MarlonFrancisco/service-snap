@@ -32,14 +32,17 @@ import {
 } from '../../profile.styles';
 import { ProfileEmptyState } from '../profile-empty-state';
 import { useBookingsSection } from './bookings-section.hook';
+import { PolicyBlockedDialog } from './policy-blocked-dialog';
+import { RescheduleDialog } from './reschedule-dialog';
 import {
+  canReviewBooking,
   formatBookingDateFull,
   formatBookingDateLong,
   formatBookingDateShort,
   formatBookingPrice,
   formatPastBookingDateLong,
   formatPastBookingDateShort,
-  canReviewBooking,
+  formatVisitPrice,
   getHistoryBadge,
   getProfessionalName,
 } from './utils/bookings-section.helpers';
@@ -50,20 +53,26 @@ const MODAL_ICON_CLASS = 'mt-0.5 size-4 shrink-0 text-[#5F5C6E]';
 
 export const BookingsSection = () => {
   const {
-    upcomingBookings,
+    upcomingVisits,
     pastBookings,
-    selectedBooking,
-    bookingToCancel,
-    setSelectedBooking,
-    setBookingToCancel,
+    selectedVisit,
+    visitToCancel,
+    visitToReschedule,
+    policyBlock,
+    setSelectedVisit,
+    setVisitToCancel,
     handleCancelBooking,
     handleReview,
     handleOpenDetails,
     handleStartCancel,
+    handleStartReschedule,
+    handleCloseReschedule,
+    handleReschedulePolicyBlocked,
+    handleClosePolicyBlock,
     handleRebook,
   } = useBookingsSection();
 
-  if (upcomingBookings.length === 0 && pastBookings.length === 0) {
+  if (upcomingVisits.length === 0 && pastBookings.length === 0) {
     return (
       <ProfileEmptyState
         icon={CalendarDays}
@@ -76,21 +85,21 @@ export const BookingsSection = () => {
 
   return (
     <>
-      {upcomingBookings.length > 0 && (
+      {upcomingVisits.length > 0 && (
         <section>
           <h2 className={PROFILE_SECTION_TITLE_CLASS}>Próximos agendamentos</h2>
           <p className={PROFILE_SECTION_LEAD_CLASS}>
             Seus compromissos confirmados
           </p>
           <div className="space-y-4">
-            {upcomingBookings.map((booking) => (
+            {upcomingVisits.map((visit) => (
               <article
-                key={booking.id}
+                key={visit.id}
                 className="grid grid-cols-1 rounded-[22px] border border-[#E3E1EA] px-3 pt-3 pb-4 md:grid-cols-[150px_minmax(0,1fr)] md:gap-5 md:rounded-3xl md:p-4"
               >
                 <div className="relative aspect-video overflow-hidden rounded-[14px] bg-[#E9E3F5] md:aspect-auto md:min-h-[150px] md:rounded-2xl">
                   <ImageWithFallback
-                    src={booking.store.gallery[0]?.url ?? ''}
+                    src={visit.appointment.store.gallery[0]?.url ?? ''}
                     alt=""
                     fill
                     sizes="(min-width: 768px) 150px, 100vw"
@@ -100,10 +109,11 @@ export const BookingsSection = () => {
 
                 <div className="min-w-0">
                   <h3 className="mx-1 mt-3 text-base font-bold md:mx-0 md:mt-0 md:text-[17px]">
-                    {booking.store.name}
+                    {visit.appointment.store.name}
                   </h3>
                   <p className="mx-1 mt-0.5 text-sm text-[#5F5C6E] md:mx-0 md:mt-[3px]">
-                    {booking.service.name} · {getProfessionalName(booking)}
+                    {visit.serviceNames} ·{' '}
+                    {getProfessionalName(visit.appointment)}
                   </p>
 
                   <dl className="mx-1 mt-3 grid grid-cols-2 gap-x-3.5 gap-y-2.5 text-sm md:mx-0 md:mt-3.5 md:grid-cols-[repeat(auto-fit,minmax(150px,1fr))] md:gap-x-[18px]">
@@ -111,29 +121,29 @@ export const BookingsSection = () => {
                       <dt className={DETAIL_LABEL_CLASS}>Data</dt>
                       <dd className={DETAIL_VALUE_CLASS}>
                         <span className="md:hidden">
-                          {formatBookingDateShort(booking.date)}
+                          {formatBookingDateShort(visit.appointment.date)}
                         </span>
                         <span className="hidden md:inline">
-                          {formatBookingDateLong(booking.date)}
+                          {formatBookingDateLong(visit.appointment.date)}
                         </span>
                       </dd>
                     </div>
                     <div>
                       <dt className={DETAIL_LABEL_CLASS}>Horário</dt>
                       <dd className={DETAIL_VALUE_CLASS}>
-                        {booking.startTime} - {booking.endTime}
+                        {visit.startTime} - {visit.endTime}
                       </dd>
                     </div>
                     <div>
                       <dt className={DETAIL_LABEL_CLASS}>Total</dt>
                       <dd className={DETAIL_VALUE_CLASS}>
-                        {formatBookingPrice(booking)}
+                        {formatVisitPrice(visit)}
                       </dd>
                     </div>
                     <div>
                       <dt className={DETAIL_LABEL_CLASS}>Local</dt>
                       <dd className={DETAIL_VALUE_CLASS}>
-                        {booking.store.address}
+                        {visit.appointment.store.address}
                       </dd>
                     </div>
                   </dl>
@@ -141,14 +151,21 @@ export const BookingsSection = () => {
                   <div className={PROFILE_ACTIONS_CLASS}>
                     <button
                       type="button"
-                      onClick={() => handleOpenDetails(booking)}
+                      onClick={() => handleOpenDetails(visit)}
                       className={PROFILE_ACTION_PRIMARY_CLASS}
                     >
                       Ver detalhes
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleStartCancel(booking)}
+                      onClick={() => handleStartReschedule(visit)}
+                      className={PROFILE_ACTION_CLASS}
+                    >
+                      Remarcar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleStartCancel(visit)}
                       className={PROFILE_ACTION_CLASS}
                     >
                       Cancelar
@@ -162,7 +179,7 @@ export const BookingsSection = () => {
       )}
 
       {pastBookings.length > 0 && (
-        <section className={cn(upcomingBookings.length > 0 && 'mt-9 md:mt-11')}>
+        <section className={cn(upcomingVisits.length > 0 && 'mt-9 md:mt-11')}>
           <h2 className={PROFILE_SECTION_TITLE_CLASS}>Histórico</h2>
           <p className={PROFILE_SECTION_LEAD_CLASS}>
             Concluídos, cancelados e faltas
@@ -226,8 +243,8 @@ export const BookingsSection = () => {
 
       {/* Detalhes do agendamento */}
       <Dialog
-        open={!!selectedBooking}
-        onOpenChange={() => setSelectedBooking(undefined)}
+        open={!!selectedVisit}
+        onOpenChange={() => setSelectedVisit(undefined)}
       >
         <DialogContent className={cn(PROFILE_DIALOG_CLASS, 'sm:max-w-lg')}>
           <DialogHeader>
@@ -235,32 +252,32 @@ export const BookingsSection = () => {
               Detalhes do agendamento
             </DialogTitle>
           </DialogHeader>
-          {selectedBooking && (
+          {selectedVisit && (
             <div className="space-y-6 text-sm">
               <div>
                 <h3 className="text-[17px] font-bold">
-                  {selectedBooking.store.name}
+                  {selectedVisit.appointment.store.name}
                 </h3>
                 <p className="mt-0.5 mb-4 text-[#5F5C6E]">
-                  {selectedBooking.service.name}
+                  {selectedVisit.serviceNames}
                 </p>
 
                 <div className="space-y-3 font-semibold">
                   <div className="flex items-start gap-3">
                     <Calendar className={MODAL_ICON_CLASS} aria-hidden />
-                    {formatBookingDateFull(selectedBooking.date)}
+                    {formatBookingDateFull(selectedVisit.appointment.date)}
                   </div>
                   <div className="flex items-start gap-3">
                     <Clock className={MODAL_ICON_CLASS} aria-hidden />
-                    {selectedBooking.startTime} - {selectedBooking.endTime}
+                    {selectedVisit.startTime} - {selectedVisit.endTime}
                   </div>
                   <div className="flex items-start gap-3">
                     <MapPin className={MODAL_ICON_CLASS} aria-hidden />
-                    {selectedBooking.store.address}
+                    {selectedVisit.appointment.store.address}
                   </div>
                   <div className="flex items-start gap-3">
                     <Phone className={MODAL_ICON_CLASS} aria-hidden />
-                    {selectedBooking.store.telephone}
+                    {selectedVisit.appointment.store.telephone}
                   </div>
                 </div>
               </div>
@@ -270,13 +287,13 @@ export const BookingsSection = () => {
               <div className="flex items-center justify-between gap-4">
                 <span className="text-[#5F5C6E]">Profissional</span>
                 <span className="text-right font-semibold">
-                  {getProfessionalName(selectedBooking)}
+                  {getProfessionalName(selectedVisit.appointment)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span className="text-[#5F5C6E]">Valor total</span>
                 <span className="text-right font-extrabold">
-                  {formatBookingPrice(selectedBooking)}
+                  {formatVisitPrice(selectedVisit)}
                 </span>
               </div>
             </div>
@@ -285,8 +302,8 @@ export const BookingsSection = () => {
       </Dialog>
 
       <AlertDialog
-        open={!!bookingToCancel}
-        onOpenChange={() => setBookingToCancel(undefined)}
+        open={!!visitToCancel}
+        onOpenChange={() => setVisitToCancel(undefined)}
       >
         <AlertDialogContent className={PROFILE_DIALOG_CLASS}>
           <AlertDialogHeader>
@@ -308,6 +325,20 @@ export const BookingsSection = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {visitToReschedule && (
+        <RescheduleDialog
+          key={visitToReschedule.id}
+          visit={visitToReschedule}
+          onClose={handleCloseReschedule}
+          onPolicyBlocked={handleReschedulePolicyBlocked}
+        />
+      )}
+
+      <PolicyBlockedDialog
+        block={policyBlock}
+        onClose={handleClosePolicyBlock}
+      />
     </>
   );
 };

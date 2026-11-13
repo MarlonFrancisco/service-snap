@@ -2,9 +2,9 @@ import { SITE_URL } from '@/utils/constants/site.constants';
 
 const INSTAGRAM_HOST = /(^|\.)instagram\.com$/i;
 
-/** Public ServiceSnap page partners paste into Google Business Profile. */
-export function storePublicUrl(storeId: string): string {
-  return `${SITE_URL}/booking/${storeId}`;
+/** Public ServiceSnap page partners paste into Google Business Profile. Prefer the slug. */
+export function storePublicUrl(slugOrId: string): string {
+  return `${SITE_URL}/booking/${slugOrId}`;
 }
 
 /** Accepts `@conta`, `conta` or a full Instagram URL. */
@@ -41,6 +41,7 @@ export function instagramLabel(value?: string | null): string | null {
 
 export function buildStoreJsonLd(store: {
   id: string;
+  slug?: string | null;
   name: string;
   description?: string | null;
   telephone?: string | null;
@@ -58,7 +59,7 @@ export function buildStoreJsonLd(store: {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: store.name,
-    url: storePublicUrl(store.id),
+    url: storePublicUrl(store.slug || store.id),
     ...(store.description ? { description: store.description } : {}),
     ...(store.telephone ? { telephone: store.telephone } : {}),
     ...(store.image ? { image: store.image } : {}),

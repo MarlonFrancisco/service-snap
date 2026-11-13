@@ -5,17 +5,18 @@ export const BookingFormSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
-      description: z.string(),
+      // Serviço sem descrição ou categoria vem com `null` da API
+      description: z.string().nullish(),
       price: z.number(),
       duration: z.number(),
       category: z
         .object({
           id: z.string(),
           name: z.string(),
-          description: z.string(),
-          color: z.string(),
+          description: z.string().nullish(),
+          color: z.string().nullish(),
         })
-        .optional(),
+        .nullish(),
       quantity: z.number().min(1),
     }),
   ),
@@ -52,7 +53,7 @@ export const BookingFormSchema = z.object({
           z.object({
             id: z.string(),
             name: z.string(),
-            description: z.string(),
+            description: z.string().nullish(),
             price: z.number(),
             duration: z.number(),
           }),
