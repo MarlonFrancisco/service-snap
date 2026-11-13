@@ -3,7 +3,6 @@
 import useSearchStore from '@/store/search/search.store';
 import { IStoreSearchListItem } from '@/store/search/search.types';
 import { motion } from 'motion/react';
-import { useSearchParams } from 'next/navigation';
 import { StoreCard } from '../store-card';
 import { useVirtualizedResultsList } from './virtualized-results-list.hook';
 
@@ -15,18 +14,19 @@ export function VirtualizedResultsList({
   stores,
 }: VirtualizedResultsListProps) {
   const selectedStore = useSearchStore((state) => state.selectedStore);
-  const { visibleStores, hasMore, summary, showMore, selectStore } =
-    useVirtualizedResultsList(stores);
-
-  const query = useSearchParams().get('query');
+  const {
+    query,
+    countLabel,
+    visibleStores,
+    hasMore,
+    summary,
+    showMore,
+    selectStore,
+  } = useVirtualizedResultsList(stores);
 
   return (
     <div className="min-w-0 pt-6 pb-10 lg:pt-0 lg:pb-0">
-      <p className="text-[13px] text-[#5F5C6E] md:text-sm">
-        {stores.length > 100 ? 'Mais de 100 lojas' : null}
-        {stores.length <= 100 &&
-          `${stores.length} ${stores.length === 1 ? 'loja' : 'lojas'}`}
-      </p>
+      <p className="text-[13px] text-[#5F5C6E] md:text-sm">{countLabel}</p>
       <h1 className="mt-1 mb-5 text-2xl font-extrabold tracking-[-0.03em] text-[#0B0B0F] md:mb-6 md:text-[30px]">
         Resultados para &ldquo;{query}&rdquo;
       </h1>

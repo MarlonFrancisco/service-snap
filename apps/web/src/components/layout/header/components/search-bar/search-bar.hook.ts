@@ -1,3 +1,8 @@
+import { SEARCH_FILTER_PARAMS } from '@/components/features/search/search.constants';
+import {
+  applySearchFiltersToParams,
+  parseSearchFilters,
+} from '@/components/features/search/search.helpers';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -38,6 +43,14 @@ export const useSearchBar = () => {
     const category = params.get('category');
     if (location) next.set('location', location);
     if (category) next.set('category', category);
+    // Nova busca pela barra mantém os filtros ativos (vaga hoje, nota).
+    applySearchFiltersToParams(
+      next,
+      parseSearchFilters({
+        minRating: params.get(SEARCH_FILTER_PARAMS.minRating),
+        availableToday: params.get(SEARCH_FILTER_PARAMS.availableToday),
+      }),
+    );
 
     analytics.track('search', {
       search_term: query.trim(),

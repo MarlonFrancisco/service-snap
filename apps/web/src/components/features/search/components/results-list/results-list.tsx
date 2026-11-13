@@ -4,18 +4,14 @@ import { useSearchQuery } from '@/hooks/use-query/use-search-query';
 import useSearchStore from '@/store/search/search.store';
 import { IStoreSearchListItem } from '@/store/search/search.types';
 import { fromStoresToSearch } from '@/utils/helpers/search.helper';
-import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
+import { useSearchUrlState } from '../../search.hook';
 import { ResultsListSkeleton } from './results-list-skeleton';
 import { VirtualizedResultsList } from './virtualized-results-list';
 
 export function ResultsList() {
-  const params = useSearchParams();
-  const { data, isPending } = useSearchQuery({
-    query: params.get('query')!,
-    location: params.get('location'),
-    category: params.get('category'),
-  });
+  const { searchParams } = useSearchUrlState();
+  const { data, isPending } = useSearchQuery(searchParams);
 
   const selectedStore = useSearchStore((state) => state.selectedStore);
   const setSelectedStore = useSearchStore((state) => state.setSelectedStore);
