@@ -24,6 +24,8 @@ import {
 } from '@repo/ui';
 import type { ReactNode } from 'react';
 import { FormProvider } from 'react-hook-form';
+import { AppointmentRepeat } from '../../../schedule-series-module/components/appointment-repeat';
+import { ScheduleSeriesResult } from '../../../schedule-series-module/components/schedule-series-result';
 import { useAddAppointment } from './add-appointment.hook';
 import {
   ADD_APPOINTMENT_DIALOG_CLASS,
@@ -58,6 +60,7 @@ export function AddAppointmentResponsive() {
     professionals,
     schedule,
     summary,
+    repeat,
   } = useAddAppointment();
 
   const renderForm = (title: ReactNode) => (
@@ -137,7 +140,9 @@ export function AddAppointmentResponsive() {
             </div>
 
             <label className="grid content-start gap-1.5">
-              <span className={ADD_APPOINTMENT_LABEL_CLASS}>Data *</span>
+              <span className={ADD_APPOINTMENT_LABEL_CLASS}>
+                {repeat.section.isEnabled ? 'Primeira data *' : 'Data *'}
+              </span>
               <Input
                 type="date"
                 value={schedule.date}
@@ -167,6 +172,8 @@ export function AddAppointmentResponsive() {
             fitInError={schedule.fitInError}
           />
 
+          <AppointmentRepeat {...repeat.section} />
+
           <FormField
             control={form.control}
             name="notes"
@@ -193,11 +200,25 @@ export function AddAppointmentResponsive() {
           summary={summary}
           submitError={submitError}
           isSubmitting={isCreatingAppointment}
+          submitLabel={repeat.submitLabel}
           onCancel={handleClose}
         />
       </form>
     </FormProvider>
   );
+
+  // Série criada com datas de fora: o resultado fica no lugar do formulário
+  const renderBody = (title: ReactNode) =>
+    repeat.result ? (
+      <ScheduleSeriesResult
+        {...repeat.result}
+        title={title}
+        onPickAnotherTime={repeat.onPickAnotherTime}
+        onDone={repeat.onResultDone}
+      />
+    ) : (
+      renderForm(title)
+    );
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) handleClose();
@@ -208,7 +229,7 @@ export function AddAppointmentResponsive() {
       <Drawer open={isOpen} onOpenChange={handleOpenChange}>
         <DrawerContent className={ADD_APPOINTMENT_DRAWER_CLASS}>
           <div className="overflow-y-auto px-5 pt-2 pb-6">
-            {renderForm(
+            {renderBody(
               <div>
                 <DrawerTitle className={ADD_APPOINTMENT_TITLE_CLASS}>
                   Novo agendamento
@@ -227,7 +248,7 @@ export function AddAppointmentResponsive() {
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className={ADD_APPOINTMENT_DIALOG_CLASS}>
-        {renderForm(
+        {renderBody(
           <div>
             <DialogTitle className={ADD_APPOINTMENT_TITLE_CLASS}>
               Novo agendamento

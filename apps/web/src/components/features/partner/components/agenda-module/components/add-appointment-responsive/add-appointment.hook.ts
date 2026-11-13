@@ -3,6 +3,7 @@ import {
   getCustomerContactLines,
   getCustomerName,
 } from '@/components/features/partner/components/customers-module/customers-module.helpers';
+import { useAppointmentRepeat } from '@/components/features/partner/components/schedule-series-module/components/appointment-repeat';
 import { invalidateCustomers } from '@/hooks/partner/use-customers-mutations';
 import {
   useCustomersQuery,
@@ -172,8 +173,14 @@ export const useAddAppointment = () => {
     setIsAddAppointmentOpen({ isAddAppointmentOpen: false });
   }, [setIsAddAppointmentOpen]);
 
+  // Data da série remarcada à parte: se sobrar outra de fora, volta à lista
+  const repeatSingleCreatedRef = useRef<() => boolean>(() => false);
+  const handleCreated = useCallback(() => {
+    if (!repeatSingleCreatedRef.current()) handleClose();
+  }, [handleClose]);
+
   const { createAppointment, isCreatingAppointment } =
-    useAddAppointmentMutations({ storeId, onCreated: handleClose });
+    useAddAppointmentMutations({ storeId, onCreated: handleCreated });
 
   // Cada abertura parte do slot clicado, do cliente da ficha ou do zero
   useEffect(() => {
@@ -482,6 +489,37 @@ export const useAddAppointment = () => {
     totalLabel: formatMoney(totalPrice),
   };
 
+  // ----- Repetir (série recorrente) -----
+  const handlePickAnotherTime = useCallback(
+    (day: string) => {
+      prefilledTimeRef.current = null;
+      setValue('date', day);
+      setValue('startTime', '');
+      setValue('isFitIn', false);
+      setValue('fitInTime', '');
+      setSubmitError(null);
+    },
+    [setValue],
+  );
+
+  const repeat = useAppointmentRepeat({
+    storeId,
+    isOpen,
+    serviceIds,
+    storeMemberId,
+    date,
+    time: chosenTime,
+    isFitIn,
+    durationMinutes: totalDuration,
+    professionalName: professional ? getProfessionalName(professional) : '',
+    onPickAnotherTime: handlePickAnotherTime,
+    onClose: handleClose,
+  });
+
+  useEffect(() => {
+    repeatSingleCreatedRef.current = repeat.handleSingleCreated;
+  }, [repeat.handleSingleCreated]);
+
   const handleSubmit = (event?: FormEvent<HTMLFormElement>) => {
     setSubmitError(null);
 
@@ -489,18 +527,38 @@ export const useAddAppointment = () => {
       (data) => {
         const time = data.isFitIn ? data.fitInTime : data.startTime;
         const { firstName, lastName, telephone, email } = data.newCustomer;
+        const user =
+          data.customerMode === 'store'
+            ? { id: data.customerId }
+            : {
+                firstName,
+                telephone,
+                ...(lastName && { lastName }),
+                ...(email && { email }),
+              };
+        const onError = (message: string) => {
+          setSubmitError(message);
+          toast.error(message);
+        };
+
+        if (repeat.isEnabled) {
+          repeat.submitSeries(
+            {
+              customer: user,
+              serviceIds: selectedServices.map(({ id }) => id),
+              storeMemberId: data.storeMemberId,
+              date: data.date,
+              startTime: time,
+              ...(data.notes.trim() && { notes: data.notes.trim() }),
+            },
+            { onError },
+          );
+          return;
+        }
 
         createAppointment(
           {
-            user:
-              data.customerMode === 'store'
-                ? { id: data.customerId }
-                : {
-                    firstName,
-                    telephone,
-                    ...(lastName && { lastName }),
-                    ...(email && { email }),
-                  },
+            user,
             services: selectedServices.map(({ id, duration }) => ({
               id,
               duration,
@@ -513,11 +571,8 @@ export const useAddAppointment = () => {
             ...(data.notes.trim() && { notes: data.notes.trim() }),
           },
           {
-            onError: (error) => {
-              const message = getCreateAppointmentErrorMessage(error);
-              setSubmitError(message);
-              toast.error(message);
-            },
+            onError: (error) =>
+              onError(getCreateAppointmentErrorMessage(error)),
           },
         );
       },
@@ -530,8 +585,15 @@ export const useAddAppointment = () => {
     isOpen,
     handleClose,
     handleSubmit,
-    isCreatingAppointment,
+    isCreatingAppointment: isCreatingAppointment || repeat.isSubmitting,
     submitError,
+    repeat: {
+      section: repeat.section,
+      submitLabel: repeat.submitLabel,
+      result: repeat.result,
+      onPickAnotherTime: repeat.handlePickAnotherTime,
+      onResultDone: repeat.handleResultDone,
+    },
     customer: {
       mode: customerMode,
       canUseStoreCustomers,

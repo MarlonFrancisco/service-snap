@@ -13,6 +13,7 @@ export const AppointmentSummary = ({
   summary,
   submitError,
   isSubmitting,
+  submitLabel,
   onCancel,
 }: TAppointmentSummaryConfig) => (
   <aside
@@ -106,7 +107,7 @@ export const AppointmentSummary = ({
             Criando...
           </>
         ) : (
-          'Criar agendamento'
+          submitLabel ?? 'Criar agendamento'
         )}
       </button>
     </div>
