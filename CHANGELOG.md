@@ -1,3 +1,83 @@
+## 0.29.0 (2026-11-14)
+
+### Feat
+
+- **web**: widget de agendamento para o site da loja
+- **web**: link da agenda no Google e avisos no aparelho
+- **web**: avaliação só de quem foi atendido e resposta da loja
+- **web**: filtros de vaga hoje e nota na busca
+- **web**: avaliações, agenda no Google e widget no menu do painel
+- **api**: diz ao cliente qual atendimento ele pode avaliar
+- **api**: notificações push de agendamento para a loja
+- **api**: link de agenda do profissional para o Google Agenda
+- **web**: presença na agenda, lista de espera e divulgação do bot no WhatsApp
+- **analytics**: eventos da lista de espera e do link do bot
+- **api**: presença aguardando resposta e filas de espera do cliente
+- **api**: confirmação de presença, lista de espera e link do bot no WhatsApp
+- **web**: página "Sair da lista" do e-mail de campanha
+- **web**: integrações, histórico de ações, privacidade e painel da plataforma
+- **web**: agendamento recorrente e ficha de anamnese
+- **web**: pacotes, fidelidade e campanhas de reativação
+- **web**: caixa, comissões e fechamento de atendimento
+- **web**: menu, títulos e cache das telas da Fase 4
+- **api**: dados que as telas da Fase 4 usam
+- **api**: campanhas de reativação por e-mail
+- **web**: confirmação da reserva, edição de perfil e remarcação pelo cliente
+- **web**: cadastro de clientes e agendamento manual completo
+- **web**: regras da agenda, feriados, horário do profissional, link da loja, convite e cobrança
+- **web**: agenda com semana, mês, arrastar para remarcar e bloqueio por intervalo
+- **web**: tipos, serviços e cache das APIs da Fase 1
+- **web**: abre a loja pelo link curto e redireciona o endereço antigo
+- **api**: cadastro de clientes, agendamento manual, edição de perfil e link curto da loja
+- **api**: permissões por papel, acesso da equipe, convite e portal de cobrança
+- **api**: agrupa serviços da visita, aplica política e abre remarcação pela web
+- **api**: horário por profissional, feriados, bloqueio por intervalo e regras de agenda
+- **api**: fila de trabalhos pelo QStash no lugar do waitUntil
+- **api**: campanhas de reativação pelo WhatsApp com QStash
+- **api**: painel administrativo da plataforma
+- **api**: exportação dos dados e exclusão real da conta (LGPD)
+- **api**: ficha de anamnese com respostas cifradas
+- **api**: agendamento recorrente
+- **api**: caixa, comissões, pacotes, fidelidade e fechamento do atendimento
+- **api**: API pública e webhooks de saída
+- **api**: log de auditoria das ações nas lojas
+- **api**: avisos de agendamento saem depois da resposta
+- **api**: filtros de preço, nota e vaga hoje na busca
+- **api**: avaliação só de quem foi atendido, com resposta da loja
+- **api**: ordena a busca pelo nível do plano e pela nota
+- **web**: telas de erro e de carregamento
+- **analytics**: eventos da página de erro
+- **api**: health check confere banco e cache
+- **web**: mostra cancelados e faltas no histórico do cliente
+- **api**: trava sobreposição de agendamentos no banco
+
+### Fix
+
+- **web**: plano ilimitado no menu, agenda sem dias e reserva sem sobrenome
+- **api**: lê o limite "UNLIMITED" do plano como ilimitado
+- **api**: dia cheio da lista de espera conta só horários que ainda podem vagar
+- **api**: lista de espera sem ciclo no bot e sem dia já encerrado
+- **api**: API pública cancela em nome da loja
+- **api**: traz a visita de cada agendamento no perfil do cliente
+- **web**: deixa a equipe entrar no painel sem assinatura própria
+- **web**: corrige os erros de tipo que o build escondia
+- **ui**: tipa o texto do morphing-text sem undefined
+- **web**: tira promessas que o produto não cumpre
+- **api**: limita tentativas e envios do código de login
+- **api**: valida horário e conflito ao criar e editar agendamento
+- **api**: barra loja e profissional sem assinatura ativa
+- **api**: lê DB_SYNCHRONIZE e DB_LOGGING como booleanos
+- **api**: corrige cálculos dos dashboards de métricas
+
+### Refactor
+
+- **api**: tira o filtro de preço da busca
+
+### Perf
+
+- **api**: reduz as idas ao banco dos guards de loja e de plano
+- **api**: consolida as queries dos dashboards de métricas
+
 ## 0.28.1 (2026-11-11)
 
 ### Fix
