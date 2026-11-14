@@ -196,6 +196,7 @@ export const CACHE_QUERY_KEYS = {
     `partner/stores/${storeId}/anamnesis/responses/${id}`,
   ],
   anamnesisInvite: (token: string) => ['anamnesis', token],
+  marketingOptOut: (token: string) => ['marketing/opt-out', token],
   apiKeys: (storeId: string) => [`partner/stores/${storeId}/api-keys`],
   webhooks: (storeId: string) => [`partner/stores/${storeId}/webhooks`],
   webhookDeliveries: (storeId: string, id: string) => [

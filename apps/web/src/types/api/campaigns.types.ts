@@ -71,3 +71,9 @@ export type TMarketingOptOutResponse = {
   customerId: string;
   optedOut: boolean;
 };
+
+/** Link "Sair da lista" do e-mail: nome da loja e se o cliente já saiu. */
+export type TMarketingOptOutLink = {
+  storeName: string;
+  optedOut: boolean;
+};
