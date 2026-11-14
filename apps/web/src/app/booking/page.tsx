@@ -1,4 +1,5 @@
 import { SearchResults } from '@/components/features/search';
+import { parseSearchFilters } from '@/components/features/search/search.helpers';
 import { SearchService } from '@/service/search';
 import { withBudget } from '@/utils/helpers/promise.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
@@ -12,6 +13,8 @@ type SearchPageProps = {
     query?: string;
     location?: string;
     category?: string;
+    minRating?: string;
+    availableToday?: string;
   }>;
 };
 
@@ -59,7 +62,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     permanentRedirect('/');
   }
 
-  const searchKey = { query, location, category };
+  // Filtros inválidos na URL são ignorados; a chave igual à do cliente evita
+  // refetch na hidratação.
+  const searchKey = {
+    query,
+    location,
+    category,
+    ...parseSearchFilters(params),
+  };
 
   await withBudget(
     queryClient.prefetchQuery({

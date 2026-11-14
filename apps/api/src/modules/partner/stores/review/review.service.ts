@@ -8,12 +8,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import type { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
 import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
-import { toPage, toSkipTake } from '../../../../utils/helpers/pagination.helpers';
+import {
+  toPage,
+  toSkipTake,
+} from '../../../../utils/helpers/pagination.helpers';
 import type { TPage } from '../../../../utils/helpers/pagination.types';
 import { Schedule } from '../schedule/schedule.entity';
 import { StoreSearchSyncService } from '../search-sync/store-search-sync.service';
 import { ReviewDto } from './dto/review.dto';
 import { Review } from './review.entity';
+import type { TReviewableSchedule } from './review.types';
 
 const REVIEW_SELECT = {
   user: {
@@ -25,6 +29,19 @@ const REVIEW_SELECT = {
   store: {
     id: true,
   },
+  // "Atendido em [data] · [serviço] · com [profissional]"
+  schedule: {
+    id: true,
+    date: true,
+    service: { id: true, name: true },
+    storeMember: { id: true, user: { id: true, firstName: true } },
+  },
+};
+
+const REVIEW_RELATIONS = {
+  user: true,
+  store: true,
+  schedule: { service: true, storeMember: { user: true } },
 };
 
 @Injectable()
@@ -103,6 +120,16 @@ export class ReviewService {
     return query.getOne();
   }
 
+  /** O cliente vê o botão de avaliar só quando tem um atendimento para avaliar. */
+  async findMyReviewable(
+    storeId: string,
+    userId: string,
+  ): Promise<TReviewableSchedule | null> {
+    const schedule = await this.findReviewableSchedule(storeId, userId);
+
+    return schedule ? { scheduleId: schedule.id, date: schedule.date } : null;
+  }
+
   /** Com `page`, uma página das mais recentes; sem, a lista inteira. */
   async findAll(
     storeId: string,
@@ -111,7 +138,7 @@ export class ReviewService {
     const options = {
       where: { store: { id: storeId } },
       order: { createdAt: 'DESC' as const },
-      relations: ['user', 'store'],
+      relations: REVIEW_RELATIONS,
       select: REVIEW_SELECT,
     };
 
@@ -130,7 +157,7 @@ export class ReviewService {
   async findOne(id: string): Promise<Review> {
     return this.reviewRepository.findOne({
       where: { id },
-      relations: ['user', 'store'],
+      relations: REVIEW_RELATIONS,
       select: REVIEW_SELECT,
     });
   }

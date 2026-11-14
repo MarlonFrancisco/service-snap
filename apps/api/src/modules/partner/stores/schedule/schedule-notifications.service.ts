@@ -10,6 +10,7 @@ import {
 import { NotificationService } from '../../../notification/notification.service';
 import { QueueService } from '../../../queue/queue.service';
 import type { TQueueJob, TQueueJobMap } from '../../../queue/queue.types';
+import { PushService } from '../../../push/push.service';
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
 import { WebhookDispatchService } from '../webhooks/webhook-dispatch.service';
@@ -22,10 +23,14 @@ import {
   buildBookingConfirmationData,
   buildCustomerEmailData,
   buildStoreEmailData,
+  buildStorePushBody,
   getBookingPrice,
   getBookingServiceNames,
+  getStoreRecipientUserIds,
   getStoreRecipients,
 } from './schedule.helpers';
+
+const AGENDA_PATH = '/partner/agenda';
 
 const RELATIONS = [
   'store',
@@ -56,6 +61,7 @@ export class ScheduleNotificationsService implements OnModuleInit {
     private readonly webhookDispatch: WebhookDispatchService,
     private readonly queueService: QueueService,
     private readonly scheduleEvents: ScheduleEventsService,
+    private readonly pushService: PushService,
   ) {}
 
   onModuleInit() {
@@ -186,6 +192,17 @@ export class ScheduleNotificationsService implements OnModuleInit {
     createdByStore: boolean,
   ) {
     const [first] = schedules;
+
+    // Quem marcou pela loja já sabe do agendamento: push só para reserva do cliente
+    if (!createdByStore) {
+      await this.pushService.sendToUsers(getStoreRecipientUserIds(first), {
+        title: 'Novo agendamento',
+        body: buildStorePushBody(first, getBookingServiceNames(schedules)),
+        url: AGENDA_PATH,
+        tag: `booking-${first.id}`,
+      });
+    }
+
     const recipients = getStoreRecipients(first);
 
     if (!recipients.length) return;
@@ -232,6 +249,13 @@ export class ScheduleNotificationsService implements OnModuleInit {
     );
 
     if (!cancelledByCustomer) return;
+
+    await this.pushService.sendToUsers(getStoreRecipientUserIds(schedule), {
+      title: 'Cliente cancelou',
+      body: buildStorePushBody(schedule),
+      url: AGENDA_PATH,
+      tag: `booking-${schedule.id}`,
+    });
 
     const recipients = getStoreRecipients(schedule);
 

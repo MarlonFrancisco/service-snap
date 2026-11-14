@@ -1,11 +1,19 @@
 import { useAnalytics } from '@/providers/analytics.provider';
-import { useEffect, useRef } from 'react';
-import { SEARCH_LIST_NAME } from './search.constants';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { SEARCH_FILTER_PARAMS, SEARCH_LIST_NAME } from './search.constants';
+import {
+  buildSearchFiltersHref,
+  hasActiveSearchFilters,
+  parseSearchFilters,
+} from './search.helpers';
+import type { TSearchFilters, TSearchUrlParams } from './search.types';
 
 type TUseSearchResultsAnalyticsConfig = {
   query: string;
   category: string | null;
   location: string | null;
+  filters?: TSearchFilters;
   /** Só o `id` importa aqui; aceita o formato cru da API de busca. */
   data: ReadonlyArray<{ id: string }> | undefined;
   isPending: boolean;
@@ -13,25 +21,88 @@ type TUseSearchResultsAnalyticsConfig = {
 };
 
 /**
+ * Fonte única dos parâmetros da busca na URL: termo, local, categoria e os
+ * filtros já validados. `searchParams` é a mesma chave que a página server usa
+ * no prefetch, para o cache hidratar sem refetch.
+ */
+export const useSearchUrlState = () => {
+  const params = useSearchParams();
+
+  return useMemo(() => {
+    const query = params.get('query') ?? '';
+    const location = params.get('location')?.trim() || undefined;
+    const category = params.get('category')?.trim() || undefined;
+    const filters = parseSearchFilters({
+      minRating: params.get(SEARCH_FILTER_PARAMS.minRating),
+      availableToday: params.get(SEARCH_FILTER_PARAMS.availableToday),
+    });
+    const searchParams: TSearchUrlParams = {
+      query,
+      location,
+      category,
+      ...filters,
+    };
+
+    return {
+      query,
+      location,
+      category,
+      filters,
+      hasActiveFilters: hasActiveSearchFilters(filters),
+      searchParams,
+    };
+  }, [params]);
+};
+
+/** Troca os filtros na URL mantendo termo, local e categoria. */
+export const useSearchFiltersNavigation = () => {
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const updateFilters = useCallback(
+    (filters: TSearchFilters) => {
+      router.replace(buildSearchFiltersHref(params, filters), {
+        scroll: false,
+      });
+    },
+    [params, router],
+  );
+
+  const clearFilters = useCallback(() => updateFilters({}), [updateFilters]);
+
+  return { updateFilters, clearFilters };
+};
+
+/**
  * Registra o desfecho de cada busca (resultados, vazio ou erro) uma única vez
- * por combinação de termo, categoria e local.
+ * por combinação de termo, categoria, local e filtros.
  */
 export const useSearchResultsAnalytics = ({
   query,
   category,
   location,
+  filters,
   data,
   isPending,
   isError,
 }: TUseSearchResultsAnalyticsConfig) => {
   const analytics = useAnalytics();
   const lastTrackedKey = useRef<string | null>(null);
+  const minRating = filters?.minRating;
+  const availableToday = filters?.availableToday;
 
   useEffect(() => {
     if (isPending || !query) return;
 
     const outcome = isError ? 'error' : data?.length ? 'results' : 'empty';
-    const trackKey = [query, category, location, outcome].join('|');
+    const trackKey = [
+      query,
+      category,
+      location,
+      minRating,
+      availableToday,
+      outcome,
+    ].join('|');
     if (lastTrackedKey.current === trackKey) return;
     lastTrackedKey.current = trackKey;
 
@@ -55,5 +126,15 @@ export const useSearchResultsAnalytics = ({
       results_count: data.length,
       item_ids: data.map((store) => store.id),
     });
-  }, [analytics, query, category, location, data, isPending, isError]);
+  }, [
+    analytics,
+    query,
+    category,
+    location,
+    minRating,
+    availableToday,
+    data,
+    isPending,
+    isError,
+  ]);
 };

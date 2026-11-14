@@ -11,6 +11,7 @@ export const WriteReviewForm = () => {
     rating,
     comment,
     businessName,
+    reviewDateLabel,
     isCreatingReview,
     isFormValid,
     commentLength,
@@ -30,7 +31,9 @@ export const WriteReviewForm = () => {
           Escrever uma avaliação
         </h3>
         <p className="mt-1.5 text-sm leading-[1.55] text-[#5F5C6E]">
-          Compartilhe sua experiência com {businessName}
+          {reviewDateLabel
+            ? `Conte como foi seu atendimento de ${reviewDateLabel} em ${businessName}`
+            : `Compartilhe sua experiência com ${businessName}`}
         </p>
       </div>
 

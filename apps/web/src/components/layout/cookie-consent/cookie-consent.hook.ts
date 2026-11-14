@@ -3,6 +3,7 @@
 import { useAnalytics, useAnalyticsConsent } from '@/providers/analytics.provider';
 import { useConsentStore } from '@/store/consent';
 import { DENIED_CONSENT, type TConsentState } from '@repo/analytics';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ACCEPT_ALL_CONSENT } from './cookie-consent.constants';
 
@@ -32,6 +33,9 @@ export const useCookieConsent = () => {
   );
   const setAnalyticsConsent = useAnalyticsConsent();
   const decide = useConsentDecision();
+  // No iframe do widget (/booking/:id/embed) o aviso cobriria o agendamento.
+  // Sem escolha, a análise segue negada.
+  const isEmbedRoute = usePathname()?.endsWith('/embed') ?? false;
 
   // O servidor não conhece o localStorage: o aviso só aparece depois de
   // montar, senão quem já escolheu veria um piscar do aviso.
@@ -54,7 +58,8 @@ export const useCookieConsent = () => {
 
   return {
     // Some enquanto o painel está aberto, para não ficar por cima dele.
-    isVisible: isHydrated && consent === null && !isPreferencesOpen,
+    isVisible:
+      isHydrated && consent === null && !isPreferencesOpen && !isEmbedRoute,
     handleAcceptAll: () => decide(ACCEPT_ALL_CONSENT),
     handleRejectAll: () => decide(DENIED_CONSENT),
     handleCustomize: openPreferences,

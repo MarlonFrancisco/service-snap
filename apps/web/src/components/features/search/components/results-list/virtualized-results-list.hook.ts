@@ -4,6 +4,8 @@ import { IStoreSearchListItem } from '@/store/search/search.types';
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { SEARCH_LIST_NAME } from '../../search.constants';
+import { buildSearchResultsCountLabel } from '../../search.helpers';
+import { useSearchUrlState } from '../../search.hook';
 
 const RESULTS_PAGE_SIZE = 6;
 
@@ -17,6 +19,7 @@ export function useVirtualizedResultsList(stores: IStoreSearchListItem[]) {
   const analytics = useAnalytics();
   const setSelectedStore = useSearchStore((state) => state.setSelectedStore);
   const searchKey = useSearchParams().toString();
+  const { query, filters } = useSearchUrlState();
   const [visibleCount, setVisibleCount] = useState(RESULTS_PAGE_SIZE);
 
   // Reinicia pela busca, não por `stores`: a API não garante a ordem, então um
@@ -53,6 +56,8 @@ export function useVirtualizedResultsList(stores: IStoreSearchListItem[]) {
   const visibleStores = stores.slice(0, visibleCount);
 
   return {
+    query,
+    countLabel: buildSearchResultsCountLabel(stores.length, filters),
     visibleStores,
     hasMore: visibleCount < stores.length,
     summary: getResultsSummary(visibleStores.length, stores.length),

@@ -134,6 +134,21 @@ export const MODULE_CONFIG: Record<string, TModuleConfig> = {
     description: 'Passo a passo para conseguir as credenciais na Meta',
     showStoreSelector: true,
   },
+  '/partner/reviews': {
+    title: 'Avaliações',
+    description: 'Leia e responda as avaliações dos clientes',
+    showStoreSelector: true,
+  },
+  '/partner/settings/calendar': {
+    title: 'Agenda no Google',
+    description: 'Veja os atendimentos no seu calendário pessoal',
+    showStoreSelector: true,
+  },
+  '/partner/settings/widget': {
+    title: 'Widget no seu site',
+    description: 'Receba agendamentos pelo site da sua loja',
+    showStoreSelector: true,
+  },
 };
 
 const FALLBACK_MODULE_CONFIG: TModuleConfig = {

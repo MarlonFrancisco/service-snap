@@ -15,6 +15,7 @@ import { PlansModule } from './plans';
 import { PrivacyModule } from './privacy/privacy.module';
 import { PublicApiModule } from './public-api/public-api.module';
 import { QueueModule } from './queue';
+import { PushModule } from './push/push.module';
 import { RecomendationModule } from './recomendation';
 import { SearchModule } from './search';
 import { StoreDiscoveryModule } from './store-discovery/store-discovery.module';
@@ -37,6 +38,7 @@ import { WhatsappBotModule } from './whatsapp-bot';
     DatabaseModule,
     SubscriptionModule,
     PlansModule,
+    PushModule,
     UsersModule,
     NotificationModule,
     PartnerModule,

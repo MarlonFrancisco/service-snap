@@ -52,16 +52,12 @@ export interface IStoreSearchMetadata {
   /** Média das notas e quantidade de avaliações, para ordenar e filtrar. */
   averageRating?: number;
   reviewCount?: number;
-  /** Menor preço entre os serviços ativos; nulo sem serviço com preço. */
-  minPrice?: number | null;
   /** Fuso IANA da loja: "hoje" na busca é o hoje dela. */
   timezone?: string;
 }
 
 /** Filtros que o cliente escolhe na busca, além do texto, cidade e categoria. */
 export type TSearchFilters = {
-  minPrice?: number;
-  maxPrice?: number;
   /** Nota média mínima, de 1 a 5. */
   minRating?: number;
 };

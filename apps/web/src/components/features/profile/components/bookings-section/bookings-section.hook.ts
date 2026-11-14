@@ -179,6 +179,9 @@ export const useBookingsSection = () => {
       setReviewsAttributesAction({
         storeId: booking.store.id,
         businessName: booking.store.name,
+        // Avalia exatamente este atendimento, não o concluído mais recente
+        reviewTarget: { scheduleId: booking.id, date: booking.date },
+        showWriteReview: false,
         isOpen: true,
       });
       analytics.track('review_started', {

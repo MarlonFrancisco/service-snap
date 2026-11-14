@@ -1,4 +1,4 @@
-import { IReview } from '@/types/reviews.types';
+import { IReview, IReviewableSchedule } from '@/types/reviews.types';
 
 export interface IReviewsStore {
   isOpen: boolean;
@@ -6,6 +6,11 @@ export interface IReviewsStore {
   reviews: IReview[];
   storeId: string;
   businessName: string;
+  /**
+   * Atendimento a avaliar. Vem do perfil (o agendamento clicado) ou do botão
+   * "Avaliar meu atendimento"; o formulário envia o `scheduleId` dele.
+   */
+  reviewTarget: IReviewableSchedule | null;
   toggleReviewsModalAction: (open: boolean) => Promise<void>;
   setReviewsAttributesAction: (
     attributes: Partial<IReviewsStore>,

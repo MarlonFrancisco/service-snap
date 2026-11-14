@@ -8,6 +8,10 @@ export type TSearchStoresParams = {
   query: string;
   location?: string;
   category?: string;
+  /** Nota mínima: um de '1', '2', '3', '4', '4.5', '5'. */
+  minRating?: string;
+  /** Só lojas com horário livre hoje. */
+  availableToday?: boolean;
 };
 
 export class SearchService {
@@ -15,7 +19,7 @@ export class SearchService {
   static headers?: HeadersInit;
 
   static async searchStores(params: string | TSearchStoresParams) {
-    const { query, location, category } =
+    const { query, location, category, minRating, availableToday } =
       typeof params === 'string' ? { query: params } : params;
 
     const searchParams = new URLSearchParams();
@@ -25,6 +29,12 @@ export class SearchService {
     }
     if (category?.trim()) {
       searchParams.set('category', category.trim());
+    }
+    if (minRating?.trim()) {
+      searchParams.set('minRating', minRating.trim());
+    }
+    if (availableToday) {
+      searchParams.set('availableToday', 'true');
     }
 
     return await this.apiClient.get<ISearchResult[]>(

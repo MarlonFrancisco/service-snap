@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationModule } from '../../../notification/notification.module';
+import { PushModule } from '../../../push/push.module';
 import { UsersModule } from '../../../users/users.module';
 import { Service } from '../category/service/service.entity';
 import { StoreGuardsModule } from '../guards/store-guards.module';
@@ -35,6 +36,7 @@ import { ScheduleService } from './schedule.service';
     NotificationModule,
     WebhookDispatchModule,
     HolidayModule,
+    PushModule,
   ],
   // A rota fixa de presença vem antes da de `:id`
   controllers: [SchedulePresenceController, ScheduleController],

@@ -10,6 +10,7 @@ import {
   Percent,
   Plug,
   ShieldCheck,
+  Star,
   Store,
   Users,
   Wallet,
@@ -116,6 +117,13 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     href: '/partner/services',
   },
   {
+    kind: 'link',
+    id: 'reviews',
+    label: 'Avaliações',
+    icon: Star,
+    href: '/partner/reviews',
+  },
+  {
     kind: 'group',
     id: 'notifications',
     label: 'Notificações',
@@ -162,6 +170,7 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     id: 'integrations',
     label: 'Integrações',
     icon: Plug,
+    // Sem `requires` no grupo: só o WhatsApp depende do plano
     children: [
       {
         id: 'integrations-whatsapp',
@@ -173,6 +182,16 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         id: 'integrations-api',
         label: 'API e webhooks',
         href: '/partner/integracoes',
+      },
+      {
+        id: 'integrations-calendar',
+        label: 'Agenda no Google',
+        href: '/partner/settings/calendar',
+      },
+      {
+        id: 'integrations-widget',
+        label: 'Widget no site',
+        href: '/partner/settings/widget',
       },
     ],
   },

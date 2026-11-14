@@ -123,10 +123,20 @@ export const CACHE_QUERY_KEYS = {
     `partner/stores/${storeId}/metrics/customers`,
     { period },
   ],
-  search: (params: { query: string; location?: string; category?: string }) => [
-    'search',
-    params,
+  reviewable: (storeId: string) => [
+    `partner/stores/${storeId}/reviews/reviewable`,
   ],
+  search: (params: {
+    query: string;
+    location?: string;
+    category?: string;
+    minRating?: string;
+    availableToday?: boolean;
+  }) => ['search', params],
+  calendarFeed: (storeId: string, memberId: string) => [
+    `partner/stores/${storeId}/members/${memberId}/calendar-feed`,
+  ],
+  pushPublicKey: () => ['push/public-key'],
   whatsappConfig: (storeId: string) => [`partner/stores/${storeId}/whatsapp`],
   whatsappStatus: (storeId: string) => [
     `partner/stores/${storeId}/whatsapp/status`,

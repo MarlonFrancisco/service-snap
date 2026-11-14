@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../../auth';
 import { Subscription } from '../../subscription/subscription.entity';
+import { CalendarFeedModule } from './calendar-feed/calendar-feed.module';
 import { CategoryModule } from './category';
 import { CustomerModule } from './customer/customer.module';
 import { GalleryModule } from './gallery';
@@ -33,6 +34,7 @@ import { WhatsappModule } from './whatsapp';
     ScheduleModule,
     NotificationsModule,
     ReviewModule,
+    CalendarFeedModule,
     StoreSearchSyncModule,
     TeamModule,
     WaitlistModule,

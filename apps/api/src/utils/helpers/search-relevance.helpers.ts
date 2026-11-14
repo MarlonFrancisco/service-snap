@@ -41,7 +41,7 @@ export type TSearchHit = {
     Partial<
       Pick<
         IStoreSearchMetadata,
-        'rankTier' | 'averageRating' | 'reviewCount' | 'minPrice' | 'timezone'
+        'rankTier' | 'averageRating' | 'reviewCount' | 'timezone'
       >
     >;
 };
@@ -323,26 +323,12 @@ export function filterAndRankSearchHits(
     }));
 }
 
-/** Serviços ativos da loja no documento, com id, para preço e disponibilidade. */
+/** Serviços ativos da loja no documento, com id, para a disponibilidade. */
 export function getActiveHitServices(hit: TSearchHit) {
   return (hit.content?.services ?? []).filter(
     (service): service is Exclude<typeof service, string> =>
       typeof service !== 'string' && Boolean(service.id) && service.isActive !== false,
   );
-}
-
-/**
- * Menor preço da loja. Documento indexado antes de `minPrice` calcula a partir
- * dos serviços, para o filtro não esconder lojas só por falta de reindexação.
- */
-export function getHitMinPrice(hit: TSearchHit): number | null {
-  if (hit.metadata?.minPrice !== undefined) return hit.metadata.minPrice;
-
-  const prices = getActiveHitServices(hit)
-    .map((service) => Number(service.price))
-    .filter((price) => Number.isFinite(price) && price > 0);
-
-  return prices.length ? Math.min(...prices) : null;
 }
 
 /** Nota média; mesmo cuidado com documentos antigos, que só têm a lista de avaliações. */
@@ -369,22 +355,11 @@ export function getHitReviewCount(hit: TSearchHit): number {
   return Array.isArray(hit.metadata?.reviews) ? hit.metadata.reviews.length : 0;
 }
 
-/**
- * Preço e nota escolhidos pelo cliente. Loja sem preço cadastrado sai quando há
- * filtro de preço: não dá para garantir que ela cabe na faixa.
- */
+/** Nota mínima escolhida pelo cliente. */
 export function matchesSearchFilters(
   hit: TSearchHit,
-  { minPrice, maxPrice, minRating }: TSearchFilters,
+  { minRating }: TSearchFilters,
 ): boolean {
-  if (minPrice !== undefined || maxPrice !== undefined) {
-    const price = getHitMinPrice(hit);
-
-    if (price === null) return false;
-    if (minPrice !== undefined && price < minPrice) return false;
-    if (maxPrice !== undefined && price > maxPrice) return false;
-  }
-
   if (minRating !== undefined && getHitAverageRating(hit) < minRating) {
     return false;
   }

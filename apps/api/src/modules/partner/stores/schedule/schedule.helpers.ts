@@ -63,6 +63,28 @@ export const getStoreRecipients = (schedule: Schedule) => [
   ),
 ];
 
+/** Mesmas pessoas de `getStoreRecipients`, por id, para o push. */
+export const getStoreRecipientUserIds = (schedule: Schedule) => [
+  ...new Set(
+    [schedule.store?.owner?.id, schedule.storeMember?.user?.id].filter(
+      Boolean,
+    ),
+  ),
+];
+
+/** "Corte · Ana · Quarta-feira, 4 de novembro às 10:00" */
+export const buildStorePushBody = (
+  schedule: Schedule,
+  serviceNames = schedule.service?.name || 'Serviço',
+) =>
+  [
+    serviceNames,
+    schedule.user?.firstName?.trim(),
+    `${formatLongDate(schedule.date)} às ${schedule.startTime}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
 /** Linhas em ordem de horário: o evento vai do início da primeira ao fim da última. */
 export const buildBookingCalendarLink = (schedules: Schedule[]) => {
   const [first] = schedules;

@@ -47,6 +47,15 @@ export class ReviewController {
     return this.reviewService.findAll(storeId, query);
   }
 
+  /** Antes de `:id`, senão "reviewable" seria lido como id. */
+  @Get('reviewable')
+  async findMyReviewable(
+    @Param('storeId', ParseUUIDPipe) storeId: string,
+    @CurrentUser('sub') userId: string,
+  ) {
+    return this.reviewService.findMyReviewable(storeId, userId);
+  }
+
   @Get(':id')
   async findOne(@Param('storeId') storeId: string, @Param('id') id: string) {
     return this.reviewService.findOneInStore(storeId, id);

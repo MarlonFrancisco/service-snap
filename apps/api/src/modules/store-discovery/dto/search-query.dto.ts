@@ -1,4 +1,4 @@
-import { IsIn, IsNumberString, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsOptional, IsString } from 'class-validator';
 
 /** Query string do `GET /search`; números e booleano chegam como texto. */
 export class SearchQueryDto {
@@ -13,14 +13,6 @@ export class SearchQueryDto {
   @IsString()
   @IsOptional()
   category?: string;
-
-  @IsNumberString()
-  @IsOptional()
-  minPrice?: string;
-
-  @IsNumberString()
-  @IsOptional()
-  maxPrice?: string;
 
   /** Nota média mínima, de 1 a 5. */
   @IsIn(['1', '2', '3', '4', '4.5', '5'])

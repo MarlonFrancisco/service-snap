@@ -9,7 +9,7 @@ import { NotFound } from '@/components/ui';
 import { useSearchQuery } from '@/hooks/use-query/use-search-query';
 import { cn } from '@repo/ui/index';
 import { Search } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import {
   ResultsList,
   ResultsListSkeleton,
@@ -17,23 +17,24 @@ import {
   StorePreview,
 } from './components';
 import { MobileSearchPill } from './components/mobile-search-pill';
-import { useSearchResultsAnalytics } from './search.hook';
+import { SearchFilters } from './components/search-filters';
+import {
+  useSearchFiltersNavigation,
+  useSearchResultsAnalytics,
+  useSearchUrlState,
+} from './search.hook';
 
 export function SearchResults() {
   const router = useRouter();
-  const params = useSearchParams();
-  const query = params.get('query')!;
-  const location = params.get('location');
-  const category = params.get('category');
-  const { data, isPending, isError } = useSearchQuery({
-    query,
-    location,
-    category,
-  });
+  const { query, location, category, filters, hasActiveFilters, searchParams } =
+    useSearchUrlState();
+  const { clearFilters } = useSearchFiltersNavigation();
+  const { data, isPending, isError } = useSearchQuery(searchParams);
   useSearchResultsAnalytics({
     query,
-    category,
-    location,
+    category: category ?? null,
+    location: location ?? null,
+    filters,
     data,
     isPending,
     isError,
@@ -49,6 +50,10 @@ export function SearchResults() {
       <div className="flex min-h-[calc(100dvh-5rem)] flex-col md:min-h-[calc(100dvh-6rem)]">
         <MobileSearchPill />
 
+        <div className="mx-auto hidden w-full max-w-[82.5rem] px-10 md:block">
+          <SearchFilters />
+        </div>
+
         <div className="mx-auto w-full max-w-[82.5rem] flex-1 px-5 md:px-10 lg:pt-4">
           {isPending && <ResultsListSkeleton />}
 
@@ -63,13 +68,24 @@ export function SearchResults() {
             />
           )}
 
-          {showEmpty && (
+          {showEmpty && hasActiveFilters && (
+            <NotFound
+              className="flex py-20"
+              icon={Search}
+              title="Nenhum resultado encontrado"
+              description="Nenhuma loja bate com esses filtros. Limpe os filtros para ver todos os resultados desta busca."
+              actionLabel="Limpar filtros"
+              onAction={clearFilters}
+            />
+          )}
+
+          {showEmpty && !hasActiveFilters && (
             <NotFound
               className="flex py-20"
               icon={Search}
               title="Nenhum resultado encontrado"
               description={
-                params.get('category') || params.get('location')
+                category || location
                   ? 'Nada bate com essa categoria ou local. Tente outro termo ou região — não mostramos resultados irrelevantes.'
                   : 'Tente outros termos, outra categoria ou outra região. Se a rede ainda estiver chegando aí, indique um profissional pelo contato.'
               }
