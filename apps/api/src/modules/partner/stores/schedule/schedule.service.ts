@@ -374,35 +374,33 @@ export class ScheduleService {
       return nextSchedule;
     });
 
-    const savedSchedules = await this.inSlotTransaction(
-      async (manager) => {
-        await this.assertMemberFree(manager, {
-          store,
-          storeMemberId,
-          date: toDateKey(scheduleDto.date),
-          items: schedules,
-          // A loja pode encaixar fora do expediente; o cliente só pega o que é oferecido
-          enforceAvailability: !createdByStore,
-        });
+    const savedSchedules = await this.inSlotTransaction(async (manager) => {
+      await this.assertMemberFree(manager, {
+        store,
+        storeMemberId,
+        date: toDateKey(scheduleDto.date),
+        items: schedules,
+        // A loja pode encaixar fora do expediente; o cliente só pega o que é oferecido
+        enforceAvailability: !createdByStore,
+      });
 
-        const user = await resolveCustomer(store);
-        // Registro pai: os serviços desta reserva cancelam e remarcam juntos
-        const booking = await manager.save(Booking, {
-          store: { id: store.id },
-          user: { id: user.id },
-          source,
-        });
+      const user = await resolveCustomer(store);
+      // Registro pai: os serviços desta reserva cancelam e remarcam juntos
+      const booking = await manager.save(Booking, {
+        store: { id: store.id },
+        user: { id: user.id },
+        source,
+      });
 
-        return manager.save(
-          Schedule,
-          schedules.map((schedule) => ({
-            ...schedule,
-            user,
-            booking: { id: booking.id },
-          })),
-        );
-      },
-    );
+      return manager.save(
+        Schedule,
+        schedules.map((schedule) => ({
+          ...schedule,
+          user,
+          booking: { id: booking.id },
+        })),
+      );
+    });
 
     const savedIds = savedSchedules.map((schedule) => schedule.id);
     const created = await this.scheduleRepository.find({
@@ -432,7 +430,13 @@ export class ScheduleService {
    */
   async findAll(
     storeId: string,
-    { from, to, memberId: requestedMemberId, page, limit }: TScheduleListQuery = {},
+    {
+      from,
+      to,
+      memberId: requestedMemberId,
+      page,
+      limit,
+    }: TScheduleListQuery = {},
     requesterId?: string,
   ): Promise<Schedule[] | TPage<Schedule>> {
     const actor = requesterId
@@ -456,7 +460,13 @@ export class ScheduleService {
         ...(memberId && { storeMember: { id: memberId } }),
         ...(date && { date: date as unknown as FindOperator<Date> }),
       },
-      relations: ['storeMember', 'storeMember.user', 'user', 'service', 'booking'],
+      relations: [
+        'storeMember',
+        'storeMember.user',
+        'user',
+        'service',
+        'booking',
+      ],
       order: { date: 'ASC' as const, startTime: 'ASC' as const },
     };
 
@@ -643,7 +653,8 @@ export class ScheduleService {
         id: row.id,
         startTime,
         endTime:
-          row.endTime ?? calculateEndTime(startTime, row.service?.duration ?? 0),
+          row.endTime ??
+          calculateEndTime(startTime, row.service?.duration ?? 0),
       };
     });
   }
@@ -664,6 +675,8 @@ export class ScheduleService {
           startTime: move.startTime,
           endTime: move.endTime,
           storeMember: { id: storeMemberId },
+          // A confirmação de presença valia para o horário antigo
+          presenceConfirmedAt: null,
         },
       );
     }
@@ -707,10 +720,7 @@ export class ScheduleService {
         : 0;
     const moves =
       isMoved && items[0]?.startTime
-        ? shiftItems(
-            items,
-            calculateEndTime(items[0].startTime, delta),
-          )
+        ? shiftItems(items, calculateEndTime(items[0].startTime, delta))
         : items;
     // Reativar um cancelado ocupa o horário de novo, então também é checado
     const needsSlot =

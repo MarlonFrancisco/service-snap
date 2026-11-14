@@ -11,6 +11,7 @@ import {
   DrawerTitle,
   useIsMobile,
 } from '@repo/ui';
+import { Check } from 'lucide-react';
 import {
   AGENDA_DIALOG_CLASS,
   AGENDA_DRAWER_CLASS,
@@ -27,6 +28,9 @@ const DETAIL_ROW_CLASS =
   'flex justify-between gap-5 border-b border-[#F0EEF4] py-[11px] text-sm';
 const DETAIL_TERM_CLASS = 'text-[#5F5C6E]';
 const DETAIL_VALUE_CLASS = 'min-w-0 text-right font-semibold break-words';
+const DETAIL_BADGE_CLASS = 'rounded-full px-[11px] py-[5px] text-xs font-bold';
+const PRESENCE_NOTE_CLASS =
+  'flex gap-3 rounded-2xl px-4 py-3.5 text-sm leading-[1.45]';
 
 export function AppointmentDetailsResponsive() {
   const isMobile = useIsMobile();
@@ -34,6 +38,9 @@ export function AppointmentDetailsResponsive() {
     detailsAppointment,
     isOpen,
     statusBadge,
+    isPresenceConfirmed,
+    isPresenceAwaiting,
+    presenceText,
     duration,
     formattedDate,
     isUpdatingStatus,
@@ -68,14 +75,43 @@ export function AppointmentDetailsResponsive() {
     />
   ) : (
     <div className="flex flex-col gap-3.5">
-      <span
-        className={cn(
-          'self-start rounded-full px-[11px] py-[5px] text-xs font-bold',
-          statusBadge.className,
-        )}
-      >
-        {statusBadge.label}
-      </span>
+      <div className="flex flex-wrap gap-2">
+        <span className={cn(DETAIL_BADGE_CLASS, statusBadge.className)}>
+          {statusBadge.label}
+        </span>
+        {isPresenceConfirmed ? (
+          <span
+            className={cn(DETAIL_BADGE_CLASS, 'bg-[#F2FAF5] text-[#0A5536]')}
+          >
+            Confirmado
+          </span>
+        ) : null}
+      </div>
+
+      {isPresenceConfirmed ? (
+        <div className={cn(PRESENCE_NOTE_CLASS, 'bg-[#F2FAF5] text-[#0A5536]')}>
+          <Check
+            aria-hidden="true"
+            className="size-5 shrink-0"
+            strokeWidth={2.2}
+          />
+          <p>
+            <b className="block">Presença confirmada pelo WhatsApp</b>
+            {presenceText}
+          </p>
+        </div>
+      ) : null}
+
+      {isPresenceAwaiting ? (
+        <div className={cn(PRESENCE_NOTE_CLASS, 'bg-[#F7F6FA] text-[#5F5C6E]')}>
+          <p>
+            <b className="block text-[#0B0B0F]">
+              Lembrete enviado, sem resposta
+            </b>
+            {presenceText}
+          </p>
+        </div>
+      ) : null}
 
       <dl>
         <div className={DETAIL_ROW_CLASS}>
@@ -239,6 +275,13 @@ export function AppointmentDetailsResponsive() {
             </button>
           </div>
         </div>
+      ) : null}
+
+      {isPresenceConfirmed ? (
+        <p className="text-[13px] leading-normal text-[#5F5C6E]">
+          Remarcar apaga a confirmação: o cliente confirma de novo no lembrete
+          do horário novo.
+        </p>
       ) : null}
     </div>
   );

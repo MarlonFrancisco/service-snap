@@ -20,6 +20,8 @@ export type TQueueJobMap = {
     webhook: boolean;
     notifyChange: boolean;
     previousSchedule?: string;
+    /** Dia (YYYY-MM-DD) do horário antigo, que ficou livre para a lista de espera. */
+    freedDate?: string;
   };
   'webhook.delivery': { deliveryId: string };
   'campaign.message': { recipientId: string };

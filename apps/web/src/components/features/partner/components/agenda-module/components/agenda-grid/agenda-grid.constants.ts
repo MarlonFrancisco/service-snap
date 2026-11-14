@@ -27,6 +27,27 @@ export const STATUS_LEGEND = [
 ] as const;
 
 /**
+ * Selo de presença do cartão: fundo branco para destacar sobre a cor do status.
+ */
+export const PRESENCE_CONFIG = {
+  confirmed: {
+    label: 'Confirmado',
+    hasIcon: true,
+    className: 'text-[#0A5536]',
+  },
+  awaiting: {
+    label: 'Aguardando resposta',
+    hasIcon: false,
+    className: 'text-[#5F5C6E]',
+  },
+} as const;
+
+export const PRESENCE_LEGEND = {
+  kind: 'confirmed',
+  description: 'cliente respondeu ao lembrete',
+} as const;
+
+/**
  * Constantes de configuração do grid
  */
 export const GRID_CONSTANTS = {

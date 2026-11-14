@@ -4,6 +4,7 @@ import {
   ICreateAppointment,
   TRescheduleRequest,
   TScheduleListQuery,
+  IPresenceAwaiting,
 } from '@/types/api/schedule.types';
 import { apiClient } from '../../api';
 import { HttpClientService } from '../../api/http-client.service';
@@ -52,6 +53,12 @@ export class ScheduleService {
     return await this.apiClient.patch<IAppointment>(
       `/partner/stores/${storeId}/schedules/${scheduleId}/reschedule`,
       request,
+    );
+  }
+
+  static async getPresenceAwaiting(storeId: string) {
+    return await this.apiClient.get<IPresenceAwaiting[]>(
+      `/partner/stores/${storeId}/schedules/presence/awaiting`,
     );
   }
 

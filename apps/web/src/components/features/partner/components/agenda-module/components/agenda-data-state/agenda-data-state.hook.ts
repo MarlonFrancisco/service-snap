@@ -1,3 +1,4 @@
+import { usePresenceAwaitingQuery } from '@/hooks/use-query/use-presence-awaiting-query';
 import { useStoreQuery } from '@/hooks/use-query/use-store-query';
 import { useStoresQuery } from '@/hooks/use-query/use-stores-query/use-stores-query.hook';
 import { HolidaysService } from '@/service/partner/holidays';
@@ -10,10 +11,12 @@ import {
   useAgendaStore,
 } from '@/store/admin/agenda';
 import { usePartnerStore } from '@/store/partner';
+import type { IAppointment } from '@/types/api/schedule.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useIsMobile } from '@repo/ui';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
+import { getAppointmentPresence } from '../agenda-grid/agenda-grid.helpers';
 import type { TAgendaDataStatus } from './agenda-data-state.types';
 
 const EMPTY_HOLIDAYS: IStoreHoliday[] = [];
@@ -67,6 +70,34 @@ export const useAgendaHolidaysQuery = () => {
   });
 
   return holidays;
+};
+
+/**
+ * Presença dos agendamentos da loja ativa. A lista de "aguardando" vem à parte
+ * da agenda; se ela falhar, os cartões só ficam sem o selo de espera.
+ */
+export const useAgendaPresence = () => {
+  const storeId = usePartnerStore((state) => state.activeStore.id);
+  const { presenceAwaiting } = usePresenceAwaitingQuery({ storeId });
+
+  const awaitingById = useMemo(
+    () =>
+      new Map(
+        presenceAwaiting.map(({ scheduleId, reminderSentAt }) => [
+          scheduleId,
+          reminderSentAt,
+        ]),
+      ),
+    [presenceAwaiting],
+  );
+
+  const getPresence = useCallback(
+    (appointment: IAppointment) =>
+      getAppointmentPresence(appointment, awaitingById),
+    [awaitingById],
+  );
+
+  return { getPresence };
 };
 
 /**

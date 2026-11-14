@@ -1,5 +1,8 @@
 import type { IAppointment } from '@/types/api/schedule.types';
-import type { TAgendaSlot } from '../../agenda-grid.types';
+import type {
+  TAgendaSlot,
+  TAppointmentPresence,
+} from '../../agenda-grid.types';
 import type { useAgendaGrid } from '../../agenda-grid.hook';
 
 /**
@@ -7,6 +10,12 @@ import type { useAgendaGrid } from '../../agenda-grid.hook';
  */
 export type TMobileViewConfig = {
   gridHook: ReturnType<typeof useAgendaGrid>;
+};
+
+export type TMobileDayAppointment = {
+  appointment: IAppointment;
+  presence: TAppointmentPresence | null;
+  ariaLabel: string;
 };
 
 export type TMobileBlockItem =

@@ -22,6 +22,7 @@ import { BookingConfirmation } from './components/booking-confirmation';
 import { BookingNotFound } from './components/booking-not-found';
 import { BookingSidebar } from './components/booking-sidebar';
 import { BookingSkeleton } from './components/booking-skeleton';
+import { BookingWhatsappCard } from './components/booking-whatsapp-card';
 import { BusinessInfo, BusinessShowcase } from './components/business-showcase';
 import { CheckoutStep } from './components/checkout-step';
 import { DateTimeSelectionStep } from './components/date-time-selection-step';
@@ -303,6 +304,7 @@ export function BookingFlow() {
                   isCheckoutStep ? '-order-1 lg:order-none' : 'hidden md:block'
                 }
               >
+                {isServicesStep && <BookingWhatsappCard />}
                 <BookingSidebar
                   totalPrice={totalPrice}
                   totalDuration={totalDuration}

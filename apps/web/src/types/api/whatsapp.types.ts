@@ -57,6 +57,8 @@ export interface IWhatsappStatusResponse {
   message?: string;
   /** Uma conferência por credencial; só vem quando as três estão preenchidas. */
   checks?: IWhatsappCheck[];
+  /** Link `wa.me` do bot da loja; só vem com `status === 'connected'`. */
+  botLink?: string;
 }
 
 export interface IWhatsappTemplateSummary {

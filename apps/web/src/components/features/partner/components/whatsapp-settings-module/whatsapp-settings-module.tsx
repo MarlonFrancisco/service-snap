@@ -31,6 +31,7 @@ import {
   getGuideStepHref,
   WHATSAPP_GUIDE_ROUTE,
 } from './whatsapp-connect-guide';
+import { WhatsappBotPromo } from './whatsapp-bot-promo';
 import { WhatsappConnectEmpty } from './whatsapp-connect-empty';
 import { WhatsappConnectionChecks } from './whatsapp-connection-checks';
 import { WhatsappSettingsModuleSkeleton } from './whatsapp-settings-module-skeleton';
@@ -185,6 +186,14 @@ export const WhatsappSettingsModule = () => {
             />
           ) : null}
         </section>
+
+        {isConnected && whatsappStatus?.botLink ? (
+          <WhatsappBotPromo
+            botLink={whatsappStatus.botLink}
+            displayPhoneNumber={whatsappStatus.displayPhoneNumber}
+            className="min-[1680px]:col-span-full"
+          />
+        ) : null}
 
         <section className={MODULE_CARD_CLASS}>
           <h3 className={MODULE_CARD_TITLE_CLASS}>Teste de envio</h3>

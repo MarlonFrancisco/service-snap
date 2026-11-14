@@ -1,3 +1,4 @@
+import { WhatsappGlyph } from '@/components/ui/whatsapp-bot-qr';
 import { plusJakartaSans } from '@/utils/fonts/plus-jakarta-sans';
 import {
   Drawer,
@@ -13,6 +14,7 @@ import {
 } from '../../booking.types';
 import { useBookingSidebar } from '../booking-sidebar/booking-sidebar.hook';
 import { BookingSummaryItems } from '../booking-sidebar/booking-summary-items';
+import { useBookingWhatsappLink } from '../booking-whatsapp-card';
 
 type TMobileBookingDrawerConfig = TBookingSummaryConfig & TBookingAdvanceConfig;
 
@@ -29,6 +31,11 @@ export function MobileBookingDrawer({
   const { businessName, businessAddress, selectedServices } = summary.data;
   const { formatPrice } = summary.formatters;
   const hasServices = selectedServices.length > 0;
+  const { whatsappBot, handleClick: handleWhatsappClick } =
+    useBookingWhatsappLink('booking_mobile_bar');
+  // Depois dos serviços, a conversa recomeçaria do zero: o atalho fica só no início.
+  const whatsappLink =
+    currentStep === 'services' ? whatsappBot?.link : undefined;
 
   return (
     <div className="sticky bottom-0 z-20 mt-auto border-t border-[#EBE9F0] bg-white/98 px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
@@ -79,14 +86,28 @@ export function MobileBookingDrawer({
         </p>
       )}
 
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={isNextDisabled}
-        className="mt-1.5 block w-full rounded-full bg-[#0B0B0F] p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0B0B0F]"
-      >
-        {nextButtonText}
-      </button>
+      <div className="mt-1.5 flex gap-2.5">
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={isNextDisabled}
+          className="block min-w-0 flex-1 rounded-full bg-[#0B0B0F] p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0B0B0F]"
+        >
+          {nextButtonText}
+        </button>
+        {whatsappLink && (
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Agendar pelo WhatsApp"
+            onClick={handleWhatsappClick}
+            className="grid size-[52px] shrink-0 place-items-center self-center rounded-full border border-[#E3E1EA] bg-white text-[#0B0B0F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+          >
+            <WhatsappGlyph className="size-[22px]" />
+          </a>
+        )}
+      </div>
     </div>
   );
 }

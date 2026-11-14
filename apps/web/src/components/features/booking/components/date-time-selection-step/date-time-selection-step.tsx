@@ -11,12 +11,14 @@ import {
   getLocalDateKey,
   getServiceIdsByQuantity,
   groupSlotsByPeriod,
+  isFullyBookedDay,
 } from '../../booking.helpers';
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
 import { BookingCalendar } from './booking-calendar';
 import { DatePickerHorizontal } from './date-picker-horizontal';
 import { SkeletonTimeSlots } from './skeleton-time-slots';
+import { WaitlistNotice } from './waitlist-notice';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -223,6 +225,8 @@ export function DateTimeSelectionStep() {
                 <p className={EMPTY_NOTICE_CLASS}>
                   Nenhum horário disponível nesta data
                 </p>
+              ) : isFullyBookedDay(availableSlots) ? (
+                <WaitlistNotice />
               ) : (
                 groupSlotsByPeriod(availableSlots).map((period) => (
                   <Fragment key={period.label}>

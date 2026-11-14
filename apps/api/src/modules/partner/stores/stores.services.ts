@@ -21,6 +21,7 @@ import { StoreMember } from './store-member/store-member.entity';
 import { Store } from './store.entity';
 import { buildSlugCandidates, isStoreId } from './stores.helpers';
 import type { TStoreWithRole } from './stores.types';
+import { WhatsappService } from './whatsapp/whatsapp.service';
 
 /**
  * Lista do que sai na rota pública, para coluna nova em `User` não vazar sozinha:
@@ -53,6 +54,7 @@ export class StoresService {
     private readonly storeSearchSync: StoreSearchSyncService,
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
+    private readonly whatsappService: WhatsappService,
   ) {}
 
   async create(storeDto: CreateStoreDto, ownerId: string): Promise<Store> {
@@ -165,10 +167,15 @@ export class StoresService {
       throw new NotFoundException('Store not found');
     }
 
-    return {
+    const publicStore = {
       ...store,
       storeMembers: store.storeMembers?.map(toPublicStoreMember),
     } as Store;
+
+    // Só número e link do bot: a configuração tem o token da Meta
+    return Object.assign(publicStore, {
+      whatsappBot: await this.whatsappService.getBotContact(id),
+    });
   }
 
   async update(id: string, storeDto: UpdateStoreDto): Promise<UpdateStoreDto> {

@@ -18,6 +18,8 @@ export interface IAppointment {
   /** Preço e moeda gravados na reserva; nulos em agendamentos antigos. */
   price?: number | null;
   currency?: string | null;
+  /** Quando o cliente respondeu "Sim" ao lembrete do WhatsApp; remarcar zera. */
+  presenceConfirmedAt?: string | null;
   user: IUser;
   service: IService;
   storeMember: IProfessional;
@@ -47,6 +49,12 @@ export type TRescheduleRequest = {
 
 /** Código do 403 quando a política da loja barra o cliente. */
 export const SCHEDULE_POLICY_CODE = 'SCHEDULE_POLICY_NOTICE';
+
+/** Agendamento cujo lembrete perguntou se o cliente vem e ainda está sem resposta. */
+export interface IPresenceAwaiting {
+  scheduleId: string;
+  reminderSentAt: string;
+}
 
 export interface IAvailabilitySlot {
   time: string;

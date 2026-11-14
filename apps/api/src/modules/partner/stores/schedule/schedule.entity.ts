@@ -84,6 +84,13 @@ export class Schedule extends BaseEntity {
   })
   status: 'scheduled' | 'completed' | 'cancelled' | 'no-show';
 
+  /**
+   * Quando o cliente confirmou que vem, respondendo ao lembrete. Fora do
+   * `status` porque o atendimento continua marcado; remarcar zera.
+   */
+  @Column({ type: 'timestamptz', nullable: true })
+  presenceConfirmedAt: Date | null;
+
   @ManyToOne(() => StoreMember, (storeMember) => storeMember.schedules, {
     onDelete: 'CASCADE',
   })

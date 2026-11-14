@@ -135,6 +135,8 @@ const makeBot = () => {
     usersService as never,
     notificationService as never,
     cache as never,
+    {} as never,
+    {} as never,
   );
 
   let messageCount = 0;
@@ -236,11 +238,12 @@ describe('WhatsappBotService', () => {
 
     await ctx.tap(`pro:${RAFAEL}`);
     const days = ctx.lastList();
-    // Domingo fechado fica de fora; 10 linhas = 9 dias + "ver mais"
+    // Domingo fechado fica de fora; 10 linhas = 8 dias + "ver mais" + lista de espera
     expect(days.ids[0]).toBe(`day:${TODAY}`);
     expect(days.ids).not.toContain('day:2030-12-29');
     expect(days.ids).toHaveLength(10);
-    expect(days.ids.at(-1)).toMatch(/^day:more:/);
+    expect(days.ids.at(-2)).toMatch(/^day:more:/);
+    expect(days.ids.at(-1)).toBe('day:waitlist');
 
     await ctx.tap(`day:${TODAY}`);
     const times = ctx.lastList();

@@ -5,23 +5,36 @@ import axios from 'axios';
 import { Repository } from 'typeorm';
 import { SaveWhatsappConfigDto } from './dto/save-whatsapp-config.dto';
 import { WHATSAPP_REMINDER_TEMPLATE } from './whatsapp-reminder-template';
+import {
+  WHATSAPP_STORE_TEMPLATES,
+  WHATSAPP_TEMPLATE_PREFIX,
+  WHATSAPP_WAITLIST_TEMPLATE,
+} from './whatsapp-templates';
 import { WhatsappConfig } from './whatsapp.entity';
 import {
+  buildBotContact,
   buildDisplayNameCheck,
   buildIdsCheck,
   buildIdsSuggestions,
   buildSwappedIdsMessage,
+  buildTemplateComponents,
   buildTokenCheck,
   buildWebhookCheck,
   getTokenAccountIds,
   isPhoneNumber,
+  pickReminderTemplate,
   settle,
+  toTemplateStatus,
+  type TMetaTemplateRow,
 } from './whatsapp.helpers';
 import type {
   IWhatsappInteractiveList,
   TMetaDebugToken,
   TMetaPhoneNumber,
+  TWhatsappBotContact,
   TWhatsappCheck,
+  TWhatsappTemplateSend,
+  TWhatsappTemplateStatus,
 } from './whatsapp.types';
 
 export type TWhatsappConnectionStatus =
@@ -40,6 +53,8 @@ export type TWhatsappStatusResponse = {
   message?: string;
   /** Uma conferência por credencial; só vem quando as três estão preenchidas. */
   checks?: TWhatsappCheck[];
+  /** Link `wa.me` do bot, para o painel divulgar; só quando conectado. */
+  botLink?: string;
 };
 
 export type TWhatsappTemplateSummary = {
@@ -49,19 +64,7 @@ export type TWhatsappTemplateSummary = {
   category?: string;
 };
 
-/** `MISSING` quando a WABA ainda não tem o template; os outros vêm da Meta. */
-export type TWhatsappReminderTemplateStatus = {
-  name: string;
-  status: 'MISSING' | 'APPROVED' | 'PENDING' | 'REJECTED' | (string & {});
-  rejectedReason?: string;
-};
-
-type TMetaTemplateRow = {
-  name?: string;
-  status?: string;
-  language?: string;
-  rejected_reason?: string;
-};
+export type TWhatsappReminderTemplateStatus = TWhatsappTemplateStatus;
 
 /** Limite de contas consultadas para sugerir IDs: cada uma é uma chamada à Meta. */
 const MAX_SUGGESTED_ACCOUNTS = 5;
@@ -149,7 +152,7 @@ export class WhatsappService {
   async sendTemplate(
     phoneNumberId: string,
     to: string,
-    template: { name: string; language: string; bodyParams: string[] },
+    template: TWhatsappTemplateSend,
     accessToken: string,
   ) {
     return this.sendMessage(
@@ -168,6 +171,13 @@ export class WhatsappService {
                 text,
               })),
             },
+            // O payload volta no webhook quando o cliente toca no botão
+            ...(template.buttonPayloads ?? []).map((payload, index) => ({
+              type: 'button',
+              sub_type: 'quick_reply',
+              index: String(index),
+              parameters: [{ type: 'payload', payload }],
+            })),
           ],
         },
       },
@@ -324,16 +334,71 @@ export class WhatsappService {
       };
     }
 
+    const displayPhoneNumber = phone.data.display_phone_number;
+    await this.rememberDisplayPhoneNumber(config, displayPhoneNumber);
+
     return {
       status: 'connected',
       isActive: true,
       hasCredentials: true,
-      displayPhoneNumber: phone.data.display_phone_number,
+      displayPhoneNumber,
       verifiedName: phone.data.verified_name,
       qualityRating: phone.data.quality_rating,
       message: 'Conectado à Meta WhatsApp Cloud API.',
       checks: list,
+      botLink: buildBotContact(displayPhoneNumber)?.link,
     };
+  }
+
+  /** Só grava quando muda: o painel confere a conexão a cada visita. */
+  private async rememberDisplayPhoneNumber(
+    config: WhatsappConfig,
+    displayPhoneNumber?: string,
+  ) {
+    if (
+      !displayPhoneNumber ||
+      config.displayPhoneNumber === displayPhoneNumber
+    ) {
+      return;
+    }
+
+    try {
+      await this.whatsappConfigRepository.update(
+        { id: config.id },
+        { displayPhoneNumber },
+      );
+    } catch (error: any) {
+      // A conferência continua valendo; o link só fica para a próxima
+      this.logger.warn(
+        `WhatsApp display number not saved for config ${config.id}: ${error.message}`,
+      );
+    }
+  }
+
+  /** Configuração pronta para enviar: ativa e com as três credenciais. */
+  async findActiveConfig(storeId: string): Promise<WhatsappConfig | null> {
+    const config = await this.whatsappConfigRepository.findOne({
+      where: { store: { id: storeId }, isActive: true },
+    });
+
+    return config?.phoneNumberId &&
+      config.accessToken &&
+      config.businessAccountId
+      ? config
+      : null;
+  }
+
+  /**
+   * Número e link do bot para a página pública. Sem integração ativa ou sem o
+   * número já conferido no painel, a loja não tem bot para divulgar.
+   */
+  async getBotContact(storeId: string): Promise<TWhatsappBotContact | null> {
+    const config = await this.whatsappConfigRepository.findOne({
+      where: { store: { id: storeId }, isActive: true },
+      select: { id: true, displayPhoneNumber: true },
+    });
+
+    return buildBotContact(config?.displayPhoneNumber);
   }
 
   /** Confere cada credencial em paralelo. Nenhuma chamada lança: a falha vira o resultado da conferência. */
@@ -514,7 +579,10 @@ export class WhatsappService {
     }
   }
 
-  /** Cria o template na WABA da loja só se ele ainda não existir. */
+  /**
+   * Cria na WABA da loja os templates que ainda não existem (lembrete com
+   * confirmação e aviso da lista de espera) e devolve o do lembrete.
+   */
   async ensureReminderTemplate(
     storeId: string,
   ): Promise<TWhatsappReminderTemplateStatus> {
@@ -524,30 +592,7 @@ export class WhatsappService {
     const ready = this.assertSendableConfig(config, 'criar o template');
 
     try {
-      const current = await this.findReminderTemplate(ready);
-      if (current.status !== 'MISSING') return current;
-
-      const { name, language, category, header, body, example } =
-        WHATSAPP_REMINDER_TEMPLATE;
-      const { data } = await axios.post(
-        `${this.baseUrl}/${ready.businessAccountId}/message_templates`,
-        {
-          name,
-          language,
-          category,
-          components: [
-            { type: 'HEADER', format: 'TEXT', text: header },
-            {
-              type: 'BODY',
-              text: body,
-              example: { body_text: [example] },
-            },
-          ],
-        },
-        { headers: { Authorization: `Bearer ${ready.accessToken}` } },
-      );
-
-      return { name, status: data?.status || 'PENDING' };
+      return pickReminderTemplate(await this.ensureStoreTemplates(ready));
     } catch (error: any) {
       const metaMessage = this.metaErrorMessage(error);
       this.logger.warn(
@@ -559,34 +604,77 @@ export class WhatsappService {
     }
   }
 
+  /**
+   * Cria só os que faltam: um template existente não pode ser recriado, e um
+   * recusado fica para a loja ajustar. Lança o erro da Meta.
+   */
+  async ensureStoreTemplates(
+    config: Pick<WhatsappConfig, 'businessAccountId' | 'accessToken'>,
+  ): Promise<TWhatsappTemplateStatus[]> {
+    const statuses = await this.findStoreTemplates(config);
+
+    for (const definition of WHATSAPP_STORE_TEMPLATES) {
+      const index = statuses.findIndex((item) => item.name === definition.name);
+      if (statuses[index].status !== 'MISSING') continue;
+
+      const { data } = await axios.post(
+        `${this.baseUrl}/${config.businessAccountId}/message_templates`,
+        {
+          name: definition.name,
+          language: definition.language,
+          category: definition.category,
+          components: buildTemplateComponents(definition),
+        },
+        { headers: { Authorization: `Bearer ${config.accessToken}` } },
+      );
+
+      statuses[index] = {
+        name: definition.name,
+        status: data?.status || 'PENDING',
+      };
+    }
+
+    return statuses;
+  }
+
   /** Lança o erro da Meta: quem chama decide se isso para a operação. */
   async findReminderTemplate(
     config: Pick<WhatsappConfig, 'businessAccountId' | 'accessToken'>,
   ): Promise<TWhatsappReminderTemplateStatus> {
-    const { name, language } = WHATSAPP_REMINDER_TEMPLATE;
+    return pickReminderTemplate(await this.findStoreTemplates(config));
+  }
+
+  async findWaitlistTemplate(
+    config: Pick<WhatsappConfig, 'businessAccountId' | 'accessToken'>,
+  ): Promise<TWhatsappTemplateStatus> {
+    const statuses = await this.findStoreTemplates(config);
+
+    return statuses.find(
+      (item) => item.name === WHATSAPP_WAITLIST_TEMPLATE.name,
+    );
+  }
+
+  /** Uma consulta pelo prefixo traz o lembrete antigo e os templates novos. */
+  private async findStoreTemplates(
+    config: Pick<WhatsappConfig, 'businessAccountId' | 'accessToken'>,
+  ): Promise<TWhatsappTemplateStatus[]> {
     const { data } = await axios.get(
       `${this.baseUrl}/${config.businessAccountId}/message_templates`,
       {
-        params: { name, fields: 'name,status,language,rejected_reason' },
+        params: {
+          name: WHATSAPP_TEMPLATE_PREFIX,
+          fields: 'name,status,language,rejected_reason',
+          limit: 100,
+        },
         headers: { Authorization: `Bearer ${config.accessToken}` },
       },
     );
 
-    // O filtro por nome da Meta não é exato: confere nome e idioma aqui
     const rows: TMetaTemplateRow[] = Array.isArray(data?.data) ? data.data : [];
-    const row = rows.find(
-      (item) => item.name === name && item.language === language,
+
+    return [WHATSAPP_REMINDER_TEMPLATE, ...WHATSAPP_STORE_TEMPLATES].map(
+      (definition) => toTemplateStatus(rows, definition),
     );
-
-    if (!row) return { name, status: 'MISSING' };
-
-    return {
-      name,
-      status: row.status || 'PENDING',
-      ...(row.rejected_reason && row.rejected_reason !== 'NONE'
-        ? { rejectedReason: row.rejected_reason }
-        : {}),
-    };
   }
 
   private metaErrorMessage(error: any): string | undefined {

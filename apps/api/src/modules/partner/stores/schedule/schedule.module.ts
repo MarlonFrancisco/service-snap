@@ -10,7 +10,10 @@ import { BlockedTime } from '../store-member/blocked-time/blocked-time.entity';
 import { StoreMember } from '../store-member/store-member.entity';
 import { Store } from '../store.entity';
 import { WebhookDispatchModule } from '../webhooks/webhook-dispatch.module';
+import { ScheduleEventsService } from './schedule-events.service';
 import { ScheduleNotificationsService } from './schedule-notifications.service';
+import { SchedulePresenceController } from './schedule-presence.controller';
+import { SchedulePresenceService } from './schedule-presence.service';
 import { ScheduleController } from './schedule.controller';
 import { Booking } from './booking.entity';
 import { Schedule } from './schedule.entity';
@@ -33,8 +36,14 @@ import { ScheduleService } from './schedule.service';
     WebhookDispatchModule,
     HolidayModule,
   ],
-  controllers: [ScheduleController],
-  providers: [ScheduleService, ScheduleNotificationsService],
-  exports: [ScheduleService],
+  // A rota fixa de presença vem antes da de `:id`
+  controllers: [SchedulePresenceController, ScheduleController],
+  providers: [
+    ScheduleService,
+    ScheduleNotificationsService,
+    ScheduleEventsService,
+    SchedulePresenceService,
+  ],
+  exports: [ScheduleService, ScheduleEventsService, SchedulePresenceService],
 })
 export class ScheduleModule {}

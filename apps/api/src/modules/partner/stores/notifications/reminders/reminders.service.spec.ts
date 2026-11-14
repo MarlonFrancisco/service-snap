@@ -91,7 +91,12 @@ const setup = (
   const createHistory = vi.fn().mockResolvedValue(undefined);
   const whatsapp = {
     sendTemplate: vi.fn().mockResolvedValue(undefined),
-    findReminderTemplate: vi.fn().mockResolvedValue({ status: templateStatus }),
+    // O template antigo aprovado: os novos ainda esperam a Meta
+    findReminderTemplate: vi.fn().mockResolvedValue({
+      name: 'servicesnap_lembrete_agendamento',
+      status: templateStatus,
+    }),
+    ensureStoreTemplates: vi.fn().mockResolvedValue([]),
   };
   const planFeatureGuard = {
     getMissingFeatures: vi.fn().mockResolvedValue(missingFeatures),

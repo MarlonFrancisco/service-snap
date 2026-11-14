@@ -6,3 +6,4 @@ export * from './plan-card';
 export * from './store-card';
 export * from './tracked-link';
 export * from './tracked-summary';
+export * from './whatsapp-bot-qr';

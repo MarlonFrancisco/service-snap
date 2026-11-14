@@ -1,7 +1,12 @@
 import { cn } from '@repo/ui';
 import { memo } from 'react';
-import { GRID_CONSTANTS, STATUS_LEGEND } from '../../agenda-grid.constants';
+import {
+  GRID_CONSTANTS,
+  PRESENCE_LEGEND,
+  STATUS_LEGEND,
+} from '../../agenda-grid.constants';
 import { AgendaColumn } from '../agenda-column';
+import { AgendaPresenceChip } from '../agenda-presence-chip';
 import { AgendaTimeColumn } from '../agenda-time-column';
 import { BulkActionToolbar } from '../bulk-action-toolbar';
 import { CurrentTimeLine } from '../current-time-line';
@@ -132,6 +137,10 @@ export const AgendaGridDesktopView = memo(
               style={OFF_LEGEND_STYLE}
             >
               Folga
+            </span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-[#5F5C6E]">
+              <AgendaPresenceChip kind={PRESENCE_LEGEND.kind} isBordered />
+              {PRESENCE_LEGEND.description}
             </span>
           </div>
         )}

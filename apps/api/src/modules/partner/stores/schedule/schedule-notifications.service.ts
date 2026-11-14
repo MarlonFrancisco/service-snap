@@ -15,6 +15,7 @@ import { NotificationsHistoryService } from '../notifications/history/history.se
 import { WebhookDispatchService } from '../webhooks/webhook-dispatch.service';
 import { hasScheduleChanged } from '../webhooks/webhooks.helpers';
 import type { TWebhookEvent } from '../webhooks/webhooks.types';
+import { ScheduleEventsService } from './schedule-events.service';
 import { Schedule } from './schedule.entity';
 import {
   buildBookingCalendarLink,
@@ -54,6 +55,7 @@ export class ScheduleNotificationsService implements OnModuleInit {
     private readonly configService: ConfigService,
     private readonly webhookDispatch: WebhookDispatchService,
     private readonly queueService: QueueService,
+    private readonly scheduleEvents: ScheduleEventsService,
   ) {}
 
   onModuleInit() {
@@ -126,6 +128,9 @@ export class ScheduleNotificationsService implements OnModuleInit {
         previousSchedule: timeChanged
           ? formatScheduleMoment(before)
           : undefined,
+        // O horário de antes ficou livre: a fila avisa a lista de espera
+        freedDate:
+          notifyChange && before.date ? toDateKey(before.date) : undefined,
       },
     });
   }
@@ -206,6 +211,9 @@ export class ScheduleNotificationsService implements OnModuleInit {
       schedule.id,
     ]);
 
+    // A lista de espera é avisada mesmo num lote calado: o silêncio é do cliente
+    await this.slotFreed(schedule.store.id, schedule.date);
+
     if (!notify) return;
 
     await this.notifyCustomer(
@@ -242,6 +250,7 @@ export class ScheduleNotificationsService implements OnModuleInit {
     webhook,
     notifyChange,
     previousSchedule,
+    freedDate,
   }: TQueueJobMap['schedule.updated']) {
     const after = await this.load(scheduleId);
 
@@ -250,6 +259,9 @@ export class ScheduleNotificationsService implements OnModuleInit {
     if (webhook) {
       await this.emitWebhook('schedule.updated', after.store.id, [after.id]);
     }
+
+    // O horário de antes ficou livre mesmo que o agendamento mude de novo
+    await this.slotFreed(after.store.id, freedDate);
 
     // Mudou de novo até a fila chamar: o aviso de agora já não vale
     if (!notifyChange || after.status !== 'scheduled') return;
@@ -269,6 +281,13 @@ export class ScheduleNotificationsService implements OnModuleInit {
           manageLink: `${this.frontendUrl}/profile`,
         }),
     );
+  }
+
+  /** Avisa a lista de espera que um horário desse dia vagou. */
+  private async slotFreed(storeId: string, date?: Date | string) {
+    if (!date) return;
+
+    await this.scheduleEvents.emitSlotFreed({ storeId, date: toDateKey(date) });
   }
 
   private async notifyCustomer(

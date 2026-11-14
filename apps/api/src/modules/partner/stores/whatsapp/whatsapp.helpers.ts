@@ -1,10 +1,101 @@
+import { WHATSAPP_REMINDER_TEMPLATE } from './whatsapp-reminder-template';
+import { WHATSAPP_CONFIRMATION_REMINDER_TEMPLATE } from './whatsapp-templates';
 import type {
   TMetaDebugToken,
   TMetaError,
   TMetaPhoneNumber,
+  TWhatsappBotContact,
   TWhatsappCheck,
   TWhatsappIdsSuggestion,
+  TWhatsappTemplateDefinition,
+  TWhatsappTemplateStatus,
 } from './whatsapp.types';
+
+/** Linha da listagem de templates da Graph API. */
+export type TMetaTemplateRow = {
+  name?: string;
+  status?: string;
+  language?: string;
+  rejected_reason?: string;
+};
+
+/** O filtro por nome da Meta não é exato: confere nome e idioma aqui. */
+export const toTemplateStatus = (
+  rows: TMetaTemplateRow[],
+  { name, language }: Pick<TWhatsappTemplateDefinition, 'name' | 'language'>,
+): TWhatsappTemplateStatus => {
+  const row = rows.find(
+    (item) => item.name === name && item.language === language,
+  );
+
+  if (!row) return { name, status: 'MISSING' };
+
+  return {
+    name,
+    status: row.status || 'PENDING',
+    ...(row.rejected_reason && row.rejected_reason !== 'NONE'
+      ? { rejectedReason: row.rejected_reason }
+      : {}),
+  };
+};
+
+/**
+ * Template do lembrete a usar: o da confirmação quando aprovado; até lá, o
+ * antigo, se já estiver aprovado. Sem nenhum aprovado, devolve o da confirmação,
+ * que é o que o painel manda criar.
+ */
+export const pickReminderTemplate = (
+  statuses: TWhatsappTemplateStatus[],
+): TWhatsappTemplateStatus => {
+  const find = (name: string) => statuses.find((item) => item.name === name);
+  const confirmation = find(WHATSAPP_CONFIRMATION_REMINDER_TEMPLATE.name) ?? {
+    name: WHATSAPP_CONFIRMATION_REMINDER_TEMPLATE.name,
+    status: 'MISSING',
+  };
+  const legacy = find(WHATSAPP_REMINDER_TEMPLATE.name);
+
+  if (confirmation.status === 'APPROVED') return confirmation;
+  if (legacy?.status === 'APPROVED') return legacy;
+
+  return confirmation;
+};
+
+/** Componentes do template no formato de criação da Graph API. */
+export const buildTemplateComponents = ({
+  header,
+  body,
+  example,
+  quickReplies,
+}: TWhatsappTemplateDefinition) => [
+  { type: 'HEADER', format: 'TEXT', text: header },
+  { type: 'BODY', text: body, example: { body_text: [[...example]] } },
+  ...(quickReplies?.length
+    ? [
+        {
+          type: 'BUTTONS',
+          buttons: quickReplies.map((text) => ({ type: 'QUICK_REPLY', text })),
+        },
+      ]
+    : []),
+];
+
+/**
+ * Texto que já vem digitado quando o cliente abre a conversa pelo link: tem
+ * "agendar", então o bot pula o menu e mostra os serviços.
+ */
+export const WHATSAPP_BOT_LINK_TEXT = 'Olá! Quero agendar um horário';
+
+export const buildBotContact = (
+  displayPhoneNumber?: string | null,
+): TWhatsappBotContact | null => {
+  const digits = displayPhoneNumber?.replace(/\D/g, '');
+  if (!digits) return null;
+
+  return {
+    displayPhoneNumber,
+    link: `https://wa.me/${digits}?text=${encodeURIComponent(WHATSAPP_BOT_LINK_TEXT)}`,
+  };
+};
 
 export const WHATSAPP_REQUIRED_SCOPES = [
   'whatsapp_business_messaging',

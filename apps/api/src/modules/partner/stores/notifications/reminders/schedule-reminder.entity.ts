@@ -26,6 +26,10 @@ export class ScheduleReminder extends BaseEntity {
   @Column({ type: 'int', default: 1 })
   attempts: number;
 
+  /** O lembrete perguntou se o cliente vem: a agenda mostra "aguardando resposta". */
+  @Column({ type: 'boolean', default: false })
+  asksPresence: boolean;
+
   @ManyToOne(() => Schedule, { onDelete: 'CASCADE', nullable: false })
   schedule: Schedule;
 }

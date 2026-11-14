@@ -100,3 +100,13 @@ export type TTeamInviteEmail = {
   email: string;
   accessLink: string;
 };
+
+export type TWaitlistSlotEmail = {
+  customerName: string;
+  storeName: string;
+  scheduleDay: string;
+  serviceName: string;
+  professionalName: string;
+  freeTimes: string;
+  bookingLink: string;
+};

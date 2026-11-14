@@ -23,6 +23,7 @@ const makeService = () => {
     storesRepository as never,
     storeSearchSync as never,
     subscriptionRepository as never,
+    { getBotContact: vi.fn().mockResolvedValue(null) } as never,
   );
 
   return { service, storesRepository, storeSearchSync, subscriptionRepository };
@@ -55,6 +56,7 @@ describe('StoresService', () => {
 
       await expect(ctx.service.findOnePublic(STORE_ID, [])).resolves.toEqual({
         id: STORE_ID,
+        whatsappBot: null,
       });
     });
 

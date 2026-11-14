@@ -7,6 +7,11 @@ export interface IWhatsappWebhookMessage {
   text: {
     body: string;
   };
+  /** Botão de resposta rápida de um template, como os do lembrete. */
+  button?: {
+    payload: string;
+    text: string;
+  };
   interactive: {
     type: 'list_reply';
     button_reply: {
@@ -75,6 +80,7 @@ export enum BotState {
   CONFIRM_CANCEL = 'CONFIRM_CANCEL',
   ASK_EMAIL = 'ASK_EMAIL',
   VERIFY_EMAIL = 'VERIFY_EMAIL',
+  WAITLIST_DAY = 'WAITLIST_DAY',
 }
 
 export type TBotCommand = 'menu' | 'exit' | 'back' | 'book' | 'appointments';
@@ -133,4 +139,6 @@ export interface IBotSession {
   appointments?: IBotAppointment[];
   appointmentId?: string;
   rescheduleId?: string;
+  /** Dias cheios oferecidos para a lista de espera. */
+  waitlistDays?: string[];
 }

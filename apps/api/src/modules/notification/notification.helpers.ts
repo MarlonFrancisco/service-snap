@@ -1,6 +1,9 @@
 export const CUSTOMER_FOOTER =
   'Você recebeu este e-mail porque fez um agendamento pelo ServiceSnap.';
 
+export const waitlistFooter = (storeName: string) =>
+  `Você recebeu este e-mail porque entrou na lista de espera de ${storeName} pelo ServiceSnap.`;
+
 export const CODE_FOOTER =
   'Nunca pedimos este código por telefone ou mensagem.';
 

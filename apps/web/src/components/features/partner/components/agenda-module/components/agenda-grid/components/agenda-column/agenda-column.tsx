@@ -20,7 +20,8 @@ export const AgendaColumn = ({
     <div className="relative min-w-0 flex-1">
       {column.rows.map(({ time, slot }) => {
         const dropTarget = slot?.dropTarget;
-        const isDropActive = !!dropTarget && drag.activeDropKey === dropTarget.key;
+        const isDropActive =
+          !!dropTarget && drag.activeDropKey === dropTarget.key;
 
         return (
           <div
@@ -75,6 +76,7 @@ export const AgendaColumn = ({
           isCompact={block.isCompact}
           showInitials={showInitials}
           rowSpan={block.rowSpan}
+          presence={block.presence}
           style={getBlockStyle(block, slotHeight)}
           isDraggable={drag.canDrag(block.appointment)}
           isMoving={drag.movingVisitId === block.appointment.id}
