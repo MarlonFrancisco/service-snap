@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth/auth.store';
 import { IAppointment, ICreateAppointment } from '@/types/api/schedule.types';
 import { IUser } from '@/types/api/users.types';
 import { cookies } from '@/utils/helpers/cookie.helper';
+import { getFullName } from '@/utils/helpers/name.helper';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useMutation } from '@tanstack/react-query';
 import { useCallback } from 'react';
@@ -25,6 +26,9 @@ import type { TCheckoutStepConfig } from './checkout-step.types';
 
 const SLOT_TAKEN_MESSAGE =
   'Este horário acabou de ser ocupado. Volte e escolha outro horário.';
+
+const CHECKOUT_INVALID_MESSAGE =
+  'Não deu para confirmar com esses dados. Volte e revise a reserva.';
 
 export const useCheckoutStep = ({ onConfirmed }: TCheckoutStepConfig) => {
   const store = useGetStore()!;
@@ -132,7 +136,10 @@ export const useCheckoutStep = ({ onConfirmed }: TCheckoutStepConfig) => {
                   services: data.selectedServices,
                   date,
                   fallbackProfessionalName: chosenProfessional
-                    ? `${chosenProfessional.firstName} ${chosenProfessional.lastName}`
+                    ? getFullName(
+                        chosenProfessional.firstName,
+                        chosenProfessional.lastName,
+                      )
                     : 'Qualquer profissional',
                 }),
               );
@@ -155,7 +162,9 @@ export const useCheckoutStep = ({ onConfirmed }: TCheckoutStepConfig) => {
           store_id: store.id,
           reason: 'validation',
         });
-        const firstError = Object.values(errors)[0]?.message;
+        // Erro num campo aninhado não tem mensagem própria: sem esta, o clique morria calado
+        const firstError =
+          Object.values(errors)[0]?.message ?? CHECKOUT_INVALID_MESSAGE;
         if (firstError) {
           toast.error(firstError);
         }

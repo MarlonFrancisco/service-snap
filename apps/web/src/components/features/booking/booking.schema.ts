@@ -45,7 +45,8 @@ export const BookingFormSchema = z.object({
       user: z.object({
         id: z.string(),
         firstName: z.string(),
-        lastName: z.string(),
+        // Conta sem sobrenome vem com `null`: barrar aqui travava a reserva calada
+        lastName: z.string().nullish(),
         avatar: z.string().nullable().optional(),
       }),
       services: z

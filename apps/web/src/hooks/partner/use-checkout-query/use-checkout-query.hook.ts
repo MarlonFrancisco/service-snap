@@ -13,7 +13,13 @@ export const useCheckoutPreviewQuery = ({
   scheduleIds,
   enabled = true,
 }: TUseCheckoutPreviewQueryConfig) => {
-  const canFetch = enabled && !!storeId && scheduleIds.length > 0;
+  // Ao fechar os detalhes a visita volta ao estado vazio, com id '': sem isso o
+  // pedido sairia como `scheduleIds=` e a API responderia 400
+  const canFetch =
+    enabled &&
+    !!storeId &&
+    scheduleIds.length > 0 &&
+    scheduleIds.every(Boolean);
 
   const { data, isPending, isFetching, isError, refetch } = useQuery({
     queryKey: CACHE_QUERY_KEYS.checkoutPreview(storeId!, scheduleIds),

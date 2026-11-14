@@ -1,3 +1,4 @@
+import { getFullName } from '@/utils/helpers/name.helper';
 import { useBookingSidebar } from '../booking-sidebar.hook';
 
 type TBookingSummaryItemsConfig = {
@@ -65,7 +66,10 @@ export function BookingSummaryItems({ summary }: TBookingSummaryItemsConfig) {
           <p className="text-sm text-[#0B0B0F]">
             {isAnyProfessional
               ? 'Qualquer profissional'
-              : `${selectedProfessional?.user.firstName} ${selectedProfessional?.user.lastName}`}
+              : getFullName(
+                  selectedProfessional?.user.firstName,
+                  selectedProfessional?.user.lastName,
+                )}
           </p>
         </>
       )}

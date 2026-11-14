@@ -11,7 +11,8 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 const PLAN_ROUTE = '/partner/plans';
 
 const getUsage = (current: number, limit: number) => {
-  const isUnlimited = limit === 0;
+  // Ilimitado chega como 0 ou, em assinatura gravada antes da correção, como null
+  const isUnlimited = !limit;
 
   return {
     current,

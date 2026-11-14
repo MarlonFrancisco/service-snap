@@ -7,6 +7,7 @@ import {
   useAgendaStore,
 } from '@/store/admin/agenda';
 import type { IAppointment } from '@/types/api/schedule.types';
+import { isBusinessDay } from '@/utils/helpers/business-hours.helper';
 import { useCallback, useMemo } from 'react';
 import { useAgendaHolidaysQuery } from '../agenda-data-state/agenda-data-state.hook';
 import {
@@ -54,7 +55,10 @@ export const useAgendaMonthView = () => {
     () =>
       WEEKDAY_LABELS.map((label, index) => {
         const dayKey = AGENDA_WORKING_DAY_KEYS[index];
-        return { label, isClosed: !!dayKey && !businessDays?.[dayKey] };
+        return {
+          label,
+          isClosed: !!dayKey && !isBusinessDay(businessDays, dayKey),
+        };
       }),
     [businessDays],
   );
@@ -78,7 +82,7 @@ export const useAgendaMonthView = () => {
       const key = dateToISOString(date);
       const dayKey = AGENDA_WORKING_DAY_KEYS[index % 7];
       const holiday = holidaysByDate.get(key);
-      const isClosed = !!dayKey && !businessDays?.[dayKey];
+      const isClosed = !!dayKey && !isBusinessDay(businessDays, dayKey);
       const counts = countVisitsByStatus(
         groupVisits(appointmentsByDate.get(key) ?? []),
       );
@@ -107,7 +111,14 @@ export const useAgendaMonthView = () => {
         ariaLabel: `${labelParts.join(', ')}. Abrir o dia`,
       };
     });
-  }, [monthDates, currentMonth, appointments, memberId, holidays, businessDays]);
+  }, [
+    monthDates,
+    currentMonth,
+    appointments,
+    memberId,
+    holidays,
+    businessDays,
+  ]);
 
   const handleOpenDay = useCallback(
     (date: Date) => {

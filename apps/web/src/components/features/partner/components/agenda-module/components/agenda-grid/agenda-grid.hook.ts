@@ -12,6 +12,7 @@ import {
 import type { TAgendaVisit, TWorkingDayKey } from '@/store/admin/agenda';
 import type { IBlockedTime } from '@/types/api/blocked-times.types';
 import type { IProfessional } from '@/types/api/users.types';
+import { isBusinessDay } from '@/utils/helpers/business-hours.helper';
 import { useIsMobile } from '@repo/ui';
 import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -284,7 +285,7 @@ export const useAgendaGrid = () => {
           filteredProfessionals.every((professional) =>
             isProfessionalOff(professional, dayKey),
           );
-        const isWorkingDay = workingDays[dayKey];
+        const isWorkingDay = isBusinessDay(workingDays, dayKey);
 
         const getHeaderNote = () => {
           if (holiday) return 'Feriado';

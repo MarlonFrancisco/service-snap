@@ -5,6 +5,7 @@ import { useWaitlistQuery } from '@/hooks/use-query/use-waitlist-query';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
 import { formatDateKeyLong } from '@/utils/helpers/date.helper';
+import { getFullName } from '@/utils/helpers/name.helper';
 import { getWaitlistProfessionalName } from '@/utils/helpers/waitlist.helper';
 import { useCallback, useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
@@ -43,7 +44,7 @@ export const useWaitlistNotice = () => {
   const professional = isAnyProfessional ? null : selectedProfessional;
   const storeMemberId = professional?.id;
   const professionalName = professional
-    ? `${professional.user.firstName} ${professional.user.lastName}`
+    ? getFullName(professional.user.firstName, professional.user.lastName)
     : undefined;
   const dateKey = selectedDate ? getLocalDateKey(selectedDate) : undefined;
 

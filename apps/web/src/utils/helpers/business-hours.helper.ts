@@ -1,3 +1,14 @@
+import type { TWorkingDays } from '@/types/api/stores.types';
+
+/**
+ * A loja abre nesse dia? Loja sem dias definidos (`null`, comum em lojas antigas)
+ * conta como aberta, a mesma regra da disponibilidade na API.
+ */
+export const isBusinessDay = (
+  businessDays: TWorkingDays | null | undefined,
+  dayKey: keyof TWorkingDays,
+): boolean => (businessDays ? Boolean(businessDays[dayKey]) : true);
+
 /**
  * Formata as informações de horário de funcionamento de um serviço
  * @param openTime - Hora de abertura (ex: "09:00")
