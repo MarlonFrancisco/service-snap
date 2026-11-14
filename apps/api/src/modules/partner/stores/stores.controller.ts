@@ -13,7 +13,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Public } from '../../auth/decorators/public.decorator';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
-import { StoreOwnerGuard } from './guards';
+import { RequireStoreRoles, StoreOwnerGuard, StoreRoleGuard } from './guards';
 import { StoresService } from './stores.services';
 
 @Controller('partner/stores')
@@ -55,8 +55,10 @@ export class StoresController {
     );
   }
 
+  // Configurações da loja: dono e gerente. Excluir continua só com o dono.
   @Put(':id')
-  @UseGuards(StoreOwnerGuard)
+  @RequireStoreRoles('owner', 'manager')
+  @UseGuards(StoreRoleGuard)
   async updateStore(
     @Param('id') id: string,
     @Body() updateStoreDto: UpdateStoreDto,

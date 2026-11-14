@@ -14,9 +14,29 @@ const emailSchema = z
 // Schema para validação de URL
 const urlSchema = z.string().url('URL inválida').optional().or(z.literal(''));
 
+/** Mesmo formato que a API aceita para o link curto. */
+export const STORE_SLUG_REGEX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+const slugSchema = z
+  .string()
+  .min(3, 'O link precisa ter de 3 a 60 caracteres')
+  .max(60, 'O link precisa ter de 3 a 60 caracteres')
+  .regex(STORE_SLUG_REGEX, 'Use só letras minúsculas, números e hífen')
+  .optional()
+  .or(z.literal(''));
+
+/** Campo numérico livre: vazio vira NaN, que o zod recusa com a mesma mensagem. */
+const wholeNumber = (min: number, max: number, unit: string) => {
+  const message = `Use um número inteiro de ${min} a ${max} ${unit}`;
+
+  return z.number({ message }).int(message).min(min, message).max(max, message);
+};
+
 // Schema principal do formulário de loja
 export const storeFormSchema = z.object({
   id: z.string().optional(),
+
+  slug: slugSchema,
 
   // Region & Currency
   country: z
@@ -143,6 +163,14 @@ export const storeFormSchema = z.object({
     .optional(),
 
   blockedTimes: z.array(z.unknown()).optional(),
+
+  // Regras da agenda (os limites são os mesmos da API)
+  slotIntervalMinutes: z.number().int(),
+  bufferMinutes: wholeNumber(0, 240, 'min'),
+  minAdvanceMinutes: z.number().int().min(0),
+  maxAdvanceDays: z.number().int().min(0),
+  cancellationNoticeHours: wholeNumber(0, 720, 'horas'),
+  rescheduleNoticeHours: wholeNumber(0, 720, 'horas'),
 });
 
 // Type inference do schema

@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@repo/ui';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   AGENDA_BUTTON_ACTIVE_CLASS,
   AGENDA_BUTTON_BLOCK_ACTIVE_CLASS,
@@ -22,16 +22,20 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
     isMobile,
     isFocus,
     isDayNavigation,
-    monthYear,
+    isMonthNavigation,
+    periodLabel,
     navigationLabels,
     isBlockMode,
     viewMode,
+    viewOptions,
     selectedProfessional,
     professionals,
+    showProfessionalFilter,
     handlePrevious,
     handleNext,
     handleToday,
     handleToggleBlockMode,
+    handleOpenBlockDialog,
     handleEnterFocusMode,
     handleExitFocusMode,
     handleViewModeChange,
@@ -67,7 +71,7 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
     </button>
   );
 
-  const professionalSelect = (
+  const professionalSelect = showProfessionalFilter && (
     <Select
       value={selectedProfessional}
       onValueChange={handleProfessionalChange}
@@ -101,11 +105,11 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
           {previousButton}
           {isFocus ? (
             <h2 className="flex-1 text-center text-sm font-bold">
-              {monthYear}
+              {periodLabel}
             </h2>
           ) : (
             <span className="flex-1 text-center text-sm font-bold">
-              {monthYear}
+              {periodLabel}
             </span>
           )}
           {todayButton}
@@ -137,6 +141,16 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
           >
             {isBlockMode ? 'Bloqueio ativo' : 'Bloquear'}
           </button>
+          {!isFocus && (
+            <button
+              type="button"
+              onClick={handleOpenBlockDialog}
+              aria-label="Bloquear horário"
+              className={cn(AGENDA_BUTTON_CLASS, 'px-3.5')}
+            >
+              <CalendarX2 className="size-4" aria-hidden="true" />
+            </button>
+          )}
         </div>
       </div>
     );
@@ -159,36 +173,28 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
       {nextButton}
 
       {isFocus && (
-        <h2 className="mx-2 text-base font-extrabold">{monthYear}</h2>
+        <h2 className="mx-2 text-base font-extrabold">{periodLabel}</h2>
       )}
       {!isFocus && !isDayNavigation && (
-        <span className="mx-2 text-base font-extrabold">{monthYear}</span>
+        <span className="mx-2 text-base font-extrabold">{periodLabel}</span>
       )}
 
       {!isFocus && (
         <div role="group" aria-label="Visão" className="flex gap-1">
-          <button
-            type="button"
-            aria-pressed={viewMode === 'grid'}
-            onClick={() => handleViewModeChange('grid')}
-            className={cn(
-              AGENDA_BUTTON_CLASS,
-              viewMode === 'grid' && AGENDA_BUTTON_ACTIVE_CLASS,
-            )}
-          >
-            Semana
-          </button>
-          <button
-            type="button"
-            aria-pressed={viewMode === 'day'}
-            onClick={() => handleViewModeChange('day')}
-            className={cn(
-              AGENDA_BUTTON_CLASS,
-              viewMode === 'day' && AGENDA_BUTTON_ACTIVE_CLASS,
-            )}
-          >
-            Dia
-          </button>
+          {viewOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              aria-pressed={viewMode === option.value}
+              onClick={() => handleViewModeChange(option.value)}
+              className={cn(
+                AGENDA_BUTTON_CLASS,
+                viewMode === option.value && AGENDA_BUTTON_ACTIVE_CLASS,
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
         </div>
       )}
 
@@ -196,7 +202,7 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
 
       {professionalSelect}
 
-      {!isFocus && (
+      {!isFocus && !isMonthNavigation && (
         <button
           type="button"
           onClick={handleEnterFocusMode}
@@ -206,28 +212,34 @@ export function AgendaToolbar({ variant = 'default' }: TAgendaToolbarConfig) {
         </button>
       )}
 
+      {!isMonthNavigation && (
+        <button
+          type="button"
+          aria-pressed={isBlockMode}
+          onClick={handleToggleBlockMode}
+          className={cn(
+            AGENDA_BUTTON_CLASS,
+            isBlockMode && AGENDA_BUTTON_BLOCK_ACTIVE_CLASS,
+          )}
+        >
+          {isBlockMode ? 'Bloqueio ativo' : 'Bloquear na grade'}
+        </button>
+      )}
+
       <button
         type="button"
-        aria-pressed={isBlockMode}
-        onClick={handleToggleBlockMode}
-        className={cn(
-          AGENDA_BUTTON_CLASS,
-          isBlockMode && AGENDA_BUTTON_BLOCK_ACTIVE_CLASS,
-        )}
+        onClick={handleOpenBlockDialog}
+        className={AGENDA_BUTTON_CLASS}
       >
-        {isBlockMode ? 'Bloqueio ativo' : 'Bloquear'}
+        Bloquear horário
       </button>
 
       <button
         type="button"
         onClick={handleOpenAddAppointment}
-        className={cn(
-          AGENDA_BUTTON_CLASS,
-          AGENDA_BUTTON_ACTIVE_CLASS,
-          'ml-auto',
-        )}
+        className={cn(AGENDA_BUTTON_CLASS, AGENDA_BUTTON_ACTIVE_CLASS)}
       >
-        Agendar
+        Novo agendamento
       </button>
     </div>
   );

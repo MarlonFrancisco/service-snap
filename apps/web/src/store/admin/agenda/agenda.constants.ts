@@ -1,4 +1,5 @@
 import type { IAppointment } from '@/types/api/schedule.types';
+import type { IStore } from '@/types/api/stores.types';
 import type { TWorkingDayKey } from './agenda.types';
 
 export const AGENDA_DAYS: string[] = [
@@ -36,6 +37,9 @@ export const INITIAL_APPOINTMENT_FORM: IAppointment = {
     email: '',
     telephone: '',
     avatar: '',
+    favorites: [],
+    schedules: [],
+    createdAt: new Date(0),
   },
   service: {
     id: '',
@@ -51,6 +55,7 @@ export const INITIAL_APPOINTMENT_FORM: IAppointment = {
     isActive: true,
     createdAt: new Date(),
     blockedTimes: [],
+    schedules: [],
     user: {
       id: '',
       email: '',
@@ -58,6 +63,11 @@ export const INITIAL_APPOINTMENT_FORM: IAppointment = {
       lastName: '',
       telephone: '',
       avatar: '',
+      favorites: [],
+      schedules: [],
+      createdAt: new Date(0),
     },
   },
+  // A agenda não lê a loja do formulário: ela vem da loja selecionada no painel
+  store: {} as IStore,
 };

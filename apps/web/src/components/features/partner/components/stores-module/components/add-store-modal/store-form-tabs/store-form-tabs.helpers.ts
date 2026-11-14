@@ -1,7 +1,10 @@
 import { INITIAL_STORE } from '@/store/admin/stores/stores.constants';
 import type { IStore } from '@/types/api/stores.types';
 import type { FieldErrors } from 'react-hook-form';
-import { STORE_FORM_TABS } from './store-form-tabs.constants';
+import {
+  STORE_FORM_TABS,
+  STORE_SCHEDULE_RULES_DEFAULTS,
+} from './store-form-tabs.constants';
 import type { TStoreFormTabDefinition } from './store-form-tabs.types';
 import type { TStoreFormSchema } from './store-form.schema';
 
@@ -22,7 +25,9 @@ export const toStoreFormValues = (store: IStore): TStoreFormSchema => {
 
   return {
     ...INITIAL_STORE,
+    ...STORE_SCHEDULE_RULES_DEFAULTS,
     ...filledValues,
+    slug: store.slug ?? '',
     // Almoço é opcional: o padrão de loja nova não pode preencher loja existente.
     lunchStartTime: store.lunchStartTime ?? '',
     lunchEndTime: store.lunchEndTime ?? '',

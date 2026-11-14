@@ -9,8 +9,11 @@ const makeService = () => {
   const manager = {
     findOne: vi.fn().mockResolvedValue({ id: 'm1' }),
     find: vi.fn().mockResolvedValue([]),
+    // A visita (objeto) é salva antes das linhas (lista)
     save: vi.fn(async (_entity, rows) =>
-      rows.map((row: object, index: number) => ({ ...row, id: `s${index}` })),
+      Array.isArray(rows)
+        ? rows.map((row: object, index: number) => ({ ...row, id: `s${index}` }))
+        : { ...rows, id: 'b1' },
     ),
     update: vi.fn().mockResolvedValue({ affected: 1 }),
     transaction: vi.fn(async (callback) => callback(manager)),
@@ -52,7 +55,7 @@ const makeService = () => {
     load: vi.fn().mockResolvedValue({
       id: 'sch1',
       status: 'scheduled',
-      store: { id: STORE_ID },
+      store: { id: STORE_ID, openTime: '09:00', closeTime: '18:00' },
       service: { id: SERVICE_ID, duration: 45 },
       storeMember: { id: 'm1' },
     }),
@@ -66,6 +69,7 @@ const makeService = () => {
     blockedTimeRepository as never,
     usersService as never,
     notifications as never,
+    { isHoliday: vi.fn().mockResolvedValue(false) } as never,
   );
 
   return {
@@ -80,8 +84,9 @@ const makeService = () => {
   };
 };
 
+// Data futura: reserva de cliente só entra em horário que a loja ofereceria
 const DTO = {
-  date: '2026-11-10',
+  date: '2099-11-10',
   startTime: '10:00',
   endTime: '10:30',
   store: { id: STORE_ID },
@@ -164,12 +169,14 @@ describe('ScheduleService.create', () => {
       ],
     } as never);
 
-    const rows = ctx.manager.save.mock.calls[0]![1];
+    // A última gravação são as linhas; antes vem a visita
+    const rows = ctx.manager.save.mock.calls.at(-1)![1];
     expect(rows.map((row: { endTime: string }) => row.endTime)).toEqual([
       '10:30',
       '11:00',
     ]);
     expect(rows[0].user).toEqual({ id: 'u1' });
+    expect(rows[0].booking).toEqual({ id: 'b1' });
   });
 });
 
@@ -228,7 +235,7 @@ describe('ScheduleService.getAvailability', () => {
 
 describe('ScheduleService.reschedule', () => {
   let ctx: ReturnType<typeof makeService>;
-  const MOVE = { date: '2026-11-12', startTime: '14:00', storeMemberId: 'm2' };
+  const MOVE = { date: '2099-11-12', startTime: '14:00', storeMemberId: 'm2' };
 
   beforeEach(() => {
     ctx = makeService();
@@ -245,7 +252,7 @@ describe('ScheduleService.reschedule', () => {
       expect.anything(),
       { id: 'sch1' },
       {
-        date: '2026-11-12',
+        date: '2099-11-12',
         startTime: '14:00',
         endTime: '14:45',
         storeMember: { id: 'm2' },

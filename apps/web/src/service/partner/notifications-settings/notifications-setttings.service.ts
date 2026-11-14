@@ -1,4 +1,4 @@
-import { INotificationsSettings } from '@/types/api/stores.types';
+import { INotificationsSettings } from '@/types/api/notifications.types';
 import { apiClient } from '../../api';
 
 export class NotificationsSettingsService {

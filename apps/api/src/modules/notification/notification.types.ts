@@ -8,6 +8,21 @@ export type TEmailLayout = {
   title: string;
   preheader: string;
   footerNote: string;
+  /** No lugar do logo: e-mail que fala em nome da loja (campanha). */
+  headerTitle?: string;
+  unsubscribeNote?: string;
+  unsubscribeLink?: string;
+};
+
+/** E-mail de campanha de reativação, escrito pela loja. */
+export type TCampaignMessageEmail = {
+  storeName: string;
+  customerName: string;
+  /** Texto da loja já em linhas; o template escapa cada uma. */
+  messageLines: string[];
+  bookingLink: string;
+  lastVisit: string | null;
+  unsubscribeLink: string;
 };
 
 export type TScheduleCustomerEmail = {
@@ -73,4 +88,15 @@ export type TSubscriptionCancelScheduledEmail = {
   planName: string;
   accessUntil: string;
   manageLink: string;
+};
+
+export type TTeamInviteEmail = {
+  storeName: string;
+  /** "profissional", "gerente" ou "sócio". */
+  roleLabel: string;
+  inviterName: string;
+  /** Conta criada pelo convite: o texto explica como entrar pela primeira vez. */
+  isNewAccount: boolean;
+  email: string;
+  accessLink: string;
 };

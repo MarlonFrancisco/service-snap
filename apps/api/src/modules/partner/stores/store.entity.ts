@@ -13,12 +13,19 @@ import { Schedule } from './schedule/schedule.entity';
 import { StoreMember } from './store-member/store-member.entity';
 import { WhatsappConfig } from './whatsapp/whatsapp.entity';
 
+export const STORE_SLUG_UNIQUE = 'UQ_stores_slug';
+
 @Entity('stores')
+@Index(STORE_SLUG_UNIQUE, ['slug'], { unique: true })
 export class Store extends BaseEntity {
   // general information
 
   @Column({ type: 'varchar', nullable: true })
   name: string;
+
+  /** Link curto: `/booking/<slug>` (ver `pnpm migrate:store-slugs`). */
+  @Column({ type: 'varchar', length: 80, nullable: true })
+  slug: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   description: string;
@@ -66,6 +73,32 @@ export class Store extends BaseEntity {
     saturday: boolean;
     sunday: boolean;
   };
+
+  // schedule rules (ver `pnpm migrate:schedule-rules`)
+
+  /** Passo da grade de horários oferecidos ao cliente. */
+  @Column({ type: 'int', default: 30 })
+  slotIntervalMinutes: number;
+
+  /** Folga mínima entre dois atendimentos do mesmo profissional. */
+  @Column({ type: 'int', default: 0 })
+  bufferMinutes: number;
+
+  /** Antecedência mínima para o cliente reservar. */
+  @Column({ type: 'int', default: 0 })
+  minAdvanceMinutes: number;
+
+  /** Até quantos dias à frente o cliente reserva. 0 é sem limite. */
+  @Column({ type: 'int', default: 0 })
+  maxAdvanceDays: number;
+
+  /** Horas antes do início até quando o cliente cancela. 0 é até o início. */
+  @Column({ type: 'int', default: 0 })
+  cancellationNoticeHours: number;
+
+  /** Horas antes do início até quando o cliente remarca. 0 é até o início. */
+  @Column({ type: 'int', default: 0 })
+  rescheduleNoticeHours: number;
 
   // location & internationalization
 

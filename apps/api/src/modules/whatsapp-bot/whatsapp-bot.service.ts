@@ -1,5 +1,11 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { ConflictException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import type { Cache } from 'cache-manager';
 import { isEmail } from 'class-validator';
 import { createHash } from 'crypto';
@@ -834,6 +840,13 @@ export class WhatsappBotService {
         return this.enterTimes(ctx);
       }
 
+      // Política de remarcação da loja (horas de antecedência)
+      if (error instanceof ForbiddenException) {
+        await this.clearSession(ctx);
+        await this.sendText(ctx, this.policyMessage(error));
+        return this.enterMenu(ctx);
+      }
+
       throw error;
     }
 
@@ -1217,11 +1230,20 @@ export class WhatsappBotService {
     }
 
     // Quem pede é o próprio cliente: a loja recebe o aviso de cancelamento
-    await this.scheduleService.delete(
-      ctx.config.store.id,
-      appointment.id,
-      appointment.customerId,
-    );
+    try {
+      await this.scheduleService.delete(
+        ctx.config.store.id,
+        appointment.id,
+        appointment.customerId,
+      );
+    } catch (error) {
+      // Política de cancelamento da loja (horas de antecedência)
+      if (!(error instanceof ForbiddenException)) throw error;
+
+      await this.saveSession(ctx, { state: BotState.MENU });
+      await this.sendText(ctx, this.policyMessage(error));
+      return this.enterMenu(ctx);
+    }
 
     await this.saveSession(ctx, { state: BotState.MENU });
     await this.sendButtons(
@@ -1298,6 +1320,17 @@ export class WhatsappBotService {
     return slots
       .filter((slot) => slot.available && slot.storeMemberId)
       .map((slot) => ({ time: slot.time, memberId: slot.storeMemberId }));
+  }
+
+  /** Texto da política que barrou o cliente, com o caminho de falar com a loja. */
+  private policyMessage(error: ForbiddenException) {
+    const response = error.getResponse() as { message?: string };
+    const reason =
+      typeof response?.message === 'string'
+        ? response.message
+        : 'Pela política da loja, não dá para fazer essa alteração agora.';
+
+    return `${reason} Para mudar mesmo assim, fale direto com a loja.`;
   }
 
   private today(ctx: IBotContext) {

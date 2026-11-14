@@ -3,7 +3,8 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import {
   PlanFeatureGuard,
   RequiresPlanFeatures,
-  StoreAccessGuard,
+  RequireStoreRoles,
+  StoreRoleGuard,
 } from '../stores/guards';
 import { DashboardCustomersService } from './dashboard-customers/dashboard-customers.service';
 import { DashboardOperationalService } from './dashboard-operational/dashboard-operational.service';
@@ -17,7 +18,9 @@ type CustomersPeriodType = 'week' | 'month' | 'quarter';
 
 @Controller('partner/stores/:storeId/metrics')
 // A ordem importa: o plano só é lido depois de confirmar o acesso à loja.
-@UseGuards(JwtAuthGuard, StoreAccessGuard, PlanFeatureGuard)
+// Gestão da loja: só dono e gerente
+@RequireStoreRoles('owner', 'manager')
+@UseGuards(JwtAuthGuard, StoreRoleGuard, PlanFeatureGuard)
 export class MetricsController {
   constructor(
     private readonly dashboardOverviewService: DashboardOverviewService,

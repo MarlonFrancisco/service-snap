@@ -11,6 +11,12 @@ import type { TDesktopViewConfig } from './agenda-grid-desktop-view.types';
 const SLOT_HEIGHT = GRID_CONSTANTS.WEEK_SLOT_HEIGHT;
 const HEADER_HEIGHT = GRID_CONSTANTS.WEEK_HEADER_HEIGHT;
 
+/** Mesmas listras da coluna de folga. */
+const OFF_LEGEND_STYLE = {
+  backgroundImage:
+    'repeating-linear-gradient(135deg, #F4F3F7 0 5px, #E6E4EC 5px 10px)',
+};
+
 export const AgendaGridDesktopView = memo(
   ({ gridHook }: TDesktopViewConfig) => {
     const {
@@ -20,7 +26,9 @@ export const AgendaGridDesktopView = memo(
       isFocusMode,
       scrollClassName,
       handleAppointmentClick,
+      handleBlockedBlockClick,
       bulkBlockHook,
+      drag,
     } = gridHook;
     const { dayColumns, gridStyle } = useAgendaGridDesktopView(gridHook);
 
@@ -58,12 +66,22 @@ export const AgendaGridDesktopView = memo(
                     !day.isWorkingDay && !day.isToday && 'text-[#5F5C6E]',
                   )}
                   style={{ height: HEADER_HEIGHT }}
-                  aria-label={`${day.label}, ${day.date.getDate()}${day.isToday ? ', hoje' : ''}`}
+                  aria-label={`${day.label}, ${day.date.getDate()}${day.isToday ? ', hoje' : ''}${day.headerNote ? `, ${day.headerNote.toLowerCase()}` : ''}`}
                 >
                   {day.shortLabel}
                   <span className="block text-lg leading-tight">
                     {day.date.getDate()}
                   </span>
+                  {day.headerNote && (
+                    <small
+                      className={cn(
+                        'block text-[11px] font-bold',
+                        day.isToday ? 'text-white/80' : 'text-[#5F5C6E]',
+                      )}
+                    >
+                      {day.headerNote}
+                    </small>
+                  )}
                 </div>
 
                 {day.isWorkingDay ? (
@@ -74,7 +92,9 @@ export const AgendaGridDesktopView = memo(
                         column={column}
                         slotHeight={SLOT_HEIGHT}
                         showInitials
+                        drag={drag}
                         onAppointmentClick={handleAppointmentClick}
+                        onBlockedClick={handleBlockedBlockClick}
                       />
                     ))}
                   </div>
@@ -104,6 +124,15 @@ export const AgendaGridDesktopView = memo(
                 {status.label}
               </span>
             ))}
+            <span className="rounded-full bg-[#DEDBE6] px-2.5 py-[5px]">
+              Bloqueado
+            </span>
+            <span
+              className="rounded-full px-2.5 py-[5px]"
+              style={OFF_LEGEND_STYLE}
+            >
+              Folga
+            </span>
           </div>
         )}
 

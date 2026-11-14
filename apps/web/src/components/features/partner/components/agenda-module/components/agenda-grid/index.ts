@@ -9,12 +9,21 @@ export {
 export {
   dateToISOString,
   formatDateBR,
+  formatDuration,
+  formatShortDay,
+  getClientName,
   getProfessionalFullName,
   getProfessionalInitials,
+  getVisitDuration,
+  getVisitItems,
+  getVisitServiceNames,
+  groupVisits,
   isToday,
 } from './agenda-grid.helpers';
 export { useAgendaGrid } from './agenda-grid.hook';
 export type {
+  TAgendaBlockedBlock,
+  TAgendaClosedNotice,
   TAgendaColumn,
   TAgendaColumnBlock,
   TAgendaColumnRow,
@@ -25,6 +34,9 @@ export type {
   TPositionedAppointment,
   TSelectedProfessionalData,
 } from './agenda-grid.types';
+
+export { useAgendaGridDrag } from './agenda-grid-drag.hook';
+export type { TAgendaDragHandlers } from './agenda-grid-drag.types';
 
 // Bulk block exports
 export { useAgendaGridBulkBlock } from './agenda-grid-bulk-block.hook';

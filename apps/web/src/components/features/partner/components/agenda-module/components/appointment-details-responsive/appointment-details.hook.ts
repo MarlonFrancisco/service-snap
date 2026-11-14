@@ -1,13 +1,15 @@
+import { useScheduleSeriesByScheduleQuery } from '@/hooks/partner/use-schedule-series-by-schedule-query';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { ScheduleService } from '@/service/partner/schedule';
 import { usePartnerStore } from '@/store';
 import { useAgendaStore } from '@/store/admin/agenda';
-import { IAppointment, TAppointmentStatus } from '@/types/api/schedule.types';
+import { TAppointmentStatus } from '@/types/api/schedule.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
 import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { STATUS_CONFIG } from '../agenda-grid/agenda-grid.constants';
+import { getVisitItems } from '../agenda-grid/agenda-grid.helpers';
 
 const calculateDuration = (startTime: string, endTime: string): string => {
   const [startHour, startMin] = startTime.split(':').map(Number);
@@ -65,17 +67,24 @@ export const useAppointmentDetailsMutations = () => {
 
   const { mutate: updateAppointmentStatus, isPending: isUpdatingStatus } =
     useMutation({
-      mutationFn: ({
-        scheduleId,
-        status,
-      }: {
+      mutationFn: async (variables: {
         scheduleId: string;
         status: TAppointmentStatus;
         previousStatus?: TAppointmentStatus;
         date?: string;
         startTime?: string;
+        itemIds?: string[];
       }) => {
-        return ScheduleService.update(storeId, scheduleId, { status });
+        // A visita muda de status inteira: um pedido por serviço dela.
+        const ids = variables.itemIds?.length
+          ? variables.itemIds
+          : [variables.scheduleId];
+        const [first] = await Promise.all(
+          ids.map((id) =>
+            ScheduleService.update(storeId, id, { status: variables.status }),
+          ),
+        );
+        return first!;
       },
       onSuccess: (data, variables) => {
         const previousStatus = variables.previousStatus ?? 'scheduled';
@@ -106,20 +115,10 @@ export const useAppointmentDetailsMutations = () => {
           }
         }
 
-        // Update cache with optimistic update
-        queryClient.setQueryData(
-          CACHE_QUERY_KEYS.schedules(storeId),
-          (old: IAppointment[] | undefined) => {
-            if (!old) return [data];
-            const newAppointments = old.map((appointment) =>
-              appointment.id === data.id
-                ? { ...appointment, ...data }
-                : appointment,
-            );
-
-            return newAppointments;
-          },
-        );
+        // Cada período da agenda é uma consulta: o prefixo recarrega todas.
+        queryClient.invalidateQueries({
+          queryKey: CACHE_QUERY_KEYS.schedules(storeId),
+        });
 
         // Show success message based on status
         const statusMessages = {
@@ -160,6 +159,7 @@ export const useAppointmentDetails = () => {
     useAppointmentDetailsMutations();
 
   const [isConfirmingCancel, setIsConfirmingCancel] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const cancelTriggerRef = useRef<HTMLButtonElement>(null);
 
   const isOpen = !!detailsAppointment?.id;
@@ -167,6 +167,7 @@ export const useAppointmentDetails = () => {
   // Reabrir outro agendamento não pode herdar a confirmação do anterior.
   useEffect(() => {
     setIsConfirmingCancel(false);
+    setIsCheckingOut(false);
   }, [detailsAppointment?.id]);
 
   const statusBadge = STATUS_CONFIG[detailsAppointment.status];
@@ -196,17 +197,32 @@ export const useAppointmentDetails = () => {
       updateAppointmentStatus({
         scheduleId: id,
         status,
+        itemIds: getVisitItems(detailsAppointment).map((item) => item.id),
         previousStatus: detailsAppointment.status,
         date: detailsAppointment.date,
         startTime: detailsAppointment.startTime,
       });
     },
-    [
-      updateAppointmentStatus,
-      detailsAppointment.status,
-      detailsAppointment.date,
-      detailsAppointment.startTime,
-    ],
+    [updateAppointmentStatus, detailsAppointment],
+  );
+
+  const setRescheduleVisit = useAgendaStore(
+    (state) => state.setRescheduleVisit,
+  );
+
+  const handleOpenReschedule = useCallback(() => {
+    setRescheduleVisit(detailsAppointment);
+    setDetailsAppointment();
+  }, [detailsAppointment, setRescheduleVisit, setDetailsAppointment]);
+
+  const visitItems = useMemo(
+    () => getVisitItems(detailsAppointment),
+    [detailsAppointment],
+  );
+
+  const totalPrice = visitItems.reduce(
+    (total, item) => total + (item.service.price ?? 0),
+    0,
   );
 
   const handleRequestCancel = useCallback(() => {
@@ -219,7 +235,27 @@ export const useAppointmentDetails = () => {
     requestAnimationFrame(() => cancelTriggerRef.current?.focus());
   }, []);
 
+  // Fechar atendimento troca os detalhes pelo formulário, no mesmo diálogo
+  const handleOpenCheckout = useCallback(() => setIsCheckingOut(true), []);
+  const handleCloseCheckout = useCallback(() => setIsCheckingOut(false), []);
+  const handleCheckoutDone = useCallback(() => {
+    setIsCheckingOut(false);
+    setDetailsAppointment();
+  }, [setDetailsAppointment]);
+
+  // Parte de uma série: o cancelamento oferece "este e os próximos"
+  const { seriesMembership } = useScheduleSeriesByScheduleQuery({
+    storeId: usePartnerStore.getState().activeStore?.id,
+    scheduleId: detailsAppointment?.id,
+    enabled: isOpen && detailsAppointment?.status === 'scheduled',
+  });
+
   return {
+    seriesId: seriesMembership?.id ?? null,
+    isCheckingOut,
+    handleOpenCheckout,
+    handleCloseCheckout,
+    handleCheckoutDone,
     detailsAppointment,
     isOpen,
     statusBadge,
@@ -228,8 +264,11 @@ export const useAppointmentDetails = () => {
     isUpdatingStatus,
     isConfirmingCancel,
     cancelTriggerRef,
+    visitItems,
+    totalPrice,
     handleClose,
     handleStatusChange,
+    handleOpenReschedule,
     handleRequestCancel,
     handleDismissCancel,
   };

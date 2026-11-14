@@ -11,6 +11,7 @@ import { BaseEntity } from '../../../database/base.entity';
 import { User } from '../../../users/user.entity';
 import { Service } from '../category/service/service.entity';
 import { Schedule } from '../schedule/schedule.entity';
+import type { TWorkingHours } from '../../../../utils/helpers/schedule.types';
 import { Store } from '../store.entity';
 import { BlockedTime } from './blocked-time/blocked-time.entity';
 
@@ -37,6 +38,10 @@ export class StoreMember extends BaseEntity {
 
   @Column({ type: 'boolean', nullable: true, default: false })
   isDeleted: boolean;
+
+  /** Horário próprio por dia da semana. Nulo segue o horário da loja. */
+  @Column({ type: 'jsonb', nullable: true })
+  workingHours: TWorkingHours | null;
 
   @ManyToMany(() => Service, (service) => service.storeMembers)
   @JoinTable({

@@ -1,4 +1,5 @@
 import { useAnalytics } from '@/providers/analytics.provider';
+import { isApiHttpError } from '@/service/api';
 import { BlockedTimesService } from '@/service/partner/blocked-times/blocked-times.service';
 import { IBlockedTime } from '@/types/api/blocked-times.types';
 import { IStore } from '@/types/api/stores.types';
@@ -95,12 +96,7 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
       blockedTimes,
     }: {
       storeMemberId: string;
-      blockedTimes: Array<{
-        date: Date | string;
-        time: string;
-        isRecurring?: boolean;
-        dayOfWeek?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-      }>;
+      blockedTimes: Parameters<typeof BlockedTimesService.createBulk>[2];
     }) => BlockedTimesService.createBulk(storeId, storeMemberId, blockedTimes),
     onSuccess: (data: IBlockedTime[]) => {
       if (data.length === 0) return;
@@ -130,12 +126,15 @@ export const useBlockedTimeMutations = ({ storeId }: { storeId: string }) => {
       );
     },
     onError: (error) => {
-      console.error(error);
       analytics.track('partner_mutation_failed', {
         entity: 'blocked_time',
         operation: 'create',
       });
-      toast.error('Erro ao criar horários bloqueados');
+      toast.error(
+        isApiHttpError(error) && error.status === 403
+          ? 'Você só pode bloquear a sua própria agenda'
+          : 'Erro ao criar horários bloqueados',
+      );
     },
   });
 

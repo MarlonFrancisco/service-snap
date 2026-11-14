@@ -1,4 +1,5 @@
 import { useAnalytics } from '@/providers/analytics.provider';
+import { isApiHttpError } from '@/service/api';
 import { StoreService } from '@/service/store';
 import { IStore } from '@/types/api/stores.types';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
@@ -15,15 +16,24 @@ export const useStoreMutations = () => {
       queryClient.setQueryData(CACHE_QUERY_KEYS.stores(), (old: IStore[]) =>
         old.map((s) => (s.id === data.id ? { ...s, ...data } : s)),
       );
+      // O detalhe (agenda) também lê regras e link curto
+      void queryClient.invalidateQueries({
+        queryKey: CACHE_QUERY_KEYS.store(data.id),
+      });
       analytics.track('store_updated', { store_id: data.id });
       toast.success('Loja atualizada com sucesso');
     },
-    onError: () => {
+    onError: (error) => {
       analytics.track('partner_mutation_failed', {
         entity: 'store',
         operation: 'update',
       });
-      toast.error('Erro ao atualizar loja');
+      // 409 traz o motivo em português (ex.: link da loja já usado)
+      toast.error(
+        isApiHttpError(error) && error.status === 409
+          ? error.message
+          : 'Erro ao atualizar loja',
+      );
     },
   });
 

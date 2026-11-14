@@ -1,14 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
+import { areNotificationsMuted } from '../../../../utils/helpers/notification-scope.helpers';
 import {
   formatScheduleMoment,
   toDateKey,
 } from '../../../../utils/helpers/schedule.helpers';
 import { NotificationService } from '../../../notification/notification.service';
+import { QueueService } from '../../../queue/queue.service';
+import type { TQueueJob, TQueueJobMap } from '../../../queue/queue.types';
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
+import { WebhookDispatchService } from '../webhooks/webhook-dispatch.service';
+import { hasScheduleChanged } from '../webhooks/webhooks.helpers';
+import type { TWebhookEvent } from '../webhooks/webhooks.types';
 import { Schedule } from './schedule.entity';
 import {
   buildBookingCalendarLink,
@@ -27,14 +33,17 @@ const RELATIONS = [
   'service',
   'storeMember',
   'storeMember.user',
+  'booking',
 ];
 
 /**
  * Avisos de agendamento, chamados depois de salvar. Falha de envio nunca desfaz
- * a operação: a mudança na agenda já está salva.
+ * a operação: a mudança na agenda já está salva. Os métodos públicos só decidem
+ * o que avisar e publicam no QStash; o envio roda quando a fila chama de volta,
+ * para não atrasar quem agendou.
  */
 @Injectable()
-export class ScheduleNotificationsService {
+export class ScheduleNotificationsService implements OnModuleInit {
   private readonly logger = new Logger(ScheduleNotificationsService.name);
 
   constructor(
@@ -43,7 +52,21 @@ export class ScheduleNotificationsService {
     private readonly notificationsHistoryService: NotificationsHistoryService,
     private readonly notificationService: NotificationService,
     private readonly configService: ConfigService,
+    private readonly webhookDispatch: WebhookDispatchService,
+    private readonly queueService: QueueService,
   ) {}
+
+  onModuleInit() {
+    this.queueService.register('schedule.created', (data) =>
+      this.sendBookingCreated(data),
+    );
+    this.queueService.register('schedule.cancelled', (data) =>
+      this.sendCancellation(data),
+    );
+    this.queueService.register('schedule.updated', (data) =>
+      this.sendUpdate(data),
+    );
+  }
 
   load(id: string) {
     return this.scheduleRepository.findOne({
@@ -54,18 +77,85 @@ export class ScheduleNotificationsService {
 
   /** Uma reserva com vários serviços vira várias linhas, mas um aviso só. */
   async notifyBookingCreated(ids: string[], createdByStore: boolean) {
-    await this.attempt(`Novo agendamento ${ids.join(', ')}`, async () => {
-      const schedules = await this.scheduleRepository.find({
-        where: { id: In(ids) },
-        relations: RELATIONS,
-        order: { startTime: 'ASC' },
-      });
-
-      if (!schedules[0]?.store) return;
-
-      await this.confirmBooking(schedules);
-      await this.notifyStoreOfBooking(schedules, createdByStore);
+    await this.enqueue({
+      type: 'schedule.created',
+      data: {
+        scheduleIds: ids,
+        createdByStore,
+        // Lote (ex.: série recorrente) manda um aviso só: o resto vai calado
+        notify: !areNotificationsMuted(),
+      },
     });
+  }
+
+  async notifyCancellation(schedule: Schedule, cancelledByCustomer: boolean) {
+    await this.enqueue({
+      type: 'schedule.cancelled',
+      data: {
+        scheduleId: schedule.id,
+        cancelledByCustomer,
+        notify: !areNotificationsMuted(),
+      },
+    });
+  }
+
+  /** Só a requisição conhece o "antes": a decisão sai daqui pronta. */
+  async notifyUpdate(before: Schedule, after: Schedule) {
+    if (before.status !== 'cancelled' && after.status === 'cancelled') {
+      await this.notifyCancellation(after, false);
+      return;
+    }
+
+    const timeChanged =
+      toDateKey(before.date) !== toDateKey(after.date) ||
+      before.startTime !== after.startTime;
+    const professionalChanged =
+      before.storeMember?.id !== after.storeMember?.id;
+    const webhook = hasScheduleChanged(before, after);
+    const notifyChange =
+      after.status === 'scheduled' && (timeChanged || professionalChanged);
+
+    if (!webhook && !notifyChange) return;
+
+    await this.enqueue({
+      type: 'schedule.updated',
+      data: {
+        scheduleId: after.id,
+        webhook,
+        notifyChange,
+        previousSchedule: timeChanged
+          ? formatScheduleMoment(before)
+          : undefined,
+      },
+    });
+  }
+
+  private async sendBookingCreated({
+    scheduleIds,
+    createdByStore,
+    notify,
+  }: TQueueJobMap['schedule.created']) {
+    const schedules = await this.scheduleRepository.find({
+      where: { id: In(scheduleIds) },
+      relations: RELATIONS,
+      order: { startTime: 'ASC' },
+    });
+
+    if (!schedules[0]?.store) return;
+
+    await this.emitWebhook(
+      'schedule.created',
+      schedules[0].store.id,
+      scheduleIds,
+    );
+
+    if (!notify) return;
+
+    await this.confirmBooking(schedules);
+    await this.attempt(
+      `Novo agendamento ${scheduleIds.join(', ')} para a loja`,
+      () => this.notifyStoreOfBooking(schedules, createdByStore),
+    );
   }
 
   private async confirmBooking(schedules: Schedule[]) {
@@ -103,7 +193,21 @@ export class ScheduleNotificationsService {
     });
   }
 
-  async notifyCancellation(schedule: Schedule, cancelledByCustomer: boolean) {
+  private async sendCancellation({
+    scheduleId,
+    cancelledByCustomer,
+    notify,
+  }: TQueueJobMap['schedule.cancelled']) {
+    const schedule = await this.load(scheduleId);
+
+    if (!schedule?.store) return;
+
+    await this.emitWebhook('schedule.cancelled', schedule.store.id, [
+      schedule.id,
+    ]);
+
+    if (!notify) return;
+
     await this.notifyCustomer(
       schedule,
       {
@@ -133,21 +237,22 @@ export class ScheduleNotificationsService {
     );
   }
 
-  async notifyUpdate(before: Schedule, after: Schedule) {
-    if (before.status !== 'cancelled' && after.status === 'cancelled') {
-      await this.notifyCancellation(after, false);
-      return;
+  private async sendUpdate({
+    scheduleId,
+    webhook,
+    notifyChange,
+    previousSchedule,
+  }: TQueueJobMap['schedule.updated']) {
+    const after = await this.load(scheduleId);
+
+    if (!after?.store) return;
+
+    if (webhook) {
+      await this.emitWebhook('schedule.updated', after.store.id, [after.id]);
     }
 
-    if (after.status !== 'scheduled') return;
-
-    const timeChanged =
-      toDateKey(before.date) !== toDateKey(after.date) ||
-      before.startTime !== after.startTime;
-    const professionalChanged =
-      before.storeMember?.id !== after.storeMember?.id;
-
-    if (!timeChanged && !professionalChanged) return;
+    // Mudou de novo até a fila chamar: o aviso de agora já não vale
+    if (!notifyChange || after.status !== 'scheduled') return;
 
     await this.notifyCustomer(
       after,
@@ -159,9 +264,7 @@ export class ScheduleNotificationsService {
       (email) =>
         this.notificationService.scheduleChanged(email, {
           ...buildCustomerEmailData(after),
-          previousSchedule: timeChanged
-            ? formatScheduleMoment(before)
-            : undefined,
+          previousSchedule,
           calendarLink: buildBookingCalendarLink([after]),
           manageLink: `${this.frontendUrl}/profile`,
         }),
@@ -204,6 +307,24 @@ export class ScheduleNotificationsService {
 
     await this.attempt(`Histórico do agendamento ${schedule.id}`, () =>
       this.notificationsHistoryService.create(history),
+    );
+  }
+
+  /** Fila fora do ar não desfaz a agenda: o aviso se perde e fica no log. */
+  private enqueue(job: TQueueJob) {
+    return this.attempt(`Fila ${job.type}`, () =>
+      this.queueService.enqueue(job),
+    );
+  }
+
+  /** Webhook com erro não impede o e-mail: cada efeito tem a sua tentativa. */
+  private emitWebhook(
+    event: TWebhookEvent,
+    storeId: string | undefined,
+    ids: string[],
+  ) {
+    return this.attempt(`Webhook ${event} ${ids.join(', ')}`, () =>
+      this.webhookDispatch.emitScheduleEvent(event, storeId, ids),
     );
   }
 

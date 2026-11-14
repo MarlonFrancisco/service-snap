@@ -35,7 +35,15 @@
 
     "RESEND_API_KEY",
 
-    "WHATSAPP_VERIFY_TOKEN"
+    "WHATSAPP_VERIFY_TOKEN",
+
+    "DATA_ENCRYPTION_KEY",
+    "PLATFORM_ADMIN_EMAILS",
+    "API_PUBLIC_URL",
+    "QSTASH_TOKEN",
+    "QSTASH_URL",
+    "QSTASH_CURRENT_SIGNING_KEY",
+    "QSTASH_NEXT_SIGNING_KEY"
   ],
   "globalDependencies": ["**/.env.*local"],
   "tasks": {
@@ -81,7 +89,14 @@
         "GOOGLE_CLIENT_SECRET",
 
         "RESEND_API_KEY",
-        "WHATSAPP_VERIFY_TOKEN"
+        "WHATSAPP_VERIFY_TOKEN",
+        "DATA_ENCRYPTION_KEY",
+        "PLATFORM_ADMIN_EMAILS",
+        "API_PUBLIC_URL",
+        "QSTASH_TOKEN",
+        "QSTASH_URL",
+        "QSTASH_CURRENT_SIGNING_KEY",
+        "QSTASH_NEXT_SIGNING_KEY"
       ]
     },
     "lint": {}

@@ -44,7 +44,27 @@ export interface IStoreSearchMetadata {
   currency: string;
   gallery: Gallery[];
   reviews: Review[];
+  /**
+   * Prioridade do plano do dono na busca: 1 (Business) aparece antes de 2 e 3;
+   * 4 é loja sem plano ativo. Ausente em documento indexado antes deste campo.
+   */
+  rankTier?: number;
+  /** Média das notas e quantidade de avaliações, para ordenar e filtrar. */
+  averageRating?: number;
+  reviewCount?: number;
+  /** Menor preço entre os serviços ativos; nulo sem serviço com preço. */
+  minPrice?: number | null;
+  /** Fuso IANA da loja: "hoje" na busca é o hoje dela. */
+  timezone?: string;
 }
+
+/** Filtros que o cliente escolhe na busca, além do texto, cidade e categoria. */
+export type TSearchFilters = {
+  minPrice?: number;
+  maxPrice?: number;
+  /** Nota média mínima, de 1 a 5. */
+  minRating?: number;
+};
 
 /** Loja que o sitemap pode listar: só o necessário para montar a URL. */
 export type TStoreSitemapEntry = {

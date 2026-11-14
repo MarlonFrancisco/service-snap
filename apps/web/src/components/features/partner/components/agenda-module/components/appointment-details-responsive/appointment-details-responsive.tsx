@@ -16,9 +16,11 @@ import {
   AGENDA_DRAWER_CLASS,
   AGENDA_MODAL_BUTTON_CLASS,
   AGENDA_MODAL_DANGER_BUTTON_CLASS,
-  AGENDA_MODAL_PRIMARY_BUTTON_CLASS,
   AGENDA_MODAL_TITLE_CLASS,
 } from '../../agenda-module.styles';
+import { AnamnesisLinkCard } from '../../../anamnesis-module/components/anamnesis-link-card';
+import { CheckoutForm, CheckoutStatus } from '../../../checkout-module';
+import { ScheduleSeriesCancel } from '../../../schedule-series-module/components/schedule-series-cancel';
 import { useAppointmentDetails } from './appointment-details.hook';
 
 const DETAIL_ROW_CLASS =
@@ -37,15 +39,34 @@ export function AppointmentDetailsResponsive() {
     isUpdatingStatus,
     isConfirmingCancel,
     cancelTriggerRef,
+    visitItems,
+    totalPrice,
     handleClose,
     handleStatusChange,
+    handleOpenReschedule,
     handleRequestCancel,
     handleDismissCancel,
+    isCheckingOut,
+    handleOpenCheckout,
+    handleCloseCheckout,
+    handleCheckoutDone,
+    seriesId,
   } = useAppointmentDetails();
 
-  const { user, service, storeMember, notes, status, id } = detailsAppointment;
+  const { user, storeMember, notes, status, id } = detailsAppointment;
+  const isVisit = visitItems.length > 1;
+  const title = isCheckingOut
+    ? 'Fechar atendimento'
+    : 'Detalhes do agendamento';
 
-  const content = (
+  const content = isCheckingOut ? (
+    <CheckoutForm
+      appointment={detailsAppointment}
+      items={visitItems}
+      onCancel={handleCloseCheckout}
+      onDone={handleCheckoutDone}
+    />
+  ) : (
     <div className="flex flex-col gap-3.5">
       <span
         className={cn(
@@ -77,8 +98,17 @@ export function AppointmentDetailsResponsive() {
           </div>
         ) : null}
         <div className={DETAIL_ROW_CLASS}>
-          <dt className={DETAIL_TERM_CLASS}>Serviço</dt>
-          <dd className={DETAIL_VALUE_CLASS}>{service.name}</dd>
+          <dt className={DETAIL_TERM_CLASS}>
+            {isVisit ? `${visitItems.length} serviços` : 'Serviço'}
+          </dt>
+          <dd className={DETAIL_VALUE_CLASS}>
+            {visitItems.map((item) => (
+              <span key={item.id} className="block">
+                {item.service.name}
+                {isVisit ? ` · ${item.startTime}` : ''}
+              </span>
+            ))}
+          </dd>
         </div>
         <div className={DETAIL_ROW_CLASS}>
           <dt className={DETAIL_TERM_CLASS}>Profissional</dt>
@@ -100,7 +130,7 @@ export function AppointmentDetailsResponsive() {
         <div className={DETAIL_ROW_CLASS}>
           <dt className={DETAIL_TERM_CLASS}>Preço</dt>
           <dd className={DETAIL_VALUE_CLASS}>
-            {formatPriceByCountry(service.price)}
+            {formatPriceByCountry(totalPrice)}
           </dd>
         </div>
         {notes ? (
@@ -111,16 +141,23 @@ export function AppointmentDetailsResponsive() {
         ) : null}
       </dl>
 
+      <CheckoutStatus
+        appointment={detailsAppointment}
+        items={visitItems}
+        onOpenCheckout={handleOpenCheckout}
+      />
+
+      {status === 'scheduled' ? (
+        <AnamnesisLinkCard appointment={detailsAppointment} />
+      ) : null}
+
       {status === 'scheduled' ? (
         <div className="flex flex-col gap-2.5 sm:flex-row">
           <button
             type="button"
             onClick={() => handleStatusChange(id, 'completed')}
             disabled={isUpdatingStatus}
-            className={cn(
-              AGENDA_MODAL_BUTTON_CLASS,
-              AGENDA_MODAL_PRIMARY_BUTTON_CLASS,
-            )}
+            className={AGENDA_MODAL_BUTTON_CLASS}
           >
             Marcar como concluído
           </button>
@@ -133,6 +170,17 @@ export function AppointmentDetailsResponsive() {
             Cliente não compareceu
           </button>
         </div>
+      ) : null}
+
+      {status === 'scheduled' && !isConfirmingCancel ? (
+        <button
+          type="button"
+          onClick={handleOpenReschedule}
+          disabled={isUpdatingStatus}
+          className={cn(AGENDA_MODAL_BUTTON_CLASS, 'flex-none')}
+        >
+          Remarcar
+        </button>
       ) : null}
 
       {status !== 'cancelled' && !isConfirmingCancel ? (
@@ -151,7 +199,16 @@ export function AppointmentDetailsResponsive() {
         </button>
       ) : null}
 
-      {status !== 'cancelled' && isConfirmingCancel ? (
+      {status !== 'cancelled' && isConfirmingCancel && seriesId ? (
+        <ScheduleSeriesCancel
+          scheduleId={id}
+          seriesId={seriesId}
+          onBack={handleDismissCancel}
+          onDone={handleClose}
+        />
+      ) : null}
+
+      {status !== 'cancelled' && isConfirmingCancel && !seriesId ? (
         <div
           role="alertdialog"
           aria-label="Confirmar cancelamento"
@@ -192,7 +249,7 @@ export function AppointmentDetailsResponsive() {
         <DrawerContent className={AGENDA_DRAWER_CLASS}>
           <DrawerHeader className="border-b border-[#EBE9F0]">
             <DrawerTitle className={AGENDA_MODAL_TITLE_CLASS}>
-              Detalhes do agendamento
+              {title}
             </DrawerTitle>
           </DrawerHeader>
           <div className="overflow-y-auto px-5 py-5">{content}</div>
@@ -206,7 +263,7 @@ export function AppointmentDetailsResponsive() {
       <DialogContent className={AGENDA_DIALOG_CLASS}>
         <DialogHeader>
           <DialogTitle className={AGENDA_MODAL_TITLE_CLASS}>
-            Detalhes do agendamento
+            {title}
           </DialogTitle>
         </DialogHeader>
         {content}

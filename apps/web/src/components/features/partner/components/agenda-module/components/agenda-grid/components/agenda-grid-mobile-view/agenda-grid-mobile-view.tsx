@@ -8,6 +8,8 @@ import { STATUS_CONFIG } from '../../agenda-grid.constants';
 import {
   getAppointmentAriaLabel,
   getClientName,
+  getVisitItems,
+  getVisitServiceNames,
 } from '../../agenda-grid.helpers';
 import { AgendaDayStrip } from '../agenda-day-strip';
 import { AgendaSlotButton } from '../agenda-slot-button';
@@ -34,7 +36,8 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
 
   if (!selectedDayData) return null;
 
-  const { date, isWorkingDay } = selectedDayData;
+  const { date, holiday } = selectedDayData;
+  const isWorkingDay = selectedDayData.isWorkingDay && !holiday;
 
   return (
     <div className="pb-24">
@@ -46,7 +49,16 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
 
       <h2 className="mt-5 mb-2.5 text-[15px] font-extrabold">{dayTitle}</h2>
 
-      {!isWorkingDay && (
+      {holiday && (
+        <p className="rounded-[18px] bg-[#F7F6FA] p-6 text-center text-sm font-medium text-[#5F5C6E]">
+          <b className="block text-[#0B0B0F]">
+            {holiday.name ? `Feriado · ${holiday.name}` : 'Feriado'}
+          </b>
+          Loja fechada o dia todo
+        </p>
+      )}
+
+      {!holiday && !isWorkingDay && (
         <p className="rounded-[18px] bg-[#F7F6FA] p-6 text-center text-sm font-medium text-[#5F5C6E]">
           Dia não útil
         </p>
@@ -79,7 +91,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                         {getClientName(item.appointment.user)}
                       </b>
                       <span className="block truncate text-xs">
-                        {item.appointment.service.name} ·{' '}
+                        {getVisitServiceNames(item.appointment)} ·{' '}
                         {STATUS_CONFIG[item.appointment.status].label}
                       </span>
                     </button>
@@ -138,12 +150,17 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                       {getClientName(appointment.user)}
                     </b>
                     <span className="mt-0.5 block truncate text-[13px] text-[#5F5C6E]">
-                      {appointment.service.name} ·{' '}
+                      {getVisitServiceNames(appointment)} ·{' '}
                       {appointment.storeMember.user.firstName}{' '}
                       {appointment.storeMember.user.lastName}
                     </span>
                     <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
-                      {formatPriceByCountry(appointment.service.price)}
+                      {formatPriceByCountry(
+                        getVisitItems(appointment).reduce(
+                          (total, item) => total + (item.service.price ?? 0),
+                          0,
+                        ),
+                      )}
                     </span>
                     <span
                       className={cn(

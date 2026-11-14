@@ -1,6 +1,7 @@
 'use client';
 
 import { ReferralClientPanel } from '@/components/features/referral/referral-share-card/components/referral-client-panel';
+import { BillingCard } from './components/billing-card';
 import { CancelReactivateDialog } from './components/cancel-reactivate-dialog';
 import { CancellationWarningAlert } from './components/cancellation-warning-alert';
 import { PaymentHistoryCard } from './components/payment-history-card';
@@ -28,6 +29,7 @@ export function CurrentPlan() {
       />
 
       <div className="grid min-w-0 content-start gap-4">
+        <BillingCard />
         <PlanFeaturesCard />
         <PaymentHistoryCard />
       </div>

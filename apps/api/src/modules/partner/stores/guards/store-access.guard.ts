@@ -54,19 +54,13 @@ export class StoreAccessGuard implements CanActivate {
       }),
     ]);
 
-    if (storeMember) {
-      // Injeta dados extras no request para uso posterior
-      request.storeMember = storeMember;
-      request.storeMemberRole = storeMember.role;
-
-      return true;
-    }
-
-    if (!isOwner) {
+    if (!storeMember && !isOwner) {
       throw new ForbiddenException('You do not have access to this store');
     }
 
-    request.storeMemberRole = 'owner';
+    // O dono vale como dono mesmo cadastrado como profissional na equipe
+    request.storeMember = storeMember ?? undefined;
+    request.storeMemberRole = isOwner ? 'owner' : storeMember.role;
 
     return true;
   }

@@ -15,8 +15,8 @@ interface BookingSidebarData {
   selectedServices: TBookingFormData['selectedServices'];
   selectedProfessional: TBookingFormData['selectedProfessional'];
   isAnyProfessional: boolean;
-  selectedDate: Date | undefined;
-  selectedTime: string | null;
+  selectedDate: TBookingFormData['selectedDate'];
+  selectedTime: TBookingFormData['selectedTime'];
   totalPrice: number;
   totalDuration: number;
   currentStep: TBookingStep;

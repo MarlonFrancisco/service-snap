@@ -34,6 +34,10 @@ export interface TWorkingDays {
 
 export interface IStore extends TWorkingHours {
   id: string;
+  /** Papel de quem está logado nesta loja (vem em `GET partner/stores`). */
+  memberRole?: 'owner' | 'manager' | 'professional';
+  /** Link curto: `/booking/<slug>`. Lojas sem nome ainda não têm. */
+  slug?: string | null;
   name: string;
   description: string;
   country: TCountryCode;
@@ -61,6 +65,19 @@ export interface IStore extends TWorkingHours {
   facebook?: string;
   schedules: IAppointment[];
   businessDays: TWorkingDays;
+  // Regras de agenda (valem para o cliente e o bot; a equipe passa por cima)
+  /** Passo da grade: 5, 10, 15, 20, 30, 45, 60, 90 ou 120. */
+  slotIntervalMinutes?: number;
+  /** Folga entre atendimentos do mesmo profissional, 0–240. */
+  bufferMinutes?: number;
+  /** Antecedência mínima para o cliente marcar. */
+  minAdvanceMinutes?: number;
+  /** Até quantos dias à frente; 0 é sem limite. */
+  maxAdvanceDays?: number;
+  /** Cliente cancela até N horas antes; 0 é até o início. */
+  cancellationNoticeHours?: number;
+  /** Cliente remarca até N horas antes; 0 é até o início. */
+  rescheduleNoticeHours?: number;
   notificationsHistory: INotificationsHistory[];
   notificationsSettings: INotificationsSettings;
   reviews: IReview[];

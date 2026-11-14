@@ -126,6 +126,8 @@ describe('store-scoped services with an id from another store', () => {
   describe('ScheduleService', () => {
     const manager = {
       save: vi.fn(async (_entity, rows) => rows),
+      findOne: vi.fn().mockResolvedValue({ id: 'member-1' }),
+      find: vi.fn().mockResolvedValue([]),
       transaction: vi.fn(async (callback) => callback(manager)),
     };
     const create = () =>
@@ -135,22 +137,27 @@ describe('store-scoped services with an id from another store', () => {
         {
           find: vi.fn().mockResolvedValue([{ id: 'service-1', duration: 30 }]),
         } as never,
-        {} as never,
+        { exists: vi.fn().mockResolvedValue(true) } as never,
         {} as never,
         { upsert: vi.fn().mockResolvedValue({ id: 'user-1' }) } as never,
         {
-          load: vi.fn().mockResolvedValue({ status: 'scheduled' }),
+          // Atendimento de outra loja: o id existe, mas não nesta
+          load: vi.fn().mockResolvedValue({
+            status: 'scheduled',
+            store: { id: 'other-store' },
+          }),
           notifyBookingCreated: vi.fn(),
           notifyCancellation: vi.fn(),
           notifyUpdate: vi.fn(),
         } as never,
+        { isHoliday: vi.fn().mockResolvedValue(false) } as never,
       );
 
     it('update filters by store and returns 404', async () => {
       await expect(create().update(scoped as never)).rejects.toBeInstanceOf(
         NotFoundException,
       );
-      expect(repository.update.mock.calls[0][0]).toEqual(scoped);
+      expect(manager.transaction).not.toHaveBeenCalled();
     });
 
     it('delete filters by store and returns 404', async () => {
@@ -171,17 +178,23 @@ describe('store-scoped services with an id from another store', () => {
     });
 
     it('create ignores an id sent in the body', async () => {
-      related.findOne.mockResolvedValue({ id: STORE });
+      related.findOne.mockResolvedValue({
+        id: STORE,
+        openTime: '09:00',
+        closeTime: '18:00',
+      });
 
       await create().create({
         id: 'foreign-id',
         store: { id: STORE },
+        storeMember: { id: 'member-1' },
+        date: '2099-11-10',
         startTime: '10:00',
         user: { email: 'ana@example.com' },
         services: [{ id: 'service-1', duration: 30 }],
       } as never);
 
-      expect(manager.save.mock.calls[0][1][0].id).toBeUndefined();
+      expect(manager.save.mock.calls.at(-1)[1][0].id).toBeUndefined();
     });
   });
 
@@ -216,7 +229,11 @@ describe('store-scoped services with an id from another store', () => {
     const MEMBER = 'member-1';
     const memberScoped = { id: 'foreign-id', storeMember: { id: MEMBER } };
     const create = () =>
-      new BlockedTimeService(repository as never, related as never);
+      new BlockedTimeService(
+        repository as never,
+        related as never,
+        related as never,
+      );
 
     const calls = (service: BlockedTimeService) => [
       () => service.findAll(STORE, MEMBER),
@@ -345,7 +362,22 @@ describe('store-scoped services with an id from another store', () => {
   describe('ReviewService', () => {
     const USER = 'user-1';
     const authored = { ...scoped, user: { id: USER } };
-    const create = () => new ReviewService(repository as never);
+    // Atendimento concluído que o autor ainda não avaliou
+    const getOne = vi.fn().mockResolvedValue({ id: 'schedule-1' });
+    const builder = {
+      leftJoin: () => builder,
+      where: () => builder,
+      andWhere: () => builder,
+      orderBy: () => builder,
+      addOrderBy: () => builder,
+      getOne,
+    };
+    const create = () =>
+      new ReviewService(
+        repository as never,
+        { createQueryBuilder: () => builder } as never,
+        { sync: vi.fn() } as never,
+      );
 
     it('findOneInStore returns 404 for a review from another store', async () => {
       repository.findOne.mockResolvedValue({
@@ -384,6 +416,5 @@ describe('store-scoped services with an id from another store', () => {
     it('create ignores an id sent in the body', async () => {
       await create().create(authored as never);
       expect(repository.save.mock.calls[0][0].id).toBeUndefined();
-    });
-  });
+    });  });
 });

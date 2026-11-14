@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   filterAndRankSearchHits,
+  matchesSearchFilters,
   parseSearchIntent,
   type TSearchHit,
 } from '../../utils/helpers/search-relevance.helpers';
@@ -9,6 +10,7 @@ import { buildCategoryCitySitemap, sitemapUpdatedAt } from './search.helpers';
 import type {
   IStoreSearchContent,
   IStoreSearchMetadata,
+  TSearchFilters,
   TStoresSitemap,
 } from './search.types';
 
@@ -30,7 +32,8 @@ export class SearchService {
   async indexStore(
     storeId: string,
     content: Record<keyof IStoreSearchContent, any>,
-    metadata: Record<keyof IStoreSearchMetadata, any>,
+    // Partial: os campos novos são opcionais em documentos antigos
+    metadata: Partial<Record<keyof IStoreSearchMetadata, any>>,
   ) {
     try {
       await this.upstashService.upsert(STORES_INDEX, [
@@ -71,7 +74,7 @@ export class SearchService {
       filter?: string;
       location?: string;
       category?: string;
-    },
+    } & TSearchFilters,
   ) {
     try {
       const intent = parseSearchIntent(query, {
@@ -89,7 +92,9 @@ export class SearchService {
       );
 
       const hits = normalizeSearchHits(results);
-      const ranked = filterAndRankSearchHits(hits, intent);
+      const ranked = filterAndRankSearchHits(hits, intent).filter((hit) =>
+        matchesSearchFilters(hit, options ?? {}),
+      );
 
       this.logger.debug(
         `Search q="${intent.rawQuery}" → engine="${intent.searchQuery}" loc=${intent.location ?? '-'} cat=${intent.category ?? '-'} raw=${hits.length} kept=${ranked.length}`,

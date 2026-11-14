@@ -129,7 +129,11 @@ export const StoreCard = ({ store }: TStoreCardConfig) => {
           </div>
         </dl>
 
-        <StorePublicPresence storeId={store.id} instagram={store.instagram} />
+        <StorePublicPresence
+          storeId={store.id}
+          slug={store.slug}
+          instagram={store.instagram}
+        />
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button

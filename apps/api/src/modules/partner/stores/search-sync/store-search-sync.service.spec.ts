@@ -24,6 +24,7 @@ const bookableStore = {
 
 const makeService = () => {
   const storesRepository = { findOne: vi.fn() };
+  const subscriptionRepository = { findOne: vi.fn().mockResolvedValue(null) };
   const searchService = {
     indexStore: vi.fn(),
     deleteStoreIndex: vi.fn(),
@@ -31,10 +32,11 @@ const makeService = () => {
 
   const service = new StoreSearchSyncService(
     storesRepository as never,
+    subscriptionRepository as never,
     searchService as never,
   );
 
-  return { service, storesRepository, searchService };
+  return { service, storesRepository, subscriptionRepository, searchService };
 };
 
 describe('StoreSearchSyncService', () => {

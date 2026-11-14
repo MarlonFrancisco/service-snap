@@ -23,10 +23,10 @@ const store = (overrides: Partial<IStore> = {}) =>
 describe('loadStorePage', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('treats a non-UUID id as missing without calling the API', async () => {
+  it('treats something that is neither a UUID nor a slug as missing without calling the API', async () => {
     const get = vi.spyOn(StoreService, 'get');
 
-    await expect(loadStorePage('abc')).resolves.toEqual({ status: 'missing' });
+    await expect(loadStorePage('Not A Store!')).resolves.toEqual({ status: 'missing' });
     expect(get).not.toHaveBeenCalled();
   });
 

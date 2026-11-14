@@ -11,7 +11,7 @@ import { IAuthState } from './auth.types';
 
 export const openAuthAction: TStoreAction<
   IAuthState,
-  { onAuth?: () => void; source?: TLoginSource }
+  { onAuth?: () => void; source?: TLoginSource } | undefined
 > =
   (set, get) =>
   async ({ onAuth, source = 'other' } = {}) => {

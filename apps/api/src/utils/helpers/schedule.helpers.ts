@@ -1,6 +1,13 @@
 import type { Schedule } from '../../modules/partner/stores/schedule/schedule.entity';
-import type { BlockedTime } from '../../modules/partner/stores/store-member/blocked-time/blocked-time.entity';
-import type { TCalendarEvent } from './schedule.types';
+import type {
+  TAvailabilityMember,
+  TBlockedRange,
+  TCalendarEvent,
+  TDayHours,
+  TScheduleRules,
+  TWeekDay,
+  TWorkingHours,
+} from './schedule.types';
 import { getStoreTimezone } from './region.helpers';
 
 export const calculateEndTime = (
@@ -42,8 +49,8 @@ function minutesToTime(minutes: number): string {
 export function generateTimeSlots(
   openTime: string,
   closeTime: string,
-  lunchStartTime?: string,
-  lunchEndTime?: string,
+  lunchStartTime?: string | null,
+  lunchEndTime?: string | null,
   intervalMinutes: number = 30,
 ): string[] {
   const slots: string[] = [];
@@ -70,92 +77,14 @@ export function generateTimeSlots(
   return slots;
 }
 
-/**
- * Filtra horários disponíveis removendo bloqueados e já agendados.
- * `durationMinutes` considera o atendimento inteiro; sem ele, só o início do slot.
- */
-export function filterAvailableTimeSlots(
-  allSlots: string[],
-  selectedDate: Date,
-  blockedTimes: BlockedTime[],
-  schedules: Schedule[],
-  durationMinutes: number = 1,
-): string[] {
-  const selectedDayOfWeek = new Date(selectedDate).getDay();
-  const selectedDateStr = new Date(selectedDate).toISOString().split('T')[0];
+/** Bloqueio antigo guarda só o início de um slot da grade fixa de 30 minutos. */
+export const LEGACY_BLOCK_MINUTES = 30;
 
-  return allSlots.filter((slot) => {
-    const slotStart = timeToMinutes(slot);
-    const slotEnd = slotStart + durationMinutes;
+export const DEFAULT_SLOT_INTERVAL_MINUTES = 30;
 
-    const isWithinSlot = (time: string) => {
-      const minutes = timeToMinutes(time);
-      return minutes >= slotStart && minutes < slotEnd;
-    };
+const MINUTES_PER_DAY = 24 * 60;
 
-    // Verifica se está bloqueado para esta data específica
-    const isBlockedForDate = blockedTimes.some(
-      (blocked) =>
-        !blocked.isRecurring &&
-        new Date(blocked.date).toISOString().split('T')[0] ===
-          selectedDateStr &&
-        isWithinSlot(blocked.time),
-    );
-
-    if (isBlockedForDate) return false;
-
-    // Verifica se está bloqueado recorrentemente para este dia da semana
-    const isBlockedRecurring = blockedTimes.some(
-      (blocked) =>
-        blocked.isRecurring &&
-        blocked.dayOfWeek === selectedDayOfWeek &&
-        isWithinSlot(blocked.time),
-    );
-
-    if (isBlockedRecurring) return false;
-
-    // Verifica se já existe agendamento neste horário
-    const hasSchedule = schedules.some((schedule) => {
-      if (schedule.status === 'cancelled') return false;
-
-      const scheduleDate = new Date(schedule.date).toISOString().split('T')[0];
-      if (scheduleDate !== selectedDateStr) return false;
-
-      // Verifica se o slot cruza o intervalo do agendamento
-      return (
-        timeToMinutes(schedule.startTime) < slotEnd &&
-        timeToMinutes(schedule.endTime) > slotStart
-      );
-    });
-
-    return !hasSchedule;
-  });
-}
-
-export interface AvailabilitySlot extends TimeSlot {
-  storeMemberId: string | null;
-}
-
-interface AvailabilityParams {
-  store: {
-    openTime: string;
-    closeTime: string;
-    lunchStartTime?: string;
-    lunchEndTime?: string;
-    timezone?: string;
-    businessDays?: Record<string, boolean>;
-  };
-  date: string; // formato YYYY-MM-DD
-  durationMinutes: number;
-  members: {
-    id: string;
-    blockedTimes: BlockedTime[];
-    schedules: Schedule[];
-  }[];
-  now?: Date;
-}
-
-export const WEEK_DAYS = [
+export const WEEK_DAYS: TWeekDay[] = [
   'sunday',
   'monday',
   'tuesday',
@@ -164,6 +93,159 @@ export const WEEK_DAYS = [
   'friday',
   'saturday',
 ];
+
+/** Dia da semana de uma data YYYY-MM-DD, sem depender do fuso do servidor. */
+export const weekDayOf = (date: string): TWeekDay =>
+  WEEK_DAYS[new Date(`${date}T12:00:00Z`).getUTCDay()];
+
+/** Dias corridos entre duas datas YYYY-MM-DD. */
+export const daysBetween = (from: string, to: string): number =>
+  Math.round(
+    (Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) /
+      (MINUTES_PER_DAY * 60_000),
+  );
+
+/** Início e fim do bloqueio em minutos. */
+export function blockedRangeMinutes(
+  blocked: Pick<TBlockedRange, 'time' | 'endTime'>,
+): [number, number] {
+  const start = timeToMinutes(blocked.time);
+  const end = blocked.endTime
+    ? timeToMinutes(blocked.endTime)
+    : start + LEGACY_BLOCK_MINUTES;
+
+  return [start, end];
+}
+
+function blockAppliesOn(blocked: TBlockedRange, date: string): boolean {
+  // O enum do Postgres devolve o dia da semana como texto ("2"), daí o Number
+  return blocked.isRecurring
+    ? WEEK_DAYS[Number(blocked.dayOfWeek)] === weekDayOf(date)
+    : toDateKey(blocked.date) === date;
+}
+
+/**
+ * Profissional livre em [start, end) no dia: sem bloqueio cruzando e sem
+ * atendimento a menos de `bufferMinutes` antes ou depois.
+ */
+function isMemberFree(
+  {
+    blockedTimes,
+    schedules,
+  }: Pick<TAvailabilityMember, 'blockedTimes' | 'schedules'>,
+  date: string,
+  start: number,
+  end: number,
+  bufferMinutes = 0,
+): boolean {
+  const isBlocked = blockedTimes.some((blocked) => {
+    if (!blockAppliesOn(blocked, date)) return false;
+
+    const [blockStart, blockEnd] = blockedRangeMinutes(blocked);
+
+    return blockStart < end && blockEnd > start;
+  });
+
+  if (isBlocked) return false;
+
+  return !schedules.some(
+    (schedule) =>
+      schedule.status !== 'cancelled' &&
+      toDateKey(schedule.date) === date &&
+      timeToMinutes(schedule.startTime) < end + bufferMinutes &&
+      timeToMinutes(schedule.endTime) + bufferMinutes > start,
+  );
+}
+
+/**
+ * Filtra horários disponíveis removendo bloqueados e já agendados.
+ * `durationMinutes` considera o atendimento inteiro; sem ele, só o início do slot.
+ */
+export function filterAvailableTimeSlots(
+  allSlots: string[],
+  selectedDate: Date,
+  blockedTimes: TBlockedRange[],
+  schedules: TAvailabilityMember['schedules'],
+  durationMinutes: number = 1,
+): string[] {
+  const date = new Date(selectedDate).toISOString().split('T')[0];
+
+  return allSlots.filter((slot) => {
+    const start = timeToMinutes(slot);
+
+    return isMemberFree(
+      { blockedTimes, schedules },
+      date,
+      start,
+      start + durationMinutes,
+    );
+  });
+}
+
+/**
+ * Expediente do dia: o do profissional, se ele tiver um para esse dia, senão o
+ * da loja. `null` é dia sem atendimento.
+ */
+export function resolveDayHours(
+  store: Partial<TDayHours>,
+  workingHours: TWorkingHours | null | undefined,
+  weekDay: TWeekDay,
+): TDayHours | null {
+  if (workingHours && weekDay in workingHours) {
+    return workingHours[weekDay] ?? null;
+  }
+
+  if (!store.openTime || !store.closeTime) return null;
+
+  return {
+    openTime: store.openTime,
+    closeTime: store.closeTime,
+    lunchStartTime: store.lunchStartTime,
+    lunchEndTime: store.lunchEndTime,
+  };
+}
+
+/** O atendimento inteiro cabe no expediente, sem cruzar o almoço. */
+function fitsInHours(hours: TDayHours | null, start: number, end: number) {
+  if (!hours) return false;
+
+  const lunchStart = hours.lunchStartTime
+    ? timeToMinutes(hours.lunchStartTime)
+    : null;
+  const lunchEnd = hours.lunchEndTime
+    ? timeToMinutes(hours.lunchEndTime)
+    : null;
+  const crossesLunch =
+    lunchStart !== null &&
+    lunchEnd !== null &&
+    start < lunchEnd &&
+    end > lunchStart;
+
+  return (
+    start >= timeToMinutes(hours.openTime) &&
+    end <= timeToMinutes(hours.closeTime) &&
+    !crossesLunch
+  );
+}
+
+export interface AvailabilitySlot extends TimeSlot {
+  storeMemberId: string | null;
+}
+
+interface AvailabilityParams {
+  store: Partial<TDayHours> &
+    TScheduleRules & {
+      timezone?: string;
+      country?: string;
+      businessDays?: Partial<Record<TWeekDay, boolean>> | null;
+    };
+  date: string; // formato YYYY-MM-DD
+  durationMinutes: number;
+  members: TAvailabilityMember[];
+  /** Feriado ou dia fechado da loja: ninguém atende. */
+  isHoliday?: boolean;
+  now?: Date;
+}
 
 /**
  * Data e hora atuais no fuso da loja
@@ -210,71 +292,85 @@ export function storeTimeToDate(
 }
 
 /**
- * Monta os horários de um dia. Cada slot livre traz o primeiro membro, na ordem
- * recebida, que está livre durante todo o atendimento.
+ * Monta os horários de um dia. A grade junta a da loja e a de cada profissional,
+ * no passo de `slotIntervalMinutes`. Cada slot livre traz o primeiro membro, na
+ * ordem recebida, que está livre e de expediente durante todo o atendimento.
  */
 export function buildAvailabilitySlots({
   store,
   date,
   durationMinutes,
   members,
+  isHoliday = false,
   now = new Date(),
 }: AvailabilityParams): AvailabilitySlot[] {
-  // Meio-dia em UTC mantém o mesmo dia da semana em qualquer fuso do servidor
-  const selectedDate = new Date(`${date}T12:00:00Z`);
+  const weekDay = weekDayOf(date);
   const storeNow = getStoreNow(getStoreTimezone(store), now);
-  const isClosedDay =
-    store.businessDays?.[WEEK_DAYS[selectedDate.getUTCDay()]] === false;
+  const daysAhead = daysBetween(storeNow.date, date);
+  const maxAdvanceDays = store.maxAdvanceDays ?? 0;
 
   if (
-    date < storeNow.date ||
-    isClosedDay ||
-    !store.openTime ||
-    !store.closeTime
+    daysAhead < 0 ||
+    isHoliday ||
+    store.businessDays?.[weekDay] === false ||
+    (maxAdvanceDays > 0 && daysAhead > maxAdvanceDays)
   ) {
     return [];
   }
 
-  const lunchStart = store.lunchStartTime
-    ? timeToMinutes(store.lunchStartTime)
-    : null;
-  const lunchEnd = store.lunchEndTime
-    ? timeToMinutes(store.lunchEndTime)
-    : null;
-  const closeMinutes = timeToMinutes(store.closeTime);
+  const step = store.slotIntervalMinutes || DEFAULT_SLOT_INTERVAL_MINUTES;
+  const bufferMinutes = store.bufferMinutes ?? 0;
+  // Primeiro minuto reservável, contado a partir da meia-noite do dia pedido.
+  // Pelo menos 1: o horário que já começou não é oferecido.
+  const earliest =
+    storeNow.minutes +
+    Math.max(1, store.minAdvanceMinutes ?? 0) -
+    daysAhead * MINUTES_PER_DAY;
+  const memberHours = members.map((member) =>
+    resolveDayHours(store, member.workingHours, weekDay),
+  );
+  const times = [
+    ...new Set(
+      [resolveDayHours(store, null, weekDay), ...memberHours]
+        .filter((hours): hours is TDayHours => !!hours)
+        .flatMap((hours) =>
+          generateTimeSlots(
+            hours.openTime,
+            hours.closeTime,
+            hours.lunchStartTime,
+            hours.lunchEndTime,
+            step,
+          ),
+        ),
+    ),
+  ].sort();
 
-  return generateTimeSlots(
-    store.openTime,
-    store.closeTime,
-    store.lunchStartTime,
-    store.lunchEndTime,
-  ).map((time) => {
+  return times.map((time) => {
     const start = timeToMinutes(time);
     const end = start + durationMinutes;
-
-    const crossesLunch =
-      lunchStart !== null &&
-      lunchEnd !== null &&
-      start < lunchEnd &&
-      end > lunchStart;
-    const hasPassed = date === storeNow.date && start <= storeNow.minutes;
-    const fitsInDay = end <= closeMinutes && !crossesLunch && !hasPassed;
-
-    const member = fitsInDay
-      ? members.find(
-          ({ blockedTimes, schedules }) =>
-            filterAvailableTimeSlots(
-              [time],
-              selectedDate,
-              blockedTimes,
-              schedules,
-              durationMinutes,
-            ).length > 0,
-        )
-      : undefined;
+    const member =
+      start >= earliest
+        ? members.find(
+            (candidate, index) =>
+              fitsInHours(memberHours[index], start, end) &&
+              isMemberFree(candidate, date, start, end, bufferMinutes),
+          )
+        : undefined;
 
     return { time, available: !!member, storeMemberId: member?.id ?? null };
   });
+}
+
+/**
+ * Diz se o início pedido é um dos horários que `buildAvailabilitySlots` ofereceria
+ */
+export function isSlotBookable(
+  params: AvailabilityParams,
+  startTime: string,
+): boolean {
+  return buildAvailabilitySlots(params).some(
+    (slot) => slot.time === startTime && slot.available,
+  );
 }
 
 /**

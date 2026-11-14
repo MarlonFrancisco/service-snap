@@ -1,11 +1,18 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, MoreThanOrEqual, Repository } from 'typeorm';
+import type { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
+import {
+  toPage,
+  toSkipTake,
+} from '../../../../utils/helpers/pagination.helpers';
+import type { TPage } from '../../../../utils/helpers/pagination.types';
 import { Subscription } from '../../../subscription/subscription.entity';
 import { UsersService } from '../../../users/users.service';
 import { Service } from '../category/service/service.entity';
@@ -14,6 +21,8 @@ import { Store } from '../store.entity';
 import { CreateStoreMemberDto } from './dto/create-store-member.dto';
 import { UpdateStoreMemberDto } from './dto/update-store-member.dto';
 import { StoreMember } from './store-member.entity';
+import type { TCreatedMember } from './store-member.types';
+import { normalizeWorkingHours } from './store-member.helpers';
 
 @Injectable()
 export class StoreMemberService {
@@ -68,7 +77,39 @@ export class StoreMemberService {
     });
   }
 
-  async create(storeMemberDto: CreateStoreMemberDto): Promise<StoreMember> {
+  /** Uma página da equipe, em ordem de entrada, com busca por nome ou e-mail. */
+  async findStoreMembersPage(
+    storeId: string,
+    { page, limit, search }: PaginationQueryDto,
+  ): Promise<TPage<StoreMember>> {
+    const { skip, take } = toSkipTake(page, limit);
+    const query = this.storeMemberRepository
+      .createQueryBuilder('member')
+      .leftJoinAndSelect('member.user', 'user')
+      .leftJoinAndSelect('member.services', 'service')
+      .where('member.storeId = :storeId', { storeId })
+      .orderBy('member.createdAt', 'ASC')
+      .skip(skip)
+      .take(take);
+
+    if (search?.trim()) {
+      query.andWhere(
+        '(user.firstName ILIKE :search OR user.lastName ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search.trim()}%` },
+      );
+    }
+
+    const [members, total] = await query.getManyAndCount();
+
+    return toPage(members, total, page, take);
+  }
+
+  /**
+   * Adiciona alguém à equipe pelo e-mail. Sem conta, a pessoa é cadastrada aqui
+   * (como o cliente que a loja agenda): o login é por código no e-mail, então
+   * basta ela entrar com esse endereço. Quem chama manda o aviso por e-mail.
+   */
+  async create(storeMemberDto: CreateStoreMemberDto): Promise<TCreatedMember> {
     const storeId = storeMemberDto.store?.id;
 
     await this.assertWithinProfessionalLimit(
@@ -77,12 +118,27 @@ export class StoreMemberService {
     );
     await this.assertServicesBelongToStore(storeId, storeMemberDto.services);
 
-    const user = await this.userService.findByOne({
-      email: storeMemberDto.user?.email,
+    const email = storeMemberDto.user?.email?.trim();
+
+    // Sem e-mail, a busca do usuário fica sem filtro
+    if (!email) {
+      throw new BadRequestException('E-mail is required');
+    }
+
+    const existing = await this.userService.findByOne({ email });
+    const user =
+      existing ??
+      (await this.userService.upsert({
+        email,
+        firstName: storeMemberDto.user?.firstName,
+        lastName: storeMemberDto.user?.lastName,
+      }));
+    const alreadyMember = await this.storeMemberRepository.exists({
+      where: { store: { id: storeId }, user: { id: user.id } },
     });
 
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado');
+    if (alreadyMember) {
+      throw new ConflictException('Esta pessoa já faz parte da equipe');
     }
 
     const storeMember = this.storeMemberRepository.create({
@@ -90,6 +146,8 @@ export class StoreMemberService {
       // Com `id` no corpo, o save sobrescreveria um membro existente
       id: undefined,
       user: { id: user.id },
+      // Sem `isActive` no corpo, quem foi convidado já entra ativo
+      isActive: storeMemberDto.isActive ?? true,
       services: [],
     });
 
@@ -105,10 +163,12 @@ export class StoreMemberService {
 
     await this.storeSearchSync.sync(storeId);
 
-    return this.storeMemberRepository.findOne({
+    const member = await this.storeMemberRepository.findOne({
       where: { id: storeMember.id },
       relations: ['user', 'services', 'store'],
     });
+
+    return { member, isNewAccount: !existing };
   }
 
   /** Para quem já se sabe o id: nem toda conta tem e-mail (login por telefone). */
@@ -172,6 +232,12 @@ export class StoreMemberService {
       storeMember.isActive = storeMemberDto.isActive;
     }
 
+    if (storeMemberDto.workingHours !== undefined) {
+      storeMember.workingHours = normalizeWorkingHours(
+        storeMemberDto.workingHours,
+      );
+    }
+
     const saved = await this.storeMemberRepository.save(storeMember);
 
     await this.storeSearchSync.sync(storeMemberDto.store.id);
@@ -225,7 +291,7 @@ export class StoreMemberService {
       .andWhere('member.isDeleted = false')
       .getCount();
 
-    return { count, limit };
+    return { count, limit, hasActivePlan: !!subscription };
   }
 
   /** O limite é do plano do dono: quem adiciona pode ser um gerente sem assinatura. */
@@ -267,8 +333,18 @@ export class StoreMemberService {
     ownerUserId: string,
     storeId?: string,
   ) {
-    const { count: currentCount, limit: proLimit } =
-      await this.getProfessionalUsage(ownerUserId, storeId);
+    const {
+      count: currentCount,
+      limit: proLimit,
+      hasActivePlan,
+    } = await this.getProfessionalUsage(ownerUserId, storeId);
+
+    // Sem assinatura não há plano: o 0 de "ilimitado" só vale para quem tem um
+    if (!hasActivePlan) {
+      throw new ForbiddenException(
+        'É preciso uma assinatura ativa para adicionar profissionais.',
+      );
+    }
 
     if (!proLimit) {
       return;

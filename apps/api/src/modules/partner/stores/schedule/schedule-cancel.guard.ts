@@ -8,8 +8,8 @@ import { StoreMemberService } from '../store-member/store-member.service';
 import { Schedule } from './schedule.entity';
 
 /**
- * Libera o cancelamento para quem tem acesso à loja e para o cliente dono do
- * agendamento, que cancela pela tela de perfil sem ter vínculo com a loja.
+ * Libera cancelar e remarcar para quem tem acesso à loja e para o cliente dono do
+ * agendamento, que age pela tela de perfil sem ter vínculo com a loja.
  */
 @Injectable()
 export class ScheduleCancelGuard extends StoreAccessGuard {

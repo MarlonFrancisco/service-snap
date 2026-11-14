@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -18,6 +19,8 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
@@ -46,6 +49,15 @@ export class UsersService {
     return this.userRepository.findOne({
       where: { id },
       select: ['id', 'authCode', 'authCodeExpiresAt'],
+    });
+  }
+
+  /** Direto no repositório: `update` sincronizaria o Stripe a cada login. */
+  async clearAuthCode(id: string, userData: Partial<User> = {}): Promise<void> {
+    await this.userRepository.update(id, {
+      ...userData,
+      authCode: null,
+      authCodeExpiresAt: null,
     });
   }
 
@@ -253,16 +265,6 @@ export class UsersService {
     return user;
   }
 
-  async delete(id: string): Promise<{ id: string }> {
-    await this.userRepository.update(id, { isDeleted: true });
-    await this.storageService.deleteFile({
-      folder: 'users',
-      path: `${id}/avatar.webp`,
-    });
-
-    return { id };
-  }
-
   async updateLastLogin(id: string): Promise<void> {
     await this.userRepository.update(id, { updatedAt: new Date() });
   }
@@ -280,6 +282,8 @@ export class UsersService {
         'schedules.store.gallery',
         'schedules.storeMember',
         'schedules.storeMember.user',
+        // A tela agrupa os serviços da mesma visita
+        'schedules.booking',
       ],
       select: [
         'id',
@@ -294,6 +298,74 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
+    }
+
+    return user;
+  }
+
+  /** Nome do perfil. O Stripe recebe o nome novo quando há cliente lá. */
+  async updateProfile(
+    id: string,
+    { firstName, lastName }: Partial<Pick<User, 'firstName' | 'lastName'>>,
+  ): Promise<User> {
+    await this.userRepository.update(id, {
+      ...(firstName !== undefined && { firstName: firstName.trim() }),
+      ...(lastName !== undefined && { lastName: lastName?.trim() || null }),
+    });
+
+    return this.syncStripeCustomer(await this.findById(id));
+  }
+
+  async setPendingEmail(
+    id: string,
+    email: string,
+    code: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.userRepository.update(id, {
+      pendingEmail: email,
+      pendingEmailCode: code,
+      pendingEmailExpiresAt: expiresAt,
+    });
+  }
+
+  async findPendingEmail(
+    id: string,
+  ): Promise<
+    Pick<User, 'pendingEmail' | 'pendingEmailCode' | 'pendingEmailExpiresAt'>
+  > {
+    return this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'pendingEmail', 'pendingEmailCode', 'pendingEmailExpiresAt'],
+    });
+  }
+
+  /** Aplica o e-mail confirmado (ou só descarta o pedido, sem `email`). */
+  async resolvePendingEmail(id: string, email?: string): Promise<User> {
+    await this.userRepository.update(id, {
+      ...(email && { email }),
+      pendingEmail: null,
+      pendingEmailCode: null,
+      pendingEmailExpiresAt: null,
+    });
+
+    const user = await this.findById(id);
+
+    return email ? this.syncStripeCustomer(user) : user;
+  }
+
+  /** Contato no Stripe acompanha o perfil; falha lá não desfaz a mudança aqui. */
+  private async syncStripeCustomer(user: User): Promise<User> {
+    if (!user?.paymentCustomerId) return user;
+
+    try {
+      await this.stripeService.customers.update(user.paymentCustomerId, {
+        email: user.email,
+        name: getUserFullName(user) || undefined,
+        phone: user.telephone,
+      });
+    } catch (error) {
+      this.logger.error(`Cliente do Stripe não atualizado (${user.id})`, error);
     }
 
     return user;

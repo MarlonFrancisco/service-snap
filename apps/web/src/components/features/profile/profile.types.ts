@@ -1,4 +1,4 @@
-export type TProfileTab = 'bookings' | 'favorites' | 'settings';
+export type TProfileTab = 'bookings' | 'favorites' | 'settings' | 'personal';
 
 export type TBookingStatus = 'confirmed' | 'completed' | 'cancelled';
 

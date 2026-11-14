@@ -1,58 +1,137 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { PaginationQueryDto } from '../../../../utils/dto/pagination.dto';
+import { isUniqueViolation } from '../../../../utils/helpers/database.helpers';
+import { toPage, toSkipTake } from '../../../../utils/helpers/pagination.helpers';
+import type { TPage } from '../../../../utils/helpers/pagination.types';
+import { Schedule } from '../schedule/schedule.entity';
+import { StoreSearchSyncService } from '../search-sync/store-search-sync.service';
 import { ReviewDto } from './dto/review.dto';
 import { Review } from './review.entity';
+
+const REVIEW_SELECT = {
+  user: {
+    id: true,
+    firstName: true,
+    lastName: true,
+    avatar: true,
+  },
+  store: {
+    id: true,
+  },
+};
 
 @Injectable()
 export class ReviewService {
   constructor(
     @InjectRepository(Review)
     private reviewRepository: Repository<Review>,
+    @InjectRepository(Schedule)
+    private scheduleRepository: Repository<Schedule>,
+    private readonly storeSearchSync: StoreSearchSyncService,
   ) {}
 
+  /**
+   * Só quem foi atendido avalia, e uma vez por atendimento: a avaliação fica
+   * presa a um agendamento concluído do autor nesta loja.
+   */
   async create(review: ReviewDto): Promise<Review> {
-    // Com `id` no corpo, o save sobrescreveria uma avaliação existente
-    const createdReview = await this.reviewRepository.save({
-      ...review,
-      id: undefined,
-    });
+    const storeId = review.store?.id;
+    const userId = review.user?.id;
+    const schedule = await this.findReviewableSchedule(
+      storeId,
+      userId,
+      review.scheduleId,
+    );
+
+    if (!schedule) {
+      throw new ForbiddenException(
+        'Só quem foi atendido nesta loja pode avaliar, uma vez por atendimento.',
+      );
+    }
+
+    let createdReview: Review;
+
+    try {
+      // Com `id` no corpo, o save sobrescreveria uma avaliação existente
+      createdReview = await this.reviewRepository.save({
+        rating: review.rating,
+        comment: review.comment,
+        store: { id: storeId },
+        user: { id: userId },
+        schedule: { id: schedule.id },
+      });
+    } catch (error) {
+      // Duas avaliações do mesmo atendimento enviadas ao mesmo tempo
+      if (isUniqueViolation(error)) {
+        throw new ConflictException('Este atendimento já foi avaliado.');
+      }
+      throw error;
+    }
+
+    await this.storeSearchSync.sync(storeId);
+
     return this.findOne(createdReview.id);
   }
 
-  async findAll(storeId: string): Promise<Review[]> {
-    return this.reviewRepository.find({
+  /** O atendimento pedido, ou o concluído mais recente que ainda não tem avaliação. */
+  private async findReviewableSchedule(
+    storeId: string,
+    userId: string,
+    scheduleId?: string,
+  ): Promise<Schedule | null> {
+    const query = this.scheduleRepository
+      .createQueryBuilder('schedule')
+      .leftJoin(Review, 'review', 'review.scheduleId = schedule.id')
+      .where('schedule.storeId = :storeId', { storeId })
+      .andWhere('schedule.userId = :userId', { userId })
+      .andWhere("schedule.status = 'completed'")
+      .andWhere('review.id IS NULL')
+      .orderBy('schedule.date', 'DESC')
+      .addOrderBy('schedule.startTime', 'DESC');
+
+    if (scheduleId) {
+      query.andWhere('schedule.id = :scheduleId', { scheduleId });
+    }
+
+    return query.getOne();
+  }
+
+  /** Com `page`, uma página das mais recentes; sem, a lista inteira. */
+  async findAll(
+    storeId: string,
+    { page, limit }: PaginationQueryDto = {},
+  ): Promise<Review[] | TPage<Review>> {
+    const options = {
       where: { store: { id: storeId } },
+      order: { createdAt: 'DESC' as const },
       relations: ['user', 'store'],
-      select: {
-        user: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          avatar: true,
-        },
-        store: {
-          id: true,
-        },
-      },
+      select: REVIEW_SELECT,
+    };
+
+    if (!page) return this.reviewRepository.find(options);
+
+    const { skip, take } = toSkipTake(page, limit);
+    const [reviews, total] = await this.reviewRepository.findAndCount({
+      ...options,
+      skip,
+      take,
     });
+
+    return toPage(reviews, total, page, take);
   }
 
   async findOne(id: string): Promise<Review> {
     return this.reviewRepository.findOne({
       where: { id },
       relations: ['user', 'store'],
-      select: {
-        user: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          avatar: true,
-        },
-        store: {
-          id: true,
-        },
-      },
+      select: REVIEW_SELECT,
     });
   }
 
@@ -82,6 +161,23 @@ export class ReviewService {
       throw new NotFoundException('Review not found');
     }
 
+    await this.storeSearchSync.sync(storeId);
+
+    return this.findOne(id);
+  }
+
+  /** Resposta pública da loja. Texto vazio apaga a resposta. */
+  async reply(storeId: string, id: string, reply: string): Promise<Review> {
+    const text = reply.trim();
+    const result = await this.reviewRepository.update(
+      { id, store: { id: storeId } },
+      { reply: text || null, repliedAt: text ? new Date() : null },
+    );
+
+    if (!result.affected) {
+      throw new NotFoundException('Review not found');
+    }
+
     return this.findOne(id);
   }
 
@@ -99,6 +195,8 @@ export class ReviewService {
     if (!result.affected) {
       throw new NotFoundException('Review not found');
     }
+
+    await this.storeSearchSync.sync(storeId);
 
     return { id };
   }

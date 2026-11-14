@@ -13,8 +13,13 @@ export class BlockedTime extends BaseEntity {
   @Column({ type: 'date', nullable: false })
   date: Date;
 
+  /** Início do bloqueio. */
   @Column({ type: 'char', length: 5, nullable: false })
   time: string;
+
+  /** Fim do bloqueio ("24:00" fecha o dia). Nulo em registros de um slot só. */
+  @Column({ type: 'char', length: 5, nullable: true })
+  endTime: string | null;
 
   @Column({ type: 'boolean', default: false, nullable: true })
   isRecurring: boolean;

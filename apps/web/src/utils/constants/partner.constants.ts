@@ -5,7 +5,7 @@ export const PARTNER_DESKTOP_MEDIA_QUERY = '(min-width: 1024px)';
 export const MODULE_CONFIG: Record<string, TModuleConfig> = {
   '/partner/dashboard': {
     title: 'Início',
-    description: 'Visão geral e métricas em tempo real',
+    description: 'Visão geral e métricas do seu negócio',
     showStoreSelector: true,
   },
   '/partner/dashboard/sales': {
@@ -21,6 +21,56 @@ export const MODULE_CONFIG: Record<string, TModuleConfig> = {
   '/partner/dashboard/customers': {
     title: 'Clientes',
     description: 'Visualize os clientes da sua empresa',
+    showStoreSelector: true,
+  },
+  '/partner/clientes': {
+    title: 'Clientes',
+    description: 'Clientes da loja: contato, visitas, etiquetas e anotações',
+    showStoreSelector: true,
+  },
+  '/partner/caixa': {
+    title: 'Caixa',
+    description: 'Abra e feche o caixa e acompanhe os pagamentos do dia',
+    showStoreSelector: true,
+  },
+  '/partner/caixa/anteriores': {
+    title: 'Caixas anteriores',
+    description: 'Caixas fechados, com o que foi contado e a diferença',
+    showStoreSelector: true,
+  },
+  '/partner/comissoes': {
+    title: 'Comissões',
+    description: 'Regras e relatório de comissões da equipe',
+    showStoreSelector: true,
+  },
+  '/partner/pacotes': {
+    title: 'Pacotes',
+    description: 'Pacotes vendidos fora do app, com o saldo de sessões',
+    showStoreSelector: true,
+  },
+  '/partner/fidelidade': {
+    title: 'Fidelidade',
+    description: 'Recompensa para quem volta',
+    showStoreSelector: true,
+  },
+  '/partner/campanhas': {
+    title: 'Campanhas',
+    description: 'Chame de volta quem não aparece há um tempo',
+    showStoreSelector: true,
+  },
+  '/partner/anamnese': {
+    title: 'Anamnese',
+    description: 'Fichas de saúde que o cliente preenche antes do atendimento',
+    showStoreSelector: true,
+  },
+  '/partner/integracoes': {
+    title: 'API e webhooks',
+    description: 'Chaves da API pública e webhooks da loja',
+    showStoreSelector: true,
+  },
+  '/partner/historico-de-acoes': {
+    title: 'Histórico de ações',
+    description: 'Quem fez o quê na loja',
     showStoreSelector: true,
   },
   '/partner/stores': {

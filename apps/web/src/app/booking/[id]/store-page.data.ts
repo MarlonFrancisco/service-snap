@@ -5,8 +5,10 @@ import { withBudget } from '@/utils/helpers/promise.helper';
 import { cache } from 'react';
 
 const STORE_MS = 4000;
-const STORE_ID =
+export const STORE_ID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Link curto, como a API gera: minúsculas, números e hífen. */
+const STORE_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DESCRIPTION_MAX = 155;
 
 export type TStorePageLoad =
@@ -19,8 +21,8 @@ export type TStorePageLoad =
 /** Usado pelo `generateMetadata` e pela página; o `cache` evita a 2ª chamada. */
 export const loadStorePage = cache(
   async (id: string): Promise<TStorePageLoad> => {
-    // IDs de loja são UUID; qualquer outra coisa não existe.
-    if (!STORE_ID.test(id)) return { status: 'missing' };
+    // A loja vem pelo id (endereço antigo) ou pelo slug; o resto não existe.
+    if (!STORE_ID.test(id) && !STORE_SLUG.test(id)) return { status: 'missing' };
 
     const result = await withBudget(
       StoreService.get(id).then(

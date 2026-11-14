@@ -3,12 +3,18 @@ import {
   Briefcase,
   Calendar,
   ChartNoAxesColumn,
+  Clock,
   CreditCard,
   Home,
+  Lock,
+  Percent,
   Plug,
+  ShieldCheck,
   Store,
+  Users,
+  Wallet,
 } from 'lucide-react';
-import type { TNavItem } from './admin-sidebar.types';
+import type { TNavItem, TNavLinkItem } from './admin-sidebar.types';
 
 /** Só a estrutura: o acesso por plano é aplicado em `useAdminSidebar`. */
 export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
@@ -26,6 +32,47 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     label: 'Agenda',
     icon: Calendar,
     href: '/partner/agenda',
+  },
+  {
+    kind: 'link',
+    id: 'customers',
+    label: 'Clientes',
+    icon: Users,
+    href: '/partner/clientes',
+  },
+  {
+    kind: 'group',
+    id: 'management',
+    label: 'Gestão',
+    icon: Wallet,
+    children: [
+      { id: 'management-cash', label: 'Caixa', href: '/partner/caixa' },
+      {
+        id: 'management-commissions',
+        label: 'Comissões',
+        href: '/partner/comissoes',
+      },
+      {
+        id: 'management-packages',
+        label: 'Pacotes',
+        href: '/partner/pacotes',
+      },
+      {
+        id: 'management-loyalty',
+        label: 'Fidelidade',
+        href: '/partner/fidelidade',
+      },
+      {
+        id: 'management-campaigns',
+        label: 'Campanhas',
+        href: '/partner/campanhas',
+      },
+      {
+        id: 'management-anamnesis',
+        label: 'Anamnese',
+        href: '/partner/anamnese',
+      },
+    ],
   },
   {
     kind: 'group',
@@ -115,7 +162,6 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     id: 'integrations',
     label: 'Integrações',
     icon: Plug,
-    requires: ['WHATSAPP_INTEGRATION'],
     children: [
       {
         id: 'integrations-whatsapp',
@@ -123,7 +169,19 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         href: '/partner/settings/whatsapp',
         requires: ['WHATSAPP_INTEGRATION'],
       },
+      {
+        id: 'integrations-api',
+        label: 'API e webhooks',
+        href: '/partner/integracoes',
+      },
     ],
+  },
+  {
+    kind: 'link',
+    id: 'audit-logs',
+    label: 'Histórico de ações',
+    icon: ShieldCheck,
+    href: '/partner/historico-de-acoes',
   },
 ];
 
@@ -133,3 +191,38 @@ export const PARTNER_NAV_HREFS: readonly string[] = PARTNER_NAV_ITEMS.flatMap(
       ? item.children.map((child) => child.href)
       : [item.href],
 );
+
+/**
+ * Menu do profissional: só a própria agenda. Bloqueios e horário abrem os
+ * painéis da agenda pelo parâmetro `painel`.
+ */
+export const PROFESSIONAL_NAV_ITEMS: readonly TNavLinkItem[] = [
+  {
+    kind: 'link',
+    id: 'my-agenda',
+    label: 'Minha agenda',
+    icon: Calendar,
+    href: '/partner/agenda',
+  },
+  {
+    kind: 'link',
+    id: 'my-blocks',
+    label: 'Meus bloqueios',
+    icon: Lock,
+    href: '/partner/agenda?painel=bloqueios',
+  },
+  {
+    kind: 'link',
+    id: 'my-hours',
+    label: 'Meu horário',
+    icon: Clock,
+    href: '/partner/agenda?painel=horario',
+  },
+  {
+    kind: 'link',
+    id: 'my-commissions',
+    label: 'Minhas comissões',
+    icon: Percent,
+    href: '/partner/comissoes',
+  },
+];

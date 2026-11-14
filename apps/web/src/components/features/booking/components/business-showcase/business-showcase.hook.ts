@@ -16,7 +16,6 @@ interface BusinessShowcaseData {
   businessName: string;
   businessAddress: string;
   businessLocation: string;
-  images: string[];
   averageRating: number;
   reviewCount: number;
   description: string;

@@ -1,5 +1,4 @@
 export type {
-  ISearchResponse,
   ISearchResult,
   IStoreSearchContent,
   IStoreSearchMetadata,

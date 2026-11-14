@@ -23,6 +23,14 @@ export class SubscriptionService {
     );
   }
 
+  /** Portal do Stripe: trocar cartão, ver faturas e dados de cobrança. */
+  static async createBillingPortal() {
+    return await this.apiClient.post<{ url: string }>(
+      '/subscription/billing-portal',
+      {},
+    );
+  }
+
   static async cancelSubscription() {
     return await this.apiClient.delete<{ cancelAtPeriodEnd: boolean }>(
       '/subscription',

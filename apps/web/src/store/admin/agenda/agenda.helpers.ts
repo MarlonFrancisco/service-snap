@@ -1,4 +1,4 @@
-import type { TWorkingHours } from './agenda.types';
+import type { TWorkingHours } from '@/types/api/stores.types';
 
 export const generateTimeSlots = (workingHours: TWorkingHours): string[] => {
   const slots: string[] = [];
@@ -66,4 +66,97 @@ export const formatMonthYear = (date?: Date): string => {
     month: 'long',
     year: 'numeric',
   });
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Dia civil em UTC: diferenças em dias não sofrem com o horário de verão. */
+const toUtcDay = (date: Date): number =>
+  Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+
+const getMonday = (date: Date): Date => {
+  const monday = new Date(date);
+  monday.setDate(monday.getDate() - getTodayDayIndex(date));
+  return monday;
+};
+
+/** Quantas semanas a data está de hoje (0 = semana atual). */
+export const getWeekOffsetForDate = (
+  date: Date,
+  today: Date = new Date(),
+): number =>
+  Math.round(
+    (toUtcDay(getMonday(date)) - toUtcDay(getMonday(today))) / (7 * DAY_MS),
+  );
+
+/** Quantos meses a data está do mês atual (0 = mês atual). */
+export const getMonthOffsetForDate = (
+  date: Date,
+  today: Date = new Date(),
+): number =>
+  (date.getFullYear() - today.getFullYear()) * 12 +
+  (date.getMonth() - today.getMonth());
+
+/** Primeiro dia do mês deslocado `currentMonth` meses de hoje. */
+export const getMonthStart = (
+  currentMonth: number,
+  today: Date = new Date(),
+): Date => new Date(today.getFullYear(), today.getMonth() + currentMonth, 1);
+
+/**
+ * Datas da grade do mês, de segunda a domingo: começa na segunda da semana do
+ * dia 1 e cobre semanas inteiras até o último dia do mês.
+ */
+export const getMonthGridDates = (
+  currentMonth: number,
+  today: Date = new Date(),
+): Date[] => {
+  const monthStart = getMonthStart(currentMonth, today);
+  const monthEnd = new Date(
+    monthStart.getFullYear(),
+    monthStart.getMonth() + 1,
+    0,
+  );
+  const gridStart = getMonday(monthStart);
+  const totalDays =
+    Math.round((toUtcDay(monthEnd) - toUtcDay(gridStart)) / DAY_MS) +
+    (7 - getTodayDayIndex(monthEnd));
+
+  return Array.from({ length: totalDays }, (_, index) => {
+    const date = new Date(gridStart);
+    date.setDate(date.getDate() + index);
+    return date;
+  });
+};
+
+/** YYYY-MM-DD no fuso local (o `toISOString` usaria UTC). */
+export const toDateKey = (date: Date): string => {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const formatDayMonth = (date: Date, withYear: boolean) =>
+  date.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+    ...(withYear && { year: 'numeric' }),
+  });
+
+/** "2 a 8 de novembro de 2026", "30 de novembro a 6 de dezembro de 2026". */
+export const formatWeekRange = (dates: Date[]): string => {
+  const first = dates[0];
+  const last = dates.at(-1);
+
+  if (!first || !last) return '';
+
+  if (first.getFullYear() !== last.getFullYear()) {
+    return `${formatDayMonth(first, true)} a ${formatDayMonth(last, true)}`;
+  }
+
+  if (first.getMonth() !== last.getMonth()) {
+    return `${formatDayMonth(first, false)} a ${formatDayMonth(last, true)}`;
+  }
+
+  return `${first.getDate()} a ${formatDayMonth(last, true)}`;
 };

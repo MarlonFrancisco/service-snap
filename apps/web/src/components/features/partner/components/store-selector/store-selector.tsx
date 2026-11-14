@@ -9,13 +9,23 @@ import {
 } from '../../partner.styles';
 import { useStoreSelector } from './store-selector.hook';
 
+const ROLE_BADGE_CLASS =
+  'mt-0.5 inline-block shrink-0 rounded-full border border-[#E3E1EA] bg-white px-[9px] py-px text-xs font-bold text-[#0B0B0F]';
+
 type TStoreSelectorConfig = {
   layout?: 'inline' | 'block';
 };
 
 export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
-  const { stores, activeStore, isOpen, setIsOpen, handleSelectStore } =
-    useStoreSelector();
+  const {
+    stores,
+    activeStore,
+    activeRoleLabel,
+    getRoleLabel,
+    isOpen,
+    setIsOpen,
+    handleSelectStore,
+  } = useStoreSelector();
   const isBlock = layout === 'block';
 
   return (
@@ -23,7 +33,7 @@ export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Trocar de loja: ${activeStore.name}`}
+          aria-label={`Trocar de loja. Loja atual: ${activeStore.name}${activeRoleLabel ? `, papel ${activeRoleLabel}` : ''}`}
           className={cn(
             'flex items-center justify-between gap-3 rounded-full border border-[#E3E1EA] bg-white px-[18px] py-1.5 text-left font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F7F6FA]',
             isBlock
@@ -34,7 +44,10 @@ export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
         >
           <span className="min-w-0">
             <span className="block truncate">{activeStore.name}</span>
-            {!isBlock && (
+            {activeRoleLabel && (
+              <span className={ROLE_BADGE_CLASS}>{activeRoleLabel}</span>
+            )}
+            {!isBlock && !activeRoleLabel && (
               <span
                 className={cn(
                   'block truncate text-xs font-medium',
@@ -89,8 +102,15 @@ export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
                   )}
                 >
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13px] font-semibold">
-                      {store.name}
+                    <span className="flex items-center gap-2">
+                      <span className="block truncate text-[13px] font-semibold">
+                        {store.name}
+                      </span>
+                      {getRoleLabel(store) && (
+                        <span className={ROLE_BADGE_CLASS}>
+                          {getRoleLabel(store)}
+                        </span>
+                      )}
                     </span>
                     <span
                       className={cn(

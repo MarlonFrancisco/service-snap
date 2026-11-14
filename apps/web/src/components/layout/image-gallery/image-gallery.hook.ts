@@ -1,11 +1,14 @@
 import { CarouselApi } from '@repo/ui';
 import { useCallback, useEffect, useState } from 'react';
-import type { TUseImageGalleryConfig } from './image-gallery.types';
+import type {
+  TUseImageGalleryConfig,
+  TUseImageGalleryResult,
+} from './image-gallery.types';
 
 export const useImageGallery = ({
   images,
   initialIndex = 0,
-}: TUseImageGalleryConfig) => {
+}: TUseImageGalleryConfig): TUseImageGalleryResult => {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [isLoading, setIsLoading] = useState(true);
   const [carouselApi, setCarouselApi] = useState<CarouselApi | null>(null);

@@ -55,7 +55,9 @@ export class StoreRoleGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const user = request.user as JwtPayload;
-    const storeId = request.params.storeId || request.body?.storeId;
+    // `partner/stores/:id` é a única rota da loja sem `:storeId`
+    const storeId =
+      request.params.storeId || request.params.id || request.body?.storeId;
 
     if (!storeId) {
       throw new ForbiddenException('Store ID is required');
@@ -65,35 +67,23 @@ export class StoreRoleGuard implements CanActivate {
       throw new ForbiddenException('User not authenticated');
     }
 
-    // Busca relação com validação de role
-    const storeMember = await this.storeMemberService.findStoreMember(
-      storeId as string,
-      user.sub,
-    );
-
-    if (storeMember && requiredRoles.includes(storeMember.role)) {
-      // Injeta dados no request
-      request.storeMember = storeMember;
-      request.storeMemberRole = storeMember.role;
-
-      return true;
-    }
-
-    // O dono pode não ser membro, ou ser membro com outra role (ex.: professional)
-    const isOwner =
-      requiredRoles.includes('owner') &&
-      (await this.storeRepository.exists({
+    const [storeMember, isOwner] = await Promise.all([
+      this.storeMemberService.findStoreMember(storeId as string, user.sub),
+      this.storeRepository.exists({
         where: { id: storeId as string, owner: { id: user.sub } },
-      }));
+      }),
+    ]);
+    // O dono vale como dono mesmo cadastrado com outro papel na equipe
+    const role = isOwner ? 'owner' : storeMember?.role;
 
-    if (!isOwner) {
+    if (!role || !requiredRoles.includes(role)) {
       throw new ForbiddenException(
         `You must have one of these roles: ${requiredRoles.join(', ')}`,
       );
     }
 
     request.storeMember = storeMember ?? undefined;
-    request.storeMemberRole = 'owner';
+    request.storeMemberRole = role;
 
     return true;
   }

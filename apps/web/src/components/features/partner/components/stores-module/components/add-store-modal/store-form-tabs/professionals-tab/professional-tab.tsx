@@ -11,6 +11,7 @@ import { PlanLimitNotice } from '../../../plan-limit-notice';
 import { StatePanel } from '../../../state-panel';
 import { ProfessionalCard } from './professional-card';
 import { useProfessionalTab } from './professional-tab.hook';
+import { TeamRolesTable } from './team-roles-table';
 
 export const ProfessionalTab = () => {
   const {
@@ -60,7 +61,7 @@ export const ProfessionalTab = () => {
               'w-full sm:w-auto',
             )}
           >
-            Adicionar profissional
+            Adicionar à equipe
           </button>
         )}
       </div>
@@ -104,6 +105,8 @@ export const ProfessionalTab = () => {
           description="Adicione o primeiro profissional desta loja."
         />
       )}
+
+      <TeamRolesTable />
 
       <ConfirmDialog
         open={isRemoveDialogOpen}

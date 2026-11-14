@@ -148,6 +148,7 @@ async function boot(shared?: {
     stripe,
     {},
     {},
+    { syncOwnerStores: vi.fn(async () => undefined) },
     notification,
     new ConfigService({ STRIPE_WEBHOOK_SECRET: SECRET }),
     createCache(),

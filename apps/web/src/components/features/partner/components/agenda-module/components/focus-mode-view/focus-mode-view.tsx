@@ -1,11 +1,10 @@
 import { PARTNER_FOCUS_CLASS } from '@/components/features/partner/partner.styles';
 import { cn } from '@repo/ui';
 import { Plus } from 'lucide-react';
-import { AddAppointmentResponsive } from '../add-appointment-responsive/add-appointment-responsive';
 import { AgendaDataState } from '../agenda-data-state';
 import { AgendaGrid } from '../agenda-grid';
 import { AgendaToolbar } from '../agenda-toolbar/agenda-toolbar';
-import { AppointmentDetailsResponsive } from '../appointment-details-responsive/appointment-details-responsive';
+import { AgendaOverlays } from '../agenda-overlays';
 import { BlockModeAlert } from '../block-mode-alert/block-mode-alert';
 import { useFocusModeView } from './focus-mode-view.hook';
 
@@ -38,9 +37,7 @@ export function FocusModeView() {
         <Plus className="size-6" aria-hidden="true" />
       </button>
 
-      <AppointmentDetailsResponsive />
-
-      <AddAppointmentResponsive />
+      <AgendaOverlays />
     </div>
   );
 }

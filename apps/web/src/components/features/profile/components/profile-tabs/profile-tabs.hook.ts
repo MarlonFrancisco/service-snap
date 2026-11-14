@@ -21,6 +21,12 @@ const TAB_CONFIG = [
     shortLabel: 'Privacidade',
     href: '/profile?tab=settings',
   },
+  {
+    id: 'personal',
+    label: 'Dados pessoais',
+    shortLabel: 'Dados',
+    href: '/profile?tab=personal',
+  },
 ] as const;
 
 export const useProfileTabs = ({
@@ -34,6 +40,7 @@ export const useProfileTabs = ({
       bookings: bookingsCount,
       favorites: favoritesCount,
       settings: 0,
+      personal: 0,
     };
 
     return TAB_CONFIG.map((tab) => ({

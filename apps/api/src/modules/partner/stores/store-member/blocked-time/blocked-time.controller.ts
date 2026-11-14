@@ -9,7 +9,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { StoreAccessGuard } from '../../guards';
+import {
+  assertOwnAgenda,
+  StoreAccessGuard,
+  StoreActor,
+  type TStoreActor,
+} from '../../guards';
 import { BlockedTimeService } from './blocked-time.service';
 import {
   BlockedTimeDto,
@@ -26,7 +31,11 @@ export class BlockedTimeController {
   findAll(
     @Param('storeId') storeId: string,
     @Param('storeMemberId') storeMemberId: string,
+    @StoreActor() actor: TStoreActor,
   ) {
+    // Profissional mexe só nos próprios bloqueios
+    assertOwnAgenda(actor, storeMemberId);
+
     return this.blockedTimeService.findAll(storeId, storeMemberId);
   }
 
@@ -34,8 +43,12 @@ export class BlockedTimeController {
   create(
     @Param('storeId') storeId: string,
     @Param('storeMemberId') storeMemberId: string,
+    @StoreActor() actor: TStoreActor,
     @Body() blockedTime: BlockedTimeDto,
   ) {
+    // Profissional mexe só nos próprios bloqueios
+    assertOwnAgenda(actor, storeMemberId);
+
     return this.blockedTimeService.create(
       storeId,
       plainToInstance(BlockedTimeDto, {
@@ -49,8 +62,12 @@ export class BlockedTimeController {
   createBulk(
     @Param('storeId') storeId: string,
     @Param('storeMemberId') storeMemberId: string,
+    @StoreActor() actor: TStoreActor,
     @Body() createBulkDto: CreateBulkBlockedTimeDto,
   ) {
+    // Profissional mexe só nos próprios bloqueios
+    assertOwnAgenda(actor, storeMemberId);
+
     return this.blockedTimeService.createBulk(
       storeId,
       storeMemberId,
@@ -62,8 +79,12 @@ export class BlockedTimeController {
   deleteBulk(
     @Param('storeId') storeId: string,
     @Param('storeMemberId') storeMemberId: string,
+    @StoreActor() actor: TStoreActor,
     @Body() deleteBulkDto: DeleteBulkBlockedTimeDto,
   ) {
+    // Profissional mexe só nos próprios bloqueios
+    assertOwnAgenda(actor, storeMemberId);
+
     return this.blockedTimeService.deleteBulk(
       storeId,
       storeMemberId,
@@ -75,9 +96,13 @@ export class BlockedTimeController {
   update(
     @Param('storeId') storeId: string,
     @Param('storeMemberId') storeMemberId: string,
+    @StoreActor() actor: TStoreActor,
     @Param('id') id: string,
     @Body() blockedTime: BlockedTimeDto,
   ) {
+    // Profissional mexe só nos próprios bloqueios
+    assertOwnAgenda(actor, storeMemberId);
+
     return this.blockedTimeService.update(
       storeId,
       plainToInstance(BlockedTimeDto, {
@@ -93,7 +118,11 @@ export class BlockedTimeController {
     @Param('storeId') storeId: string,
     @Param('id') id: string,
     @Param('storeMemberId') storeMemberId: string,
+    @StoreActor() actor: TStoreActor,
   ) {
+    // Profissional mexe só nos próprios bloqueios
+    assertOwnAgenda(actor, storeMemberId);
+
     await this.blockedTimeService.delete(storeId, storeMemberId, id);
     return { id, storeMember: { id: storeMemberId } };
   }
