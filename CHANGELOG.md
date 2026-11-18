@@ -1,3 +1,9 @@
+## 0.30.1 (2026-11-18)
+
+### Fix
+
+- **api**: equipe agendando para si pela página da loja
+
 ## 0.30.0 (2026-11-18)
 
 ### Feat
