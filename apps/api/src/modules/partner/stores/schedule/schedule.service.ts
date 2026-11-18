@@ -211,7 +211,12 @@ export class ScheduleService {
     scheduleDto: CreateSchedulesDto,
     requesterId: string,
   ): Promise<Schedule[]> {
-    const actor = await this.getStaffActor(scheduleDto.store?.id, requesterId);
+    // Quem é da equipe e agenda para si (ex.: o dono pela página pública da loja)
+    // é cliente como qualquer outro, e não precisa já ser cliente da loja
+    const isSelfBooking = scheduleDto.user?.id === requesterId;
+    const actor = isSelfBooking
+      ? null
+      : await this.getStaffActor(scheduleDto.store?.id, requesterId);
     const isStaff = !!actor;
 
     // Profissional marca só na própria agenda
