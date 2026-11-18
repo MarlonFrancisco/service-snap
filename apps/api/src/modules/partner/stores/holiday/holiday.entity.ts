@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../database/base.entity';
 import { Store } from '../store.entity';
 
-// Nomes fixos, iguais aos de `pnpm migrate:schedule-rules`
+// Nomes fixos: o banco já tem esses nomes, e o synchronize não pode trocá-los
 export const STORE_HOLIDAY_UNIQUE = 'UQ_store_holidays_store_date';
 export const STORE_HOLIDAY_STORE_FK = 'FK_store_holidays_store';
 

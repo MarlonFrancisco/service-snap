@@ -23,7 +23,7 @@ export class Store extends BaseEntity {
   @Column({ type: 'varchar', nullable: true })
   name: string;
 
-  /** Link curto: `/booking/<slug>` (ver `pnpm migrate:store-slugs`). */
+  /** Link curto: `/booking/<slug>`. Loja sem slug ganha um na primeira visita. */
   @Column({ type: 'varchar', length: 80, nullable: true })
   slug: string | null;
 
@@ -74,7 +74,7 @@ export class Store extends BaseEntity {
     sunday: boolean;
   };
 
-  // schedule rules (ver `pnpm migrate:schedule-rules`)
+  // Regras da agenda
 
   /** Passo da grade de horários oferecidos ao cliente. */
   @Column({ type: 'int', default: 30 })

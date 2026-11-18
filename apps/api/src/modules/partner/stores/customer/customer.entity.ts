@@ -3,7 +3,7 @@ import { BaseEntity } from '../../../database/base.entity';
 import { User } from '../../../users/user.entity';
 import { Store } from '../store.entity';
 
-// Nomes fixos, iguais aos de `pnpm migrate:store-customers`
+// Nomes fixos: o banco já tem esses nomes, e o synchronize não pode trocá-los
 export const STORE_CUSTOMER_UNIQUE = 'UQ_store_customers_store_user';
 export const STORE_CUSTOMER_STORE_FK = 'FK_store_customers_store';
 export const STORE_CUSTOMER_USER_FK = 'FK_store_customers_user';

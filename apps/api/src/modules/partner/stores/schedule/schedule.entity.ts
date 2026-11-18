@@ -27,7 +27,8 @@ const minutesOf = (column: string) =>
 /**
  * Última barreira contra dois atendimentos no mesmo horário: o mesmo
  * profissional, no mesmo dia, não pode ter intervalos que se cruzam. Cancelados
- * ficam de fora. Precisa da extensão `btree_gist` (ver `pnpm migrate:schedule-overlap`).
+ * ficam de fora. Precisa da extensão `btree_gist` no banco: o synchronize não
+ * cria extensão (`CREATE EXTENSION IF NOT EXISTS btree_gist` num banco novo).
  */
 export const SCHEDULE_OVERLAP_EXCLUSION = `USING gist (
   "storeMemberId" WITH =,

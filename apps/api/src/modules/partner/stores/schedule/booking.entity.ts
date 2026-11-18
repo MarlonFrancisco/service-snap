@@ -5,7 +5,7 @@ import { Store } from '../store.entity';
 import { Schedule } from './schedule.entity';
 import type { TBookingSource } from './schedule.types';
 
-// Nomes fixos, iguais aos de `pnpm migrate:bookings`
+// Nomes fixos: o banco já tem esses nomes, e o synchronize não pode trocá-los
 export const BOOKING_STORE_FK = 'FK_bookings_store';
 export const BOOKING_USER_FK = 'FK_bookings_user';
 export const SCHEDULE_BOOKING_FK = 'FK_schedules_booking';
