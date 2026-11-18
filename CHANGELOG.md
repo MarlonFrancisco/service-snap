@@ -1,3 +1,13 @@
+## 0.30.0 (2026-11-18)
+
+### Feat
+
+- **web**: tira o "Voltar" do topo do menu do painel
+
+### Fix
+
+- **api**: health check do banco sem derrubar a função na Vercel
+
 ## 0.29.0 (2026-11-14)
 
 ### Feat
