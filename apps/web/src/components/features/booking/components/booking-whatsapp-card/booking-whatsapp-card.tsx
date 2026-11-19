@@ -29,7 +29,7 @@ export const BookingWhatsappCard = () => {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-full bg-brand px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-full bg-ink px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         <WhatsappGlyph />
         Agendar pelo WhatsApp

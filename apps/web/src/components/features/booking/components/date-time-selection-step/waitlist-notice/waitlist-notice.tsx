@@ -79,7 +79,7 @@ export const WaitlistNotice = () => {
         type="button"
         onClick={handleJoin}
         disabled={isJoiningWaitlist}
-        className="h-12 gap-2 rounded-full bg-brand px-5 text-sm font-bold text-white hover:bg-brand-hover has-[>svg]:px-5"
+        className="h-12 gap-2 rounded-full bg-ink px-5 text-sm font-bold text-white hover:bg-ink-hover has-[>svg]:px-5"
       >
         {isJoiningWaitlist ? (
           <Loader2 className="size-[18px] animate-spin" aria-hidden />

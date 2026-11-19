@@ -91,7 +91,7 @@ export function MobileBookingDrawer({
           type="button"
           onClick={onNext}
           disabled={isNextDisabled}
-          className="block min-w-0 flex-1 rounded-full bg-brand p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-brand"
+          className="block min-w-0 flex-1 rounded-full bg-ink p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-ink"
         >
           {nextButtonText}
         </button>

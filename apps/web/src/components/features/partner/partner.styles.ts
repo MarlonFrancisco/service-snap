@@ -37,7 +37,7 @@ export const PARTNER_ICON_BUTTON_CLASS = cn(
 );
 
 export const PARTNER_PRIMARY_ACTION_CLASS = cn(
-  'flex min-h-11 items-center justify-center rounded-full bg-brand px-4 text-center text-[13px] font-bold text-white transition-colors hover:bg-brand-hover',
+  'flex min-h-11 items-center justify-center rounded-full bg-ink px-4 text-center text-[13px] font-bold text-white transition-colors hover:bg-ink-hover',
   PARTNER_FOCUS_CLASS,
 );
 

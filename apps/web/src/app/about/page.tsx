@@ -127,7 +127,7 @@ export default function AboutPage() {
           </div>
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center rounded-full bg-brand px-7 py-[17px] text-[15px] font-bold text-white transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            className="inline-flex min-h-11 items-center rounded-full bg-ink px-7 py-[17px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Explorar serviços
           </Link>

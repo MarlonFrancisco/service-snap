@@ -32,7 +32,7 @@ export const ErrorPage = (config: TErrorPageConfig) => {
           <button
             type="button"
             onClick={handleRetry}
-            className={`${ACTION_CLASS} cursor-pointer bg-brand text-white hover:bg-brand-hover`}
+            className={`${ACTION_CLASS} cursor-pointer bg-ink text-white hover:bg-ink-hover`}
           >
             Tentar de novo
           </button>

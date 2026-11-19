@@ -116,7 +116,7 @@ export const ReferralClientPanel = ({
             type="button"
             onClick={() => void handleShare()}
             className={cn(
-              'mt-3 block h-[50px] w-full rounded-full bg-brand text-sm font-bold text-white transition-colors hover:bg-brand-hover md:mt-[18px] md:h-[52px]',
+              'mt-3 block h-[50px] w-full rounded-full bg-ink text-sm font-bold text-white transition-colors hover:bg-ink-hover md:mt-[18px] md:h-[52px]',
               FOCUS_CLASS,
             )}
           >

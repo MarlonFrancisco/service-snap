@@ -87,7 +87,7 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className={`h-[54px] cursor-pointer rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-hover ${FOCUS_CLASS}`}
+                className={`h-[54px] cursor-pointer rounded-full bg-ink text-[15px] font-bold text-white transition-colors hover:bg-ink-hover ${FOCUS_CLASS}`}
               >
                 Abrir e-mail para enviar
               </button>

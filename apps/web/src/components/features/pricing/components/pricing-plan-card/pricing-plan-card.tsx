@@ -77,7 +77,7 @@ export const PricingPlanCard = (config: TPricingPlanCardConfig) => {
           isDisabled
             ? 'cursor-not-allowed border-line-strong bg-surface-2 text-ink-muted'
             : plan.popular
-              ? 'cursor-pointer border-brand bg-brand text-white hover:bg-brand-hover'
+              ? 'cursor-pointer border-ink bg-ink text-white hover:bg-ink-hover'
               : 'cursor-pointer border-ink bg-transparent hover:bg-surface-2',
         )}
       >

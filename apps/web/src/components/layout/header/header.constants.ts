@@ -17,4 +17,4 @@ export const HEADER_SEARCH_FIELD_CLASS =
 
 /** Botão circular da busca do header. */
 export const HEADER_SEARCH_ICON_CLASS =
-  'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white';
+  'grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ink text-white';
