@@ -1,4 +1,4 @@
-import type { TCountryCode, TCurrencyCode } from '@repo/shared/constants';
+import type { TCountryCode } from '@repo/shared/constants';
 
 /**
  * Locale Dialog Configuration
@@ -11,10 +11,7 @@ export type TLocaleDialogConfig = {
 /**
  * Hook Configuration
  */
-export type TUseLocaleDialogConfig = Pick<
-  TLocaleDialogConfig,
-  'onOpenChange'
->;
+export type TUseLocaleDialogConfig = Pick<TLocaleDialogConfig, 'onOpenChange'>;
 
 /**
  * Country Option Configuration
@@ -23,17 +20,6 @@ export type TCountryOptionConfig = {
   code: TCountryCode;
   name: string;
   locale: string;
-  isSelected: boolean;
-  onClick: () => void;
-};
-
-/**
- * Currency Option Configuration
- */
-export type TCurrencyOptionConfig = {
-  code: TCurrencyCode;
-  name: string;
-  symbol: string;
   isSelected: boolean;
   onClick: () => void;
 };

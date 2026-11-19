@@ -44,9 +44,15 @@ describe('SubscriptionService.getCheckoutSessionStatus', () => {
   });
 
   it('is active once Stripe and the local subscription agree', async () => {
-    ctx.subscriptionRepository.findOne.mockResolvedValue({ id: 's' });
+    ctx.subscriptionRepository.findOne.mockResolvedValue({
+      id: 's',
+      status: 'active',
+    });
 
-    await expect(check()).resolves.toEqual({ status: 'active' });
+    await expect(check()).resolves.toEqual({
+      status: 'active',
+      isTrial: false,
+    });
     expect(ctx.subscriptionRepository.findOne).toHaveBeenCalledWith({
       where: expect.objectContaining({
         subscriptionId: 'sub_1',
@@ -60,9 +66,12 @@ describe('SubscriptionService.getCheckoutSessionStatus', () => {
       ...SESSION,
       payment_status: 'no_payment_required',
     });
-    ctx.subscriptionRepository.findOne.mockResolvedValue({ id: 's' });
+    ctx.subscriptionRepository.findOne.mockResolvedValue({
+      id: 's',
+      status: 'trialing',
+    });
 
-    await expect(check()).resolves.toEqual({ status: 'active' });
+    await expect(check()).resolves.toEqual({ status: 'active', isTrial: true });
   });
 
   it('waits for the webhook when Stripe is paid but nothing is saved', async () => {

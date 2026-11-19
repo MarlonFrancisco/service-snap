@@ -1,5 +1,4 @@
 import { isNotFoundError, isUnauthorizedError } from '@/service/api';
-import { TCurrencyCode } from '@repo/shared/constants';
 import { isServer, QueryClient } from '@tanstack/react-query';
 
 /** Filtros e paginação que entram na chave de cache. */
@@ -39,7 +38,7 @@ export const CACHE_QUERY_KEYS = {
   recommendationStores: () => ['recommendation/popular-stores'],
   user: (userIdentification: string) => ['user', { userIdentification }],
   referral: () => ['users/me/referral'],
-  plans: (currency: TCurrencyCode) => ['plans', { currency }],
+  plans: () => ['plans'],
   currentPlan: () => ['subscription/current-plan'],
   checkoutSession: (sessionId: string) => [
     'subscription/checkout-session',

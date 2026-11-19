@@ -1,3 +1,4 @@
+import type { TPlanSlug } from '@/types/api';
 import type {
   TLockedModule,
   TLockedModuleId,
@@ -6,18 +7,32 @@ import type {
 } from './plan-feature-gate.types';
 
 /**
- * Plano mais barato que libera cada recurso. Espelha o metadata dos produtos no
- * Stripe (`apps/api/src/scripts/update-stripe-products-metadata.ts`).
+ * Plano mais barato que libera cada recurso, pelo slug estável (`plan_slug` no
+ * Stripe), nunca pelo nome visível. Espelha o metadata dos produtos em
+ * `apps/api/src/scripts/update-stripe-products-metadata.ts`.
  */
-export const MIN_PLAN_BY_FEATURE: Record<TPlanFeatureFlag, string> = {
-  DASHBOARD_GENERAL_ACCESS: 'Professional',
-  WHATSAPP_INTEGRATION: 'Professional',
-  DASHBOARD_SALES_ACCESS: 'Business',
-  DASHBOARD_OPERATIONAL_ACCESS: 'Business',
-  DASHBOARD_CUSTOMERS_ACCESS: 'Business',
+export const MIN_PLAN_BY_FEATURE: Record<TPlanFeatureFlag, TPlanSlug> = {
+  DASHBOARD_GENERAL_ACCESS: 'team',
+  WHATSAPP_INTEGRATION: 'team',
+  DASHBOARD_SALES_ACCESS: 'multi',
+  DASHBOARD_OPERATIONAL_ACCESS: 'multi',
+  DASHBOARD_CUSTOMERS_ACCESS: 'multi',
 };
 
-const PLAN_ORDER = ['Professional', 'Business', 'Enterprise'];
+const PLAN_ORDER: readonly TPlanSlug[] = [
+  'solo',
+  'team',
+  'multi',
+  'enterprise',
+];
+
+/** Nome mostrado por slug. Os nomes novos da #22 entram só aqui. */
+export const PLAN_DISPLAY_NAME: Record<TPlanSlug, string> = {
+  solo: 'Starter',
+  team: 'Professional',
+  multi: 'Business',
+  enterprise: 'Enterprise',
+};
 
 const META_PRICE_NOTE =
   'As mensagens são cobradas pela Meta diretamente da sua loja.';
@@ -99,10 +114,10 @@ export const hasPlanAccess = (
 ) => !requires || requires.every((flag) => features?.[flag] === true);
 
 /** O plano exigido é o mais alto entre os recursos que faltam. */
-export const getMinPlanName = (
+export const getMinPlanSlug = (
   requires: readonly TPlanFeatureFlag[],
   features: TPlanFeatures | undefined,
-) =>
+): TPlanSlug | undefined =>
   requires
     .filter((flag) => features?.[flag] !== true)
     .map((flag) => MIN_PLAN_BY_FEATURE[flag])
