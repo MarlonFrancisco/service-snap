@@ -48,6 +48,7 @@ export const useCheckout = () => {
 
   const sessionStatus = session.data?.status;
   const isActive = sessionStatus === 'active';
+  const isTrial = session.data?.isTrial === true;
 
   const onboarding = useQuery({
     queryKey: CACHE_QUERY_KEYS.onboarding(),
@@ -62,15 +63,26 @@ export const useCheckout = () => {
     Boolean(onboarding.data) &&
     onboarding.data?.status !== 'not_needed';
 
-  // Pagamento confirmado: a compra sai uma vez, mesmo com polling ou reload.
+  // Assinatura confirmada: o evento sai uma vez, mesmo com polling ou reload.
+  // Um teste não cobra nada, então vira `trial_start` e não `purchase` (#31).
   useEffect(() => {
     if (!isActive || !sessionId) return;
 
     const purchase = consumePendingPurchase(sessionId);
     if (!purchase) return;
 
+    if (isTrial) {
+      analytics.track('trial_start', {
+        transaction_id: sessionId,
+        plan_id: purchase.plan_id,
+        billing_period: purchase.billing_period,
+        currency: purchase.currency,
+      });
+      return;
+    }
+
     analytics.track('purchase', { transaction_id: sessionId, ...purchase });
-  }, [isActive, sessionId, analytics]);
+  }, [isActive, isTrial, sessionId, analytics]);
 
   useEffect(() => {
     if (needsOnboarding) {

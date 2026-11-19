@@ -218,6 +218,18 @@ export interface IAnalyticsEventMap {
   checkout_failed: { reason: string; source: string };
   checkout_status: { status: string };
   checkout_retry: Record<string, never>;
+  /**
+   * Início do teste grátis: a assinatura nasce em `trialing`, sem cobrança.
+   * Sem `value`, para não contar como receita. O pagamento real sai depois,
+   * pelo Stripe (`invoice.paid`), que é a fonte de verdade dessa etapa.
+   */
+  trial_start: {
+    transaction_id: string;
+    plan_id: string;
+    billing_period: TBillingPeriod;
+    currency: string;
+  };
+  /** Só para cobrança real: compra sem teste ou plano anual. */
   purchase: {
     transaction_id: string;
     plan_id: string;

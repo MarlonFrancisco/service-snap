@@ -295,7 +295,7 @@ export class SubscriptionService {
     sessionId: string,
     userId: string,
     paymentCustomerId: string,
-  ): Promise<{ status: TCheckoutSessionStatus }> {
+  ): Promise<{ status: TCheckoutSessionStatus; isTrial?: boolean }> {
     let session: Stripe.Checkout.Session;
 
     try {
@@ -346,7 +346,10 @@ export class SubscriptionService {
       },
     });
 
-    return { status: subscription ? 'active' : 'processing' };
+    if (!subscription) return { status: 'processing' };
+
+    // Um teste começa sem cobrança: o front envia `trial_start` em vez de `purchase`.
+    return { status: 'active', isTrial: subscription.status === 'trialing' };
   }
 
   /**
