@@ -7,6 +7,7 @@ import {
 } from '@/utils/helpers/category-city.helper';
 import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
+import { isIndexableCategoryCity } from '@/utils/helpers/store-sitemap.helper';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { loadCategoryCity } from './category-city.data';
@@ -35,8 +36,9 @@ export async function generateMetadata({
     title: `${resolved.categoryName} em ${loaded.displayCity} | ServiceSnap`,
     description,
     path,
-    // Qualquer cidade gera uma URL válida; sem lojas a página é conteúdo raso.
-    noindex: loaded.status === 'ok' && count === 0,
+    // Qualquer cidade gera uma URL válida; com poucas lojas é conteúdo raso.
+    // Mesmo limite do sitemap. Se a busca falhar, não muda a decisão às cegas.
+    noindex: loaded.status === 'ok' && !isIndexableCategoryCity(count),
   });
 }
 
