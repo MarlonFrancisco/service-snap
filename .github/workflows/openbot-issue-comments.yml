@@ -88,3 +88,42 @@ jobs:
             200) echo "Entrega duplicada (200), já tinha sido recebida." ;;
             *)   echo "::error::O webhook respondeu HTTP ${STATUS}."; exit 1 ;;
           esac
+
+  # Copia os comentários do CEO para um PR de canal que o Claude acompanha,
+  # porque comentários em issues não o avisam na hora. Fica inerte até a
+  # variável OPENBOT_CLAUDE_CHANNEL_PR (número do PR de canal) ser definida.
+  mirror-to-claude:
+    if: >-
+      ${{
+        vars.OPENBOT_CLAUDE_CHANNEL_PR != '' &&
+        !github.event.issue.pull_request &&
+        contains(github.event.issue.labels.*.name, 'openbot') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+        startsWith(github.event.comment.body, '[OpenBot CEO]')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Copiar o comentário para o PR de canal
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL_PR: ${{ vars.OPENBOT_CLAUDE_CHANNEL_PR }}
+        run: |
+          set -euo pipefail
+          jq -n --slurpfile e "$GITHUB_EVENT_PATH" '
+            $e[0] as $ev
+            | ($ev.comment.body) as $b
+            | {
+                body: (
+                  "**Espelho:** comentário do CEO em #\($ev.issue.number) (\($ev.issue.title)) - \($ev.comment.html_url)\n\n"
+                  + $b[0:60000]
+                  + (if ($b | length) > 60000 then "\n\n_(cortado; ver o original)_" else "" end)
+                )
+              }' > mirror.json
+          gh api --method POST \
+            "repos/${GITHUB_REPOSITORY}/issues/${CHANNEL_PR}/comments" \
+            --input mirror.json > /dev/null
+          echo "Comentário copiado para o PR #${CHANNEL_PR}."
