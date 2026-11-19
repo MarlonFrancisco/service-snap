@@ -6,11 +6,16 @@ import {
   IsEnum,
   IsNumber,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
 import type Stripe from 'stripe';
-import { normalizeSubscriptionMetadata } from '../../../utils';
+import {
+  normalizeSubscriptionMetadata,
+  resolvePlanSlug,
+  type TPlanSlug,
+} from '../../../utils';
 
 export class InvoiceDto {
   @IsString()
@@ -51,6 +56,10 @@ export class CurrentPlanDto {
 
   @IsString()
   planName: string;
+
+  @IsOptional()
+  @IsString()
+  planSlug: TPlanSlug | null;
 
   @IsString()
   planDescription: string;
@@ -140,6 +149,7 @@ export class CurrentPlanDto {
     const dto = new CurrentPlanDto();
     dto.planId = product.id;
     dto.planName = product.name;
+    dto.planSlug = resolvePlanSlug(product);
     dto.planDescription = product.description || '';
     dto.price = (price.unit_amount || 0) / 100; // Converter de centavos para reais
     dto.currency = price.currency || 'BRL';
