@@ -14,7 +14,7 @@ import {
 import { SITE_URL } from '@/utils/constants/site.constants';
 import {
   loadStoreSitemap,
-  toCategoryCityLinks,
+  toIndexableCategoryCityLinks,
   toLastModified,
 } from '@/utils/helpers/store-sitemap.helper';
 import type { MetadataRoute } from 'next';
@@ -102,7 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   );
 
-  const categoryCityPages: MetadataRoute.Sitemap = toCategoryCityLinks(
+  const categoryCityPages: MetadataRoute.Sitemap = toIndexableCategoryCityLinks(
     storeSitemap,
   ).map((link) => ({
     url: `${SITE_URL}${link.path}`,
