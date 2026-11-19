@@ -164,7 +164,7 @@ export function StoreCard({
         <Link
           href={`/booking/${id}`}
           onClick={(e) => e.stopPropagation()}
-          className="shrink-0 rounded-full bg-ink px-5 py-[11px] text-[13px] font-bold text-white transition-colors hover:bg-ink-hover"
+          className="shrink-0 rounded-full bg-brand px-5 py-[11px] text-[13px] font-bold text-white transition-colors hover:bg-brand-hover"
         >
           Agendar
         </Link>

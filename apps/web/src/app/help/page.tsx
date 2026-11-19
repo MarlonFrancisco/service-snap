@@ -67,7 +67,7 @@ export default function HelpPage() {
             </div>
             <Link
               href="/contact"
-              className="inline-flex min-h-11 items-center rounded-full bg-ink px-6 py-[15px] text-sm font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              className="inline-flex min-h-11 items-center rounded-full bg-brand px-6 py-[15px] text-sm font-bold text-white transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Ir para contato
             </Link>

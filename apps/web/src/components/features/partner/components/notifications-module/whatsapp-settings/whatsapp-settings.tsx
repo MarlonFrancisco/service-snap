@@ -62,7 +62,7 @@ export const WhatsappSettings = () => {
           </div>
           <Link
             href="/partner/settings/whatsapp"
-            className={`inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover sm:w-auto sm:text-sm ${PARTNER_FOCUS_CLASS}`}
+            className={`inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-brand-hover sm:w-auto sm:text-sm ${PARTNER_FOCUS_CLASS}`}
           >
             Conectar WhatsApp
           </Link>

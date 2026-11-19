@@ -64,7 +64,7 @@ export function BookingSidebar({
             type="button"
             onClick={onNext}
             disabled={isNextDisabled}
-            className="mt-5 block w-full rounded-full bg-ink p-[17px] text-center text-[15px] font-bold text-white transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-ink"
+            className="mt-5 block w-full rounded-full bg-brand p-[17px] text-center text-[15px] font-bold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-brand"
           >
             {nextButtonText}
           </button>

@@ -15,7 +15,7 @@ import Link from 'next/link';
 
 const FOCUS_CLASS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
-const PRIMARY_ACTION_CLASS = `inline-flex h-[52px] items-center rounded-full bg-ink px-[26px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover ${FOCUS_CLASS}`;
+const PRIMARY_ACTION_CLASS = `inline-flex h-[52px] items-center rounded-full bg-brand px-[26px] text-[15px] font-bold text-white transition-colors hover:bg-brand-hover ${FOCUS_CLASS}`;
 const SECONDARY_ACTION_CLASS = `inline-flex h-11 items-center rounded-full border border-ink px-5 text-[13px] font-bold transition-colors hover:bg-surface ${FOCUS_CLASS}`;
 const SECTION_TITLE_CLASS =
   'text-[22px] leading-[1.15] font-extrabold tracking-[-0.025em] md:text-[28px]';

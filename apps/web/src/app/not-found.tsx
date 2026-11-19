@@ -24,7 +24,7 @@ export default function GlobalNotFound() {
         <div className="mt-7 flex flex-wrap justify-center gap-2.5">
           <Link
             href="/"
-            className={`${ACTION_CLASS} bg-ink text-white transition-colors hover:bg-ink-hover`}
+            className={`${ACTION_CLASS} bg-brand text-white transition-colors hover:bg-brand-hover`}
           >
             Ir para a home
           </Link>

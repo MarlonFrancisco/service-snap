@@ -127,7 +127,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
                 href="/contact"
                 event="footer_link_clicked"
                 properties={{ destination: '/contact' }}
-                className="inline-block rounded-full bg-ink px-[22px] py-3 text-[13px] font-bold text-white transition-colors hover:bg-ink-hover"
+                className="inline-block rounded-full bg-brand px-[22px] py-3 text-[13px] font-bold text-white transition-colors hover:bg-brand-hover"
               >
                 Ir para contato
               </TrackedLink>

@@ -100,7 +100,7 @@ export const PlanCard = ({
             isCurrentPlan
               ? 'cursor-not-allowed bg-surface-2 text-ink-faint'
               : plan.popular
-                ? 'bg-ink text-white shadow-lg shadow-black/20 hover:bg-ink-hover'
+                ? 'bg-brand text-white shadow-lg shadow-black/20 hover:bg-brand-hover'
                 : 'bg-surface-2 text-ink hover:bg-line'
           }`}
           onClick={handleClick}

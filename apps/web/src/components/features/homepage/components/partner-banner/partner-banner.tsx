@@ -21,7 +21,7 @@ export const PartnerBanner = () => {
               href="/pricing"
               event="partner_cta_clicked"
               properties={{ placement: 'home_banner', destination: '/pricing' }}
-              className="rounded-full bg-ink px-[30px] py-[18px] text-center text-[15px] font-bold text-white transition-colors hover:bg-ink-hover whitespace-nowrap"
+              className="rounded-full bg-brand px-[30px] py-[18px] text-center text-[15px] font-bold text-white transition-colors hover:bg-brand-hover whitespace-nowrap"
             >
               Cadastrar meu espaço
             </TrackedLink>

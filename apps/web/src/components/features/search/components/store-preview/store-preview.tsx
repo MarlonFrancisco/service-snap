@@ -133,7 +133,7 @@ export function StorePreview() {
       <div className="shrink-0 border-t border-surface-3 px-7 py-4">
         <button
           type="button"
-          className="h-[54px] w-full rounded-full bg-ink text-[15px] font-bold text-white transition-colors hover:bg-ink-hover active:scale-[0.98]"
+          className="h-[54px] w-full rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-hover active:scale-[0.98]"
           onClick={handleBookingClick}
         >
           Ver agenda e agendar

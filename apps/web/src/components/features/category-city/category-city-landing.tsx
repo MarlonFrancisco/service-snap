@@ -19,7 +19,7 @@ const NOTICE_CLASS = 'rounded-3xl bg-surface px-6 py-12 text-center';
 const NOTICE_ICON_CLASS = 'mx-auto mb-3 h-10 w-10 text-ink-faint';
 const NOTICE_TITLE_CLASS = 'mb-1 text-base font-bold';
 const NOTICE_TEXT_CLASS = 'mb-4 text-sm text-ink-muted';
-const ACTION_CLASS = `inline-flex h-11 items-center rounded-full bg-ink px-5 text-[13px] font-bold text-white transition-colors hover:bg-ink-hover ${FOCUS_CLASS}`;
+const ACTION_CLASS = `inline-flex h-11 items-center rounded-full bg-brand px-5 text-[13px] font-bold text-white transition-colors hover:bg-brand-hover ${FOCUS_CLASS}`;
 
 export function CategoryCityLanding({
   resolved,

@@ -44,7 +44,7 @@ export const SearchBar = () => {
           aria-label="Buscar"
           className={cn(
             HEADER_SEARCH_ICON_CLASS,
-            'transition-colors hover:bg-ink-hover active:scale-[0.98]',
+            'transition-colors hover:bg-brand-hover active:scale-[0.98]',
           )}
         >
           <Search className="h-4 w-4" strokeWidth={2.6} aria-hidden />

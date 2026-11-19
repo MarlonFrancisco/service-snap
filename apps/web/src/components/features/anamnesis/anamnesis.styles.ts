@@ -40,6 +40,6 @@ export const ANAMNESIS_CHECK_INPUT_CLASS =
 export const ANAMNESIS_ERROR_CLASS = 'text-[13px] font-semibold text-error';
 
 export const ANAMNESIS_PRIMARY_BUTTON_CLASS = cn(
-  'inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-ink bg-ink px-[18px] text-sm font-bold text-white transition-colors hover:bg-ink-hover disabled:cursor-default disabled:opacity-70',
+  'inline-flex min-h-[46px] w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-brand bg-brand px-[18px] text-sm font-bold text-white transition-colors hover:bg-brand-hover disabled:cursor-default disabled:opacity-70',
   FOCUS_CLASS,
 );

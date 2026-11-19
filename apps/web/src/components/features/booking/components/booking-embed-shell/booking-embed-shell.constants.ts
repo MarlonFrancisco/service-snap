@@ -29,7 +29,7 @@ export const EMBED_STATE_NOTICE: Record<
 };
 
 export const EMBED_PRIMARY_ACTION_CLASS =
-  'flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-5 text-sm font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
+  'flex min-h-12 w-full items-center justify-center rounded-full bg-brand px-5 text-sm font-bold text-white transition-colors hover:bg-brand-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export const EMBED_SECONDARY_ACTION_CLASS =
   'flex min-h-12 w-full items-center justify-center rounded-full border border-line-strong bg-white px-5 text-sm font-bold text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';

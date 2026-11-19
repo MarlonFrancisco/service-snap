@@ -58,7 +58,7 @@ export const DiscoverySearch = () => {
           </span>
           <button
             type="submit"
-            className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-ink px-[18px] text-sm font-bold text-white transition-colors hover:bg-ink-hover active:scale-[0.98] md:h-12 md:px-7 md:text-[15px]"
+            className="inline-flex h-10 shrink-0 items-center justify-center rounded-full bg-brand px-[18px] text-sm font-bold text-white transition-colors hover:bg-brand-hover active:scale-[0.98] md:h-12 md:px-7 md:text-[15px]"
           >
             Buscar
           </button>

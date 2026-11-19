@@ -180,7 +180,7 @@ export function StoreDetailsDrawer() {
         <div className="border-t border-line bg-white p-4 shadow-lg">
           <button
             type="button"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-ink text-sm font-semibold text-white transition-all active:scale-[0.98] hover:bg-ink-hover"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brand text-sm font-semibold text-white transition-all active:scale-[0.98] hover:bg-brand-hover"
             onClick={handleBooking}
           >
             <Calendar className="h-5 w-5" />

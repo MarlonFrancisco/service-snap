@@ -8,7 +8,7 @@ const SUBTITLE_CLASS = 'mt-1.5 mb-6 text-[15px] text-ink-muted';
 const NOTICE_CLASS =
   'mt-5 rounded-[14px] bg-surface px-[18px] py-4 text-sm leading-[1.5] text-ink';
 const PRIMARY_BUTTON_CLASS =
-  'mt-6 flex h-14 w-full max-w-[420px] items-center justify-center gap-2 rounded-full bg-ink text-[15px] font-bold text-white transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-60';
+  'mt-6 flex h-14 w-full max-w-[420px] items-center justify-center gap-2 rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60';
 
 export function CheckoutStep(config: TCheckoutStepConfig) {
   const {

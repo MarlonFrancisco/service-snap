@@ -92,7 +92,7 @@ export const PlanFeatureGate = ({
               onClick={() => handleUpgradeClick('/partner/plans/upgrade')}
               className={cn(
                 ACTION_CLASS,
-                'bg-ink text-[15px] text-white hover:bg-ink-hover sm:text-sm',
+                'bg-brand text-[15px] text-white hover:bg-brand-hover sm:text-sm',
               )}
             >
               {minPlanName
