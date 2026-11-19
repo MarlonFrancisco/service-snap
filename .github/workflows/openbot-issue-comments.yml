@@ -1,0 +1,90 @@
+# Avisa o OpenBot (webhook assinado com HMAC) a cada comentário novo numa issue
+# com a label `openbot`. Ver issue #33.
+# Configuração: segredos OPENBOT_WEBHOOK_URL e OPENBOT_WEBHOOK_SECRET no repositório.
+#
+# O repositório é público: título e corpo do comentário são dados de terceiros.
+# Nada do evento é interpolado no script; tudo é lido de $GITHUB_EVENT_PATH com jq.
+name: OpenBot - comentários em issues
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    # Só issues (não PRs), com a label openbot, de autores do repositório,
+    # e sem os comentários dos próprios agentes do OpenBot (evita ciclos).
+    if: >-
+      ${{
+        !github.event.issue.pull_request &&
+        contains(github.event.issue.labels.*.name, 'openbot') &&
+        contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+        !startsWith(github.event.comment.body, '[OpenBot CEO]') &&
+        !startsWith(github.event.comment.body, '[OpenBot]')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enviar webhook ao OpenBot
+        env:
+          OPENBOT_WEBHOOK_URL: ${{ secrets.OPENBOT_WEBHOOK_URL }}
+          OPENBOT_WEBHOOK_SECRET: ${{ secrets.OPENBOT_WEBHOOK_SECRET }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${OPENBOT_WEBHOOK_URL:-}" ] || [ -z "${OPENBOT_WEBHOOK_SECRET:-}" ]; then
+            echo "::error::Faltam os segredos OPENBOT_WEBHOOK_URL e/ou OPENBOT_WEBHOOK_SECRET."
+            exit 1
+          fi
+
+          # Corpo completo do comentário, cortado só se o JSON passar de ~63 KB.
+          MAX_BYTES=63000
+          LIMIT=60000
+          while :; do
+            jq -c --argjson lim "$LIMIT" '
+              .comment.body as $b
+              | {
+                  type: "github.issue_comment",
+                  occurredAt: .comment.created_at,
+                  data: {
+                    issue_number: .issue.number,
+                    issue_title: .issue.title,
+                    issue_url: .issue.html_url,
+                    comment_id: .comment.id,
+                    comment_url: .comment.html_url,
+                    comment_author: .comment.user.login,
+                    comment_body: $b[0:$lim],
+                    truncated: (($b | length) > $lim),
+                    labels: [.issue.labels[].name]
+                  }
+                }' "$GITHUB_EVENT_PATH" > body.json
+            [ "$(wc -c < body.json)" -le "$MAX_BYTES" ] && break
+            LIMIT=$((LIMIT / 2))
+          done
+
+          COMMENT_ID=$(jq -r '.comment.id' "$GITHUB_EVENT_PATH")
+          TS=$(date +%s)
+          ID="gh-comment-${COMMENT_ID}"
+          SIG=$( { printf '%s.%s.' "$TS" "$ID"; cat body.json; } \
+            | openssl dgst -sha256 -hmac "$OPENBOT_WEBHOOK_SECRET" | awk '{print $NF}')
+
+          # --retry repete só timeouts, 408, 429 e 5xx; um 4xx falha logo.
+          STATUS=$(curl --silent --show-error --max-time 30 \
+            --retry 3 --retry-delay 5 \
+            --output /dev/null --write-out '%{http_code}' \
+            --request POST \
+            --header 'Content-Type: application/json' \
+            --header "x-openbot-timestamp: ${TS}" \
+            --header "x-openbot-delivery-id: ${ID}" \
+            --header "x-openbot-signature: sha256=${SIG}" \
+            --data-binary @body.json \
+            "$OPENBOT_WEBHOOK_URL") || { echo "::error::Falha de rede ao chamar o webhook."; exit 1; }
+
+          case "$STATUS" in
+            202) echo "Webhook aceite (202)." ;;
+            200) echo "Entrega duplicada (200), já tinha sido recebida." ;;
+            *)   echo "::error::O webhook respondeu HTTP ${STATUS}."; exit 1 ;;
+          esac
