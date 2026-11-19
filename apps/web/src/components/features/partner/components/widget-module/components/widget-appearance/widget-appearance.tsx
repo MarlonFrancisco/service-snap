@@ -13,7 +13,7 @@ import {
 import type { TWidgetAppearanceConfig } from './widget-appearance.types';
 
 const RADIO_FOCUS_CLASS =
-  'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#0B0B0F]';
+  'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink';
 
 export const WidgetAppearance = ({
   label,
@@ -43,7 +43,7 @@ export const WidgetAppearance = ({
         aria-describedby="widget-label-hint"
         className={cn(MODULE_FIELD_CLASS, 'max-w-[360px]')}
       />
-      <p id="widget-label-hint" className="text-xs text-[#5F5C6E]">
+      <p id="widget-label-hint" className="text-xs text-ink-muted">
         {label.length}/{WIDGET_LABEL_MAX_LENGTH} caracteres
       </p>
     </div>
@@ -64,7 +64,7 @@ export const WidgetAppearance = ({
             <span
               aria-hidden="true"
               className={cn(
-                'block size-11 rounded-full border-2 border-white shadow-[0_0_0_1px_#E3E1EA] peer-checked:shadow-[0_0_0_2px_#0B0B0F]',
+                'block size-11 rounded-full border-2 border-white shadow-[0_0_0_1px_var(--ss-line-strong)] peer-checked:shadow-[0_0_0_2px_var(--ss-ink)]',
                 RADIO_FOCUS_CLASS,
                 option.className,
               )}
@@ -92,7 +92,7 @@ export const WidgetAppearance = ({
             />
             <span
               className={cn(
-                'inline-flex min-h-10 items-center rounded-full border border-[#E3E1EA] bg-white px-3.5 text-[13px] font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F7F6FA] peer-checked:border-[#0B0B0F] peer-checked:bg-[#0B0B0F] peer-checked:text-white',
+                'inline-flex min-h-10 items-center rounded-full border border-line-strong bg-white px-3.5 text-[13px] font-semibold text-ink transition-colors hover:bg-surface peer-checked:border-ink peer-checked:bg-ink peer-checked:text-white',
                 RADIO_FOCUS_CLASS,
               )}
             >

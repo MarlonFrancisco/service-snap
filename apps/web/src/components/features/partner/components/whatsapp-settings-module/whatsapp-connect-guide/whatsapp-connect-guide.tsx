@@ -96,10 +96,10 @@ export const WhatsappConnectGuide = ({
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={progress}
-          className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#F0EEF4]"
+          className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-3"
         >
           <div
-            className="h-full rounded-full bg-[#9810FA] transition-[width]"
+            className="h-full rounded-full bg-brand transition-[width]"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -123,8 +123,8 @@ export const WhatsappConnectGuide = ({
                   className={cn(
                     'flex min-h-[52px] w-full cursor-pointer items-center gap-3 rounded-[16px] px-3 py-2 text-left text-sm font-semibold transition-colors',
                     isCurrent
-                      ? 'bg-[#F4F3F7] text-[#0B0B0F]'
-                      : 'text-[#5F5C6E] hover:bg-[#F7F6FA]',
+                      ? 'bg-surface-2 text-ink'
+                      : 'text-ink-muted hover:bg-surface',
                     PARTNER_FOCUS_CLASS,
                   )}
                 >
@@ -132,10 +132,10 @@ export const WhatsappConnectGuide = ({
                     className={cn(
                       'grid size-[30px] shrink-0 place-items-center rounded-full border-[1.5px] text-[13px] font-bold',
                       isCurrent
-                        ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
+                        ? 'border-ink bg-ink text-white'
                         : isDone
-                          ? 'border-[#0A5536] bg-[#DFF2E7] text-[#0A5536]'
-                          : 'border-[#D8D5E0]',
+                          ? 'border-success bg-success-bg text-success'
+                          : 'border-line-2',
                     )}
                   >
                     {isDone ? (
@@ -146,7 +146,7 @@ export const WhatsappConnectGuide = ({
                   </span>
                   <span>
                     {title}
-                    <small className="block text-xs font-medium text-[#6F6C7E]">
+                    <small className="block text-xs font-medium text-ink-muted">
                       {hint}
                     </small>
                   </span>
@@ -156,7 +156,7 @@ export const WhatsappConnectGuide = ({
           })}
         </ol>
 
-        <p className="text-sm font-semibold text-[#5F5C6E] lg:hidden">
+        <p className="text-sm font-semibold text-ink-muted lg:hidden">
           {step === 0 ? current.title : `Passo ${step} de ${lastStep}`}
           <span className="sr-only"> · {current.hint}</span>
         </p>
@@ -194,7 +194,7 @@ export const WhatsappConnectGuide = ({
             </section>
           </FormProvider>
 
-          <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-[#EBE9F0] bg-white/95 py-3 lg:static lg:border-0 lg:bg-transparent lg:py-0">
+          <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white/95 py-3 lg:static lg:border-0 lg:bg-transparent lg:py-0">
             <Link
               href={WHATSAPP_SETTINGS_ROUTE}
               className="text-[13px] font-semibold underline underline-offset-[3px]"

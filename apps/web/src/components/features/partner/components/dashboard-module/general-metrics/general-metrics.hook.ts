@@ -22,7 +22,7 @@ import {
   toMetricNumber,
 } from '../utils/metrics.helpers';
 
-const FALLBACK_RANK_COLOR = '#EBE9F0';
+const FALLBACK_RANK_COLOR = 'var(--ss-line)';
 
 export const useGeneralMetrics = () => {
   const { period, setPeriod } = useMetricsPeriod('overview', 'week');

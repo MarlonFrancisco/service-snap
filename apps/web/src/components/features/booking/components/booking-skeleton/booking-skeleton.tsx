@@ -22,7 +22,7 @@ export function BookingSkeleton() {
       </div>
 
       {/* Barra inferior do mobile */}
-      <div className="sticky bottom-0 z-20 mt-auto border-t border-[#EBE9F0] bg-white px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
+      <div className="sticky bottom-0 z-20 mt-auto border-t border-line bg-white px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
         <div className="flex min-h-11 flex-col justify-center gap-1.5">
           <Skeleton className="h-3 w-24" />
           <Skeleton className="h-5 w-32" />
@@ -77,7 +77,7 @@ function BusinessInfoSkeleton() {
         ))}
       </div>
 
-      <div className="mt-[18px] grid gap-4 border-y border-[#EBE9F0] py-4 md:mt-6 md:grid-cols-3 md:gap-6 md:py-5">
+      <div className="mt-[18px] grid gap-4 border-y border-line py-4 md:mt-6 md:grid-cols-3 md:gap-6 md:py-5">
         {Array.from({ length: 3 }).map((_, index) => (
           <div key={index} className="space-y-2">
             <Skeleton className="h-3 w-16" />
@@ -97,7 +97,7 @@ function StepIndicatorSkeleton() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="flex flex-1 items-center gap-2.5 border-t-[3px] border-[#EBE9F0] pt-3"
+            className="flex flex-1 items-center gap-2.5 border-t-[3px] border-line pt-3"
           >
             <Skeleton className="h-[26px] w-[26px] shrink-0 rounded-full" />
             <Skeleton className="h-3.5 w-20" />
@@ -122,7 +122,7 @@ function StepContentSkeleton() {
       {Array.from({ length: 3 }).map((_, index) => (
         <div
           key={index}
-          className="flex items-center justify-between gap-4 border-b border-[#EBE9F0] py-[18px] md:gap-6 md:py-5"
+          className="flex items-center justify-between gap-4 border-b border-line py-[18px] md:gap-6 md:py-5"
         >
           <div className="min-w-0 flex-1 space-y-2">
             <Skeleton className="h-4 w-40" />
@@ -147,11 +147,11 @@ function BookingSidebarSkeleton() {
       <Skeleton className="h-6 w-48" />
       <Skeleton className="mt-2 h-4 w-40" />
 
-      <div className="mt-5 border-t border-[#F0EEF4] pt-5">
+      <div className="mt-5 border-t border-surface-3 pt-5">
         <Skeleton className="h-4 w-full" />
       </div>
 
-      <div className="mt-5 flex items-baseline justify-between border-t border-[#F0EEF4] pt-5">
+      <div className="mt-5 flex items-baseline justify-between border-t border-surface-3 pt-5">
         <Skeleton className="h-4 w-14" />
         <Skeleton className="h-7 w-28" />
       </div>

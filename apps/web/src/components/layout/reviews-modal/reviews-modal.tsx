@@ -33,7 +33,7 @@ export const ReviewsModal = () => {
         aria-label="Fechar"
         onClick={handleClose}
         className={cn(
-          'absolute top-3.5 right-3.5 flex size-11 cursor-pointer items-center justify-center rounded-full bg-[#F4F3F7] text-lg text-[#0B0B0F]',
+          'absolute top-3.5 right-3.5 flex size-11 cursor-pointer items-center justify-center rounded-full bg-surface-2 text-lg text-ink',
           REVIEWS_FOCUS_RING_CLASS,
         )}
       >
@@ -50,7 +50,7 @@ export const ReviewsModal = () => {
           showCloseButton={false}
           className={cn(
             plusJakartaSans.className,
-            'h-[90vh] gap-0 overflow-hidden rounded-t-[28px] border-t-0 p-0 text-[#0B0B0F]',
+            'h-[90vh] gap-0 overflow-hidden rounded-t-[28px] border-t-0 p-0 text-ink',
           )}
         >
           <SheetTitle className="sr-only">Avaliações de clientes</SheetTitle>
@@ -69,7 +69,7 @@ export const ReviewsModal = () => {
       <DialogContent
         className={cn(
           plusJakartaSans.className,
-          'flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-[28px] border-0 bg-white p-0 text-[#0B0B0F] shadow-[0_20px_60px_rgba(15,12,30,0.18)] sm:max-w-[860px] [&>button:last-child]:hidden',
+          'flex max-h-[85vh] flex-col gap-0 overflow-hidden rounded-[28px] border-0 bg-white p-0 text-ink shadow-[0_20px_60px_rgba(15,12,30,0.18)] sm:max-w-[860px] [&>button:last-child]:hidden',
         )}
       >
         <DialogTitle className="sr-only">Avaliações de clientes</DialogTitle>

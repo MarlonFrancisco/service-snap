@@ -94,7 +94,7 @@ export const LoyaltyModule = () => {
         aria-label="Carregando programa de fidelidade"
         className="grid max-w-[760px] gap-4"
       >
-        <Skeleton className="h-[560px] rounded-[24px] bg-[#F0EEF4]" />
+        <Skeleton className="h-[560px] rounded-[24px] bg-surface-3" />
       </div>
     );
   }

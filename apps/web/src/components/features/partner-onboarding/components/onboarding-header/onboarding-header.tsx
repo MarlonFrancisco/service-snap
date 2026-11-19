@@ -10,7 +10,7 @@ export const OnboardingHeader = ({
   onSaveAndExit,
   isSaving = false,
 }: TOnboardingHeaderProps) => (
-  <header className="flex min-h-16 items-center justify-between border-b border-[#EBE9F0] px-5 md:min-h-[72px] md:px-8">
+  <header className="flex min-h-16 items-center justify-between border-b border-line px-5 md:min-h-[72px] md:px-8">
     <HeaderLogo width={148} height={37} aria-label="ServiceSnap, página inicial" />
     {onSaveAndExit && (
       <button

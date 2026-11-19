@@ -16,7 +16,7 @@ export const Header = ({
     <div
       className={cn(
         plusJakartaSans.className,
-        'min-h-screen bg-white text-[#0B0B0F] antialiased',
+        'min-h-screen bg-white text-ink antialiased',
         className,
       )}
       {...props}

@@ -18,7 +18,7 @@ import {
 } from './onboarding-home-checklist.hook';
 
 const ROW_CLASS =
-  'grid min-h-[66px] w-full cursor-pointer grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-3 rounded-[14px] bg-[#F7F6FA] px-4 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'grid min-h-[66px] w-full cursor-pointer grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-3 rounded-[14px] bg-surface px-4 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 type TRowContentProps = {
   id: TChecklistItemId;
@@ -33,25 +33,25 @@ const RowContent = ({ id, done }: TRowContentProps) => {
       {done ? (
         <span
           aria-hidden="true"
-          className="grid size-6 place-items-center rounded-full bg-[#0B0B0F] text-[13px] font-extrabold text-white"
+          className="grid size-6 place-items-center rounded-full bg-ink text-[13px] font-extrabold text-white"
         >
           ✓
         </span>
       ) : (
         <span
           aria-hidden="true"
-          className="size-6 rounded-full border-2 border-[#A6A3B4]"
+          className="size-6 rounded-full border-2 border-ink-faint"
         />
       )}
       <span className="min-w-0">
-        <b className="block text-sm font-bold text-[#0B0B0F]">
+        <b className="block text-sm font-bold text-ink">
           {content.title}
         </b>
-        <small className="text-[13px] text-[#5F5C6E]">
+        <small className="text-[13px] text-ink-muted">
           {done ? 'Concluído' : content.description}
         </small>
       </span>
-      <span className="text-[13px] font-bold whitespace-nowrap text-[#0B0B0F]">
+      <span className="text-[13px] font-bold whitespace-nowrap text-ink">
         {done ? (content.doneAction ?? content.action) : content.action}
       </span>
     </>
@@ -127,7 +127,7 @@ export const OnboardingHomeChecklist = () => {
       aria-label="Checklist do espaço"
       className={cn(
         plusJakartaSans.className,
-        'relative mb-5 rounded-3xl bg-white p-6 text-[#0B0B0F] shadow-[0_12px_40px_rgba(15,12,30,0.1)]',
+        'relative mb-5 rounded-3xl bg-white p-6 text-ink shadow-[0_12px_40px_rgba(15,12,30,0.1)]',
       )}
     >
       <button
@@ -145,7 +145,7 @@ export const OnboardingHomeChecklist = () => {
       <h2 className="pr-12 text-[22px] font-extrabold tracking-[-0.025em]">
         Deixe seu espaço completo
       </h2>
-      <p className="mt-[3px] mb-3 text-sm text-[#5F5C6E]">
+      <p className="mt-[3px] mb-3 text-sm text-ink-muted">
         {completedCount} de {items.length} concluídos. Seu espaço já recebe
         agendamentos; estes passos são opcionais.
       </p>
@@ -155,10 +155,10 @@ export const OnboardingHomeChecklist = () => {
         aria-valuenow={completedCount}
         aria-valuemin={0}
         aria-valuemax={items.length}
-        className="h-1.5 overflow-hidden rounded-full bg-[#EBE9F0]"
+        className="h-1.5 overflow-hidden rounded-full bg-line"
       >
         <div
-          className="h-full bg-[#0B0B0F]"
+          className="h-full bg-ink"
           style={{ width: `${(completedCount / items.length) * 100}%` }}
         />
       </div>

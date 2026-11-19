@@ -24,7 +24,7 @@ export const AdminOverview = () => {
           {Array.from({ length: 4 }, (_, index) => (
             <Skeleton
               key={index}
-              className="h-[108px] rounded-[20px] bg-[#E9E7EF]"
+              className="h-[108px] rounded-[20px] bg-surface-4"
             />
           ))}
         </div>
@@ -44,11 +44,11 @@ export const AdminOverview = () => {
       <dl className="grid gap-3.5 sm:grid-cols-2">
         {kpis.map((kpi) => (
           <div key={kpi.label} className={KPI_CLASS}>
-            <dt className="text-[13px] text-[#5F5C6E]">{kpi.label}</dt>
+            <dt className="text-[13px] text-ink-muted">{kpi.label}</dt>
             <dd className="m-0 text-[22px] font-extrabold tracking-[-0.02em] tabular-nums">
               {kpi.value}
             </dd>
-            <dd className="m-0 text-[13px] text-[#5F5C6E]">{kpi.detail}</dd>
+            <dd className="m-0 text-[13px] text-ink-muted">{kpi.detail}</dd>
           </div>
         ))}
       </dl>

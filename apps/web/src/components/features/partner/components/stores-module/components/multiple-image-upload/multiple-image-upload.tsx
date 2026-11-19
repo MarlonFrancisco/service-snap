@@ -46,12 +46,12 @@ export const MultiImageUpload = ({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={cn(
-            'grid justify-items-center gap-2 rounded-[18px] border-2 border-dashed bg-[#F7F6FA] p-6 text-center text-sm transition-colors',
+            'grid justify-items-center gap-2 rounded-[18px] border-2 border-dashed bg-surface p-6 text-center text-sm transition-colors',
             PARTNER_MUTED_TEXT_CLASS,
-            dragActive ? 'border-[#0B0B0F]' : 'border-[#D5D2DE]',
+            dragActive ? 'border-ink' : 'border-line-2',
           )}
         >
-          <p className="font-bold text-[#0B0B0F]">
+          <p className="font-bold text-ink">
             {dragActive ? 'Solte as fotos aqui' : 'Arraste fotos para cá'}
           </p>
           <p>ou</p>
@@ -74,7 +74,7 @@ export const MultiImageUpload = ({
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           {images.map((image, index) => (
             <li key={image.id} className="min-w-0">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[#F4F3F7]">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface-2">
                 <ImageWithFallback
                   src={image.url}
                   alt={`Foto ${index + 1} da loja`}
@@ -83,7 +83,7 @@ export const MultiImageUpload = ({
                   className="object-cover"
                 />
                 {image.isMain ? (
-                  <span className="absolute top-2 left-2 rounded-full bg-[#0B0B0F] px-2.5 py-[5px] text-xs font-bold text-white">
+                  <span className="absolute top-2 left-2 rounded-full bg-ink px-2.5 py-[5px] text-xs font-bold text-white">
                     Principal
                   </span>
                 ) : null}

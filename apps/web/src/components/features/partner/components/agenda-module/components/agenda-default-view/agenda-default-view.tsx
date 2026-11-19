@@ -19,9 +19,9 @@ export function AgendaDefaultView() {
       <AgendaToolbar />
 
       {showProfessionalNote && (
-        <p className="flex items-center gap-2.5 rounded-[14px] bg-[#F7F6FA] px-4 py-3 text-sm font-medium">
+        <p className="flex items-center gap-2.5 rounded-[14px] bg-surface px-4 py-3 text-sm font-medium">
           <Info
-            className="size-[18px] shrink-0 stroke-[1.8] text-[#5F5C6E]"
+            className="size-[18px] shrink-0 stroke-[1.8] text-ink-muted"
             aria-hidden="true"
           />
           Você vê só a sua agenda. Para mudar serviços ou horários da loja,
@@ -42,7 +42,7 @@ export function AgendaDefaultView() {
         aria-label="Novo agendamento"
         onClick={handleOpenAddAppointment}
         className={cn(
-          'fixed right-5 bottom-5 z-30 grid size-14 place-items-center rounded-full bg-[#0B0B0F] text-white shadow-[0_12px_40px_rgba(15,12,30,0.25)] md:hidden',
+          'fixed right-5 bottom-5 z-30 grid size-14 place-items-center rounded-full bg-ink text-white shadow-[0_12px_40px_rgba(15,12,30,0.25)] md:hidden',
           PARTNER_FOCUS_CLASS,
         )}
       >

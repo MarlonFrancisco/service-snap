@@ -87,7 +87,7 @@ export const WebhookEndpointItem = (config: TWebhookEndpointItemConfig) => {
           {endpoint.url}
         </code>
       </b>
-      <span className="text-[13px] text-[#5F5C6E]">
+      <span className="text-[13px] text-ink-muted">
         {endpoint.isActive ? eventsLabel : disabledLabel}
         {endpoint.description ? ` · ${endpoint.description}` : ''}
       </span>
@@ -113,12 +113,12 @@ export const WebhookEndpointItem = (config: TWebhookEndpointItemConfig) => {
               <code
                 className={cn(
                   PANEL_CODE_CLASS,
-                  'text-[#5F5C6E] [overflow-wrap:anywhere]',
+                  'text-ink-muted [overflow-wrap:anywhere]',
                 )}
               >
                 {revealedSecret ?? 'whsec_••••••••••••••••'}
               </code>
-              <span className="text-xs text-[#5F5C6E]">
+              <span className="text-xs text-ink-muted">
                 Mostrar o segredo fica registrado no histórico de ações.
               </span>
             </div>

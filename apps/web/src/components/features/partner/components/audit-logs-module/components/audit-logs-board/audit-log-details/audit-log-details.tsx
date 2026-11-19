@@ -51,8 +51,8 @@ export const AuditLogDetails = ({
         </dl>
 
         {row.payload ? (
-          <div className="rounded-[14px] bg-[#F7F6FA] p-3.5">
-            <p className="mb-2 text-[13px] text-[#5F5C6E]">Enviado</p>
+          <div className="rounded-[14px] bg-surface p-3.5">
+            <p className="mb-2 text-[13px] text-ink-muted">Enviado</p>
             <code
               className={cn(
                 PANEL_CODE_CLASS,

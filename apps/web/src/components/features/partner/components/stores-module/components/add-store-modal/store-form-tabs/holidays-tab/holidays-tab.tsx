@@ -62,14 +62,14 @@ export const HolidaysTab = () => {
               onKeyDown={handleInputKeyDown}
               className={cn(
                 STORES_FIELD_CLASS,
-                dateError && 'border-[1.5px] border-[#A4231A]',
+                dateError && 'border-[1.5px] border-error',
               )}
             />
             {dateError ? (
               <span
                 id={DATE_ERROR_ID}
                 role="alert"
-                className="flex items-center gap-1.5 text-[13px] font-semibold text-[#A4231A]"
+                className="flex items-center gap-1.5 text-[13px] font-semibold text-error"
               >
                 <AlertCircle aria-hidden="true" className="size-4 shrink-0" />
                 {dateError}
@@ -80,7 +80,7 @@ export const HolidaysTab = () => {
           <div className="grid gap-1.5">
             <Label htmlFor={NAME_INPUT_ID} className={STORES_LABEL_CLASS}>
               Nome{' '}
-              <span className="font-medium text-[#5F5C6E]">(opcional)</span>
+              <span className="font-medium text-ink-muted">(opcional)</span>
             </Label>
             <Input
               id={NAME_INPUT_ID}
@@ -111,7 +111,7 @@ export const HolidaysTab = () => {
           </button>
         </fieldset>
 
-        <p className="rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] leading-normal">
+        <p className="rounded-[14px] bg-surface px-3.5 py-3 text-[13px] leading-normal">
           Nesses dias a loja não aparece com horários para agendar, nem no site
           nem no WhatsApp.
         </p>
@@ -122,8 +122,8 @@ export const HolidaysTab = () => {
 
         {isLoading ? (
           <div className="grid gap-2" role="status" aria-label="Carregando feriados">
-            <Skeleton className="h-16 rounded-[20px] bg-[#EBE9F0]" />
-            <Skeleton className="h-16 rounded-[20px] bg-[#EBE9F0]" />
+            <Skeleton className="h-16 rounded-[20px] bg-line" />
+            <Skeleton className="h-16 rounded-[20px] bg-line" />
           </div>
         ) : isError ? (
           <StatePanel
@@ -137,36 +137,36 @@ export const HolidaysTab = () => {
         ) : isEmpty ? (
           <div
             role="status"
-            className="grid gap-1 rounded-[20px] bg-[#F7F6FA] p-[18px] text-[13px] leading-normal text-[#5F5C6E]"
+            className="grid gap-1 rounded-[20px] bg-surface p-[18px] text-[13px] leading-normal text-ink-muted"
           >
-            <b className="text-sm text-[#0B0B0F]">Nenhum feriado cadastrado</b>
+            <b className="text-sm text-ink">Nenhum feriado cadastrado</b>
             Adicione os dias em que a loja fica fechada inteira.
           </div>
         ) : (
           <div className="grid gap-3">
             {groups.map((group) => (
               <div key={group.year} className="grid gap-2">
-                <p className="text-[13px] font-bold text-[#5F5C6E]">
+                <p className="text-[13px] font-bold text-ink-muted">
                   {group.year}
                 </p>
                 <ul className="grid gap-2">
                   {group.items.map((holiday) => (
                     <li
                       key={holiday.id}
-                      className="flex min-h-16 items-center gap-3.5 rounded-[20px] border border-[#EBE9F0] py-2 pr-2 pl-4"
+                      className="flex min-h-16 items-center gap-3.5 rounded-[20px] border border-line py-2 pr-2 pl-4"
                     >
                       <span
                         aria-hidden="true"
-                        className="grid size-12 shrink-0 place-content-center rounded-[14px] bg-[#F4F3F7] text-center text-[17px] leading-none font-extrabold"
+                        className="grid size-12 shrink-0 place-content-center rounded-[14px] bg-surface-2 text-center text-[17px] leading-none font-extrabold"
                       >
                         {holiday.dayLabel}
-                        <span className="block text-[11px] font-bold tracking-[0.04em] text-[#5F5C6E] uppercase">
+                        <span className="block text-[11px] font-bold tracking-[0.04em] text-ink-muted uppercase">
                           {holiday.monthShortLabel}
                         </span>
                       </span>
                       <div className="min-w-0 flex-1">
                         <b className="block text-[15px]">{holiday.dateLabel}</b>
-                        <span className="block truncate text-[13px] text-[#5F5C6E]">
+                        <span className="block truncate text-[13px] text-ink-muted">
                           {holiday.name}
                         </span>
                       </div>
@@ -176,7 +176,7 @@ export const HolidaysTab = () => {
                         disabled={removingId === holiday.id}
                         onClick={() => handleRemove(holiday.id)}
                         className={cn(
-                          'grid size-11 shrink-0 place-items-center rounded-full text-[#A4231A] transition-colors hover:bg-[#FBE8E6] disabled:opacity-50',
+                          'grid size-11 shrink-0 place-items-center rounded-full text-error transition-colors hover:bg-error-bg disabled:opacity-50',
                           PARTNER_FOCUS_CLASS,
                         )}
                       >

@@ -55,17 +55,17 @@ export const TeamStep = ({ state, onBack, onExit, onSaved }: TTeamStepProps) => 
       onPrimary={handleContinue}
       onSaveAndExit={handleSaveAndExit}
     >
-      <section className="rounded-[22px] border-2 border-[#0B0B0F] px-[19px] py-[17px]">
+      <section className="rounded-[22px] border-2 border-ink px-[19px] py-[17px]">
         <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3.5 text-base font-bold">
           Eu mesmo atendo
           <input
             type="checkbox"
             checked={ownerEnabled}
             onChange={(event) => setOwnerEnabled(event.target.checked)}
-            className="size-6 flex-none accent-[#0B0B0F]"
+            className="size-6 flex-none accent-ink"
           />
         </label>
-        <p className="mt-0.5 mb-3 text-sm text-[#5F5C6E]">
+        <p className="mt-0.5 mb-3 text-sm text-ink-muted">
           Você aparece na agenda e pode receber agendamentos.
         </p>
         {ownerEnabled && (
@@ -77,13 +77,13 @@ export const TeamStep = ({ state, onBack, onExit, onSaved }: TTeamStepProps) => 
               {services.map((service) => (
                 <label
                   key={service.id}
-                  className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-[#F4F3F7] px-3.5 text-[13px] font-semibold"
+                  className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full bg-surface-2 px-3.5 text-[13px] font-semibold"
                 >
                   <input
                     type="checkbox"
                     checked={ownerServiceIds.includes(service.id)}
                     onChange={() => toggleOwnerService(service.id)}
-                    className="size-[18px] accent-[#0B0B0F]"
+                    className="size-[18px] accent-ink"
                   />
                   {service.name}
                 </label>
@@ -96,7 +96,7 @@ export const TeamStep = ({ state, onBack, onExit, onSaved }: TTeamStepProps) => 
       <h2 className="mt-6 mb-[3px] text-lg font-extrabold tracking-[-0.02em]">
         Adicionar outro profissional
       </h2>
-      <p className="mb-2.5 text-sm text-[#5F5C6E]">
+      <p className="mb-2.5 text-sm text-ink-muted">
         A pessoa precisa ter conta no ServiceSnap.
       </p>
 
@@ -156,14 +156,14 @@ export const TeamStep = ({ state, onBack, onExit, onSaved }: TTeamStepProps) => 
           {otherMembers.map((member) => (
             <li
               key={member.id}
-              className="flex items-center justify-between gap-3.5 border-b border-[#EBE9F0] py-3 text-sm"
+              className="flex items-center justify-between gap-3.5 border-b border-line py-3 text-sm"
             >
               <div className="min-w-0">
                 <b className="block truncate text-[15px]">
                   {member.name || member.email}
                 </b>
                 {member.name && (
-                  <span className="block truncate text-[#5F5C6E]">
+                  <span className="block truncate text-ink-muted">
                     {member.email}
                   </span>
                 )}
@@ -181,7 +181,7 @@ export const TeamStep = ({ state, onBack, onExit, onSaved }: TTeamStepProps) => 
         </ul>
       )}
 
-      <p className="mt-[18px] flex justify-between border-t border-[#EBE9F0] pt-3.5 text-[13px] text-[#5F5C6E]">
+      <p className="mt-[18px] flex justify-between border-t border-line pt-3.5 text-[13px] text-ink-muted">
         <span>Profissionais no plano</span>
         <b>{planLimit ? `${usedSlots}/${planLimit}` : usedSlots}</b>
       </p>
@@ -189,7 +189,7 @@ export const TeamStep = ({ state, onBack, onExit, onSaved }: TTeamStepProps) => 
       {!hasProfessional && (
         <p
           role="status"
-          className="mt-3 rounded-[14px] bg-[#FFF1E0] px-4 py-[13px] text-sm leading-[1.45] text-[#8A4B00]"
+          className="mt-3 rounded-[14px] bg-warning-bg px-4 py-[13px] text-sm leading-[1.45] text-warning"
         >
           Sem nenhum profissional, ninguém consegue agendar. Mantenha &quot;Eu
           mesmo atendo&quot; ou adicione alguém para continuar.

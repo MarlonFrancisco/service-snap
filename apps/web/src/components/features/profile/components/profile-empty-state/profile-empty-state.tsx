@@ -10,12 +10,12 @@ export const ProfileEmptyState = ({
   actionLabel,
 }: TProfileEmptyStateConfig) => {
   return (
-    <section className="flex flex-col items-center rounded-[22px] border border-[#E3E1EA] px-6 py-12 text-center md:rounded-3xl">
-      <span className="grid size-14 place-items-center rounded-full bg-[#F4F3F7]">
+    <section className="flex flex-col items-center rounded-[22px] border border-line-strong px-6 py-12 text-center md:rounded-3xl">
+      <span className="grid size-14 place-items-center rounded-full bg-surface-2">
         <Icon className="size-6" strokeWidth={1.7} aria-hidden />
       </span>
       <h2 className="mt-4 text-xl font-extrabold tracking-[-0.02em]">{title}</h2>
-      <p className="mt-1 max-w-md text-sm leading-normal text-[#5F5C6E]">
+      <p className="mt-1 max-w-md text-sm leading-normal text-ink-muted">
         {description}
       </p>
       <Link

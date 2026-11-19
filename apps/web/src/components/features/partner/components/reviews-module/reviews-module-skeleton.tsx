@@ -24,11 +24,11 @@ export const ReviewsModuleSkeleton = () => (
 
     <Skeleton className="h-11 w-full max-w-[360px] rounded-full" />
 
-    <div className="overflow-hidden rounded-[22px] border border-[#EBE9F0]">
+    <div className="overflow-hidden rounded-[22px] border border-line">
       {Array.from({ length: REVIEW_SKELETON_COUNT }).map((_, index) => (
         <div
           key={index}
-          className="grid gap-2 border-b border-[#F0EEF4] px-5 py-[18px] last:border-0"
+          className="grid gap-2 border-b border-surface-3 px-5 py-[18px] last:border-0"
         >
           <div className="flex justify-between gap-2">
             <Skeleton className="h-4 w-32 rounded-[14px]" />

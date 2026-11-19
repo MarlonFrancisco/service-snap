@@ -25,8 +25,8 @@ import { ScheduleSeriesCancel } from '../../../schedule-series-module/components
 import { useAppointmentDetails } from './appointment-details.hook';
 
 const DETAIL_ROW_CLASS =
-  'flex justify-between gap-5 border-b border-[#F0EEF4] py-[11px] text-sm';
-const DETAIL_TERM_CLASS = 'text-[#5F5C6E]';
+  'flex justify-between gap-5 border-b border-surface-3 py-[11px] text-sm';
+const DETAIL_TERM_CLASS = 'text-ink-muted';
 const DETAIL_VALUE_CLASS = 'min-w-0 text-right font-semibold break-words';
 const DETAIL_BADGE_CLASS = 'rounded-full px-[11px] py-[5px] text-xs font-bold';
 const PRESENCE_NOTE_CLASS =
@@ -81,7 +81,7 @@ export function AppointmentDetailsResponsive() {
         </span>
         {isPresenceConfirmed ? (
           <span
-            className={cn(DETAIL_BADGE_CLASS, 'bg-[#F2FAF5] text-[#0A5536]')}
+            className={cn(DETAIL_BADGE_CLASS, 'bg-success-bg-soft text-success')}
           >
             Confirmado
           </span>
@@ -89,7 +89,7 @@ export function AppointmentDetailsResponsive() {
       </div>
 
       {isPresenceConfirmed ? (
-        <div className={cn(PRESENCE_NOTE_CLASS, 'bg-[#F2FAF5] text-[#0A5536]')}>
+        <div className={cn(PRESENCE_NOTE_CLASS, 'bg-success-bg-soft text-success')}>
           <Check
             aria-hidden="true"
             className="size-5 shrink-0"
@@ -103,9 +103,9 @@ export function AppointmentDetailsResponsive() {
       ) : null}
 
       {isPresenceAwaiting ? (
-        <div className={cn(PRESENCE_NOTE_CLASS, 'bg-[#F7F6FA] text-[#5F5C6E]')}>
+        <div className={cn(PRESENCE_NOTE_CLASS, 'bg-surface text-ink-muted')}>
           <p>
-            <b className="block text-[#0B0B0F]">
+            <b className="block text-ink">
               Lembrete enviado, sem resposta
             </b>
             {presenceText}
@@ -248,7 +248,7 @@ export function AppointmentDetailsResponsive() {
         <div
           role="alertdialog"
           aria-label="Confirmar cancelamento"
-          className="rounded-[14px] bg-[#F7F6FA] px-4 py-3.5 text-sm leading-normal"
+          className="rounded-[14px] bg-surface px-4 py-3.5 text-sm leading-normal"
         >
           <b className="block">Cancelar este agendamento?</b>O cliente deixa de
           ter este horário reservado.
@@ -278,7 +278,7 @@ export function AppointmentDetailsResponsive() {
       ) : null}
 
       {isPresenceConfirmed ? (
-        <p className="text-[13px] leading-normal text-[#5F5C6E]">
+        <p className="text-[13px] leading-normal text-ink-muted">
           Remarcar apaga a confirmação: o cliente confirma de novo no lembrete
           do horário novo.
         </p>
@@ -290,7 +290,7 @@ export function AppointmentDetailsResponsive() {
     return (
       <Drawer open={isOpen} onOpenChange={handleClose}>
         <DrawerContent className={AGENDA_DRAWER_CLASS}>
-          <DrawerHeader className="border-b border-[#EBE9F0]">
+          <DrawerHeader className="border-b border-line">
             <DrawerTitle className={AGENDA_MODAL_TITLE_CLASS}>
               {title}
             </DrawerTitle>

@@ -6,9 +6,9 @@ type TBookingSummaryItemsConfig = {
 };
 
 const SECTION_LABEL_CLASS =
-  'mt-5 mb-2.5 border-t border-[#F0EEF4] pt-5 text-[13px] font-bold tracking-[0.06em] text-[#5F5C6E] uppercase';
+  'mt-5 mb-2.5 border-t border-surface-3 pt-5 text-[13px] font-bold tracking-[0.06em] text-ink-muted uppercase';
 const NOTICE_CLASS =
-  'mt-5 rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-center text-sm text-[#5F5C6E]';
+  'mt-5 rounded-[14px] bg-surface px-3.5 py-3 text-center text-sm text-ink-muted';
 
 /** Serviços, profissional e horário: conteúdo comum ao painel e à gaveta mobile. */
 export function BookingSummaryItems({ summary }: TBookingSummaryItemsConfig) {
@@ -33,14 +33,14 @@ export function BookingSummaryItems({ summary }: TBookingSummaryItemsConfig) {
             {selectedServices.map((service) => (
               <div
                 key={service.id}
-                className="flex justify-between gap-4 text-sm text-[#0B0B0F]"
+                className="flex justify-between gap-4 text-sm text-ink"
               >
                 <div className="min-w-0">
                   {service.name}
                   {service.quantity > 1 && (
                     <b className="ml-1.5 font-bold">{service.quantity}x</b>
                   )}
-                  <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
+                  <span className="mt-0.5 block text-[13px] text-ink-muted">
                     {formatDuration(service.duration * service.quantity)}
                   </span>
                 </div>
@@ -52,7 +52,7 @@ export function BookingSummaryItems({ summary }: TBookingSummaryItemsConfig) {
           </div>
 
           {selectedServices.length > 1 && (
-            <p className="mt-3 flex justify-between gap-4 text-[13px] text-[#5F5C6E]">
+            <p className="mt-3 flex justify-between gap-4 text-[13px] text-ink-muted">
               Duração total
               <span>{formatDuration(totalDuration)}</span>
             </p>
@@ -63,7 +63,7 @@ export function BookingSummaryItems({ summary }: TBookingSummaryItemsConfig) {
       {(selectedProfessional || isAnyProfessional) && (
         <>
           <p className={SECTION_LABEL_CLASS}>Profissional</p>
-          <p className="text-sm text-[#0B0B0F]">
+          <p className="text-sm text-ink">
             {isAnyProfessional
               ? 'Qualquer profissional'
               : getFullName(
@@ -77,11 +77,11 @@ export function BookingSummaryItems({ summary }: TBookingSummaryItemsConfig) {
       {selectedDate && selectedTime && (
         <>
           <p className={SECTION_LABEL_CLASS}>Agendado para</p>
-          <div className="text-sm text-[#0B0B0F]">
+          <div className="text-sm text-ink">
             <p className="first-letter:uppercase">
               {formatFullDate(selectedDate)}
             </p>
-            <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
+            <span className="mt-0.5 block text-[13px] text-ink-muted">
               {selectedTime}
             </span>
           </div>

@@ -36,8 +36,8 @@ const FormsSkeleton = () => (
     aria-label="Carregando fichas"
     className="grid gap-7 min-[1180px]:grid-cols-[minmax(0,1fr)_420px]"
   >
-    <Skeleton className="h-[560px] rounded-[24px] bg-[#F0EEF4]" />
-    <Skeleton className="h-[240px] rounded-[24px] bg-[#F0EEF4]" />
+    <Skeleton className="h-[560px] rounded-[24px] bg-surface-3" />
+    <Skeleton className="h-[240px] rounded-[24px] bg-surface-3" />
   </div>
 );
 
@@ -107,12 +107,12 @@ export const AnamnesisForms = () => {
                     key={item.id}
                     className={cn(
                       ANAMNESIS_ITEM_CLASS,
-                      item.isSelected && 'border-[#0B0B0F]',
+                      item.isSelected && 'border-ink',
                     )}
                   >
                     <div className="grid min-w-0 gap-0.5">
                       <b className="text-sm break-words">{item.name}</b>
-                      <span className="text-[13px] text-[#5F5C6E]">
+                      <span className="text-[13px] text-ink-muted">
                         {item.meta}
                       </span>
                     </div>
@@ -170,7 +170,7 @@ export const AnamnesisForms = () => {
           <div className={ANAMNESIS_LOCK_NOTE_CLASS}>
             <Lock aria-hidden="true" className={ANAMNESIS_NOTE_ICON_CLASS} />
             <p>
-              <b className="block text-[#3B2A6B]">Dado de saúde</b>
+              <b className="block text-brand-ink">Dado de saúde</b>
               As respostas ficam cifradas. Só dono, gerente e o profissional do
               atendimento abrem a ficha, e cada abertura fica no histórico da
               loja.

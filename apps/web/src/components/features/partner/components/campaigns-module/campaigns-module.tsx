@@ -80,7 +80,7 @@ export const CampaignsModule = () => {
         <Skeleton
           role="status"
           aria-label="Carregando clientes"
-          className="h-[260px] rounded-[20px] bg-[#F0EEF4]"
+          className="h-[260px] rounded-[20px] bg-surface-3"
         />
       );
     }
@@ -153,7 +153,7 @@ export const CampaignsModule = () => {
             </Select>
           </div>
           {!isLoadingRows && !isRowsError ? (
-            <span className="flex min-h-[46px] items-center text-[13px] text-[#5F5C6E]">
+            <span className="flex min-h-[46px] items-center text-[13px] text-ink-muted">
               {countLabel}
             </span>
           ) : null}

@@ -43,7 +43,7 @@ export const AnamnesisFormCard = ({
       >
         <span
           aria-hidden="true"
-          className="grid size-12 place-items-center rounded-full bg-[#DFF2E7] text-[#0A5536]"
+          className="grid size-12 place-items-center rounded-full bg-success-bg text-success"
         >
           <Check className="size-6 stroke-2" />
         </span>
@@ -75,7 +75,7 @@ export const AnamnesisFormCard = ({
         </p>
       ) : null}
       {previousSubmissionLabel ? (
-        <p className="rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] leading-normal text-[#3D3A4A]">
+        <p className="rounded-[14px] bg-surface px-3.5 py-3 text-[13px] leading-normal text-ink-soft">
           Você já enviou esta ficha em {previousSubmissionLabel}. Enviar de novo
           substitui as respostas anteriores.
         </p>
@@ -97,7 +97,7 @@ export const AnamnesisFormCard = ({
           <div className="grid gap-1.5">
             <label
               htmlFor={consentId}
-              className={`${ANAMNESIS_CHECK_CLASS} rounded-[14px] bg-[#F7F6FA] p-3.5`}
+              className={`${ANAMNESIS_CHECK_CLASS} rounded-[14px] bg-surface p-3.5`}
             >
               <input
                 id={consentId}
@@ -130,7 +130,7 @@ export const AnamnesisFormCard = ({
       {submitError ? (
         <p
           role="alert"
-          className="rounded-[14px] bg-[#FBE8E6] px-3.5 py-3 text-[13px] font-semibold text-[#A4231A]"
+          className="rounded-[14px] bg-error-bg px-3.5 py-3 text-[13px] font-semibold text-error"
         >
           {submitError}
         </p>

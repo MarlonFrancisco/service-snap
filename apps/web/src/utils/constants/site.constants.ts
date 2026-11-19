@@ -11,4 +11,4 @@ export const SITE_DESCRIPTION =
 export const CONTACT_EMAIL = 'general@ssnap.io';
 
 export const DEFAULT_OG_IMAGE = '/og-image.png';
-export const THEME_COLOR = '#9810fa';
+export const THEME_COLOR = '#7b2ff2';

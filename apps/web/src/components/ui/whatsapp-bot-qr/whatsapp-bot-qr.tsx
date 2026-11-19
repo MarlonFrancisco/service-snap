@@ -15,7 +15,7 @@ export const WhatsappBotQr = ({
 }: TWhatsappBotQrConfig) => (
   <div
     className={cn(
-      'shrink-0 rounded-2xl border border-[#EBE9F0] bg-white p-2.5',
+      'shrink-0 rounded-2xl border border-line bg-white p-2.5',
       className,
     )}
     {...props}

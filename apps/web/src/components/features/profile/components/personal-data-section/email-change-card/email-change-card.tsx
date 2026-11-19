@@ -50,7 +50,7 @@ export const EmailChangeCard = () => {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
-          <small className="block text-xs font-semibold text-[#5F5C6E]">
+          <small className="block text-xs font-semibold text-ink-muted">
             E-mail atual
           </small>
           <b className="mt-0.5 block text-[15px] [overflow-wrap:anywhere]">
@@ -77,7 +77,7 @@ export const EmailChangeCard = () => {
       </div>
 
       {isOpen && (
-        <div className="mt-[18px] grid gap-4 border-t border-[#F0EEF4] pt-[18px]">
+        <div className="mt-[18px] grid gap-4 border-t border-surface-3 pt-[18px]">
           <form className="grid gap-1.5" onSubmit={handleSendCode} noValidate>
             <div className={ROW_CLASS}>
               <label className={cn(PROFILE_FIELD_CLASS, 'min-w-0 flex-1')}>
@@ -133,8 +133,8 @@ export const EmailChangeCard = () => {
                   className={cn(
                     'rounded-[14px] px-4 py-3.5 text-sm leading-[1.5]',
                     notice.tone === 'warning'
-                      ? 'bg-[#FFF1E0] text-[#6E3B00]'
-                      : 'bg-[#F7F6FA] text-[#0B0B0F]',
+                      ? 'bg-warning-bg text-warning'
+                      : 'bg-surface text-ink',
                   )}
                 >
                   {notice.message}

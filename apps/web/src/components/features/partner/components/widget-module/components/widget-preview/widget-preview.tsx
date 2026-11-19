@@ -19,7 +19,7 @@ export const WidgetPreview = ({
     <div
       role="img"
       aria-label={`Botão "${label}" em ${color.label.toLowerCase()} no canto ${POSITION_LABEL[position]} da tela`}
-      className="relative h-[220px] overflow-hidden rounded-[18px] border border-dashed border-[#D8D5E0] bg-[#F7F6FA]"
+      className="relative h-[220px] overflow-hidden rounded-[18px] border border-dashed border-line-2 bg-surface"
     >
       <span
         className={cn(

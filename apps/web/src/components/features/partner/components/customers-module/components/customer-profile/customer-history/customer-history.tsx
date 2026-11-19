@@ -11,7 +11,7 @@ import {
 import type { TCustomerHistoryConfig } from './customer-history.types';
 
 const ROW_CLASS =
-  'grid items-center gap-4 border-b border-[#F0EEF4] py-3.5 text-sm sm:grid-cols-[150px_minmax(0,1fr)_auto]';
+  'grid items-center gap-4 border-b border-surface-3 py-3.5 text-sm sm:grid-cols-[150px_minmax(0,1fr)_auto]';
 const SKELETON_ROWS = 4;
 
 export const CustomerHistory = ({
@@ -32,9 +32,9 @@ export const CustomerHistory = ({
         <div role="status" aria-label="Carregando histórico">
           {Array.from({ length: SKELETON_ROWS }, (_, index) => (
             <div key={index} className={ROW_CLASS}>
-              <Skeleton className="h-4 w-24 rounded-full bg-[#F0EEF4]" />
-              <Skeleton className="h-4 w-40 rounded-full bg-[#F0EEF4]" />
-              <Skeleton className="h-6 w-20 rounded-full bg-[#F0EEF4]" />
+              <Skeleton className="h-4 w-24 rounded-full bg-surface-3" />
+              <Skeleton className="h-4 w-40 rounded-full bg-surface-3" />
+              <Skeleton className="h-6 w-20 rounded-full bg-surface-3" />
             </div>
           ))}
         </div>
@@ -45,7 +45,7 @@ export const CustomerHistory = ({
       return (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] bg-[#FBE8E6] px-4 py-3 text-sm font-semibold text-[#A4231A]"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] bg-error-bg px-4 py-3 text-sm font-semibold text-error"
         >
           Não foi possível carregar o histórico.
           <button
@@ -61,7 +61,7 @@ export const CustomerHistory = ({
 
     if (rows.length === 0) {
       return (
-        <p className="rounded-[16px] bg-[#F7F6FA] px-4 py-5 text-sm text-[#5F5C6E]">
+        <p className="rounded-[16px] bg-surface px-4 py-5 text-sm text-ink-muted">
           Nenhum horário marcado ainda.
         </p>
       );
@@ -76,13 +76,13 @@ export const CustomerHistory = ({
           <li key={row.id} className={ROW_CLASS}>
             <div>
               <b className="block font-bold">{row.day}</b>
-              <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
+              <span className="mt-0.5 block text-[13px] text-ink-muted">
                 {row.time}
               </span>
             </div>
             <div className="min-w-0">
               <b className="block font-bold break-words">{row.service}</b>
-              <span className="mt-0.5 block text-[13px] break-words text-[#5F5C6E]">
+              <span className="mt-0.5 block text-[13px] break-words text-ink-muted">
                 {row.professional}
               </span>
             </div>

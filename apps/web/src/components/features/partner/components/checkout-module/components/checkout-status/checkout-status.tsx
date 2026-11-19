@@ -43,7 +43,7 @@ export const CheckoutStatus = ({
       <Skeleton
         role="status"
         aria-label="Carregando o fechamento"
-        className="h-[72px] rounded-2xl bg-[#F0EEF4]"
+        className="h-[72px] rounded-2xl bg-surface-3"
       />
     );
   }
@@ -88,13 +88,13 @@ export const CheckoutStatus = ({
   return (
     <section
       aria-label="Fechamento do atendimento"
-      className="grid gap-2.5 rounded-2xl border border-[#EBE9F0] px-4 py-3.5"
+      className="grid gap-2.5 rounded-2xl border border-line px-4 py-3.5"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <CircleCheck
             aria-hidden="true"
-            className="mt-0.5 size-5 flex-none stroke-2 text-[#0A5536]"
+            className="mt-0.5 size-5 flex-none stroke-2 text-success"
           />
           <div className={MANAGEMENT_LINE_CLASS}>
             <b className={MANAGEMENT_LINE_TITLE_CLASS}>{summary.title}</b>
@@ -122,7 +122,7 @@ export const CheckoutStatus = ({
         <div
           role="alertdialog"
           aria-label="Confirmar desfazer o fechamento"
-          className="rounded-[14px] bg-[#F7F6FA] px-4 py-3.5 text-sm leading-normal"
+          className="rounded-[14px] bg-surface px-4 py-3.5 text-sm leading-normal"
         >
           <b className="block">Desfazer este fechamento?</b>
           Os pagamentos são estornados e a sessão do pacote e a recompensa

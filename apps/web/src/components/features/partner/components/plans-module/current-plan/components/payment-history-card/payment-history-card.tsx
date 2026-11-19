@@ -11,11 +11,11 @@ export function PaymentHistoryCard() {
   const { paymentHistory, downloadPDF } = usePaymentHistoryCard();
 
   return (
-    <section className="grid gap-3.5 rounded-[24px] border border-[#EBE9F0] p-6">
+    <section className="grid gap-3.5 rounded-[24px] border border-line p-6">
       <h3 className="text-lg font-extrabold">Histórico de pagamentos</h3>
 
       {paymentHistory.length === 0 ? (
-        <p className="text-sm leading-normal text-[#5F5C6E]">
+        <p className="text-sm leading-normal text-ink-muted">
           Nenhuma fatura disponível ainda. Cobranças confirmadas aparecem aqui.
         </p>
       ) : (
@@ -23,11 +23,11 @@ export function PaymentHistoryCard() {
           {paymentHistory.map((payment) => (
             <li
               key={payment.id}
-              className="flex flex-wrap items-center justify-between gap-2.5 border-t border-[#F0EEF4] py-2.5 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2.5 border-t border-surface-3 py-2.5 text-sm"
             >
               <div className="min-w-0 break-words">
                 {payment.invoiceLabel}
-                <span className="block text-[13px] text-[#5F5C6E]">
+                <span className="block text-[13px] text-ink-muted">
                   {payment.dateLabel}
                 </span>
               </div>
@@ -50,7 +50,7 @@ export function PaymentHistoryCard() {
                     Baixar PDF
                   </button>
                 ) : (
-                  <span className="text-[13px] text-[#5F5C6E]">
+                  <span className="text-[13px] text-ink-muted">
                     PDF indisponível
                   </span>
                 )}

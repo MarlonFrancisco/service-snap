@@ -43,7 +43,7 @@ export const StoreCard = ({ store }: TStoreCardConfig) => {
 
   return (
     <article className="grid overflow-hidden rounded-[28px] bg-white shadow-[0_12px_40px_rgba(15,12,30,0.1)] md:grid-cols-[minmax(0,320px)_minmax(0,1fr)]">
-      <div className="relative min-h-[220px] bg-[#F4F3F7] md:min-h-[280px]">
+      <div className="relative min-h-[220px] bg-surface-2 md:min-h-[280px]">
         <div className={cn('absolute inset-0', !store.isActive && 'opacity-60')}>
           {orderedGallery.length > 0 ? (
             <Carousel
@@ -94,7 +94,7 @@ export const StoreCard = ({ store }: TStoreCardConfig) => {
         </span>
 
         {orderedGallery.length > 1 ? (
-          <span className="absolute bottom-3.5 left-3.5 inline-flex items-center gap-1 rounded-full bg-[#0B0B0F] px-2.5 py-1 text-xs font-bold text-white">
+          <span className="absolute bottom-3.5 left-3.5 inline-flex items-center gap-1 rounded-full bg-ink px-2.5 py-1 text-xs font-bold text-white">
             <Images aria-hidden="true" className="size-3" />
             {orderedGallery.length} fotos
           </span>

@@ -19,7 +19,7 @@ export const PeriodFilterWithRefresh = ({
     <div
       role="group"
       aria-label="Período"
-      className="flex min-w-0 flex-1 gap-1 rounded-full border border-[#E3E1EA] p-1 md:flex-initial"
+      className="flex min-w-0 flex-1 gap-1 rounded-full border border-line-strong p-1 md:flex-initial"
     >
       {PERIOD_OPTIONS.map((option) => {
         const isActive = option.value === value;
@@ -33,8 +33,8 @@ export const PeriodFilterWithRefresh = ({
             className={cn(
               'h-10 min-w-0 flex-1 rounded-full px-2 text-[13px] font-bold transition-colors md:flex-initial md:px-4',
               isActive
-                ? 'bg-[#0B0B0F] text-white'
-                : 'text-[#0B0B0F] hover:bg-[#F7F6FA]',
+                ? 'bg-ink text-white'
+                : 'text-ink hover:bg-surface',
               PARTNER_FOCUS_CLASS,
             )}
           >

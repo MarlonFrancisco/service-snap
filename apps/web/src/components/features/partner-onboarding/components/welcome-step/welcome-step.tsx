@@ -7,7 +7,7 @@ import { useWelcomeStep } from './welcome-step.hook';
 import { useState } from 'react';
 
 const OPTION_CLASS =
-  'min-h-[60px] cursor-pointer rounded-2xl border border-[#E3E1EA] bg-white px-3.5 text-left text-sm font-semibold text-[#0B0B0F] aria-pressed:border-2 aria-pressed:border-[#0B0B0F] aria-pressed:px-[13px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'min-h-[60px] cursor-pointer rounded-2xl border border-line-strong bg-white px-3.5 text-left text-sm font-semibold text-ink aria-pressed:border-2 aria-pressed:border-ink aria-pressed:px-[13px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 type TWelcomeStepProps = {
   selected: string | null;
@@ -39,13 +39,13 @@ export const WelcomeStep = ({
       <OnboardingHeader onSaveAndExit={onExit} />
 
       <main className="mx-auto w-full max-w-[688px] flex-1 px-5 py-7 md:px-6 md:py-10">
-        <span className="inline-flex items-center gap-2 rounded-full bg-[#F4F3F7] px-[13px] py-[7px] text-[13px] font-bold">
+        <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-[13px] py-[7px] text-[13px] font-bold">
           ✓ Tudo pronto! Sua assinatura está ativa
         </span>
         <h1 className="mt-3.5 text-[30px] leading-[1.08] font-extrabold tracking-[-0.035em] md:text-[40px]">
           Vamos preparar seu espaço para receber agendamentos
         </h1>
-        <p className="mt-2.5 text-base leading-[1.55] text-[#5F5C6E]">
+        <p className="mt-2.5 text-base leading-[1.55] text-ink-muted">
           Leva poucos minutos, e você pode parar e voltar quando quiser.
         </p>
 
@@ -60,7 +60,7 @@ export const WelcomeStep = ({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Ex: Barbearia"
-            className="mt-[7px] block h-[52px] w-full rounded-full border border-[#E3E1EA] px-[18px] text-base font-medium placeholder:text-[#6F6C7E] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F] md:text-[15px]"
+            className="mt-[7px] block h-[52px] w-full rounded-full border border-line-strong px-[18px] text-base font-medium placeholder:text-ink-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink md:text-[15px]"
           />
         </label>
 
@@ -110,7 +110,7 @@ export const WelcomeStep = ({
         )}
       </main>
 
-      <footer className="sticky bottom-0 flex justify-end border-t border-[#EBE9F0] bg-white/97 px-5 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom,0px))] md:px-8">
+      <footer className="sticky bottom-0 flex justify-end border-t border-line bg-white/97 px-5 pt-3.5 pb-[calc(14px+env(safe-area-inset-bottom,0px))] md:px-8">
         <button
           type="button"
           onClick={handleStart}

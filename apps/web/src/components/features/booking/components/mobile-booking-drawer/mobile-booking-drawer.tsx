@@ -38,50 +38,50 @@ export function MobileBookingDrawer({
     currentStep === 'services' ? whatsappBot?.link : undefined;
 
   return (
-    <div className="sticky bottom-0 z-20 mt-auto border-t border-[#EBE9F0] bg-white/98 px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
+    <div className="sticky bottom-0 z-20 mt-auto border-t border-line bg-white/98 px-5 pt-2.5 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:hidden">
       {hasServices ? (
         <Drawer>
           <DrawerTrigger asChild>
             <button
               type="button"
-              className="flex min-h-11 w-full items-center justify-between text-[13px] font-medium text-[#5F5C6E]"
+              className="flex min-h-11 w-full items-center justify-between text-[13px] font-medium text-ink-muted"
             >
               <span className="text-left">
                 {selectedServices.length}{' '}
                 {selectedServices.length === 1 ? 'serviço' : 'serviços'}
-                <b className="block text-[17px] font-extrabold text-[#0B0B0F]">
+                <b className="block text-[17px] font-extrabold text-ink">
                   {formatPrice(totalPrice)}
                 </b>
               </span>
-              <u className="font-semibold text-[#0B0B0F]">Ver resumo</u>
+              <u className="font-semibold text-ink">Ver resumo</u>
             </button>
           </DrawerTrigger>
           <DrawerContent className={plusJakartaSans.className}>
-            <DrawerHeader className="border-b border-[#F0EEF4] text-left">
-              <DrawerTitle className="text-xl font-extrabold tracking-[-0.025em] text-[#0B0B0F]">
+            <DrawerHeader className="border-b border-surface-3 text-left">
+              <DrawerTitle className="text-xl font-extrabold tracking-[-0.025em] text-ink">
                 Resumo da reserva
               </DrawerTitle>
-              <DrawerDescription className="text-sm text-[#5F5C6E]">
+              <DrawerDescription className="text-sm text-ink-muted">
                 {businessName} · {businessAddress}
               </DrawerDescription>
             </DrawerHeader>
             <div className="max-h-[70vh] overflow-y-auto px-5 pb-[calc(20px+env(safe-area-inset-bottom,0px))]">
               <BookingSummaryItems summary={summary} />
 
-              <div className="mt-5 flex items-baseline justify-between border-t border-[#F0EEF4] pt-5 text-[15px] font-semibold text-[#0B0B0F]">
+              <div className="mt-5 flex items-baseline justify-between border-t border-surface-3 pt-5 text-[15px] font-semibold text-ink">
                 Total
                 <b className="text-2xl font-extrabold">
                   {formatPrice(totalPrice)}
                 </b>
               </div>
-              <p className="mt-1 text-right text-[13px] text-[#5F5C6E]">
+              <p className="mt-1 text-right text-[13px] text-ink-muted">
                 Pagamento no local
               </p>
             </div>
           </DrawerContent>
         </Drawer>
       ) : (
-        <p className="flex min-h-11 items-center text-[13px] font-medium text-[#5F5C6E]">
+        <p className="flex min-h-11 items-center text-[13px] font-medium text-ink-muted">
           Nenhum serviço selecionado
         </p>
       )}
@@ -91,7 +91,7 @@ export function MobileBookingDrawer({
           type="button"
           onClick={onNext}
           disabled={isNextDisabled}
-          className="block min-w-0 flex-1 rounded-full bg-[#0B0B0F] p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0B0B0F]"
+          className="block min-w-0 flex-1 rounded-full bg-ink p-4 text-center text-[15px] font-bold text-white transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-ink"
         >
           {nextButtonText}
         </button>
@@ -102,7 +102,7 @@ export function MobileBookingDrawer({
             rel="noopener noreferrer"
             aria-label="Agendar pelo WhatsApp"
             onClick={handleWhatsappClick}
-            className="grid size-[52px] shrink-0 place-items-center self-center rounded-full border border-[#E3E1EA] bg-white text-[#0B0B0F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+            className="grid size-[52px] shrink-0 place-items-center self-center rounded-full border border-line-strong bg-white text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             <WhatsappGlyph className="size-[22px]" />
           </a>

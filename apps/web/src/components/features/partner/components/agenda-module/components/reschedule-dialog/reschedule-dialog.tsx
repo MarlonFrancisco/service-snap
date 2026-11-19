@@ -28,7 +28,7 @@ import { getProfessionalFullName } from '../agenda-grid/agenda-grid.helpers';
 import { useRescheduleDialog } from './reschedule-dialog.hook';
 
 const TIME_CHIP_CLASS =
-  'min-h-11 rounded-full border border-[#E3E1EA] bg-white px-2 text-[13px] font-semibold transition-colors hover:bg-[#F7F6FA] disabled:cursor-not-allowed disabled:border-[#F0EEF4] disabled:bg-[#F7F6FA] disabled:text-[#A19FAD] disabled:line-through';
+  'min-h-11 rounded-full border border-line-strong bg-white px-2 text-[13px] font-semibold transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:border-surface-3 disabled:bg-surface disabled:text-ink-faint disabled:line-through';
 
 export const RescheduleDialog = () => {
   const {
@@ -75,7 +75,7 @@ export const RescheduleDialog = () => {
             aria-label="Remarcar agendamento"
             className="flex flex-col gap-3.5"
           >
-            <div className="rounded-[18px] bg-[#F7F6FA] px-4 py-3.5 text-sm">
+            <div className="rounded-[18px] bg-surface px-4 py-3.5 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <b className="text-[15px]">{summary.clientName}</b>
                 {summary.serviceCount > 1 && (
@@ -84,10 +84,10 @@ export const RescheduleDialog = () => {
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-[#5F5C6E]">{summary.services}</p>
-              <p className="mt-1 text-[#5F5C6E]">
+              <p className="mt-1 text-ink-muted">{summary.services}</p>
+              <p className="mt-1 text-ink-muted">
                 Duração total{' '}
-                <strong className="text-[#0B0B0F]">{summary.duration}</strong>{' '}
+                <strong className="text-ink">{summary.duration}</strong>{' '}
                 · hoje em {summary.current} com {summary.professionalName}
               </p>
             </div>
@@ -132,7 +132,7 @@ export const RescheduleDialog = () => {
                     ))}
                   </SelectContent>
                 </Select>
-                <small className="text-xs text-[#5F5C6E]">
+                <small className="text-xs text-ink-muted">
                   Só aparece quem faz todos os serviços da visita
                 </small>
               </div>
@@ -143,17 +143,17 @@ export const RescheduleDialog = () => {
                 Horários disponíveis
               </legend>
               {isLoadingSlots && (
-                <p role="status" className="text-sm text-[#5F5C6E]">
+                <p role="status" className="text-sm text-ink-muted">
                   Carregando horários…
                 </p>
               )}
               {isSlotsError && (
-                <p role="alert" className="text-sm text-[#A4231A]">
+                <p role="alert" className="text-sm text-error">
                   Não foi possível carregar os horários.
                 </p>
               )}
               {!isLoadingSlots && !isSlotsError && timeOptions.length === 0 && (
-                <p className="text-sm text-[#5F5C6E]">
+                <p className="text-sm text-ink-muted">
                   Nenhum horário livre neste dia. Tente outra data ou encaixe.
                 </p>
               )}
@@ -171,7 +171,7 @@ export const RescheduleDialog = () => {
                       className={cn(
                         TIME_CHIP_CLASS,
                         isPicked &&
-                          'border-[#0B0B0F] bg-[#0B0B0F] text-white hover:bg-[#2B2B2B]',
+                          'border-ink bg-ink text-white hover:bg-ink-hover',
                       )}
                     >
                       {option.time}
@@ -186,7 +186,7 @@ export const RescheduleDialog = () => {
               aria-expanded={isFitIn}
               aria-controls="reschedule-fit-in"
               onClick={handleToggleFitIn}
-              className="flex min-h-11 items-center gap-2 self-start text-sm font-bold text-[#9810FA]"
+              className="flex min-h-11 items-center gap-2 self-start text-sm font-bold text-brand"
             >
               <FitInIcon className="size-4" aria-hidden="true" />
               Encaixar em outro horário
@@ -207,13 +207,13 @@ export const RescheduleDialog = () => {
                   onChange={(event) => setFitInTime(event.target.value)}
                   className={AGENDA_FIELD_CLASS}
                 />
-                <small className="text-xs text-[#5F5C6E]">
+                <small className="text-xs text-ink-muted">
                   Fora dos horários oferecidos ao cliente
                 </small>
               </div>
             )}
 
-            <p className="text-sm text-[#5F5C6E]">
+            <p className="text-sm text-ink-muted">
               Avisamos o cliente por e-mail.
             </p>
 

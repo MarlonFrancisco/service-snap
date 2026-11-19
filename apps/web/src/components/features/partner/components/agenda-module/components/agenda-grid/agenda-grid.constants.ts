@@ -4,19 +4,19 @@
 export const STATUS_CONFIG = {
   scheduled: {
     label: 'Agendado',
-    className: 'bg-[#E4ECF6] text-[#143C66]',
+    className: 'bg-info-bg text-info',
   },
   completed: {
     label: 'Concluído',
-    className: 'bg-[#DFF2E7] text-[#0A5536]',
+    className: 'bg-success-bg text-success',
   },
   cancelled: {
     label: 'Cancelado',
-    className: 'bg-[#FBE4E2] text-[#A4231A]',
+    className: 'bg-error-bg text-error',
   },
   'no-show': {
     label: 'Não compareceu',
-    className: 'bg-[#FBE8D9] text-[#7A3B00]',
+    className: 'bg-warning-bg text-warning',
   },
 } as const;
 
@@ -33,12 +33,12 @@ export const PRESENCE_CONFIG = {
   confirmed: {
     label: 'Confirmado',
     hasIcon: true,
-    className: 'text-[#0A5536]',
+    className: 'text-success',
   },
   awaiting: {
     label: 'Aguardando resposta',
     hasIcon: false,
-    className: 'text-[#5F5C6E]',
+    className: 'text-ink-muted',
   },
 } as const;
 

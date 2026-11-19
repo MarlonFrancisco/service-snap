@@ -39,13 +39,13 @@ export const AppointmentRepeat = ({
 }: TAppointmentRepeatConfig) => (
   <section
     aria-labelledby="appointment-repeat-title"
-    className="grid gap-3.5 border-t border-[#EBE9F0] pt-3"
+    className="grid gap-3.5 border-t border-line pt-3"
   >
     <div className="flex items-center justify-between gap-3">
       <div className="grid gap-0.5">
         <span
           id="appointment-repeat-title"
-          className="text-sm font-bold text-[#0B0B0F]"
+          className="text-sm font-bold text-ink"
         >
           Repetir
         </span>
@@ -97,7 +97,7 @@ export const AppointmentRepeat = ({
           <label className="grid content-start gap-1.5">
             <span className={ADD_APPOINTMENT_LABEL_CLASS}>
               Quantas vezes{' '}
-              <span className="font-medium text-[#5F5C6E]">
+              <span className="font-medium text-ink-muted">
                 {`Até ${maxOccurrences}${maxOccurrences < MAX_SERIES_OCCURRENCES ? ' nesta frequência' : ''}, em até 6 meses`}
               </span>
             </span>
@@ -131,7 +131,7 @@ export const AppointmentRepeat = ({
                 <li key={item.date} className={SERIES_ITEM_CLASS}>
                   <div className="grid gap-0.5">
                     <b className="text-sm">{item.dayLabel}</b>
-                    <span className="text-[13px] text-[#5F5C6E]">
+                    <span className="text-[13px] text-ink-muted">
                       {item.timeLabel}
                     </span>
                   </div>
@@ -150,7 +150,7 @@ export const AppointmentRepeat = ({
           </p>
         )}
 
-        <p className="text-sm leading-normal text-[#5F5C6E]">
+        <p className="text-sm leading-normal text-ink-muted">
           As datas livres entram; as ocupadas ficam de fora e aparecem para você
           escolher outro horário. O cliente recebe uma confirmação só, da
           primeira data.

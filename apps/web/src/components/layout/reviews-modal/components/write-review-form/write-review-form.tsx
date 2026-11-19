@@ -24,13 +24,13 @@ export const WriteReviewForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mt-6 grid gap-5 border-t border-[#EBE9F0] pt-6"
+      className="mt-6 grid gap-5 border-t border-line pt-6"
     >
       <div>
         <h3 className="text-xl font-extrabold tracking-[-0.03em]">
           Escrever uma avaliação
         </h3>
-        <p className="mt-1.5 text-sm leading-[1.55] text-[#5F5C6E]">
+        <p className="mt-1.5 text-sm leading-[1.55] text-ink-muted">
           {reviewDateLabel
             ? `Conte como foi seu atendimento de ${reviewDateLabel} em ${businessName}`
             : `Compartilhe sua experiência com ${businessName}`}
@@ -51,10 +51,10 @@ export const WriteReviewForm = () => {
             placeholder="Descreva sua experiência com este estabelecimento..."
             value={comment}
             onChange={handleCommentChange}
-            className="min-h-[120px] resize-none rounded-[14px] border-[#E3E1EA] bg-white px-4 py-3.5 text-base font-medium text-[#0B0B0F] shadow-none placeholder:text-[#6F6C7E] focus-visible:border-[#0B0B0F] focus-visible:ring-[#0B0B0F]/15 md:text-[15px]"
+            className="min-h-[120px] resize-none rounded-[14px] border-line-strong bg-white px-4 py-3.5 text-base font-medium text-ink shadow-none placeholder:text-ink-muted focus-visible:border-ink focus-visible:ring-ink/15 md:text-[15px]"
           />
         </label>
-        <p className="text-[13px] text-[#5F5C6E]">
+        <p className="text-[13px] text-ink-muted">
           Mínimo de 10 caracteres ({commentLength}/10)
         </p>
       </div>

@@ -7,7 +7,7 @@ import { PRIVACY_POLICY_PATH } from './cookie-consent.constants';
 import { useCookieConsent } from './cookie-consent.hook';
 
 const DECISION_BUTTON_CLASS =
-  'h-12 rounded-full bg-[#0B0B0F] text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B]';
+  'h-12 rounded-full bg-ink text-sm font-bold text-white transition-colors hover:bg-ink-hover';
 
 /**
  * Aviso de cookies (LGPD) e painel de preferências. Montado uma vez no layout
@@ -25,10 +25,10 @@ export const CookieConsent = () => {
           aria-modal="false"
           aria-labelledby="cookie-consent-title"
           aria-describedby="cookie-consent-description"
-          className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white px-5 pt-5 pb-7 text-[#0B0B0F] shadow-[0_-12px_40px_rgba(15,12,30,0.16)] md:inset-x-auto md:bottom-8 md:left-8 md:w-[480px] md:rounded-3xl md:border md:border-[#E3E1EA] md:p-7 md:shadow-[0_24px_64px_rgba(15,12,30,0.18)]"
+          className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-white px-5 pt-5 pb-7 text-ink shadow-[0_-12px_40px_rgba(15,12,30,0.16)] md:inset-x-auto md:bottom-8 md:left-8 md:w-[480px] md:rounded-3xl md:border md:border-line-strong md:p-7 md:shadow-[0_24px_64px_rgba(15,12,30,0.18)]"
         >
           <div
-            className="mb-4 hidden h-10 w-10 place-items-center rounded-xl bg-[#F4F3F7] md:grid"
+            className="mb-4 hidden h-10 w-10 place-items-center rounded-xl bg-surface-2 md:grid"
             aria-hidden="true"
           >
             <Cookie className="h-[22px] w-[22px]" strokeWidth={1.7} />
@@ -42,14 +42,14 @@ export const CookieConsent = () => {
           </h2>
           <p
             id="cookie-consent-description"
-            className="mt-2 text-sm leading-[1.55] text-[#5F5C6E] md:mt-2.5 md:leading-[1.6]"
+            className="mt-2 text-sm leading-[1.55] text-ink-muted md:mt-2.5 md:leading-[1.6]"
           >
             Usamos cookies essenciais para o site funcionar. Com a sua
             permissão, também usamos cookies de análise para entender como o
             ServiceSnap é usado e melhorar a experiência. Saiba mais na{' '}
             <Link
               href={PRIVACY_POLICY_PATH}
-              className="font-semibold text-[#0B0B0F] underline"
+              className="font-semibold text-ink underline"
             >
               Política de Privacidade
             </Link>
@@ -75,7 +75,7 @@ export const CookieConsent = () => {
           </div>
           <button
             type="button"
-            className="mt-2.5 h-12 w-full rounded-full border border-[#E3E1EA] bg-white text-sm font-bold transition-colors hover:bg-[#F4F3F7]"
+            className="mt-2.5 h-12 w-full rounded-full border border-line-strong bg-white text-sm font-bold transition-colors hover:bg-surface-2"
             onClick={handleCustomize}
           >
             Personalizar

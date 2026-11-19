@@ -60,21 +60,21 @@ export const ReviewItem = ({
   } = useReviewItem({ review, storeId, onForbidden });
 
   return (
-    <article className="grid gap-2 border-b border-[#F0EEF4] px-5 py-[18px] last:border-0">
+    <article className="grid gap-2 border-b border-surface-3 px-5 py-[18px] last:border-0">
       <div className="flex flex-wrap justify-between gap-2 text-[15px] font-bold">
         <span className="min-w-0 break-words">{authorName}</span>
-        <span className="text-[13px] font-medium text-[#5F5C6E]">
+        <span className="text-[13px] font-medium text-ink-muted">
           {dateLabel}
         </span>
       </div>
       <span
         role="img"
         aria-label={starsLabel}
-        className="text-[13px] font-bold tracking-[2px] text-[#B45309]"
+        className="text-[13px] font-bold tracking-[2px] text-warning-vivid"
       >
         {stars}
       </span>
-      <span className="text-[13px] text-[#5F5C6E]">{scheduleLabel}</span>
+      <span className="text-[13px] text-ink-muted">{scheduleLabel}</span>
       <p className="text-sm leading-[1.55] break-words">{review.comment}</p>
 
       {isEditing ? (
@@ -92,9 +92,9 @@ export const ReviewItem = ({
             onChange={handleDraftChange}
             maxLength={REVIEW_REPLY_MAX_LENGTH}
             disabled={isReplyingReview}
-            className="mt-1.5 block min-h-24 w-full resize-y rounded-[14px] border-[#0B0B0F] bg-white px-3.5 py-3 text-base leading-normal font-medium text-[#0B0B0F] shadow-none focus-visible:ring-[#0B0B0F]/15 md:text-sm"
+            className="mt-1.5 block min-h-24 w-full resize-y rounded-[14px] border-ink bg-white px-3.5 py-3 text-base leading-normal font-medium text-ink shadow-none focus-visible:ring-ink/15 md:text-sm"
           />
-          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-[#5F5C6E]">
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
             <span aria-live="polite">
               {draftLength}/{REVIEW_REPLY_MAX_LENGTH} · todos os clientes veem
               esta resposta

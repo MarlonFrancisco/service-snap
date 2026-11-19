@@ -44,7 +44,7 @@ export const StoreFormTabs = () => {
           <div className="mt-3.5 shrink-0 px-5 md:px-[30px]">
             <TabsList
               aria-label="Seções da loja"
-              className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-[#EBE9F0] bg-transparent p-0"
+              className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-line bg-transparent p-0"
             >
               {tabs.map((tab) => (
                 <TabsTrigger
@@ -52,9 +52,9 @@ export const StoreFormTabs = () => {
                   value={tab.value}
                   disabled={tab.isDisabled}
                   className={cn(
-                    'h-auto min-h-[46px] flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3.5 text-[13px] font-semibold text-[#5F5C6E] shadow-none data-[state=active]:border-[#0B0B0F] data-[state=active]:bg-transparent data-[state=active]:text-[#0B0B0F] data-[state=active]:shadow-none',
+                    'h-auto min-h-[46px] flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3.5 text-[13px] font-semibold text-ink-muted shadow-none data-[state=active]:border-ink data-[state=active]:bg-transparent data-[state=active]:text-ink data-[state=active]:shadow-none',
                     PARTNER_FOCUS_CLASS,
-                    tab.hasError && 'text-[#A4231A]',
+                    tab.hasError && 'text-error',
                   )}
                 >
                   {tab.label}
@@ -62,7 +62,7 @@ export const StoreFormTabs = () => {
                     <>
                       <span
                         aria-hidden="true"
-                        className="size-2 rounded-full bg-[#A4231A]"
+                        className="size-2 rounded-full bg-error"
                       />
                       <span className="sr-only">(contém erro)</span>
                     </>
@@ -102,7 +102,7 @@ export const StoreFormTabs = () => {
             <ProfessionalTab />
           </div>
 
-          <div className="flex shrink-0 flex-col-reverse gap-2.5 border-t border-[#EBE9F0] px-5 py-3.5 sm:flex-row sm:justify-end md:px-[30px]">
+          <div className="flex shrink-0 flex-col-reverse gap-2.5 border-t border-line px-5 py-3.5 sm:flex-row sm:justify-end md:px-[30px]">
             <button
               type="button"
               onClick={handleClose}

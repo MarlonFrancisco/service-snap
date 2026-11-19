@@ -47,9 +47,9 @@ import {
   getProfessionalName,
 } from './utils/bookings-section.helpers';
 
-const DETAIL_LABEL_CLASS = 'text-xs text-[#5F5C6E]';
+const DETAIL_LABEL_CLASS = 'text-xs text-ink-muted';
 const DETAIL_VALUE_CLASS = 'mt-px font-semibold [overflow-wrap:anywhere]';
-const MODAL_ICON_CLASS = 'mt-0.5 size-4 shrink-0 text-[#5F5C6E]';
+const MODAL_ICON_CLASS = 'mt-0.5 size-4 shrink-0 text-ink-muted';
 
 export const BookingsSection = () => {
   const {
@@ -95,9 +95,9 @@ export const BookingsSection = () => {
             {upcomingVisits.map((visit) => (
               <article
                 key={visit.id}
-                className="grid grid-cols-1 rounded-[22px] border border-[#E3E1EA] px-3 pt-3 pb-4 md:grid-cols-[150px_minmax(0,1fr)] md:gap-5 md:rounded-3xl md:p-4"
+                className="grid grid-cols-1 rounded-[22px] border border-line-strong px-3 pt-3 pb-4 md:grid-cols-[150px_minmax(0,1fr)] md:gap-5 md:rounded-3xl md:p-4"
               >
-                <div className="relative aspect-video overflow-hidden rounded-[14px] bg-[#E9E3F5] md:aspect-auto md:min-h-[150px] md:rounded-2xl">
+                <div className="relative aspect-video overflow-hidden rounded-[14px] bg-brand-tint md:aspect-auto md:min-h-[150px] md:rounded-2xl">
                   <ImageWithFallback
                     src={visit.appointment.store.gallery[0]?.url ?? ''}
                     alt=""
@@ -111,7 +111,7 @@ export const BookingsSection = () => {
                   <h3 className="mx-1 mt-3 text-base font-bold md:mx-0 md:mt-0 md:text-[17px]">
                     {visit.appointment.store.name}
                   </h3>
-                  <p className="mx-1 mt-0.5 text-sm text-[#5F5C6E] md:mx-0 md:mt-[3px]">
+                  <p className="mx-1 mt-0.5 text-sm text-ink-muted md:mx-0 md:mt-[3px]">
                     {visit.serviceNames} ·{' '}
                     {getProfessionalName(visit.appointment)}
                   </p>
@@ -207,14 +207,14 @@ export const BookingsSection = () => {
                 <h3 className="mt-2.5 text-[15px] font-bold md:mt-3">
                   {booking.store.name}
                 </h3>
-                <p className="mt-0.5 text-sm text-[#5F5C6E]">
+                <p className="mt-0.5 text-sm text-ink-muted">
                   {booking.service.name} · {formatBookingPrice(booking)}
                   <span className="md:hidden">
                     {' · '}
                     {formatPastBookingDateShort(booking.date)}
                   </span>
                 </p>
-                <p className="mt-0.5 hidden text-sm text-[#5F5C6E] md:block">
+                <p className="mt-0.5 hidden text-sm text-ink-muted md:block">
                   {formatPastBookingDateLong(booking.date)}
                 </p>
                 <div className={PROFILE_ACTIONS_CLASS}>
@@ -258,7 +258,7 @@ export const BookingsSection = () => {
                 <h3 className="text-[17px] font-bold">
                   {selectedVisit.appointment.store.name}
                 </h3>
-                <p className="mt-0.5 mb-4 text-[#5F5C6E]">
+                <p className="mt-0.5 mb-4 text-ink-muted">
                   {selectedVisit.serviceNames}
                 </p>
 
@@ -285,13 +285,13 @@ export const BookingsSection = () => {
               <Separator />
 
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[#5F5C6E]">Profissional</span>
+                <span className="text-ink-muted">Profissional</span>
                 <span className="text-right font-semibold">
                   {getProfessionalName(selectedVisit.appointment)}
                 </span>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-[#5F5C6E]">Valor total</span>
+                <span className="text-ink-muted">Valor total</span>
                 <span className="text-right font-extrabold">
                   {formatVisitPrice(selectedVisit)}
                 </span>

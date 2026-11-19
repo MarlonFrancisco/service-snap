@@ -4,7 +4,7 @@ import type { TAgendaClosedNoticeConfig } from './agenda-closed-notice.types';
 /** Listras da folga: gradiente com dados fixos, não cabe numa classe utilitária. */
 const OFF_PATTERN_STYLE = {
   backgroundImage:
-    'repeating-linear-gradient(135deg, #F4F3F7 0 7px, #E6E4EC 7px 14px)',
+    'repeating-linear-gradient(135deg, var(--ss-surface-2) 0 7px, var(--ss-surface-4) 7px 14px)',
 };
 
 /**
@@ -24,11 +24,11 @@ export const AgendaClosedNotice = ({ notice }: TAgendaClosedNoticeConfig) => {
     >
       <div
         className={cn(
-          'flex flex-col gap-0.5 bg-white p-2.5 text-[11px] text-[#5F5C6E]',
-          isOff ? 'rounded-[10px]' : 'rounded-[12px] border border-[#E3E1EA]',
+          'flex flex-col gap-0.5 bg-white p-2.5 text-[11px] text-ink-muted',
+          isOff ? 'rounded-[10px]' : 'rounded-[12px] border border-line-strong',
         )}
       >
-        <b className="text-xs text-[#0B0B0F]">{notice.title}</b>
+        <b className="text-xs text-ink">{notice.title}</b>
         <span>{notice.text}</span>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import type { TLockedModulePreviewConfig } from './plan-feature-gate.types';
 
-const BLOCK = 'rounded-[20px] bg-[#F7F6FA]';
+const BLOCK = 'rounded-[20px] bg-surface';
 const BAR_HEIGHTS = ['40%', '65%', '50%', '80%', '60%', '90%', '70%'];
-const HEAT_TONES = ['#E4D4FB', '#C9A4F5', '#F3E8FF'];
+const HEAT_TONES = ['var(--ss-brand-200)', 'var(--ss-brand-300)', 'var(--ss-brand-tint)'];
 
 const KpiRow = () => (
   <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -18,19 +18,19 @@ export const LockedModulePreview = ({
 }: TLockedModulePreviewConfig) => {
   if (variant === 'form') {
     return (
-      <div className="flex max-w-[760px] flex-col gap-4 rounded-[24px] border border-[#EBE9F0] p-6">
+      <div className="flex max-w-[760px] flex-col gap-4 rounded-[24px] border border-line p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="size-11 rounded-full bg-[#F4F3F7]" />
-            <div className="h-4 w-48 rounded-md bg-[#EBE9F0]" />
+            <div className="size-11 rounded-full bg-surface-2" />
+            <div className="h-4 w-48 rounded-md bg-line" />
           </div>
-          <div className="h-7 w-13 rounded-full bg-[#EBE9F0]" />
+          <div className="h-7 w-13 rounded-full bg-line" />
         </div>
-        <div className="h-[50px] rounded-[14px] bg-[#F7F6FA]" />
-        <div className="h-28 rounded-[14px] bg-[#F7F6FA]" />
+        <div className="h-[50px] rounded-[14px] bg-surface" />
+        <div className="h-28 rounded-[14px] bg-surface" />
         <div className="flex justify-between">
-          <div className="h-12 w-44 rounded-full bg-[#F4F3F7]" />
-          <div className="h-12 w-48 rounded-full bg-[#EBE9F0]" />
+          <div className="h-12 w-44 rounded-full bg-surface-2" />
+          <div className="h-12 w-48 rounded-full bg-line" />
         </div>
       </div>
     );
@@ -57,7 +57,7 @@ export const LockedModulePreview = ({
             {BAR_HEIGHTS.map((height, index) => (
               <div
                 key={index}
-                className="flex-1 rounded-lg bg-[#E4D4FB]"
+                className="flex-1 rounded-lg bg-brand-200"
                 style={{ height }}
               />
             ))}

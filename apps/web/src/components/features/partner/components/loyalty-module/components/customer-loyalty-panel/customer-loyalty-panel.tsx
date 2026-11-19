@@ -23,9 +23,9 @@ const DOT_CLASS =
   'grid size-11 place-items-center rounded-full text-sm font-extrabold';
 
 const DOT_STATE_CLASS = {
-  done: 'bg-[#9810FA] text-white',
-  pending: 'bg-[#F0EEF4] text-[#5F5C6E]',
-  reward: 'border-2 border-dashed border-[#9810FA] text-[#9810FA]',
+  done: 'bg-brand text-white',
+  pending: 'bg-surface-3 text-ink-muted',
+  reward: 'border-2 border-dashed border-brand text-brand',
 } as const;
 
 /** Progresso e recompensas na ficha do cliente. Para montar na ficha: `{ customerId }`. */
@@ -58,8 +58,8 @@ export const CustomerLoyaltyPanel = (config: TCustomerLoyaltyPanelConfig) => {
           aria-label="Carregando fidelidade"
           className="grid gap-3"
         >
-          <Skeleton className="h-11 rounded-full bg-[#F0EEF4]" />
-          <Skeleton className="h-16 rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-11 rounded-full bg-surface-3" />
+          <Skeleton className="h-16 rounded-2xl bg-surface-3" />
         </div>
       );
     }
@@ -110,10 +110,10 @@ export const CustomerLoyaltyPanel = (config: TCustomerLoyaltyPanelConfig) => {
           ))}
         </div>
         <p className={RETENTION_TEXT_CLASS}>
-          <b className="text-[#0B0B0F]">{visitsLeftLabel}</b> {nextRewardLabel}
+          <b className="text-ink">{visitsLeftLabel}</b> {nextRewardLabel}
         </p>
         {isPaused ? (
-          <p className="rounded-[14px] bg-[#FBE8D9] px-3.5 py-3 text-[13px] font-semibold text-[#7A3A07]">
+          <p className="rounded-[14px] bg-warning-bg px-3.5 py-3 text-[13px] font-semibold text-warning">
             Programa pausado: nenhuma recompensa nova é gerada até ele voltar.
           </p>
         ) : null}

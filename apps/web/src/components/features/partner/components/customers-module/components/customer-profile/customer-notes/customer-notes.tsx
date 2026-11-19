@@ -42,7 +42,7 @@ export const CustomerNotes = (config: TCustomerNotesConfig) => {
           aria-describedby="customer-notes-hint"
           className={CUSTOMERS_TEXTAREA_CLASS}
         />
-        <p id="customer-notes-hint" className="mt-2 text-[13px] text-[#5F5C6E]">
+        <p id="customer-notes-hint" className="mt-2 text-[13px] text-ink-muted">
           Só a equipe da loja vê.
         </p>
         <div className="mt-3 flex justify-end">

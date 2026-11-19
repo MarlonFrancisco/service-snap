@@ -133,14 +133,14 @@ export const CustomersList = () => {
           <span className="sr-only">Buscar clientes</span>
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute top-4 left-4 size-[18px] stroke-2 text-[#5F5C6E]"
+            className="pointer-events-none absolute top-4 left-4 size-[18px] stroke-2 text-ink-muted"
           />
           <Input
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Buscar por nome, e-mail ou telefone"
-            className="h-[50px] rounded-[14px] border-[#E3E1EA] bg-white pr-4 pl-11 text-base font-medium shadow-none placeholder:text-[#6F6C7E] md:text-[15px]"
+            className="h-[50px] rounded-[14px] border-line-strong bg-white pr-4 pl-11 text-base font-medium shadow-none placeholder:text-ink-muted md:text-[15px]"
           />
         </label>
 
@@ -150,7 +150,7 @@ export const CustomersList = () => {
             aria-label="Filtrar por etiqueta"
             className="flex flex-wrap items-center gap-2"
           >
-            <span className="text-[13px] font-semibold text-[#5F5C6E]">
+            <span className="text-[13px] font-semibold text-ink-muted">
               Etiquetas
             </span>
             <button

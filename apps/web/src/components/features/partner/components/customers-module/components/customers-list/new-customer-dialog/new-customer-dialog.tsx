@@ -76,7 +76,7 @@ export const NewCustomerDialog = (config: TNewCustomerDialogConfig) => {
           <DialogTitle className={CUSTOMERS_DIALOG_TITLE_CLASS}>
             Novo cliente
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-sm text-ink-muted">
             Precisa de nome e de telefone ou e-mail. Não precisa ter conta no
             ServiceSnap.
           </DialogDescription>
@@ -119,7 +119,7 @@ export const NewCustomerDialog = (config: TNewCustomerDialogConfig) => {
             {submitError ? (
               <p
                 role="alert"
-                className="rounded-[14px] bg-[#FBE8E6] px-3.5 py-3 text-[13px] font-semibold text-[#A4231A]"
+                className="rounded-[14px] bg-error-bg px-3.5 py-3 text-[13px] font-semibold text-error"
               >
                 {submitError}
               </p>

@@ -93,13 +93,13 @@ export const formatCustomersCount = (total: number) =>
   `${total} ${total === 1 ? 'cliente' : 'clientes'}`;
 
 export const APPOINTMENT_STATUS_BADGE: TAppointmentStatusBadgeMap = {
-  scheduled: { label: 'Agendado', className: 'bg-[#E4ECF6] text-[#143C66]' },
-  completed: { label: 'Concluído', className: 'bg-[#DFF2E7] text-[#0A5536]' },
+  scheduled: { label: 'Agendado', className: 'bg-info-bg text-info' },
+  completed: { label: 'Concluído', className: 'bg-success-bg text-success' },
   'no-show': {
     label: 'Não compareceu',
-    className: 'bg-[#FBE8D9] text-[#7A3B00]',
+    className: 'bg-warning-bg text-warning',
   },
-  cancelled: { label: 'Cancelado', className: 'bg-[#F4F3F7] text-[#5F5C6E]' },
+  cancelled: { label: 'Cancelado', className: 'bg-surface-2 text-ink-muted' },
 };
 
 /** Etiqueta limpa e que ainda não está na lista (sem diferenciar caixa). */

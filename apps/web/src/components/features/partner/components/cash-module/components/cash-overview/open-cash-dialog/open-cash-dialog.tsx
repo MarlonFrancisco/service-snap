@@ -43,7 +43,7 @@ export const OpenCashDialog = ({
           <DialogTitle className={MANAGEMENT_DIALOG_TITLE_CLASS}>
             Abrir caixa
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-sm text-ink-muted">
             Informe o troco que já está na gaveta. Os pagamentos registrados a
             partir de agora entram neste caixa.
           </DialogDescription>

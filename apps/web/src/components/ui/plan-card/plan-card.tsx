@@ -45,48 +45,48 @@ export const PlanCard = ({
       <div
         className={`relative flex h-full flex-col rounded-2xl bg-white p-6 shadow-sm sm:p-8 ${
           plan.popular
-            ? 'border-2 border-[#0A0A0A] shadow-xl'
-            : 'border border-[#E4E4E7]'
+            ? 'border-2 border-ink shadow-xl'
+            : 'border border-line'
         } ${isCurrentPlan ? 'opacity-80' : ''}`}
       >
         {isCurrentPlan ? (
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#71717A] px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ink-muted px-3 py-1 text-xs font-semibold text-white">
             Plano Atual
           </span>
         ) : plan.popular ? (
-          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#0A0A0A] px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ink px-3 py-1 text-xs font-semibold text-white">
             Mais popular
           </span>
         ) : null}
 
         <div className="mb-6 sm:mb-8">
-          <h3 className="mb-2 text-xl font-semibold tracking-tight text-[#0A0A0A]">
+          <h3 className="mb-2 text-xl font-semibold tracking-tight text-ink">
             {plan.name}
           </h3>
-          <p className="text-sm text-[#71717A]">{plan.description}</p>
+          <p className="text-sm text-ink-muted">{plan.description}</p>
         </div>
 
         <div className="mb-6 sm:mb-8">
           {hasDiscount && (
             <div className="mb-2 flex items-center gap-2">
-              <span className="text-sm text-[#A1A1AA] line-through">
+              <span className="text-sm text-ink-faint line-through">
                 {formatPriceByCountry(originalPrice)}
               </span>
-              <span className="rounded-full border border-[#047857]/30 px-2 py-0.5 text-xs font-semibold text-[#047857]">
+              <span className="rounded-full border border-success/30 px-2 py-0.5 text-xs font-semibold text-success">
                 -{plan.discount}%
               </span>
             </div>
           )}
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl font-semibold tracking-tight text-[#0A0A0A]">
+            <span className="text-4xl font-semibold tracking-tight text-ink">
               {formatPriceByCurrency(priceInReais, plan.currency)}
             </span>
-            <span className="text-[#71717A]">
+            <span className="text-ink-muted">
               /{plan.interval === 'month' ? 'mês' : 'ano'}
             </span>
           </div>
           {hasTrial && !isCurrentPlan && (
-            <p className="mt-2 text-sm text-[#71717A]">
+            <p className="mt-2 text-sm text-ink-muted">
               {trialPeriodDays} dias grátis, depois{' '}
               {formatPriceByCountry(priceInReais)}/
               {plan.interval === 'month' ? 'mês' : 'ano'}
@@ -98,10 +98,10 @@ export const PlanCard = ({
           type="button"
           className={`mb-6 w-full rounded-2xl px-5 py-3.5 text-sm font-semibold transition-all active:scale-[0.98] sm:mb-8 sm:text-base ${
             isCurrentPlan
-              ? 'cursor-not-allowed bg-[#F4F4F5] text-[#A1A1AA]'
+              ? 'cursor-not-allowed bg-surface-2 text-ink-faint'
               : plan.popular
-                ? 'bg-[#0A0A0A] text-white shadow-lg shadow-black/20 hover:bg-[#2B2B2B]'
-                : 'bg-[#F4F4F5] text-[#0A0A0A] hover:bg-[#E4E4E7]'
+                ? 'bg-ink text-white shadow-lg shadow-black/20 hover:bg-ink-hover'
+                : 'bg-surface-2 text-ink hover:bg-line'
           }`}
           onClick={handleClick}
           disabled={isDisabled}
@@ -112,8 +112,8 @@ export const PlanCard = ({
         <ul className="mt-auto space-y-3 sm:space-y-4">
           {plan.features.map((feature) => (
             <li key={feature} className="flex items-start gap-3">
-              <Check className="mt-0.5 h-5 w-5 shrink-0 text-[#0A0A0A]" />
-              <span className="text-sm text-[#2B2B2B]">{feature}</span>
+              <Check className="mt-0.5 h-5 w-5 shrink-0 text-ink" />
+              <span className="text-sm text-ink">{feature}</span>
             </li>
           ))}
         </ul>

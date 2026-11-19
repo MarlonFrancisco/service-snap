@@ -8,13 +8,13 @@ export const AgendaTimeColumn = ({
   <div className="sticky left-0 z-[35] bg-white">
     <div
       aria-hidden="true"
-      className="sticky top-0 z-10 border-b border-[#EBE9F0] bg-[#F7F6FA]"
+      className="sticky top-0 z-10 border-b border-line bg-surface"
       style={{ height: headerHeight }}
     />
     {timeSlots.map((time) => (
       <div
         key={time}
-        className="border-b border-[#F0EEF4] p-1.5 text-right text-xs text-[#5F5C6E]"
+        className="border-b border-surface-3 p-1.5 text-right text-xs text-ink-muted"
         style={{ height: slotHeight }}
       >
         {time}

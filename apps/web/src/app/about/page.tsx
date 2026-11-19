@@ -64,7 +64,7 @@ export default function AboutPage() {
           <h1 className="text-[38px] leading-[1.05] font-extrabold tracking-[-0.04em] md:text-[56px]">
             Conectando pessoas aos melhores profissionais de serviços locais
           </h1>
-          <p className="mt-[18px] text-[19px] leading-[1.6] text-[#5F5C6E]">
+          <p className="mt-[18px] text-[19px] leading-[1.6] text-ink-muted">
             Um marketplace brasileiro para encontrar, comparar e agendar de
             beleza e saúde a oficinas e consultorias.
           </p>
@@ -74,7 +74,7 @@ export default function AboutPage() {
           {STORY_SECTIONS.map((section) => (
             <section key={section.title}>
               <h2 className={SECTION_TITLE_CLASS}>{section.title}</h2>
-              <p className="mt-3 text-base leading-[1.7] text-[#2C2A36]">
+              <p className="mt-3 text-base leading-[1.7] text-ink-body">
                 {section.text}
               </p>
             </section>
@@ -87,12 +87,12 @@ export default function AboutPage() {
             {AUDIENCES.map((audience) => (
               <article
                 key={audience.title}
-                className="rounded-3xl bg-[#F7F6FA] p-[26px]"
+                className="rounded-3xl bg-surface p-[26px]"
               >
                 <h3 className="text-lg font-extrabold tracking-[-0.015em]">
                   {audience.title}
                 </h3>
-                <p className="mt-2 text-[15px] leading-[1.6] text-[#5F5C6E]">
+                <p className="mt-2 text-[15px] leading-[1.6] text-ink-muted">
                   {audience.text}
                 </p>
               </article>
@@ -105,10 +105,10 @@ export default function AboutPage() {
           <div className="mt-6 grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] gap-x-8 gap-y-7">
             {VALUES.map((value) => (
               <div key={value.title}>
-                <h3 className="border-t-2 border-[#0B0B0F] pt-3.5 text-[17px] font-bold">
+                <h3 className="border-t-2 border-ink pt-3.5 text-[17px] font-bold">
                   {value.title}
                 </h3>
-                <p className="mt-2 text-[15px] leading-[1.6] text-[#5F5C6E]">
+                <p className="mt-2 text-[15px] leading-[1.6] text-ink-muted">
                   {value.text}
                 </p>
               </div>
@@ -121,13 +121,13 @@ export default function AboutPage() {
             <h2 className="text-[30px] font-extrabold tracking-[-0.03em]">
               Pronto para agendar?
             </h2>
-            <p className="mt-1.5 text-[15px] text-[#5F5C6E]">
+            <p className="mt-1.5 text-[15px] text-ink-muted">
               Encontre profissionais perto de você.
             </p>
           </div>
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center rounded-full bg-[#0B0B0F] px-7 py-[17px] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+            className="inline-flex min-h-11 items-center rounded-full bg-ink px-7 py-[17px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Explorar serviços
           </Link>

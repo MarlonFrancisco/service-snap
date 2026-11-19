@@ -1,14 +1,14 @@
 import { cn, Skeleton } from '@repo/ui';
 
-const BONE_CLASS = 'rounded-[14px] bg-[#EBE9F0]';
-const ACTION_BONE_CLASS = 'h-11 rounded-full bg-[#EBE9F0]';
+const BONE_CLASS = 'rounded-[14px] bg-line';
+const ACTION_BONE_CLASS = 'h-11 rounded-full bg-line';
 
 export const StoreCardSkeleton = () => (
   <div
     aria-hidden="true"
     className="grid overflow-hidden rounded-[28px] shadow-[0_12px_40px_rgba(15,12,30,0.1)] md:grid-cols-[minmax(0,320px)_minmax(0,1fr)]"
   >
-    <Skeleton className="min-h-[220px] rounded-none bg-[#F4F3F7] md:min-h-[280px]" />
+    <Skeleton className="min-h-[220px] rounded-none bg-surface-2 md:min-h-[280px]" />
 
     <div className="grid content-start gap-4 p-5 md:p-[26px]">
       <div className="grid gap-2">

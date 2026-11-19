@@ -53,7 +53,7 @@ export function PlanOverviewCard({
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <div className="min-w-0">
           <h2 className={MODULE_TITLE_CLASS}>Plano {currentPlan.planName}</h2>
-          <p className="mt-0.5 text-[15px] text-[#5F5C6E]">
+          <p className="mt-0.5 text-[15px] text-ink-muted">
             {priceLabel}/{periodLabel}
           </p>
         </div>
@@ -85,13 +85,13 @@ export function PlanOverviewCard({
       <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(160px,100%),1fr))] gap-3 text-sm">
         {details.map(({ label, value }) => (
           <div key={label}>
-            <dt className="text-xs text-[#5F5C6E]">{label}</dt>
+            <dt className="text-xs text-ink-muted">{label}</dt>
             <dd className="mt-0.5 font-bold">{value}</dd>
           </div>
         ))}
       </dl>
 
-      <p className="border-t border-[#F0EEF4] pt-3 text-[13px] leading-normal text-[#5F5C6E]">
+      <p className="border-t border-surface-3 pt-3 text-[13px] leading-normal text-ink-muted">
         Dúvidas sobre o plano? Fale com o suporte do ServiceSnap em{' '}
         <a
           href={`mailto:${SUPPORT_EMAIL}`}

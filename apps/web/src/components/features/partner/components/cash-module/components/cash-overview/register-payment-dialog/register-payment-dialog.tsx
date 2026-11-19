@@ -57,7 +57,7 @@ export const RegisterPaymentDialog = ({
           <DialogTitle className={MANAGEMENT_DIALOG_TITLE_CLASS}>
             Registrar pagamento
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-sm text-ink-muted">
             Pagamento avulso, como o acerto de um atendimento antigo. Entra no
             caixa aberto. O ServiceSnap não cobra o cliente: aqui você só anota
             o que recebeu.

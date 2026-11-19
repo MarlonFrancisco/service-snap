@@ -58,13 +58,13 @@ const StoresTable = ({
         {rows.map((row) => (
           <tr
             key={row.id}
-            className={cn('group', row.id === selectedId && 'bg-[#F7F6FA]')}
+            className={cn('group', row.id === selectedId && 'bg-surface')}
           >
             <td className={PANEL_CELL_CLASS}>
               <b className="break-words">{row.name}</b>
             </td>
             <td className={PANEL_CELL_CLASS}>{row.city}</td>
-            <td className={cn(PANEL_CELL_CLASS, 'break-all text-[#5F5C6E]')}>
+            <td className={cn(PANEL_CELL_CLASS, 'break-all text-ink-muted')}>
               {row.ownerEmail}
             </td>
             <td className={PANEL_CELL_CLASS}>
@@ -125,7 +125,7 @@ export const AdminStores = ({ headingLevel, intro }: TAdminStoresConfig) => {
           {Array.from({ length: 4 }, (_, index) => (
             <Skeleton
               key={index}
-              className="h-12 w-full rounded-2xl bg-[#E9E7EF]"
+              className="h-12 w-full rounded-2xl bg-surface-4"
             />
           ))}
         </div>
@@ -193,7 +193,7 @@ export const AdminStores = ({ headingLevel, intro }: TAdminStoresConfig) => {
               className={
                 headingLevel === 'h1'
                   ? PANEL_TITLE_CLASS
-                  : 'text-lg font-extrabold text-[#0B0B0F]'
+                  : 'text-lg font-extrabold text-ink'
               }
             >
               Lojas

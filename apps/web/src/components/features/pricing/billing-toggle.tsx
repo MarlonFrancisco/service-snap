@@ -17,7 +17,7 @@ export const BillingToggle = ({ value, onChange }: TBillingToggleConfig) => {
     <div
       role="group"
       aria-label="Período de cobrança"
-      className="inline-flex gap-1 rounded-full border border-[#E3E1EA] p-1"
+      className="inline-flex gap-1 rounded-full border border-line-strong p-1"
     >
       {BILLING_OPTIONS.map((option) => (
         <button
@@ -26,10 +26,10 @@ export const BillingToggle = ({ value, onChange }: TBillingToggleConfig) => {
           aria-pressed={value === option.value}
           onClick={() => onChange(option.value)}
           className={cn(
-            'h-11 cursor-pointer rounded-full px-[1.375rem] text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]',
+            'h-11 cursor-pointer rounded-full px-[1.375rem] text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
             value === option.value
-              ? 'bg-[#0B0B0F] text-white'
-              : 'bg-transparent text-[#0B0B0F]',
+              ? 'bg-ink text-white'
+              : 'bg-transparent text-ink',
           )}
         >
           {option.label}

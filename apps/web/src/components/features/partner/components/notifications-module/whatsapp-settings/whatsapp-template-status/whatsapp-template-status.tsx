@@ -13,9 +13,9 @@ import type {
 } from './whatsapp-template-status.types';
 
 const TONE_CLASS: Record<TWhatsappTemplateTone, string> = {
-  success: 'bg-[#E6F4EA] text-[#1E4620]',
-  waiting: 'bg-[#FFF1E0] text-[#6E3B00]',
-  danger: 'bg-[#FDECEC] text-[#7A1F1F]',
+  success: 'bg-success-bg text-success',
+  waiting: 'bg-warning-bg text-warning',
+  danger: 'bg-error-bg text-error-strong',
 };
 
 const TONE_ICON = {
@@ -45,7 +45,7 @@ export const WhatsappTemplateStatus = (
     return (
       <p
         role="status"
-        className="flex items-center gap-2 rounded-[18px] bg-[#F7F6FA] px-5 py-4 text-sm font-semibold text-[#5F5C6E]"
+        className="flex items-center gap-2 rounded-[18px] bg-surface px-5 py-4 text-sm font-semibold text-ink-muted"
       >
         <Spinner />
         Consultando o template do lembrete na Meta...

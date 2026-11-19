@@ -35,7 +35,7 @@ export const PartnerOnboarding = () => {
     <div
       className={cn(
         plusJakartaSans.className,
-        'flex min-h-dvh flex-col bg-white text-[#0B0B0F]',
+        'flex min-h-dvh flex-col bg-white text-ink',
       )}
     >
       {isError && (
@@ -45,7 +45,7 @@ export const PartnerOnboarding = () => {
             <h1 className="text-[32px] leading-[1.1] font-extrabold tracking-[-0.03em]">
               Não conseguimos carregar seu progresso
             </h1>
-            <p className="mt-2 mb-6 text-[15px] text-[#5F5C6E]">
+            <p className="mt-2 mb-6 text-[15px] text-ink-muted">
               Nada foi perdido. Tente de novo em instantes.
             </p>
             <button

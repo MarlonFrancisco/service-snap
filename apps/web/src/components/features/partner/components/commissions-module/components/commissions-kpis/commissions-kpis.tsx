@@ -19,7 +19,7 @@ export const CommissionsKpis = ({
       <li key={kpi.label} className={MANAGEMENT_KPI_CLASS}>
         <span className={MANAGEMENT_KPI_LABEL_CLASS}>{kpi.label}</span>
         {isLoading ? (
-          <Skeleton className="h-7 w-24 rounded-full bg-[#F0EEF4]" />
+          <Skeleton className="h-7 w-24 rounded-full bg-surface-3" />
         ) : (
           <b className={MANAGEMENT_KPI_VALUE_CLASS}>{kpi.value}</b>
         )}

@@ -11,9 +11,9 @@ import { TrackedLink } from '@/components/ui/tracked-link';
 import { useState } from 'react';
 import type { TFooterConfig } from './footer.types';
 
-const COLUMN_TITLE_CLASS = 'mb-2 text-sm font-bold text-[#0B0B0F] md:mb-3';
+const COLUMN_TITLE_CLASS = 'mb-2 text-sm font-bold text-ink md:mb-3';
 const COLUMN_LINK_CLASS =
-  'block py-2 transition-colors hover:text-[#0B0B0F] md:py-[7px]';
+  'block py-2 transition-colors hover:text-ink md:py-[7px]';
 
 export const Footer = ({ compact = false }: TFooterConfig) => {
   const [isLocaleOpen, setIsLocaleOpen] = useState(false);
@@ -35,7 +35,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
     >
       <div
         className={cn(
-          'border-t border-[#EBE9F0] text-sm text-[#5F5C6E]',
+          'border-t border-line text-sm text-ink-muted',
           compact ? 'py-7' : 'pt-8 pb-10 md:pt-12',
         )}
       >
@@ -127,7 +127,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
                 href="/contact"
                 event="footer_link_clicked"
                 properties={{ destination: '/contact' }}
-                className="inline-block rounded-full bg-[#0B0B0F] px-[22px] py-3 text-[13px] font-bold text-white transition-colors hover:bg-[#2B2B2B]"
+                className="inline-block rounded-full bg-ink px-[22px] py-3 text-[13px] font-bold text-white transition-colors hover:bg-ink-hover"
               >
                 Ir para contato
               </TrackedLink>
@@ -138,7 +138,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
         <div
           className={cn(
             'flex flex-col gap-4 text-[13px] md:flex-row md:items-center md:justify-between',
-            !compact && 'mt-8 border-t border-[#EBE9F0] pt-6 md:mt-12',
+            !compact && 'mt-8 border-t border-line pt-6 md:mt-12',
           )}
         >
           <TrackedLink
@@ -174,7 +174,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={link.label}
-                        className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-[#F4F3F7] hover:text-[#0B0B0F]"
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-full transition-colors hover:bg-surface-2 hover:text-ink"
                       >
                         <Icon className="h-4 w-4" />
                       </TrackedLink>
@@ -187,7 +187,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
             <button
               type="button"
               onClick={openCookiePreferences}
-              className="min-h-11 transition-colors hover:text-[#0B0B0F]"
+              className="min-h-11 transition-colors hover:text-ink"
             >
               Preferências de cookies
             </button>
@@ -195,7 +195,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
             <button
               type="button"
               onClick={() => setIsLocaleOpen(true)}
-              className="min-h-11 transition-colors hover:text-[#0B0B0F]"
+              className="min-h-11 transition-colors hover:text-ink"
             >
               {countryData?.nativeName} · {currencyData?.symbol} {currency}
             </button>

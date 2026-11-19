@@ -13,7 +13,7 @@ import {
 import type { TInactiveCustomersTableConfig } from './inactive-customers-table.types';
 
 const OPT_OUT_BUTTON_CLASS = cn(
-  'grid size-11 cursor-pointer place-items-center rounded-full text-[#5F5C6E] transition-colors hover:bg-[#F4F3F7] hover:text-[#0B0B0F] disabled:cursor-not-allowed disabled:opacity-50',
+  'grid size-11 cursor-pointer place-items-center rounded-full text-ink-muted transition-colors hover:bg-surface-2 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50',
   PARTNER_FOCUS_CLASS,
 );
 

@@ -10,7 +10,7 @@ import {
 import { useStoreSelector } from './store-selector.hook';
 
 const ROLE_BADGE_CLASS =
-  'mt-0.5 inline-block shrink-0 rounded-full border border-[#E3E1EA] bg-white px-[9px] py-px text-xs font-bold text-[#0B0B0F]';
+  'mt-0.5 inline-block shrink-0 rounded-full border border-line-strong bg-white px-[9px] py-px text-xs font-bold text-ink';
 
 type TStoreSelectorConfig = {
   layout?: 'inline' | 'block';
@@ -35,7 +35,7 @@ export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
           type="button"
           aria-label={`Trocar de loja. Loja atual: ${activeStore.name}${activeRoleLabel ? `, papel ${activeRoleLabel}` : ''}`}
           className={cn(
-            'flex items-center justify-between gap-3 rounded-full border border-[#E3E1EA] bg-white px-[18px] py-1.5 text-left font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F7F6FA]',
+            'flex items-center justify-between gap-3 rounded-full border border-line-strong bg-white px-[18px] py-1.5 text-left font-semibold text-ink transition-colors hover:bg-surface',
             isBlock
               ? 'min-h-[52px] w-full text-sm'
               : 'min-h-12 max-w-[280px] min-w-0 text-[13px]',
@@ -74,7 +74,7 @@ export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
         sideOffset={8}
         className={cn(
           PARTNER_PORTAL_CLASS,
-          'max-h-[60vh] w-[min(20rem,calc(100vw-2.5rem))] overflow-y-auto rounded-[22px] border-[#E3E1EA] bg-white p-2',
+          'max-h-[60vh] w-[min(20rem,calc(100vw-2.5rem))] overflow-y-auto rounded-[22px] border-line-strong bg-white p-2',
         )}
       >
         <p
@@ -97,7 +97,7 @@ export const StoreSelector = ({ layout = 'inline' }: TStoreSelectorConfig) => {
                   onClick={() => handleSelectStore(store)}
                   className={cn(
                     'flex min-h-11 w-full items-center gap-3 rounded-[14px] px-3 py-2 text-left transition-colors',
-                    isActive ? 'bg-[#F4F3F7]' : 'hover:bg-[#F7F6FA]',
+                    isActive ? 'bg-surface-2' : 'hover:bg-surface',
                     PARTNER_FOCUS_CLASS,
                   )}
                 >

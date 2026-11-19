@@ -7,7 +7,7 @@ export const WHATSAPP_BOT_QR_EXPORT_SIZE = 1024;
 export const WHATSAPP_BOT_QR_MARGIN = 4;
 
 export const WHATSAPP_BOT_QR_COLORS = {
-  foreground: '#0B0B0F',
+  foreground: '#120E1C',
   background: '#FFFFFF',
 } as const;
 
@@ -21,9 +21,9 @@ export const WHATSAPP_BOT_POSTER = {
   qrBoxRadius: 48,
   colors: {
     background: '#FFFFFF',
-    text: '#0B0B0F',
-    muted: '#5F5C6E',
-    border: '#EBE9F0',
+    text: '#120E1C',
+    muted: '#5C566C',
+    border: '#E9E5F0',
   },
   texts: {
     title: 'Agende pelo WhatsApp',

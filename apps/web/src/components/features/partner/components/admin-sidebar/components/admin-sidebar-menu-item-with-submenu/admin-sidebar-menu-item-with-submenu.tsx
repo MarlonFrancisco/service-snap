@@ -102,7 +102,7 @@ export const AdminSidebarMenuItemWithSubmenu = ({
             sideOffset={8}
             className={cn(
               PARTNER_PORTAL_CLASS,
-              'w-56 rounded-[22px] border-[#E3E1EA] bg-white p-2',
+              'w-56 rounded-[22px] border-line-strong bg-white p-2',
             )}
           >
             <p className="px-3 py-2 text-sm font-bold">{item.label}</p>

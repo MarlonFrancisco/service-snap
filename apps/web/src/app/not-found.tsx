@@ -2,7 +2,7 @@ import { Footer, Header } from '@/components/layout';
 import Link from 'next/link';
 
 const ACTION_CLASS =
-  'inline-flex h-[52px] items-center rounded-full border border-[#0B0B0F] px-[26px] text-[15px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'inline-flex h-[52px] items-center rounded-full border border-ink px-[26px] text-[15px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export default function GlobalNotFound() {
   return (
@@ -17,20 +17,20 @@ export default function GlobalNotFound() {
         <h1 className="mt-3 text-[28px] leading-[1.1] font-extrabold tracking-[-0.03em] md:text-[36px]">
           Página não encontrada
         </h1>
-        <p className="mt-3 text-base leading-[1.6] text-[#5F5C6E]">
+        <p className="mt-3 text-base leading-[1.6] text-ink-muted">
           O endereço que você acessou não existe ou foi removido. Volte à página
           inicial para continuar.
         </p>
         <div className="mt-7 flex flex-wrap justify-center gap-2.5">
           <Link
             href="/"
-            className={`${ACTION_CLASS} bg-[#0B0B0F] text-white transition-colors hover:bg-[#2B2B2B]`}
+            className={`${ACTION_CLASS} bg-ink text-white transition-colors hover:bg-ink-hover`}
           >
             Ir para a home
           </Link>
           <Link
             href="/help"
-            className={`${ACTION_CLASS} transition-colors hover:bg-[#F4F3F7]`}
+            className={`${ACTION_CLASS} transition-colors hover:bg-surface-2`}
           >
             Central de ajuda
           </Link>

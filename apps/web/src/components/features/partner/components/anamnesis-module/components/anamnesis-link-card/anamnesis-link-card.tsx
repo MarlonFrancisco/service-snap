@@ -57,7 +57,7 @@ export const AnamnesisLinkCard = (config: TAnamnesisLinkCardConfig) => {
         <div className="grid min-w-0 gap-0.5">
           <b className="text-sm">{statusLabel}</b>
           {isSubmitted ? null : (
-            <span className="text-[13px] text-[#5F5C6E]">
+            <span className="text-[13px] text-ink-muted">
               O link vale até o dia seguinte ao atendimento
             </span>
           )}

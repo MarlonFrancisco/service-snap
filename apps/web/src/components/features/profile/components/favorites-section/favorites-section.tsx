@@ -24,11 +24,11 @@ import { ProfileEmptyState } from '../profile-empty-state';
 import { useFavoritesSection } from './favorites-section.hook';
 
 const REMOVE_BUTTON_CLASS = cn(
-  'grid size-11 shrink-0 place-items-center rounded-full bg-white/92 text-[#0B0B0F]',
+  'grid size-11 shrink-0 place-items-center rounded-full bg-white/92 text-ink',
   PROFILE_FOCUS_CLASS,
 );
-const REMOVE_ICON_CLASS = 'h-[22px] w-[22px] fill-[#EF4444] text-[#EF4444]';
-const MODAL_LABEL_CLASS = 'mb-1 text-xs text-[#5F5C6E]';
+const REMOVE_ICON_CLASS = 'h-[22px] w-[22px] fill-error text-error';
+const MODAL_LABEL_CLASS = 'mb-1 text-xs text-ink-muted';
 
 export const FavoritesSection = () => {
   const {
@@ -62,7 +62,7 @@ export const FavoritesSection = () => {
         <div className={PROFILE_CARDS_GRID_CLASS}>
           {favorites.map((favorite) => (
             <article key={favorite.id}>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-[#E8E7F1] md:rounded-[22px]">
+              <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-surface-4 md:rounded-[22px]">
                 <ImageWithFallback
                   src={favorite.store.gallery[0]?.url ?? ''}
                   alt=""
@@ -86,10 +86,10 @@ export const FavoritesSection = () => {
               <h3 className="mt-3 line-clamp-1 text-base font-bold md:mt-3.5">
                 {favorite.store.name}
               </h3>
-              <p className="mt-[3px] truncate text-sm text-[#5F5C6E]">
+              <p className="mt-[3px] truncate text-sm text-ink-muted">
                 {favorite.store.address}
               </p>
-              <p className="mt-[3px] truncate text-sm text-[#5F5C6E]">
+              <p className="mt-[3px] truncate text-sm text-ink-muted">
                 {favorite.store.city} - {favorite.store.state}
               </p>
 
@@ -127,7 +127,7 @@ export const FavoritesSection = () => {
           </DialogHeader>
           {selectedFavorite && (
             <div className="space-y-6 text-sm">
-              <div className="relative aspect-video overflow-hidden rounded-[20px] bg-[#E8E7F1]">
+              <div className="relative aspect-video overflow-hidden rounded-[20px] bg-surface-4">
                 <ImageWithFallback
                   src={selectedFavorite.store.gallery[0]?.url ?? ''}
                   alt=""
@@ -153,7 +153,7 @@ export const FavoritesSection = () => {
                   <h3 className="text-[17px] font-bold">
                     {selectedFavorite.store.name}
                   </h3>
-                  <p className="mt-1 leading-normal text-[#5F5C6E]">
+                  <p className="mt-1 leading-normal text-ink-muted">
                     {selectedFavorite.store.description}
                   </p>
                 </div>
@@ -167,7 +167,7 @@ export const FavoritesSection = () => {
                     </div>
                     <div className="flex items-start gap-2 [overflow-wrap:anywhere]">
                       <MapPin
-                        className="mt-0.5 size-4 shrink-0 text-[#5F5C6E]"
+                        className="mt-0.5 size-4 shrink-0 text-ink-muted"
                         aria-hidden
                       />
                       {selectedFavorite.store.address}
@@ -193,12 +193,12 @@ export const FavoritesSection = () => {
                   <div>{selectedFavorite.store.telephone}</div>
                 </div>
 
-                <p className="text-[#5F5C6E]">
+                <p className="text-ink-muted">
                   {selectedFavorite.store.reviews?.length ?? 0} avaliações
                 </p>
               </div>
 
-              <div className="flex gap-2 border-t border-[#EBE9F0] pt-4">
+              <div className="flex gap-2 border-t border-line pt-4">
                 <button
                   type="button"
                   onClick={handleScheduleSelectedFavorite}

@@ -12,7 +12,7 @@ export function BlockModeAlert() {
   return (
     <p
       role="status"
-      className="rounded-[14px] bg-[#FFF1E0] px-[18px] py-3.5 text-sm font-semibold text-[#6E3B00]"
+      className="rounded-[14px] bg-warning-bg px-[18px] py-3.5 text-sm font-semibold text-warning"
     >
       Modo de bloqueio ativado.{' '}
       {isMobile

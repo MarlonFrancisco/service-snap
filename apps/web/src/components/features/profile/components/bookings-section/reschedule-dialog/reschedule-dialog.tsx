@@ -15,11 +15,11 @@ import { useRescheduleDialog } from './reschedule-dialog.hook';
 import type { TRescheduleDialogConfig } from './reschedule-dialog.types';
 
 const ARROW_CLASS = cn(
-  'grid size-9 shrink-0 place-items-center sm:size-11 rounded-full border border-[#E3E1EA] bg-white text-[15px] font-bold text-[#0B0B0F] disabled:cursor-not-allowed disabled:opacity-40',
+  'grid size-9 shrink-0 place-items-center sm:size-11 rounded-full border border-line-strong bg-white text-[15px] font-bold text-ink disabled:cursor-not-allowed disabled:opacity-40',
   PROFILE_FOCUS_CLASS,
 );
 const NOTICE_CLASS =
-  'rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-center text-sm text-[#5F5C6E]';
+  'rounded-[14px] bg-surface px-3.5 py-3 text-center text-sm text-ink-muted';
 
 export const RescheduleDialog = (config: TRescheduleDialogConfig) => {
   const {
@@ -86,8 +86,8 @@ export const RescheduleDialog = (config: TRescheduleDialogConfig) => {
               'h-11 min-w-20 rounded-full border px-3.5 text-sm font-semibold transition-colors',
               PROFILE_FOCUS_CLASS,
               time === selectedTime
-                ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
-                : 'border-[#E3E1EA] bg-white text-[#0B0B0F] hover:bg-[#F7F6FA]',
+                ? 'border-ink bg-ink text-white'
+                : 'border-line-strong bg-white text-ink hover:bg-surface',
             )}
           >
             {time}
@@ -111,10 +111,10 @@ export const RescheduleDialog = (config: TRescheduleDialogConfig) => {
           Remarcar agendamento
         </DialogTitle>
 
-        <div className="rounded-2xl bg-[#F7F6FA] px-[18px] py-4 text-sm leading-[1.5]">
+        <div className="rounded-2xl bg-surface px-[18px] py-4 text-sm leading-[1.5]">
           <b className="block text-[15px]">{storeName}</b>
-          <span className="block text-[#5F5C6E]">{serviceLine}</span>
-          <span className="block text-[#5F5C6E]">{currentTimeLine}</span>
+          <span className="block text-ink-muted">{serviceLine}</span>
+          <span className="block text-ink-muted">{currentTimeLine}</span>
         </div>
 
         <p id="reschedule-days-label" className="text-sm font-bold">
@@ -148,10 +148,10 @@ export const RescheduleDialog = (config: TRescheduleDialogConfig) => {
                   'grid h-16 min-w-0 flex-1 place-items-center rounded-2xl border text-xs font-semibold',
                   PROFILE_FOCUS_CLASS,
                   isSelected
-                    ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
+                    ? 'border-ink bg-ink text-white'
                     : day.isDisabled
-                      ? 'cursor-default border-[#F7F6FA] bg-[#F7F6FA] text-[#5F5C6E]'
-                      : 'border-[#E3E1EA] bg-white text-[#5F5C6E] hover:bg-[#F7F6FA]',
+                      ? 'cursor-default border-surface bg-surface text-ink-muted'
+                      : 'border-line-strong bg-white text-ink-muted hover:bg-surface',
                 )}
               >
                 <span>{day.weekday}</span>
@@ -161,8 +161,8 @@ export const RescheduleDialog = (config: TRescheduleDialogConfig) => {
                     isSelected
                       ? 'text-white'
                       : day.isDisabled
-                        ? 'text-[#8D8A9B]'
-                        : 'text-[#0B0B0F]',
+                        ? 'text-ink-faint'
+                        : 'text-ink',
                   )}
                 >
                   {day.day}

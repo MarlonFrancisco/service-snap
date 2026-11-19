@@ -18,7 +18,7 @@ import { useAgendaGridMobileView } from './agenda-grid-mobile-view.hook';
 import type { TMobileViewConfig } from './agenda-grid-mobile-view.types';
 
 const APPOINTMENT_CARD_CLASS = cn(
-  'grid w-full grid-cols-[52px_1fr] gap-2.5 rounded-[18px] border border-[#EBE9F0] bg-white p-3 text-left',
+  'grid w-full grid-cols-[52px_1fr] gap-2.5 rounded-[18px] border border-line bg-white p-3 text-left',
   PARTNER_FOCUS_CLASS,
 );
 
@@ -51,8 +51,8 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
       <h2 className="mt-5 mb-2.5 text-[15px] font-extrabold">{dayTitle}</h2>
 
       {holiday && (
-        <p className="rounded-[18px] bg-[#F7F6FA] p-6 text-center text-sm font-medium text-[#5F5C6E]">
-          <b className="block text-[#0B0B0F]">
+        <p className="rounded-[18px] bg-surface p-6 text-center text-sm font-medium text-ink-muted">
+          <b className="block text-ink">
             {holiday.name ? `Feriado · ${holiday.name}` : 'Feriado'}
           </b>
           Loja fechada o dia todo
@@ -60,7 +60,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
       )}
 
       {!holiday && !isWorkingDay && (
-        <p className="rounded-[18px] bg-[#F7F6FA] p-6 text-center text-sm font-medium text-[#5F5C6E]">
+        <p className="rounded-[18px] bg-surface p-6 text-center text-sm font-medium text-ink-muted">
           Dia não útil
         </p>
       )}
@@ -100,7 +100,7 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                     item.slot && (
                       <div
                         key={item.key}
-                        className="min-h-11 rounded-[9px] border border-[#EBE9F0]"
+                        className="min-h-11 rounded-[9px] border border-line"
                       >
                         <AgendaSlotButton slot={item.slot} />
                       </div>
@@ -114,8 +114,8 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
       )}
 
       {isWorkingDay && !isBlockMode && dayAppointments.length === 0 && (
-        <div className="flex flex-col items-center gap-3 rounded-[18px] bg-[#F7F6FA] p-6 text-center">
-          <p className="text-sm font-medium text-[#5F5C6E]">
+        <div className="flex flex-col items-center gap-3 rounded-[18px] bg-surface p-6 text-center">
+          <p className="text-sm font-medium text-ink-muted">
             Nenhum agendamento
           </p>
           <button
@@ -150,12 +150,12 @@ export const AgendaGridMobileView = memo(({ gridHook }: TMobileViewConfig) => {
                     <b className="block truncate text-[15px]">
                       {getClientName(appointment.user)}
                     </b>
-                    <span className="mt-0.5 block truncate text-[13px] text-[#5F5C6E]">
+                    <span className="mt-0.5 block truncate text-[13px] text-ink-muted">
                       {getVisitServiceNames(appointment)} ·{' '}
                       {appointment.storeMember.user.firstName}{' '}
                       {appointment.storeMember.user.lastName}
                     </span>
-                    <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
+                    <span className="mt-0.5 block text-[13px] text-ink-muted">
                       {formatPriceByCountry(
                         getVisitItems(appointment).reduce(
                           (total, item) => total + (item.service.price ?? 0),

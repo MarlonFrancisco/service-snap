@@ -27,7 +27,7 @@ import {
 import type { TCheckoutPaymentsConfig } from './checkout-payments.types';
 
 const REMOVE_BUTTON_CLASS =
-  'grid size-11 flex-none cursor-pointer place-items-center rounded-full bg-[#F4F3F7] text-[#0B0B0F] transition-colors hover:bg-[#EBE9F0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'grid size-11 flex-none cursor-pointer place-items-center rounded-full bg-surface-2 text-ink transition-colors hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export const CheckoutPayments = ({
   form,

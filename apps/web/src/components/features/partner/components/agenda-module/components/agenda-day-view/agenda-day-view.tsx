@@ -49,17 +49,17 @@ export const AgendaDayView = memo(() => {
           {dayTitle}
         </h2>
         {isToday && (
-          <span className="rounded-full bg-[#0B0B0F] px-[11px] py-[5px] text-xs font-bold text-white">
+          <span className="rounded-full bg-ink px-[11px] py-[5px] text-xs font-bold text-white">
             Hoje
           </span>
         )}
         {!isWorkingDay && (
-          <span className="rounded-full bg-[#F4F3F7] px-[11px] py-[5px] text-xs font-bold text-[#5F5C6E]">
+          <span className="rounded-full bg-surface-2 px-[11px] py-[5px] text-xs font-bold text-ink-muted">
             Dia não útil
           </span>
         )}
         {holiday && (
-          <span className="rounded-full bg-[#DEDBE6] px-[11px] py-[5px] text-xs font-bold text-[#0B0B0F]">
+          <span className="rounded-full bg-line-2 px-[11px] py-[5px] text-xs font-bold text-ink">
             {holiday.name ? `Feriado · ${holiday.name}` : 'Feriado'}
           </span>
         )}
@@ -73,7 +73,7 @@ export const AgendaDayView = memo(() => {
 
       <div
         className={cn(
-          'overflow-auto rounded-[22px] border border-[#EBE9F0]',
+          'overflow-auto rounded-[22px] border border-line',
           scrollClassName,
         )}
       >
@@ -95,12 +95,12 @@ export const AgendaDayView = memo(() => {
           {professionalColumns.map(({ professional, column }) => (
             <div key={professional.id} className="flex min-w-0 flex-col">
               <div
-                className="sticky top-0 z-30 flex items-center gap-2.5 border-b border-[#EBE9F0] bg-[#F7F6FA] px-3 text-sm font-bold"
+                className="sticky top-0 z-30 flex items-center gap-2.5 border-b border-line bg-surface px-3 text-sm font-bold"
                 style={{ height: HEADER_HEIGHT }}
               >
                 <span
                   aria-hidden="true"
-                  className="grid size-[34px] shrink-0 place-items-center rounded-full bg-[#0B0B0F] text-xs font-bold text-white"
+                  className="grid size-[34px] shrink-0 place-items-center rounded-full bg-ink text-xs font-bold text-white"
                 >
                   {getProfessionalInitials(professional)}
                 </span>
@@ -120,7 +120,7 @@ export const AgendaDayView = memo(() => {
                 />
               ) : (
                 <div
-                  className="border-l border-[#F0EEF4] bg-[#F7F6FA] p-2 text-center text-xs font-medium text-[#5F5C6E]"
+                  className="border-l border-surface-3 bg-surface p-2 text-center text-xs font-medium text-ink-muted"
                   style={{ height: SLOT_HEIGHT * timeSlots.length }}
                 >
                   Dia não útil

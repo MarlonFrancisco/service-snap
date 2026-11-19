@@ -11,7 +11,7 @@ export function StepIndicator({ activeCount }: TStepIndicatorConfig) {
           key={dot}
           className={cn(
             'h-1 w-6 rounded-full',
-            dot <= activeCount ? 'bg-[#0B0B0F]' : 'bg-[#EBE9F0]',
+            dot <= activeCount ? 'bg-ink' : 'bg-line',
           )}
         />
       ))}

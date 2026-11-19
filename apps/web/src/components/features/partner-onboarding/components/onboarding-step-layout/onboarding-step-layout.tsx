@@ -46,7 +46,7 @@ export const OnboardingStepLayout = ({
     <OnboardingHeader onSaveAndExit={onSaveAndExit} isSaving={isSaving} />
 
     <main className="mx-auto w-full max-w-[688px] flex-1 px-5 pt-[22px] pb-7 md:px-6 md:pt-7 md:pb-9">
-      <p className="text-[13px] font-semibold text-[#5F5C6E]">
+      <p className="text-[13px] font-semibold text-ink-muted">
         {stepLabel ?? `Etapa ${step} de ${TOTAL_STEPS}`}
       </p>
       <div
@@ -55,10 +55,10 @@ export const OnboardingStepLayout = ({
         aria-valuenow={step}
         aria-valuemin={0}
         aria-valuemax={TOTAL_STEPS}
-        className="mt-2 h-1 overflow-hidden rounded-full bg-[#EBE9F0]"
+        className="mt-2 h-1 overflow-hidden rounded-full bg-line"
       >
         <div
-          className="h-full bg-[#0B0B0F]"
+          className="h-full bg-ink"
           style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
         />
       </div>
@@ -66,7 +66,7 @@ export const OnboardingStepLayout = ({
       <h1 className="mt-[18px] text-[28px] leading-[1.1] font-extrabold tracking-[-0.03em] md:mt-[22px] md:text-[32px]">
         {title}
       </h1>
-      <p className="mt-1.5 mb-[18px] text-sm leading-normal text-[#5F5C6E] md:mt-[7px] md:mb-[22px] md:text-[15px]">
+      <p className="mt-1.5 mb-[18px] text-sm leading-normal text-ink-muted md:mt-[7px] md:mb-[22px] md:text-[15px]">
         {lead}
       </p>
 
@@ -82,7 +82,7 @@ export const OnboardingStepLayout = ({
             <button
               type="button"
               onClick={onExitAnyway}
-              className="min-h-11 cursor-pointer rounded-full bg-[#F4F3F7] px-3.5 text-[13px] font-bold text-[#0B0B0F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+              className="min-h-11 cursor-pointer rounded-full bg-surface-2 px-3.5 text-[13px] font-bold text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Sair sem salvar
             </button>
@@ -91,7 +91,7 @@ export const OnboardingStepLayout = ({
       )}
     </main>
 
-    <footer className="sticky bottom-0 flex flex-wrap items-center justify-between gap-2.5 border-t border-[#EBE9F0] bg-white/97 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:gap-3 md:px-8 md:py-3.5">
+    <footer className="sticky bottom-0 flex flex-wrap items-center justify-between gap-2.5 border-t border-line bg-white/97 px-5 pt-3 pb-[calc(12px+env(safe-area-inset-bottom,0px))] md:gap-3 md:px-8 md:py-3.5">
       <button
         type="button"
         onClick={onBack}

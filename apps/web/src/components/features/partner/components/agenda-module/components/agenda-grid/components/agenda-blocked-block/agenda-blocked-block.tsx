@@ -17,7 +17,7 @@ export const AgendaBlockedBlock = ({
       onClick={() => onClick(blockedTime)}
       aria-label={`Bloqueado ${label === 'dia inteiro' ? 'o dia inteiro' : `de ${rangeText}`}, abrir bloqueio`}
       className={cn(
-        'absolute z-10 flex flex-col gap-0.5 overflow-hidden rounded-[9px] bg-[#DEDBE6] px-2 py-1.5 text-left text-[11px] font-medium text-[#0B0B0F] transition-[filter] hover:brightness-95',
+        'absolute z-10 flex flex-col gap-0.5 overflow-hidden rounded-[9px] bg-line-2 px-2 py-1.5 text-left text-[11px] font-medium text-ink transition-[filter] hover:brightness-95',
         PARTNER_FOCUS_CLASS,
         'focus-visible:outline-offset-[-2px]',
       )}

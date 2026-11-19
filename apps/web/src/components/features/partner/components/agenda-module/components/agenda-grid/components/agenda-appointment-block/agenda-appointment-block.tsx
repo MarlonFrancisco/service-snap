@@ -45,7 +45,7 @@ export const AgendaAppointmentBlock = ({
       className={cn(
         'absolute z-10 block overflow-hidden rounded-[9px] px-[7px] py-[3px] text-left text-[11px] leading-[14px] transition-[filter] hover:brightness-95',
         isMoving
-          ? 'border-2 border-dashed border-[#C9C6D4] bg-white text-[#5F5C6E]'
+          ? 'border-2 border-dashed border-line-3 bg-white text-ink-muted'
           : status.className,
         isDraggable && 'cursor-grab active:cursor-grabbing',
         PARTNER_FOCUS_CLASS,

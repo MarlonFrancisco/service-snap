@@ -7,9 +7,9 @@ import {
 } from '../business-showcase.hook';
 
 const INFO_ROW_CLASS =
-  'flex justify-between gap-4 border-b border-[#EBE9F0] py-3 md:block md:border-0 md:p-0';
+  'flex justify-between gap-4 border-b border-line py-3 md:block md:border-0 md:p-0';
 const INFO_LABEL_CLASS =
-  'shrink-0 font-medium text-[#5F5C6E] md:mb-1 md:block md:text-xs md:font-bold md:tracking-[0.06em] md:uppercase';
+  'shrink-0 font-medium text-ink-muted md:mb-1 md:block md:text-xs md:font-bold md:tracking-[0.06em] md:uppercase';
 const INFO_VALUE_CLASS = 'text-right md:block md:text-left';
 
 export function BusinessInfo() {
@@ -34,7 +34,7 @@ export function BusinessInfo() {
   return (
     <div>
       {description && (
-        <p className="text-[15px] leading-[1.6] text-[#0B0B0F] md:text-[17px]">
+        <p className="text-[15px] leading-[1.6] text-ink md:text-[17px]">
           {description}
         </p>
       )}
@@ -44,7 +44,7 @@ export function BusinessInfo() {
           {amenities.map((amenity) => (
             <span
               key={amenity}
-              className="shrink-0 rounded-full bg-[#F4F3F7] px-3 py-2 text-xs font-semibold text-[#0B0B0F] md:px-3.5 md:text-[13px]"
+              className="shrink-0 rounded-full bg-surface-2 px-3 py-2 text-xs font-semibold text-ink md:px-3.5 md:text-[13px]"
             >
               {amenity}
             </span>
@@ -52,7 +52,7 @@ export function BusinessInfo() {
         </div>
       )}
 
-      <div className="mt-[18px] border-t border-[#EBE9F0] text-sm text-[#0B0B0F] md:mt-6 md:grid md:grid-cols-3 md:gap-6 md:border-b md:py-5">
+      <div className="mt-[18px] border-t border-line text-sm text-ink md:mt-6 md:grid md:grid-cols-3 md:gap-6 md:border-b md:py-5">
         <div className={INFO_ROW_CLASS}>
           <span className={INFO_LABEL_CLASS}>Horário</span>
           <span className={INFO_VALUE_CLASS}>

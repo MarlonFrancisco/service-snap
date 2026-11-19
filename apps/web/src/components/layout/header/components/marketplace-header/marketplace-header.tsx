@@ -55,7 +55,7 @@ export const MarketplaceHeader = ({
       <header
         className={cn(
           plusJakartaSans.className,
-          'fixed top-0 right-0 left-0 z-50 border-b border-[#EDEDED] bg-white/90 backdrop-blur-xl',
+          'fixed top-0 right-0 left-0 z-50 border-b border-line bg-white/90 backdrop-blur-xl',
         )}
       >
         <div className="relative mx-auto flex h-16 w-full max-w-[82.5rem] items-center justify-between gap-3 px-5 md:h-20 md:gap-4 md:px-10">
@@ -72,7 +72,7 @@ export const MarketplaceHeader = ({
                 onClick={focusDiscoverySearch}
                 className={cn(
                   HEADER_SEARCH_FIELD_CLASS,
-                  'justify-between gap-2 border-[#E3E1EA] text-[#5F5C6E] motion-safe:transition-all',
+                  'justify-between gap-2 border-line-strong text-ink-muted motion-safe:transition-all',
                   isCompactSearchVisible
                     ? 'visible scale-100 opacity-100'
                     : 'invisible scale-[0.92] opacity-0',
@@ -98,7 +98,7 @@ export const MarketplaceHeader = ({
             <Link
               href={partnerHref}
               onClick={handleHeaderPartnerClick}
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-[#2B2B2B] transition-colors hover:bg-[#F4F4F5] hover:text-[#0A0A0A] lg:inline-flex"
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-2 hover:text-ink lg:inline-flex"
             >
               {partnerLabel}
             </Link>
@@ -108,10 +108,10 @@ export const MarketplaceHeader = ({
                 aria-expanded={isMenuOpen}
                 aria-label="Abrir menu da conta"
                 onClick={toggleMenu}
-                className="flex items-center rounded-full bg-white transition-shadow active:scale-[0.98] md:gap-3 md:border md:border-[#EDEDED] md:py-1.5 md:pr-2 md:pl-3 md:hover:shadow-md"
+                className="flex items-center rounded-full bg-white transition-shadow active:scale-[0.98] md:gap-3 md:border md:border-line md:py-1.5 md:pr-2 md:pl-3 md:hover:shadow-md"
               >
-                <Menu className="hidden h-5 w-5 text-[#2B2B2B] md:block" />
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#0A0A0A] text-xs font-semibold text-white md:h-8 md:w-8">
+                <Menu className="hidden h-5 w-5 text-ink md:block" />
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-xs font-semibold text-white md:h-8 md:w-8">
                   {isLoggedIn && initials ? (
                     initials
                   ) : (
@@ -120,39 +120,39 @@ export const MarketplaceHeader = ({
                 </span>
               </button>
               {isMenuOpen && (
-                <div className="absolute top-12 right-0 z-50 w-64 rounded-2xl border border-[#EDEDED] bg-white p-2 shadow-xl md:top-14">
+                <div className="absolute top-12 right-0 z-50 w-64 rounded-2xl border border-line bg-white p-2 shadow-xl md:top-14">
                   <button
                     type="button"
                     onClick={handleAuth}
-                    className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-[#0A0A0A] hover:bg-[#F4F4F5]"
+                    className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-ink hover:bg-surface-2"
                   >
                     {isLoggedIn ? 'Meu perfil' : 'Entrar ou registrar-se'}
                   </button>
                   <Link
                     href="/booking"
                     onClick={closeMenu}
-                    className="block rounded-xl px-3 py-2.5 text-sm text-[#2B2B2B] hover:bg-[#F4F4F5]"
+                    className="block rounded-xl px-3 py-2.5 text-sm text-ink hover:bg-surface-2"
                   >
                     Explorar serviços
                   </Link>
                   <Link
                     href={partnerHref}
                     onClick={handleMenuPartnerClick}
-                    className="block rounded-xl px-3 py-2.5 text-sm text-[#2B2B2B] hover:bg-[#F4F4F5] lg:hidden"
+                    className="block rounded-xl px-3 py-2.5 text-sm text-ink hover:bg-surface-2 lg:hidden"
                   >
                     {partnerLabel}
                   </Link>
                   <button
                     type="button"
                     onClick={handleOpenLocale}
-                    className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-[#2B2B2B] hover:bg-[#F4F4F5]"
+                    className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-ink hover:bg-surface-2"
                   >
                     Idioma e moeda
                   </button>
                   <Link
                     href="/help"
                     onClick={closeMenu}
-                    className="block rounded-xl px-3 py-2.5 text-sm text-[#2B2B2B] hover:bg-[#F4F4F5]"
+                    className="block rounded-xl px-3 py-2.5 text-sm text-ink hover:bg-surface-2"
                   >
                     Central de ajuda
                   </Link>

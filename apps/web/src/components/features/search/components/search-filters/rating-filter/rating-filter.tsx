@@ -13,7 +13,7 @@ import { searchFilterChipVariants } from '../search-filters.styles';
 import type { TRatingFilterConfig } from './rating-filter.types';
 
 const RATING_ITEM_CLASS =
-  'min-h-11 cursor-pointer rounded-xl pl-9 text-sm font-semibold text-[#0B0B0F] focus:bg-[#F4F3F7] focus:text-[#0B0B0F]';
+  'min-h-11 cursor-pointer rounded-xl pl-9 text-sm font-semibold text-ink focus:bg-surface-2 focus:text-ink';
 
 /** Chip "Nota" com o menu de nota mínima (3+, 4+, 4,5+). */
 export const RatingFilter = ({
@@ -35,9 +35,9 @@ export const RatingFilter = ({
     <DropdownMenuContent
       align="start"
       sideOffset={8}
-      className="min-w-[200px] rounded-2xl border-[#E3E1EA] bg-white p-1.5 text-[#0B0B0F] shadow-[0_12px_40px_rgba(15,12,30,0.12)]"
+      className="min-w-[200px] rounded-2xl border-line-strong bg-white p-1.5 text-ink shadow-[0_12px_40px_rgba(15,12,30,0.12)]"
     >
-      <DropdownMenuLabel className="px-3 pt-2 pb-1 text-xs font-bold tracking-[0.06em] text-[#5F5C6E] uppercase">
+      <DropdownMenuLabel className="px-3 pt-2 pb-1 text-xs font-bold tracking-[0.06em] text-ink-muted uppercase">
         Nota mínima
       </DropdownMenuLabel>
       <DropdownMenuRadioGroup value={value} onValueChange={onValueChange}>

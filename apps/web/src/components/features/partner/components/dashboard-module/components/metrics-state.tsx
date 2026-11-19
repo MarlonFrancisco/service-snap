@@ -17,7 +17,7 @@ import {
   MetricsNotFound,
 } from './metrics-not-found';
 
-const BONE_CLASS = 'rounded-[14px] bg-[#EBE9F0] motion-safe:animate-pulse';
+const BONE_CLASS = 'rounded-[14px] bg-line motion-safe:animate-pulse';
 
 const KPI_BONES = ['first', 'second', 'third', 'fourth'];
 
@@ -45,7 +45,7 @@ const MetricsError = ({
   <div role="alert" className={METRICS_STATE_PANEL_CLASS}>
     <span
       aria-hidden="true"
-      className="grid size-12 place-items-center rounded-full bg-[#FBE8E6] text-[#A4231A]"
+      className="grid size-12 place-items-center rounded-full bg-error-bg text-error"
     >
       <TriangleAlert className="size-[22px] stroke-[1.8]" />
     </span>

@@ -30,10 +30,10 @@ export const LegalDocument = ({
                 key={tab.id}
                 href={tab.href}
                 aria-current={isActive ? 'page' : undefined}
-                className={`inline-flex h-11 items-center rounded-full border px-[18px] text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F] ${
+                className={`inline-flex h-11 items-center rounded-full border px-[18px] text-[13px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
                   isActive
-                    ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
-                    : 'border-[#E3E1EA] hover:border-[#0B0B0F]'
+                    ? 'border-ink bg-ink text-white'
+                    : 'border-line-strong hover:border-ink'
                 }`}
               >
                 {tab.label}
@@ -49,7 +49,7 @@ export const LegalDocument = ({
             <h1 className="text-[34px] leading-[1.08] font-extrabold tracking-[-0.035em] md:text-[44px]">
               {title}
             </h1>
-            <p className="mt-2.5 text-sm text-[#5F5C6E]">{updatedAt}</p>
+            <p className="mt-2.5 text-sm text-ink-muted">{updatedAt}</p>
 
             <div className={LEGAL_BODY_CLASS}>
               {sections.map((section) => (

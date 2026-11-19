@@ -48,12 +48,12 @@ export const CategoryTabs = () => {
     <div className="mx-auto w-full max-w-[82.5rem] md:px-10">
       <nav
         aria-label="Categorias"
-        className="mt-5 flex gap-6 overflow-x-auto border-b border-[#EBE9F0] px-5 [scrollbar-width:none] md:mt-10 md:gap-9 md:px-0 lg:justify-center"
+        className="mt-5 flex gap-6 overflow-x-auto border-b border-line px-5 [scrollbar-width:none] md:mt-10 md:gap-9 md:px-0 lg:justify-center"
       >
         <Link
           href="/"
           aria-current="page"
-          className={`${TAB_CLASS} border-[#0B0B0F] text-[#0B0B0F]`}
+          className={`${TAB_CLASS} border-ink text-ink`}
         >
           <LayoutGrid className={ICON_CLASS} strokeWidth={1.6} aria-hidden />
           Tudo
@@ -68,7 +68,7 @@ export const CategoryTabs = () => {
               item_id: query,
               destination: getCategoryHref(query),
             }}
-            className={`${TAB_CLASS} border-transparent text-[#5F5C6E] hover:border-[#0B0B0F] hover:text-[#0B0B0F]`}
+            className={`${TAB_CLASS} border-transparent text-ink-muted hover:border-ink hover:text-ink`}
           >
             <Icon className={ICON_CLASS} strokeWidth={1.6} aria-hidden />
             {label}
