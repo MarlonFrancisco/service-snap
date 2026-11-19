@@ -19,8 +19,8 @@ export default async function PricingPage() {
 
   await withBudget(
     queryClient.prefetchQuery({
-      queryKey: CACHE_QUERY_KEYS.plans('BRL'),
-      queryFn: () => PlansService.getPlans('BRL'),
+      queryKey: CACHE_QUERY_KEYS.plans(),
+      queryFn: () => PlansService.getPlans(),
     }),
     PLANS_PREFETCH_MS,
   );

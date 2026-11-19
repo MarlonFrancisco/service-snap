@@ -4,7 +4,7 @@ import { LocaleDialog } from '@/components/layout/locale-dialog';
 import { useConsentStore } from '@/store/consent';
 import { useLocaleStore } from '@/store/locale';
 import { SOCIAL_LINKS } from '@/utils/constants/contact.constants';
-import { COUNTRIES, CURRENCIES } from '@repo/shared/constants';
+import { COUNTRIES } from '@repo/shared/constants';
 import { cn } from '@repo/ui';
 import Image from 'next/image';
 import { TrackedLink } from '@/components/ui/tracked-link';
@@ -17,13 +17,12 @@ const COLUMN_LINK_CLASS =
 
 export const Footer = ({ compact = false }: TFooterConfig) => {
   const [isLocaleOpen, setIsLocaleOpen] = useState(false);
-  const { country, currency } = useLocaleStore();
+  const country = useLocaleStore((state) => state.country);
   const openCookiePreferences = useConsentStore(
     (state) => state.openPreferences,
   );
 
   const countryData = COUNTRIES[country];
-  const currencyData = CURRENCIES[currency];
   const copyrightYear = new Date().getFullYear();
 
   return (
@@ -197,7 +196,7 @@ export const Footer = ({ compact = false }: TFooterConfig) => {
               onClick={() => setIsLocaleOpen(true)}
               className="min-h-11 transition-colors hover:text-[#0B0B0F]"
             >
-              {countryData?.nativeName} · {currencyData?.symbol} {currency}
+              {countryData?.nativeName}
             </button>
           </div>
 

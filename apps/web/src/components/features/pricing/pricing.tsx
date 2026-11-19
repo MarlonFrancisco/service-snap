@@ -19,14 +19,8 @@ const PLAN_COLUMNS_CLASS =
   'md:grid-cols-[repeat(auto-fit,minmax(min(16.25rem,100%),1fr))]';
 
 export const Pricing = () => {
-  const {
-    planItems,
-    mobilePlanItems,
-    type,
-    setType,
-    isPendingPlans,
-    showCurrencyNote,
-  } = usePricing();
+  const { planItems, mobilePlanItems, type, setType, isPendingPlans } =
+    usePricing();
 
   return (
     <Header>
@@ -69,9 +63,7 @@ export const Pricing = () => {
                   />
                 ))}
               </div>
-              <div
-                className={cn('hidden gap-4 md:grid', PLAN_COLUMNS_CLASS)}
-              >
+              <div className={cn('hidden gap-4 md:grid', PLAN_COLUMNS_CLASS)}>
                 {planItems.map(({ plan, isCurrentPlan }) => (
                   <PricingPlanCard
                     key={plan.priceId}
@@ -81,11 +73,6 @@ export const Pricing = () => {
                 ))}
               </div>
             </>
-          )}
-          {showCurrencyNote && (
-            <p className="mt-4 text-center text-sm text-[#5F5C6E]">
-              Preços em reais (BRL).
-            </p>
           )}
         </div>
 
