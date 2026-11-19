@@ -1,7 +1,6 @@
 import { useAnalytics } from '@/providers/analytics.provider';
-import { useLocaleStore } from '@/store/locale';
+import { SUPPORTED_CURRENCIES, useLocaleStore } from '@/store/locale';
 import {
-  CURRENCIES,
   getCountriesByRegion,
   type TCountryCode,
   type TCurrencyCode,
@@ -27,10 +26,8 @@ export const useLocaleDialog = ({ onOpenChange }: TUseLocaleDialogConfig) => {
     [],
   );
 
-  const currencyCodes = useMemo(
-    () => Object.keys(CURRENCIES) as TCurrencyCode[],
-    [],
-  );
+  // Só as moedas em que há planos: as outras mostrariam um preço que não existe.
+  const currencyCodes = SUPPORTED_CURRENCIES;
 
   const handleCountrySelect = useCallback(
     (code: TCountryCode) => {

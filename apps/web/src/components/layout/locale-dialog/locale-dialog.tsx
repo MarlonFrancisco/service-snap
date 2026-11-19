@@ -137,8 +137,7 @@ export const LocaleDialog = ({ open, onOpenChange }: TLocaleDialogConfig) => {
 
             <TabsContent value="currency" className="mt-0 px-6 py-6">
               <p className="text-sm text-neutral-500 mb-6">
-                Escolha a moeda para exibir preços. A cobrança será feita na
-                moeda do estabelecimento.
+                Escolha a moeda para exibir preços.
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -159,9 +158,8 @@ export const LocaleDialog = ({ open, onOpenChange }: TLocaleDialogConfig) => {
 
               <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl">
                 <p className="text-sm text-amber-800">
-                  <strong>Nota:</strong> A conversão de moeda é apenas para
-                  referência. O valor final será cobrado na moeda do
-                  estabelecimento.
+                  <strong>Nota:</strong> Por enquanto, os planos são cobrados em
+                  reais (BRL).
                 </p>
               </div>
             </TabsContent>

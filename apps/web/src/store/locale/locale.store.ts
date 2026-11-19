@@ -23,6 +23,20 @@ const DEFAULT_COUNTRY: TCountryCode = 'BR';
 const DEFAULT_CURRENCY: TCurrencyCode = 'BRL';
 const DEFAULT_LOCALE = 'pt-BR';
 
+/**
+ * Moedas em que os planos existem no Stripe. O seletor só mostra estas, para
+ * nunca exibir uma moeda diferente da dos planos (#24).
+ * Acrescentar 'EUR' quando os preços em euros estiverem ativos (#23).
+ */
+export const SUPPORTED_CURRENCIES: TCurrencyCode[] = ['BRL'];
+
+export const toSupportedCurrency = (
+  currency: TCurrencyCode | undefined,
+): TCurrencyCode =>
+  currency && SUPPORTED_CURRENCIES.includes(currency)
+    ? currency
+    : DEFAULT_CURRENCY;
+
 export const useLocaleStore = create<ILocaleStore>()(
   persist(
     (set) => ({
@@ -38,12 +52,13 @@ export const useLocaleStore = create<ILocaleStore>()(
         set({
           country,
           locale: countryData?.locale || DEFAULT_LOCALE,
-          // Auto-update currency when country changes
-          currency: countryData?.currency || DEFAULT_CURRENCY,
+          // A moeda segue o país, se houver planos nela.
+          currency: toSupportedCurrency(countryData?.currency),
         });
       },
 
-      setCurrency: (currency) => set({ currency }),
+      setCurrency: (currency) =>
+        set({ currency: toSupportedCurrency(currency) }),
 
       setAutoTranslate: (autoTranslate) => set({ autoTranslate }),
 
@@ -57,6 +72,11 @@ export const useLocaleStore = create<ILocaleStore>()(
     }),
     {
       name: 'servicesnap-locale',
+      // Quem já tinha guardado uma moeda sem planos (ex.: EUR) volta à suportada.
+      merge: (persisted, current) => {
+        const state = { ...current, ...(persisted as Partial<ILocaleStore>) };
+        return { ...state, currency: toSupportedCurrency(state.currency) };
+      },
     },
   ),
 );

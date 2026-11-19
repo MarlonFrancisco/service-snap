@@ -1,6 +1,7 @@
 import { usePlansQuery } from '@/hooks/use-query/use-plans-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { useAnalytics } from '@/providers/analytics.provider';
+import { useLocaleStore } from '@/store/locale';
 import { toBillingPeriod } from '@/utils/helpers/analytics.helper';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { TBillingPeriod, TPricingPlanItem } from './pricing.types';
@@ -8,6 +9,9 @@ import type { TBillingPeriod, TPricingPlanItem } from './pricing.types';
 export const usePricing = () => {
   const { data, isPendingPlans } = usePlansQuery();
   const { currentPlan } = useSubscriptionQuery();
+  // Fora do Brasil os planos continuam em BRL até haver preços locais (#23, #24).
+  const country = useLocaleStore((state) => state.country);
+  const showCurrencyNote = country !== 'BR';
 
   const [type, setType] = useState<TBillingPeriod>('month');
   const analytics = useAnalytics();
@@ -62,6 +66,7 @@ export const usePricing = () => {
     planItems,
     mobilePlanItems,
     isPendingPlans,
+    showCurrencyNote,
     type,
     setType: handleSetType,
   };
