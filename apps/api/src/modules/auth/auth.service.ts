@@ -304,12 +304,14 @@ export class AuthService {
 
   async register(body: RegisterDto, token: string) {
     const tokenPayload = await this.verifyToken(token);
-    const { referralCode, ...profile } = body;
+    const { referralCode, attribution, ...profile } = body;
     const user = await this.userService.update(tokenPayload.sub, profile);
 
     if (referralCode) {
       await this.userService.applyReferralCode(user.id, referralCode);
     }
+
+    await this.userService.applySignupAttribution(user.id, attribution);
 
     await this.userService.ensureReferralCode(user.id);
 

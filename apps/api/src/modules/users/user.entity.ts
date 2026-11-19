@@ -108,6 +108,53 @@ export class User extends BaseEntity {
   @Column({ name: 'referred_by_id', type: 'uuid', nullable: true })
   referredById: string | null;
 
+  // Origem do cadastro (first-touch, #31). Gravada uma vez, no registro; fora
+  // das consultas por padrão porque `User` volta em várias respostas.
+  @Column({
+    name: 'signup_utm_source',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    select: false,
+  })
+  signupUtmSource: string | null;
+
+  @Column({
+    name: 'signup_utm_medium',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    select: false,
+  })
+  signupUtmMedium: string | null;
+
+  @Column({
+    name: 'signup_utm_campaign',
+    type: 'varchar',
+    length: 100,
+    nullable: true,
+    select: false,
+  })
+  signupUtmCampaign: string | null;
+
+  @Column({
+    name: 'signup_ref',
+    type: 'varchar',
+    length: 12,
+    nullable: true,
+    select: false,
+  })
+  signupRef: string | null;
+
+  @Column({
+    name: 'signup_landing_path',
+    type: 'varchar',
+    length: 200,
+    nullable: true,
+    select: false,
+  })
+  signupLandingPath: string | null;
+
   @OneToMany(() => Subscription, (subscription) => subscription.user)
   subscriptions: Subscription[];
 
