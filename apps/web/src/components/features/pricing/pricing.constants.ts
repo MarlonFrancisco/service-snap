@@ -8,7 +8,7 @@ export const PRICING_BENEFITS: TPricingBenefit[] = [
   {
     title: 'Lembretes por WhatsApp',
     description:
-      'Confirmações e lembretes a partir do plano Professional, com a conta WhatsApp Business do próprio negócio. Tarifas da Meta à parte.',
+      'A partir do plano Professional, com o seu próprio número; tarifas da Meta faturadas diretamente ao negócio.',
   },
   {
     title: 'Agenda visual intuitiva',
