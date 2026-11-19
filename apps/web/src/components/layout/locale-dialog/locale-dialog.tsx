@@ -1,6 +1,6 @@
 'use client';
 
-import { COUNTRIES, CURRENCIES } from '@repo/shared/constants';
+import { COUNTRIES } from '@repo/shared/constants';
 import {
   Button,
   Dialog,
@@ -17,7 +17,6 @@ import {
 } from '@repo/ui';
 import { Languages } from 'lucide-react';
 import { CountryOption } from './components/country-option';
-import { CurrencyOption } from './components/currency-option';
 import { RegionSection } from './components/region-section';
 import { useLocaleDialog } from './locale-dialog.hook';
 import type { TLocaleDialogConfig } from './locale-dialog.types';
@@ -25,13 +24,10 @@ import type { TLocaleDialogConfig } from './locale-dialog.types';
 export const LocaleDialog = ({ open, onOpenChange }: TLocaleDialogConfig) => {
   const {
     country,
-    currency,
     autoTranslate,
     regions,
     recommendedCountries,
-    currencyCodes,
     handleCountrySelect,
-    handleCurrencySelect,
     handleAutoTranslateToggle,
     handleSave,
   } = useLocaleDialog({ onOpenChange });
@@ -47,18 +43,12 @@ export const LocaleDialog = ({ open, onOpenChange }: TLocaleDialogConfig) => {
 
         <Tabs defaultValue="region" className="w-full">
           <div className="px-6 pt-4">
-            <TabsList className="grid w-fit grid-cols-2 h-auto p-0 bg-transparent gap-4">
+            <TabsList className="grid w-fit grid-cols-1 h-auto p-0 bg-transparent gap-4">
               <TabsTrigger
                 value="region"
                 className="px-0 pb-3 data-[state=active]:bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-b-neutral-950 font-medium"
               >
                 Idioma e região
-              </TabsTrigger>
-              <TabsTrigger
-                value="currency"
-                className="px-0 pb-3 data-[state=active]:bg-transparent rounded-none border-b-2 border-transparent data-[state=active]:border-b-neutral-950 font-medium"
-              >
-                Moeda
               </TabsTrigger>
             </TabsList>
           </div>
@@ -132,37 +122,6 @@ export const LocaleDialog = ({ open, onOpenChange }: TLocaleDialogConfig) => {
                   selectedCountry={country}
                   onSelect={handleCountrySelect}
                 />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="currency" className="mt-0 px-6 py-6">
-              <p className="text-sm text-neutral-500 mb-6">
-                Escolha a moeda para exibir preços. A cobrança será feita na
-                moeda do estabelecimento.
-              </p>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {currencyCodes.map((code) => {
-                  const currencyData = CURRENCIES[code];
-                  return (
-                    <CurrencyOption
-                      key={code}
-                      code={code}
-                      name={currencyData.name}
-                      symbol={currencyData.symbol}
-                      isSelected={currency === code}
-                      onClick={() => handleCurrencySelect(code)}
-                    />
-                  );
-                })}
-              </div>
-
-              <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                <p className="text-sm text-amber-800">
-                  <strong>Nota:</strong> A conversão de moeda é apenas para
-                  referência. O valor final será cobrado na moeda do
-                  estabelecimento.
-                </p>
               </div>
             </TabsContent>
           </ScrollArea>
