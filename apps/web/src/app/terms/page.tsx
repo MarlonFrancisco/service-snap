@@ -220,7 +220,6 @@ const SECTIONS: TLegalSection[] = [
         <p>
           <strong>Sistema de Lembretes:</strong> Para reduzir no-shows, enviamos
           lembretes automáticos por e-mail e WhatsApp antes do agendamento.
-          Esses lembretes reduziram faltas em até 80%.
         </p>
 
         <h3>5.3 Pagamentos e Taxas</h3>
@@ -447,7 +446,7 @@ export default function TermsPage() {
     <LegalDocument
       activeTab="terms"
       title="Termos de Serviço"
-      updatedAt="Última atualização: 12 de novembro de 2026"
+      updatedAt="Última atualização: 19 de novembro de 2026"
       sections={SECTIONS}
     />
   );
