@@ -3,7 +3,5 @@ export type {
   TLocaleDialogConfig,
   TUseLocaleDialogConfig,
   TCountryOptionConfig,
-  TCurrencyOptionConfig,
   TRegionSectionConfig,
 } from './locale-dialog.types';
-

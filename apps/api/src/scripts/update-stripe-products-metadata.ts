@@ -24,6 +24,7 @@ const productsMetadata: ProductMetadata[] = [
   {
     productName: 'Starter',
     metadata: {
+      plan_slug: 'solo',
       UNIT_LIMIT: '1',
       PRO_LIMIT: '1',
       RANK_TIER: 'TIER_3',
@@ -49,6 +50,7 @@ const productsMetadata: ProductMetadata[] = [
   {
     productName: 'Professional',
     metadata: {
+      plan_slug: 'team',
       UNIT_LIMIT: '1',
       PRO_LIMIT: '5',
       RANK_TIER: 'TIER_2',
@@ -76,6 +78,7 @@ const productsMetadata: ProductMetadata[] = [
   {
     productName: 'Business',
     metadata: {
+      plan_slug: 'multi',
       UNIT_LIMIT: '5',
       PRO_LIMIT: '20',
       RANK_TIER: 'TIER_1',
@@ -103,6 +106,7 @@ const productsMetadata: ProductMetadata[] = [
   {
     productName: 'Enterprise',
     metadata: {
+      plan_slug: 'enterprise',
       UNIT_LIMIT: 'UNLIMITED',
       PRO_LIMIT: 'UNLIMITED',
       RANK_TIER: 'TIER_1',
@@ -153,8 +157,11 @@ async function updateProductsMetadata() {
     try {
       console.log(`📦 Buscando produto "${productName}"...`);
 
-      // Encontrar o produto pelo nome
-      const product = stripeProducts.data.find((p) => p.name === productName);
+      // Pelo `plan_slug` primeiro: o nome visível muda (#22), o slug não.
+      const product =
+        stripeProducts.data.find(
+          (p) => p.metadata.plan_slug === metadata.plan_slug,
+        ) ?? stripeProducts.data.find((p) => p.name === productName);
 
       if (!product) {
         throw new Error(`Produto "${productName}" não encontrado na Stripe`);

@@ -30,7 +30,8 @@ export const usePricing = () => {
 
   // Uma vez por visita, quando os planos chegam.
   useEffect(() => {
-    if (hasTrackedViewRef.current || isPendingPlans || !planItems.length) return;
+    if (hasTrackedViewRef.current || isPendingPlans || !planItems.length)
+      return;
     hasTrackedViewRef.current = true;
 
     const billingPeriod = toBillingPeriod(type);

@@ -3,9 +3,11 @@ import {
   IsBoolean,
   IsEnum,
   IsNumber,
+  IsOptional,
   IsString,
 } from 'class-validator';
 import type Stripe from 'stripe';
+import { resolvePlanSlug, type TPlanSlug } from '../../utils';
 
 export class PlanDto {
   @IsString()
@@ -16,6 +18,10 @@ export class PlanDto {
 
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  slug: TPlanSlug | null;
 
   @IsString()
   description: string;
@@ -50,6 +56,7 @@ export class PlanDto {
     dto.id = plan.id;
     dto.priceId = price.id;
     dto.name = plan.name;
+    dto.slug = resolvePlanSlug(plan);
     dto.description = plan.description;
     dto.price = price.unit_amount;
     dto.popular = plan.metadata.IS_RECOMMENDED === 'true';

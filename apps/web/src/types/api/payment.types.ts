@@ -1,9 +1,13 @@
 import { TCurrencyCode } from '@repo/shared/constants';
 
+/** Identificador estável do plano (`plan_slug` no Stripe); o nome pode mudar. */
+export type TPlanSlug = 'solo' | 'team' | 'multi' | 'enterprise';
+
 export interface IPlan {
   id: string;
   priceId: string;
   name: string;
+  slug: TPlanSlug | null;
   description: string;
   price: number;
   popular: boolean;
@@ -27,6 +31,7 @@ export interface IMySubscription {
   cancelAtPeriodEnd: boolean;
   planId: string;
   planName: string;
+  planSlug: TPlanSlug | null;
   planDescription: string;
   price: number;
   currency: TCurrencyCode;

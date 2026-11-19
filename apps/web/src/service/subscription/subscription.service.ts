@@ -18,7 +18,10 @@ export class SubscriptionService {
   }
 
   static async getCheckoutSessionStatus(sessionId: string) {
-    return await this.apiClient.get<{ status: TCheckoutSessionStatus }>(
+    return await this.apiClient.get<{
+      status: TCheckoutSessionStatus;
+      isTrial?: boolean;
+    }>(
       `/subscription/checkout-session/${encodeURIComponent(sessionId)}`,
     );
   }
