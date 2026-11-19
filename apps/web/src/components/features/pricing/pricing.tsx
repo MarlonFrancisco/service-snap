@@ -4,19 +4,21 @@ import { cn } from '@repo/ui';
 import { BillingToggle } from './billing-toggle';
 import { PricingPlanCard } from './components/pricing-plan-card';
 import { PricingRoiCalculator } from './components/pricing-roi-calculator';
-import { PRICING_BENEFITS } from './pricing.constants';
+import { PricingHero } from './components/pricing-hero';
+import {
+  PRICING_BENEFITS,
+  PRICING_PILL_CLASS,
+  PRICING_PLAN_COLUMNS_CLASS,
+} from './pricing.constants';
+import { PricingPlansSkeleton } from './pricing.skeleton';
 import { usePricing } from './pricing.hook';
 
-const PILL_CLASS =
-  'inline-block rounded-full bg-surface-2 px-3 py-[0.4375rem] text-[0.6875rem] font-bold tracking-[0.06em] uppercase md:px-3.5 md:py-2 md:text-xs';
 const SECTION_CLASS = 'pt-14 md:pt-[5.5rem]';
 const SECTION_HEAD_CLASS = 'md:mx-auto md:mb-9 md:max-w-[40rem] md:text-center';
 const SECTION_TITLE_CLASS =
   'mt-3 text-[1.75rem] leading-[1.12] font-extrabold tracking-[-0.03em] md:mt-3.5 md:text-[2.25rem]';
 const SECTION_LEAD_CLASS =
   'mt-3 hidden text-base leading-[1.6] text-ink-muted md:block';
-const PLAN_COLUMNS_CLASS =
-  'md:grid-cols-[repeat(auto-fit,minmax(min(16.25rem,100%),1fr))]';
 
 export const Pricing = () => {
   const { planItems, mobilePlanItems, type, setType, isPendingPlans } =
@@ -25,33 +27,13 @@ export const Pricing = () => {
   return (
     <Header>
       <main className="mx-auto w-full max-w-[82.5rem] px-5 pb-12 md:px-10 md:pb-[5.5rem]">
-        <div className="mx-auto max-w-[45rem] pt-4 text-center md:pt-10">
-          <span className={PILL_CLASS}>Planos</span>
-          <h1 className="mt-3.5 text-[2.125rem] leading-[1.08] font-extrabold tracking-[-0.035em] md:mt-4 md:text-[3rem]">
-            Preços que crescem com você
-          </h1>
-          <p className="mt-3 text-[0.9375rem] leading-[1.6] text-ink-muted md:mt-4 md:text-[1.0625rem]">
-            Organize agenda, WhatsApp e clientes em um só lugar. Comece com
-            teste gratuito e escolha o plano certo para o seu espaço.
-          </p>
-          <div className="mt-5 md:mt-7">
-            <BillingToggle value={type} onChange={setType} />
-          </div>
-        </div>
+        <PricingHero>
+          <BillingToggle value={type} onChange={setType} />
+        </PricingHero>
 
         <div className="mt-8 md:mt-11">
           {isPendingPlans ? (
-            <div
-              aria-hidden="true"
-              className={cn('grid gap-3.5 md:gap-4', PLAN_COLUMNS_CLASS)}
-            >
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-[28rem] animate-pulse rounded-3xl border border-line-strong bg-white md:rounded-[1.625rem]"
-                />
-              ))}
-            </div>
+            <PricingPlansSkeleton />
           ) : (
             <>
               <div className="grid gap-3.5 md:hidden">
@@ -64,7 +46,7 @@ export const Pricing = () => {
                 ))}
               </div>
               <div
-                className={cn('hidden gap-4 md:grid', PLAN_COLUMNS_CLASS)}
+                className={cn('hidden gap-4 md:grid', PRICING_PLAN_COLUMNS_CLASS)}
               >
                 {planItems.map(({ plan, isCurrentPlan }) => (
                   <PricingPlanCard
@@ -80,7 +62,7 @@ export const Pricing = () => {
 
         <section className={SECTION_CLASS}>
           <div className={SECTION_HEAD_CLASS}>
-            <span className={PILL_CLASS}>Incluso nos planos</span>
+            <span className={PRICING_PILL_CLASS}>Incluso nos planos</span>
             <h2 className={SECTION_TITLE_CLASS}>
               Tudo para multiplicar seus agendamentos
             </h2>
@@ -109,7 +91,7 @@ export const Pricing = () => {
 
         <section className={SECTION_CLASS}>
           <div className={SECTION_HEAD_CLASS}>
-            <span className={PILL_CLASS}>Calculadora de ROI</span>
+            <span className={PRICING_PILL_CLASS}>Calculadora de ROI</span>
             <h2 className={SECTION_TITLE_CLASS}>
               Calcule seu retorno
               <span className="hidden md:inline"> sobre investimento</span>
