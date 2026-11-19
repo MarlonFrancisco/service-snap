@@ -2,8 +2,12 @@
 
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
+import { useConsentStore } from '@/store/consent';
 import { captureReferralCodeFromSearch } from '@/utils/helpers/referral.helper';
-import { captureSignupAttribution } from '@/utils/helpers/signup-attribution.helper';
+import {
+  captureSignupAttribution,
+  syncSignupAttributionConsent,
+} from '@/utils/helpers/signup-attribution.helper';
 import { useEffect } from 'react';
 
 const GOOGLE_POLL_MS = 200;
@@ -16,9 +20,21 @@ const GOOGLE_MAX_WAIT_MS = 5000;
  */
 export const Config = () => {
   const analytics = useAnalytics();
+  // A mesma escolha que libera o GA4 (analytics_storage) libera guardar a origem
+  const canStoreAttribution = useConsentStore(
+    (state) => state.consent?.analytics === true,
+  );
 
   useEffect(() => {
-    captureSignupAttribution(window.location.search, window.location.pathname);
+    syncSignupAttributionConsent(canStoreAttribution);
+  }, [canStoreAttribution]);
+
+  useEffect(() => {
+    captureSignupAttribution(
+      window.location.search,
+      window.location.pathname,
+      useConsentStore.getState().consent?.analytics === true,
+    );
 
     // Só o fato de ter chegado por indicação: o código não vai para o analytics.
     if (captureReferralCodeFromSearch(window.location.search)) {
