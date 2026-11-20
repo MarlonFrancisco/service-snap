@@ -92,3 +92,25 @@ A taxa de ativação é `count(*) filter (where activated_in_7_days) / count(*)`
 
 - Uma marcação lançada pelo dono no painel em nome de um cliente conta como real quando fica associada ao utilizador desse cliente. É o comportamento desejado, porque o cliente existe de facto.
 - Não há uma flag de loja de teste ou demo. Se for preciso excluí-las com frequência, vale criar uma coluna própria (nullable).
+
+## Cadastros, trials e pagantes por canal
+
+A origem é first-touch, guardada no cadastro (`users.signup_*`, #31 ponto 2). Não depende de cookies.
+
+```sql
+select
+  coalesce(
+    u.signup_utm_source,
+    case when u.signup_ref is not null then 'indicacao' else '(direto)' end
+  ) as canal,
+  count(*) as cadastros,
+  count(distinct s."userId") filter (where s.status = 'trialing') as em_trial,
+  count(distinct s."userId") filter (where s.status = 'active') as pagantes
+from users u
+left join subscriptions s on s."userId" = u.id
+where u.created_at >= now() - interval '90 days'
+group by 1
+order by cadastros desc;
+```
+
+Para cruzar com a receita, o `subscriptions.subscriptionId` aponta para a assinatura no Stripe.

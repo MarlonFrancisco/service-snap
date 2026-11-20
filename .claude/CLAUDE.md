@@ -448,6 +448,7 @@ Turborepo ensures correct build order automatically:
 **Database:** PostgreSQL (Supabase/Neon/Railway)
 
 - No migration scripts: the schema follows the entities through TypeORM synchronize (`DB_SYNCHRONIZE`). It stays `false` in production and is turned on only for a deploy that changes entities (cold starts get slower and concurrent boots can race)
+- Before a deploy with `DB_SYNCHRONIZE=true`: take a manual snapshot in Neon (Backup & Restore → Create snapshot) or a `pg_dump`, because point-in-time restore only covers 6 hours on the current plan. Set it back to `false` right after the deploy (#26)
 - Synchronize does not create Postgres extensions: a new database needs `CREATE EXTENSION IF NOT EXISTS btree_gist` (schedule overlap constraint)
 
 ## Key Conventions
