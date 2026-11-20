@@ -7,7 +7,7 @@ import {
   IsString,
 } from 'class-validator';
 import type Stripe from 'stripe';
-import { resolvePlanSlug, type TPlanSlug } from '../../utils';
+import { isSelfServePlan, resolvePlanSlug, type TPlanSlug } from '../../utils';
 
 export class PlanDto {
   @IsString()
@@ -49,6 +49,10 @@ export class PlanDto {
   @IsNumber()
   trialPeriodDays: number;
 
+  /** `false` no Enterprise (#22): o cartão leva ao contato, sem checkout. */
+  @IsBoolean()
+  selfServe: boolean;
+
   static fromStripe(
     plan: Stripe.Product,
     price: Stripe.Price,
@@ -73,6 +77,7 @@ export class PlanDto {
       useOption ? customerCurrency : price.currency
     ).toUpperCase();
     dto.popular = plan.metadata.IS_RECOMMENDED === 'true';
+    dto.selfServe = isSelfServePlan(plan);
     dto.features = plan.marketing_features.map((feature) => feature.name);
     dto.interval = price.recurring?.interval as 'month' | 'year';
     dto.discount = parseInt(price.metadata.discount || '0');
