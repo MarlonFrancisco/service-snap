@@ -291,6 +291,7 @@ const R=[
 ['Notificações e WhatsApp','P1','web','whatsapp_config_save_failed / test_message_failed','Erros de integração',W+'hooks/partner/use-whatsapp-mutations/use-whatsapp.hook.ts:30, :46','store_id'],
 ['Notificações e WhatsApp','P2','web','whatsapp_test_message_sent','Mensagem de teste',W+'hooks/partner/use-whatsapp-mutations/use-whatsapp.hook.ts:43','store_id'],
 ['Notificações e WhatsApp','P1','web','whatsapp_bot_link_clicked','"Agendar pelo WhatsApp" na página da loja',F+'booking/components/booking-whatsapp-card/booking-whatsapp-card.hook.ts','store_id, placement (booking_sidebar, booking_mobile_bar)'],
+['Notificações e WhatsApp','P1','web','whatsapp_opt_in / whatsapp_opt_out','Caixa do checkout e link do e-mail (#37)',F+'booking/components/checkout-step/whatsapp-opt-in/whatsapp-opt-in.hook.ts · '+F+'whatsapp-opt-out/whatsapp-opt-out.hook.ts','store_id, source (checkout) · method (checkout, email_link)'],
 ['Notificações e WhatsApp','P1','api','notification_sent / notification_failed','Todo e-mail enviado',API+'notification/notification.service.ts:44 (erro :53) · '+SCH+'schedule-notifications.service.ts:171','channel, template, audience, schedule_id'],
 ['Notificações e WhatsApp','P0','api','reminder_sent / reminder_failed','Lembrete entregue',API+'partner/stores/notifications/reminders/reminders.service.ts:155','channel, schedule_id, store_id, attempt, advance_hours'],
 ['Notificações e WhatsApp','P1','api','whatsapp_message_failed','Falha no envio à Meta',API+'partner/stores/whatsapp/whatsapp.service.ts:105','message_type, error_code'],
