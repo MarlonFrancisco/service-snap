@@ -43,6 +43,14 @@ describe('WhatsApp consent texts', () => {
     );
   });
 
+  it('stores the whole text the checkout shows, how to stop included', () => {
+    for (const country of ['BR', 'PT']) {
+      expect(getConsentText('checkout-v2', 'checkout', country)?.text).toMatch(
+        /WhatsApp\. Para deixar de receber, responda PARAR no WhatsApp\.$/,
+      );
+    }
+  });
+
   it('refuses a version that does not belong to the source', () => {
     expect(getConsentText('bot-v1', 'checkout')).toBeNull();
     expect(getConsentText('checkout-v9', 'checkout')).toBeNull();
