@@ -6,7 +6,7 @@ import { apiClient } from '../api';
 import { HttpClientService } from '../api/http-client.service';
 
 /** Versão do texto da caixa do checkout; o texto em si vem da API. */
-export const CHECKOUT_CONSENT_VERSION = 'checkout-v1';
+export const CHECKOUT_CONSENT_VERSION = 'checkout-v2';
 
 const path = (storeId: string, suffix: string) =>
   `/partner/stores/${encodeURIComponent(storeId)}/whatsapp-consent/${suffix}`;
@@ -35,9 +35,10 @@ export class WhatsappConsentService {
     );
   }
 
+  /** Hoje só o checkout retira; a API grava `revokedVia=checkout`. */
   static async revoke(storeId: string) {
     return await this.apiClient.delete<TWhatsappConsentState>(
-      path(storeId, 'me'),
+      path(storeId, 'me?via=checkout'),
     );
   }
 }

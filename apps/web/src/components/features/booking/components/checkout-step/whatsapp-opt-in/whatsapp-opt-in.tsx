@@ -23,12 +23,8 @@ export function WhatsappOptIn({
         onChange={(event) => onCheckedChange(event.target.checked)}
         className="mt-[3px] size-[18px] shrink-0 cursor-pointer accent-[#0B0B0F]"
       />
-      <span>
-        {text}
-        <span className="mt-0.5 block text-[13px] text-[#5F5C6E]">
-          Para deixar de receber, responda PARAR no WhatsApp.
-        </span>
-      </span>
+      {/* O texto da API já diz como sair: é o mesmo que fica guardado */}
+      <span>{text}</span>
     </label>
   );
 }

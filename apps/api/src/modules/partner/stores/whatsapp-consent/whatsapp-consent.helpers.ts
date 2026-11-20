@@ -28,6 +28,17 @@ const CONSENT_TEXTS: Record<
         'Quero receber lembretes e avisos das minhas marcações desta loja por WhatsApp.',
     },
   },
+  // Igual ao v1 mais a frase de como sair, que a caixa já mostrava: o texto
+  // guardado tem de ser exatamente o que o cliente viu (#37)
+  'checkout-v2': {
+    source: ['checkout', 'profile'],
+    text: {
+      'pt-BR':
+        'Quero receber lembretes e avisos dos meus agendamentos desta loja por WhatsApp. Para deixar de receber, responda PARAR no WhatsApp.',
+      'pt-PT':
+        'Quero receber lembretes e avisos das minhas marcações desta loja por WhatsApp. Para deixar de receber, responda PARAR no WhatsApp.',
+    },
+  },
   'bot-v1': {
     source: ['bot'],
     text: {
@@ -39,7 +50,7 @@ const CONSENT_TEXTS: Record<
   },
 };
 
-export const CHECKOUT_CONSENT_VERSION = 'checkout-v1';
+export const CHECKOUT_CONSENT_VERSION = 'checkout-v2';
 export const BOT_CONSENT_VERSION = 'bot-v1';
 
 const toLocale = (country?: string | null): TLocale =>
