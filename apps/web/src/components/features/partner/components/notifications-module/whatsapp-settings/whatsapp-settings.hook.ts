@@ -101,5 +101,8 @@ export const useWhatsappSettings = () => {
     isRetrying,
     storeId,
     isConnected,
+    isEmailReminderEnabled: Boolean(
+      notificationsSettings?.emailReminderEnabled,
+    ),
   };
 };

@@ -211,6 +211,9 @@ export const CACHE_QUERY_KEYS = {
   ],
   anamnesisInvite: (token: string) => ['anamnesis', token],
   marketingOptOut: (token: string) => ['marketing/opt-out', token],
+  whatsappOptOut: (token: string) => ['whatsapp/opt-out', token],
+  whatsappConsentText: (storeId: string) => ['whatsapp-consent/text', storeId],
+  whatsappConsent: (storeId: string) => ['whatsapp-consent/me', storeId],
   apiKeys: (storeId: string) => [`partner/stores/${storeId}/api-keys`],
   webhooks: (storeId: string) => [`partner/stores/${storeId}/webhooks`],
   webhookDeliveries: (storeId: string, id: string) => [

@@ -46,6 +46,8 @@ vi.mock('./components/date-time-selection-step/waitlist-notice', () => ({
 }));
 vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutate: createSchedule, isPending: false }),
+  // Caixa do WhatsApp (#37): a loja do teste não tem WhatsApp
+  useQuery: () => ({ data: undefined }),
 }));
 vi.mock('@/hooks/use-query/use-user-query', () => ({
   useUserQuery: () => ({
