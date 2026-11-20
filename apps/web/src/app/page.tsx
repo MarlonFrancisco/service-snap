@@ -8,6 +8,9 @@ export const metadata = createPageMetadata({
   path: '/',
 });
 
+// ISR: as vitrines são refeitas em segundo plano a cada 10 min.
+export const revalidate = 600;
+
 export default function HomePage() {
   return <Homepage />;
 }

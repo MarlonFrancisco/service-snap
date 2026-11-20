@@ -1,4 +1,5 @@
 import { IUser } from '@/types/api';
+import type { TSignupAttribution } from '@/utils/helpers/signup-attribution.helper';
 import { apiClient } from '../api';
 
 export class AuthService {
@@ -28,6 +29,7 @@ export class AuthService {
     lastName: string;
     acceptedTerms: boolean;
     referralCode?: string;
+    attribution?: TSignupAttribution;
   }) {
     return await this.apiClient.post<void>('/auth/register', payload);
   }
@@ -47,13 +49,18 @@ export class AuthService {
     );
   }
 
-  static async googleLogin(token: string, referralCode?: string) {
+  static async googleLogin(
+    token: string,
+    referralCode?: string,
+    attribution?: TSignupAttribution,
+  ) {
     return await this.apiClient.post<{
       isNewUser: boolean;
       user: IUser;
     }>('/auth/social/google', {
       token,
       referralCode,
+      attribution,
     });
   }
 }

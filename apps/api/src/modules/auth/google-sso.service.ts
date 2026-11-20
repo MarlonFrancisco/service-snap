@@ -5,6 +5,7 @@ import { OAuth2Client } from 'google-auth-library';
 import { UsersService } from '../users';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
+import type { TSignupAttributionInput } from '../users/signup-attribution';
 
 @Injectable()
 export class GoogleSSOService extends OAuth2Client {
@@ -48,7 +49,11 @@ export class GoogleSSOService extends OAuth2Client {
     }
   }
 
-  async login(token: string, referralCode?: string) {
+  async login(
+    token: string,
+    referralCode?: string,
+    attribution?: TSignupAttributionInput,
+  ) {
     const userInfo = await this.getUserInfo(token);
 
     let user = await this.usersService.findByOne({
@@ -72,6 +77,8 @@ export class GoogleSSOService extends OAuth2Client {
       if (referralCode) {
         await this.usersService.applyReferralCode(user.id, referralCode);
       }
+
+      await this.usersService.applySignupAttribution(user.id, attribution);
     }
 
     await this.usersService.ensureReferralCode(user.id);

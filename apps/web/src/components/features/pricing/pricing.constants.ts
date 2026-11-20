@@ -6,9 +6,9 @@ export type TPricingBenefit = {
 
 export const PRICING_BENEFITS: TPricingBenefit[] = [
   {
-    title: 'Agendamento via WhatsApp',
+    title: 'Lembretes por WhatsApp',
     description:
-      'Confirmações e lembretes no app que seus clientes já usam todos os dias.',
+      'A partir do plano Professional, com o seu próprio número; tarifas da Meta faturadas diretamente ao negócio.',
   },
   {
     title: 'Agenda visual intuitiva',
@@ -18,12 +18,12 @@ export const PRICING_BENEFITS: TPricingBenefit[] = [
   {
     title: 'Gestão de múltiplas lojas',
     description:
-      'Unidades e franquias em um só painel, com controle por localização.',
+      'A partir do plano Business: unidades e franquias em um só painel, com controle por localização.',
   },
   {
     title: 'Insights do negócio',
     description:
-      'Métricas de receita, faltas e agendamentos para decidir com dados.',
+      'A partir do plano Professional: métricas de receita, faltas e agendamentos para decidir com dados.',
   },
   {
     title: 'Busca e recomendações',

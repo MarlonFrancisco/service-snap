@@ -23,6 +23,7 @@ import { Schedule } from '../partner/stores/schedule/schedule.entity';
 import { StoreSearchSyncService } from '../partner/stores/search-sync/store-search-sync.service';
 import { StoreMember } from '../partner/stores/store-member/store-member.entity';
 import { Store } from '../partner/stores/store.entity';
+import { WhatsappConsent } from '../partner/stores/whatsapp-consent/whatsapp-consent.entity';
 import { StorageService } from '../storage/storage.service';
 import { StripeService } from '../stripe';
 import { Subscription } from '../subscription/subscription.entity';
@@ -67,6 +68,8 @@ export class PrivacyService {
     private readonly storeRepository: Repository<Store>,
     @InjectRepository(Subscription)
     private readonly subscriptionRepository: Repository<Subscription>,
+    @InjectRepository(WhatsappConsent)
+    private readonly whatsappConsentRepository: Repository<WhatsappConsent>,
     private readonly stripeService: StripeService,
     private readonly storageService: StorageService,
     private readonly storeSearchSync: StoreSearchSyncService,
@@ -75,7 +78,17 @@ export class PrivacyService {
   ) {}
 
   async exportData(userId: string): Promise<TUserDataExport> {
-    const user = await this.userRepository.findOneByOrFail({ id: userId });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect([
+        'user.signupUtmSource',
+        'user.signupUtmMedium',
+        'user.signupUtmCampaign',
+        'user.signupRef',
+        'user.signupLandingPath',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOneOrFail();
     const [
       schedules,
       reviews,
@@ -87,6 +100,7 @@ export class PrivacyService {
       memberships,
       stores,
       subscriptions,
+      whatsappConsents,
     ] = await Promise.all([
       this.scheduleRepository.find({
         where: { user: { id: userId } },
@@ -125,6 +139,10 @@ export class PrivacyService {
       }),
       this.storeRepository.find({ where: { owner: { id: userId } } }),
       this.subscriptionRepository.find({ where: { user: { id: userId } } }),
+      this.whatsappConsentRepository.find({
+        where: { customer: { id: userId } },
+        relations: ['store'],
+      }),
     ]);
 
     await this.auditService.record({
@@ -147,6 +165,13 @@ export class PrivacyService {
         country: user.country,
         acceptedTerms: user.acceptedTerms,
         createdAt: user.createdAt,
+        signupAttribution: {
+          utmSource: user.signupUtmSource,
+          utmMedium: user.signupUtmMedium,
+          utmCampaign: user.signupUtmCampaign,
+          ref: user.signupRef,
+          landingPath: user.signupLandingPath,
+        },
       },
       schedules: schedules.map((schedule) => ({
         store: schedule.store?.name,
@@ -225,6 +250,16 @@ export class PrivacyService {
         currentPeriodStart: subscription.currentPeriodStart,
         currentPeriodEnd: subscription.currentPeriodEnd,
       })),
+      whatsappConsents: whatsappConsents.map((consent) => ({
+        store: consent.store?.name,
+        status: consent.status,
+        source: consent.source,
+        consentText: consent.consentText,
+        phone: consent.phone,
+        grantedAt: consent.grantedAt,
+        revokedAt: consent.revokedAt,
+        revokedVia: consent.revokedVia,
+      })),
     };
   }
 
@@ -301,6 +336,7 @@ export class PrivacyService {
     );
     await manager.delete(Favorite, { user: { id: userId } });
     await manager.delete(AnamnesisResponse, { customer: { id: userId } });
+    await manager.delete(WhatsappConsent, { customer: { id: userId } });
     await manager.update(
       StoreMember,
       { user: { id: userId } },
@@ -331,6 +367,11 @@ export class PrivacyService {
       authCodeExpiresAt: null,
       referralCode: null,
       referredById: null,
+      signupUtmSource: null,
+      signupUtmMedium: null,
+      signupUtmCampaign: null,
+      signupRef: null,
+      signupLandingPath: null,
       paymentCustomerId: null,
       acceptedTerms: false,
       isDeleted: true,

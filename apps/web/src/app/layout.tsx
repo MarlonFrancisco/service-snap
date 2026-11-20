@@ -1,14 +1,7 @@
 import { AuthModal } from '@/components/features/auth';
 import { Config, CookieConsent, Toaster } from '@/components/layout';
 import { ReviewsModal } from '@/components/layout/reviews-modal';
-import {
-  AnalyticsProvider,
-  QueryProvider,
-  UserIdentificationProvider,
-} from '@/providers';
-import { UsersService } from '@/service/users';
-import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { AnalyticsProvider, QueryProvider } from '@/providers';
 import { SOCIAL_PROFILE_URLS } from '@/utils/constants/social-profiles.constants';
 import {
   SITE_DESCRIPTION,
@@ -23,7 +16,6 @@ import {
   shouldIndexSite,
 } from '@/utils/helpers/site-metadata.helper';
 import type { Metadata, Viewport } from 'next';
-import { cookies } from 'next/headers';
 import './globals.css';
 
 const rootMetadata = createPageMetadata({
@@ -53,46 +45,30 @@ export const viewport: Viewport = {
   themeColor: THEME_COLOR,
 };
 
-export default async function RootLayout({
+/**
+ * Sem cookies aqui: o layout raiz passa por todas as páginas, e ler cookies
+ * tornaria todas dinâmicas (sem ISR, uma chamada à API por visita, bots
+ * incluídos). As páginas públicas buscam o usuário no navegador; o painel e o
+ * perfil trazem a sessão pelo `UserSession`.
+ */
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const queryClient = getQueryClient();
-
-  const cookieStore = await cookies();
-  const userIdentification = cookieStore.get('user_identification')?.value;
-
-  if (userIdentification) {
-    const sessionHeaders = {
-      Cookie: `access_token=${cookieStore.get('access_token')?.value}`,
-    };
-
-    await queryClient.prefetchQuery({
-      queryKey: CACHE_QUERY_KEYS.user(userIdentification),
-      queryFn: () => UsersService.getUser(sessionHeaders),
-    });
-  }
-
-  const dehydratedState = dehydrate(queryClient);
-
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body>
-        <UserIdentificationProvider value={userIdentification}>
-          <AnalyticsProvider>
-            <QueryProvider>
-              <HydrationBoundary state={dehydratedState}>
-                {children}
-                <Config />
-                <AuthModal />
-                <Toaster />
-                <ReviewsModal />
-                <CookieConsent />
-              </HydrationBoundary>
-            </QueryProvider>
-          </AnalyticsProvider>
-        </UserIdentificationProvider>
+        <AnalyticsProvider>
+          <QueryProvider>
+            {children}
+            <Config />
+            <AuthModal />
+            <Toaster />
+            <ReviewsModal />
+            <CookieConsent />
+          </QueryProvider>
+        </AnalyticsProvider>
 
         {/* <script> comum: o next/script só injeta via JS, fora do HTML inicial. */}
         <script

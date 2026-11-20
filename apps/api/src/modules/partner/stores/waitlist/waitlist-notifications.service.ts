@@ -11,6 +11,7 @@ import { ScheduleService } from '../schedule/schedule.service';
 import { toWhatsappRecipient } from '../whatsapp/whatsapp-reminder-template';
 import { WHATSAPP_WAITLIST_TEMPLATE } from '../whatsapp/whatsapp-templates';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
+import { WhatsappConsentService } from '../whatsapp-consent/whatsapp-consent.service';
 import { WaitlistEntry } from './waitlist-entry.entity';
 import {
   WAITLIST_RELATIONS,
@@ -44,6 +45,7 @@ export class WaitlistNotificationsService implements OnModuleInit {
     private readonly notificationService: NotificationService,
     private readonly planFeatureGuard: PlanFeatureGuard,
     private readonly configService: ConfigService,
+    private readonly consentService: WhatsappConsentService,
   ) {}
 
   onModuleInit() {
@@ -128,10 +130,13 @@ export class WaitlistNotificationsService implements OnModuleInit {
       if (channel === 'email') {
         if (!entry.user?.email) return false;
 
-        await this.notificationService.waitlistSlotAvailable(
-          entry.user.email,
-          notice,
-        );
+        await this.notificationService.waitlistSlotAvailable(entry.user.email, {
+          ...notice,
+          whatsappOptOutLink: await this.consentService.findOptOutLink(
+            entry.store.id,
+            entry.user.id,
+          ),
+        });
         return true;
       }
 
@@ -139,7 +144,22 @@ export class WaitlistNotificationsService implements OnModuleInit {
         entry.user?.telephone,
         entry.store?.country,
       );
-      const sender = phone && (await whatsappSender());
+      // Só a quem aceitou, e no número que aceitou (#37): senão, o próximo canal
+      if (
+        !phone ||
+        !(await this.consentService.hasConsent(
+          entry.store.id,
+          entry.user.id,
+          phone,
+        ))
+      ) {
+        this.logger.log(
+          `notification_fallback_email type=waitlist reason=no_opt_in entry=${entry.id}`,
+        );
+        return false;
+      }
+
+      const sender = await whatsappSender();
       if (!sender) return false;
 
       const { phoneNumberId, accessToken } = sender.config;

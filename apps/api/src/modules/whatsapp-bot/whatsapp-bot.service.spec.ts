@@ -126,6 +126,11 @@ const makeBot = () => {
   const notificationService = {
     sendEmailConfirmationCode: vi.fn().mockResolvedValue(undefined),
   };
+  const consentService = {
+    grant: vi.fn().mockResolvedValue({}),
+    revokeByPhone: vi.fn().mockResolvedValue(true),
+    hasConsentForPhone: vi.fn().mockResolvedValue(false),
+  };
   const cache = makeCache();
   const bot = new WhatsappBotService(
     whatsappService as never,
@@ -137,6 +142,7 @@ const makeBot = () => {
     cache as never,
     {} as never,
     {} as never,
+    consentService as never,
   );
 
   let messageCount = 0;
@@ -185,6 +191,7 @@ const makeBot = () => {
     bot,
     cache,
     categoryService,
+    consentService,
     deliver,
     notificationService,
     usersService,
@@ -526,6 +533,77 @@ describe('WhatsappBotService', () => {
     } as never);
 
     expect(ctx.whatsappService.sendInteractiveButtons).not.toHaveBeenCalled();
+  });
+
+  describe('WhatsApp opt-in and opt-out', () => {
+    const book = async () => {
+      await ctx.say('agendar');
+      await ctx.tap(`svc:${SERVICE_ID}`);
+      await ctx.tap(`pro:${RAFAEL}`);
+      await ctx.tap(`day:${TODAY}`);
+      await ctx.tap('time:14:00');
+      await ctx.tap('confirm:yes');
+    };
+
+    it('records the opt-in when the customer books here, saying how to stop', async () => {
+      ctx.usersService.findByOne.mockResolvedValue({
+        id: CUSTOMER_ID,
+        email: 'ana@example.com',
+        telephone: '11900000000',
+      });
+
+      await book();
+
+      expect(ctx.consentService.grant).toHaveBeenCalledWith({
+        storeId: STORE_ID,
+        customerId: CUSTOMER_ID,
+        phone: '11900000000',
+        source: 'bot',
+        textVersion: 'bot-v1',
+      });
+      expect(ctx.lastText()).toContain('Agendamento confirmado');
+      expect(ctx.lastText()).toContain(
+        'Responda PARAR para deixar de receber.',
+      );
+    });
+
+    it('still confirms the booking when the opt-in cannot be saved', async () => {
+      ctx.usersService.findByOne.mockResolvedValue({
+        id: CUSTOMER_ID,
+        email: 'ana@example.com',
+        telephone: '11900000000',
+      });
+      ctx.consentService.grant.mockRejectedValue(new Error('db down'));
+
+      await book();
+
+      expect(ctx.lastText()).toContain('Agendamento confirmado');
+      expect(ctx.lastText()).not.toContain('PARAR');
+    });
+
+    it('stops the reminders when the customer answers PARAR', async () => {
+      await ctx.say('PARAR');
+
+      expect(ctx.consentService.revokeByPhone).toHaveBeenCalledWith(
+        STORE_ID,
+        PHONE,
+        'reply',
+      );
+      expect(ctx.lastText()).toContain('não vai mais receber lembretes');
+    });
+
+    it('only ends the conversation on "parar" in the middle of one', async () => {
+      ctx.consentService.hasConsentForPhone.mockResolvedValue(true);
+      await ctx.say('oi');
+      await ctx.say('parar');
+
+      expect(ctx.consentService.revokeByPhone).not.toHaveBeenCalled();
+      expect(ctx.lastText()).toContain('responda *PARAR LEMBRETES*');
+
+      await ctx.say('oi');
+      await ctx.say('parar lembretes');
+      expect(ctx.consentService.revokeByPhone).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('asking for the e-mail', () => {

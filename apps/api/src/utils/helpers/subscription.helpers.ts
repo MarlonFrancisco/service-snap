@@ -38,6 +38,44 @@ export const normalizeSubscriptionMetadata = (metadata: Stripe.Metadata) => {
   };
 };
 
+export const PLAN_SLUGS = ['solo', 'team', 'multi', 'enterprise'] as const;
+export type TPlanSlug = (typeof PLAN_SLUGS)[number];
+
+/** Nomes de hoje no Stripe, para produtos ainda sem `plan_slug` no metadata. */
+const PLAN_SLUG_BY_LEGACY_NAME: Record<string, TPlanSlug> = {
+  Starter: 'solo',
+  Professional: 'team',
+  Business: 'multi',
+  Enterprise: 'enterprise',
+};
+
+/**
+ * Identificador estável do plano: o nome visível pode mudar (#22), o slug não.
+ * Vem do metadata `plan_slug`; sem ele, cai no nome atual do produto.
+ */
+export const resolvePlanSlug = (
+  product: Pick<Stripe.Product, 'name' | 'metadata'>,
+): TPlanSlug | null => {
+  const slug = product.metadata?.plan_slug as TPlanSlug | undefined;
+  if (slug && PLAN_SLUGS.includes(slug)) return slug;
+
+  return PLAN_SLUG_BY_LEGACY_NAME[product.name] ?? null;
+};
+
+/**
+ * Plano assinável sem passar pelo comercial. O `self_serve` do metadata manda;
+ * sem ele (antes do backfill), só o Enterprise fica de fora (#22).
+ */
+export const isSelfServePlan = (
+  product: Pick<Stripe.Product, 'name' | 'metadata'>,
+): boolean => {
+  const selfServe = product.metadata?.self_serve;
+  if (selfServe === 'true') return true;
+  if (selfServe === 'false') return false;
+
+  return resolvePlanSlug(product) !== 'enterprise';
+};
+
 /** Extrai o subscription ID de um Invoice (API com `parent.subscription_details`). */
 export const getSubscriptionIdFromInvoice = (
   invoice: Stripe.Invoice,

@@ -1,5 +1,4 @@
 import { isNotFoundError, isUnauthorizedError } from '@/service/api';
-import { TCurrencyCode } from '@repo/shared/constants';
 import { isServer, QueryClient } from '@tanstack/react-query';
 
 /** Filtros e paginação que entram na chave de cache. */
@@ -39,7 +38,7 @@ export const CACHE_QUERY_KEYS = {
   recommendationStores: () => ['recommendation/popular-stores'],
   user: (userIdentification: string) => ['user', { userIdentification }],
   referral: () => ['users/me/referral'],
-  plans: (currency: TCurrencyCode) => ['plans', { currency }],
+  plans: () => ['plans'],
   currentPlan: () => ['subscription/current-plan'],
   checkoutSession: (sessionId: string) => [
     'subscription/checkout-session',
@@ -212,6 +211,9 @@ export const CACHE_QUERY_KEYS = {
   ],
   anamnesisInvite: (token: string) => ['anamnesis', token],
   marketingOptOut: (token: string) => ['marketing/opt-out', token],
+  whatsappOptOut: (token: string) => ['whatsapp/opt-out', token],
+  whatsappConsentText: (storeId: string) => ['whatsapp-consent/text', storeId],
+  whatsappConsent: (storeId: string) => ['whatsapp-consent/me', storeId],
   apiKeys: (storeId: string) => [`partner/stores/${storeId}/api-keys`],
   webhooks: (storeId: string) => [`partner/stores/${storeId}/webhooks`],
   webhookDeliveries: (storeId: string, id: string) => [

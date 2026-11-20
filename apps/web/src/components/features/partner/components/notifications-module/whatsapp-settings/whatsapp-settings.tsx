@@ -21,6 +21,7 @@ export const WhatsappSettings = () => {
     isRetrying,
     storeId,
     isConnected,
+    isEmailReminderEnabled,
   } = useWhatsappSettings();
 
   return (
@@ -78,6 +79,14 @@ export const WhatsappSettings = () => {
           lockedHint={lockedHint}
         />
       </FormProvider>
+
+      {/* Opt-in do cliente final (#37): quem não aceitou recebe por e-mail */}
+      <p className="text-sm leading-[1.55] text-ink-muted">
+        Só os clientes que aceitaram recebem por WhatsApp; os outros recebem por
+        e-mail.
+        {!isEmailReminderEnabled &&
+          ' O lembrete por e-mail é enviado a quem não aceitou.'}
+      </p>
     </ReminderChannelLayout>
   );
 };

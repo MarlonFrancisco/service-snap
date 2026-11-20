@@ -6,6 +6,10 @@ import {
   clearStoredReferralCode,
   getStoredReferralCode,
 } from '@/utils/helpers/referral.helper';
+import {
+  clearSignupAttribution,
+  getSignupAttribution,
+} from '@/utils/helpers/signup-attribution.helper';
 import type { TLoginSource } from '@repo/analytics';
 import { IAuthState } from './auth.types';
 
@@ -76,8 +80,10 @@ export const registerAction: TStoreAction<
       lastName,
       acceptedTerms,
       referralCode: getStoredReferralCode(),
+      attribution: getSignupAttribution(),
     });
     clearStoredReferralCode();
+    clearSignupAttribution();
     set({ fetchingStatus: 'success' });
   };
 
@@ -87,11 +93,13 @@ export const googleLoginAction: TStoreAction<IAuthState, string> =
     const response = await AuthService.googleLogin(
       token,
       getStoredReferralCode(),
+      getSignupAttribution(),
     );
     const { isNewUser } = response;
 
     if (isNewUser) {
       clearStoredReferralCode();
+      clearSignupAttribution();
     }
 
     const queryClient = getQueryClient();

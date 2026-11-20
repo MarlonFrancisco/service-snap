@@ -7,6 +7,9 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 const PLANS_PREFETCH_MS = 4000;
 
+// ISR: os planos mudam pouco; o navegador busca de novo se faltarem.
+export const revalidate = 3600;
+
 export const metadata = createPageMetadata({
   title: 'Planos e preços do sistema de agendamento | ServiceSnap',
   description:
@@ -19,8 +22,8 @@ export default async function PricingPage() {
 
   await withBudget(
     queryClient.prefetchQuery({
-      queryKey: CACHE_QUERY_KEYS.plans('BRL'),
-      queryFn: () => PlansService.getPlans('BRL'),
+      queryKey: CACHE_QUERY_KEYS.plans(),
+      queryFn: () => PlansService.getPlans(),
     }),
     PLANS_PREFETCH_MS,
   );
