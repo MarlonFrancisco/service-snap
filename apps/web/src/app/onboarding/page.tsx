@@ -1,4 +1,5 @@
 import { PartnerOnboarding } from '@/components/features/partner-onboarding';
+import { UserSession } from '@/providers/user-session.server';
 import { OnboardingService } from '@/service/partner/onboarding';
 import type { TOnboardingState } from '@/types/api/onboarding.types';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
@@ -42,7 +43,9 @@ export default async function OnboardingPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <PartnerOnboarding />
+      <UserSession>
+        <PartnerOnboarding />
+      </UserSession>
     </HydrationBoundary>
   );
 }

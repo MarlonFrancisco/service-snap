@@ -1,3 +1,4 @@
+import { UserIdentificationProvider } from '@/providers/user-identification.provider';
 import { Profile } from '@/components/features/profile';
 import type { TProfileTab } from '@/components/features/profile/profile.types';
 import { isUnauthorizedError } from '@/service/api';
@@ -51,8 +52,10 @@ export default async function ProfilePage({
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <HydrationBoundary state={dehydratedState}>
-      <Profile initialTab={initialTab} />
-    </HydrationBoundary>
+    <UserIdentificationProvider value={userIdentification}>
+      <HydrationBoundary state={dehydratedState}>
+        <Profile initialTab={initialTab} />
+      </HydrationBoundary>
+    </UserIdentificationProvider>
   );
 }
