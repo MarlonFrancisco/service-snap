@@ -48,6 +48,7 @@ vi.mock('@tanstack/react-query', () => ({
   useMutation: () => ({ mutate: createSchedule, isPending: false }),
   // Caixa do WhatsApp (#37): a loja do teste não tem WhatsApp
   useQuery: () => ({ data: undefined }),
+  useQueryClient: () => ({ setQueryData: vi.fn() }),
 }));
 vi.mock('@/hooks/use-query/use-user-query', () => ({
   useUserQuery: () => ({

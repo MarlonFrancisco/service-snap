@@ -9,16 +9,17 @@ const service = vi.hoisted(() => ({
   getText: vi.fn(),
   getMine: vi.fn(),
   grant: vi.fn(),
+  revoke: vi.fn(),
 }));
+const track = vi.hoisted(() => vi.fn());
 
 vi.mock('@/service/whatsapp-consent', () => ({
   WhatsappConsentService: service,
 }));
-vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
-vi.mock('@/utils/helpers/query.helper', async (original) => ({
-  ...(await original<object>()),
-  getQueryClient: () => ({ setQueryData: vi.fn() }),
+vi.mock('@/providers/analytics.provider', () => ({
+  useAnalytics: () => ({ track }),
 }));
+vi.mock('sonner', () => ({ toast: { error: vi.fn() } }));
 
 type THook = ReturnType<typeof useWhatsappOptIn>;
 
@@ -65,6 +66,7 @@ describe('useWhatsappOptIn', () => {
     });
     service.getMine.mockResolvedValue({ status: null });
     service.grant.mockResolvedValue({ status: 'granted' });
+    service.revoke.mockResolvedValue({ status: 'revoked' });
   });
 
   afterEach(() => {
@@ -90,11 +92,27 @@ describe('useWhatsappOptIn', () => {
     expect(service.getText).not.toHaveBeenCalled();
   });
 
-  it('does not ask again after a yes', async () => {
+  it('shows the yes instead of the box, and lets the customer take it back', async () => {
     service.getMine.mockResolvedValue({ status: 'granted' });
     await render(<Probe {...props} />);
 
     expect(result.isVisible).toBe(false);
+    expect(result.isGranted).toBe(true);
+
+    await act(async () => {
+      result.handleRevoke();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+    expect(service.revoke).toHaveBeenCalledWith('store-1');
+    expect(track).toHaveBeenCalledWith('whatsapp_opt_out', {
+      store_id: 'store-1',
+      method: 'checkout',
+    });
+    // A caixa desmarcada volta nesta mesma marcação
+    expect(result.isGranted).toBe(false);
+    expect(result.isVisible).toBe(true);
+    expect(result.isChecked).toBe(false);
   });
 
   it('only records the opt-in when the box is checked', async () => {
@@ -106,5 +124,9 @@ describe('useWhatsappOptIn', () => {
     act(() => result.setIsChecked(true));
     await act(() => result.grantIfChecked());
     expect(service.grant).toHaveBeenCalledWith('store-1', 'checkout');
+    expect(track).toHaveBeenCalledWith('whatsapp_opt_in', {
+      store_id: 'store-1',
+      source: 'checkout',
+    });
   });
 });

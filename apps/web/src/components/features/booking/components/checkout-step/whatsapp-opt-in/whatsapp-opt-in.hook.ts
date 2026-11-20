@@ -1,8 +1,9 @@
 'use client';
 
+import { useAnalytics } from '@/providers/analytics.provider';
 import { WhatsappConsentService } from '@/service/whatsapp-consent';
-import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
-import { useQuery } from '@tanstack/react-query';
+import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -15,9 +16,9 @@ type TUseWhatsappOptInConfig = {
 };
 
 /**
- * Caixa do checkout para receber os lembretes por WhatsApp (#37). Começa
- * desmarcada e só aparece com o WhatsApp da loja ativo, um telefone no
- * cadastro e sem um "sim" já dado a esta loja.
+ * Opt-in do checkout para os lembretes por WhatsApp (#37). A caixa começa
+ * desmarcada e só aparece com o WhatsApp da loja ativo e um telefone no
+ * cadastro. Quem já aceitou vê o estado e pode retirar ali mesmo (RGPD).
  */
 export const useWhatsappOptIn = ({
   storeId,
@@ -25,8 +26,11 @@ export const useWhatsappOptIn = ({
   hasPhone,
   isLoggedIn,
 }: TUseWhatsappOptInConfig) => {
+  const analytics = useAnalytics();
+  const queryClient = useQueryClient();
   const [isChecked, setIsChecked] = useState(false);
   const canAsk = hasWhatsapp && hasPhone && isLoggedIn;
+  const consentKey = CACHE_QUERY_KEYS.whatsappConsent(storeId);
 
   const { data: consentText } = useQuery({
     queryKey: CACHE_QUERY_KEYS.whatsappConsentText(storeId),
@@ -35,36 +39,63 @@ export const useWhatsappOptIn = ({
     staleTime: Infinity,
   });
   const { data: consent } = useQuery({
-    queryKey: CACHE_QUERY_KEYS.whatsappConsent(storeId),
+    queryKey: consentKey,
     queryFn: () => WhatsappConsentService.getMine(storeId),
     enabled: canAsk,
   });
 
-  const isVisible =
-    canAsk && !!consentText && !!consent && consent.status !== 'granted';
+  const { mutate: revoke, isPending: isRevoking } = useMutation({
+    mutationFn: () => WhatsappConsentService.revoke(storeId),
+    onSuccess: (state) => {
+      queryClient.setQueryData(consentKey, state);
+      setIsChecked(false);
+      analytics.track('whatsapp_opt_out', {
+        store_id: storeId,
+        method: 'checkout',
+      });
+    },
+    onError: () => {
+      toast.error('Não deu para retirar agora. Tente de novo.');
+    },
+  });
+
+  const isReady = canAsk && !!consentText && !!consent;
+  const isGranted = isReady && consent.status === 'granted';
 
   /** Depois da reserva: uma falha aqui não desfaz o agendamento. */
   const grantIfChecked = useCallback(async () => {
-    if (!isVisible || !isChecked) return;
+    if (!isReady || isGranted || !isChecked) return;
 
     try {
       const state = await WhatsappConsentService.grant(storeId, 'checkout');
-      getQueryClient().setQueryData(
-        CACHE_QUERY_KEYS.whatsappConsent(storeId),
-        state,
-      );
+      queryClient.setQueryData(consentKey, state);
+      analytics.track('whatsapp_opt_in', {
+        store_id: storeId,
+        source: 'checkout',
+      });
     } catch {
       toast.error(
         'Não deu para ativar o WhatsApp. O lembrete chega por e-mail.',
       );
     }
-  }, [isVisible, isChecked, storeId]);
+  }, [
+    isReady,
+    isGranted,
+    isChecked,
+    storeId,
+    consentKey,
+    analytics,
+    queryClient,
+  ]);
 
   return {
-    isVisible,
+    isVisible: isReady && !isGranted,
+    isGranted,
     text: consentText?.text ?? '',
     isChecked,
     setIsChecked,
     grantIfChecked,
+    handleRevoke: () => revoke(),
+    isRevoking,
   };
 };

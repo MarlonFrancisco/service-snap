@@ -1,5 +1,6 @@
 'use client';
 
+import { useAnalytics } from '@/providers/analytics.provider';
 import { isApiHttpError } from '@/service/api';
 import { WhatsappOptOutService } from '@/service/whatsapp-consent';
 import { CACHE_QUERY_KEYS } from '@/utils/helpers/query.helper';
@@ -16,6 +17,7 @@ const isExpiredError = (error: unknown) =>
 /** Link "Deixar de receber por WhatsApp" do e-mail, sem login (#37). */
 export const useWhatsappOptOut = (token: string) => {
   const queryClient = useQueryClient();
+  const analytics = useAnalytics();
   const queryKey = CACHE_QUERY_KEYS.whatsappOptOut(token);
 
   const { data, isPending, isError, error, refetch, isRefetching } = useQuery({
@@ -30,7 +32,10 @@ export const useWhatsappOptOut = (token: string) => {
   // Sair pede um clique: leitores de e-mail abrem os links para checar segurança
   const { mutate: optOut, isPending: isOptingOut } = useMutation({
     mutationFn: () => WhatsappOptOutService.optOut(token),
-    onSuccess: (result) => queryClient.setQueryData(queryKey, result),
+    onSuccess: (result) => {
+      queryClient.setQueryData(queryKey, result);
+      analytics.track('whatsapp_opt_out', { method: 'email_link' });
+    },
     onError: (mutationError) => {
       if (isExpiredError(mutationError)) {
         void refetch();

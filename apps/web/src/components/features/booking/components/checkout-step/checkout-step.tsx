@@ -3,7 +3,7 @@
 import { Loader2 } from 'lucide-react';
 import { useCheckoutStep } from './checkout-step.hook';
 import type { TCheckoutStepConfig } from './checkout-step.types';
-import { WhatsappOptIn } from './whatsapp-opt-in';
+import { WhatsappOptIn, WhatsappOptInGranted } from './whatsapp-opt-in';
 
 const SUBTITLE_CLASS = 'mt-1.5 mb-6 text-[15px] text-[#5F5C6E]';
 const NOTICE_CLASS =
@@ -61,6 +61,12 @@ export function CheckoutStep(config: TCheckoutStepConfig) {
               text={whatsappOptIn.text}
               isChecked={whatsappOptIn.isChecked}
               onCheckedChange={whatsappOptIn.setIsChecked}
+            />
+          )}
+          {whatsappOptIn.isGranted && (
+            <WhatsappOptInGranted
+              isRevoking={whatsappOptIn.isRevoking}
+              onRevoke={whatsappOptIn.handleRevoke}
             />
           )}
 
