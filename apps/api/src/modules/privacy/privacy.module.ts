@@ -9,6 +9,7 @@ import { Schedule } from '../partner/stores/schedule/schedule.entity';
 import { StoreSearchSyncModule } from '../partner/stores/search-sync/store-search-sync.module';
 import { StoreMember } from '../partner/stores/store-member/store-member.entity';
 import { Store } from '../partner/stores/store.entity';
+import { WhatsappConsent } from '../partner/stores/whatsapp-consent/whatsapp-consent.entity';
 import { StorageModule } from '../storage/storage.module';
 import { StripeModule } from '../stripe';
 import { Subscription } from '../subscription/subscription.entity';
@@ -32,6 +33,7 @@ import { PrivacyService } from './privacy.service';
       StoreMember,
       Store,
       Subscription,
+      WhatsappConsent,
     ]),
     StripeModule,
     StorageModule,

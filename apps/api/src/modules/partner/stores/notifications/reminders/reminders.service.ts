@@ -25,6 +25,7 @@ import {
 } from '../../whatsapp/whatsapp-reminder-template';
 import { WHATSAPP_CONFIRMATION_REMINDER_TEMPLATE } from '../../whatsapp/whatsapp-templates';
 import { WhatsappService } from '../../whatsapp/whatsapp.service';
+import { WhatsappConsentService } from '../../whatsapp-consent/whatsapp-consent.service';
 import { NotificationsHistory } from '../history/history.entity';
 import { NotificationsHistoryService } from '../history/history.service';
 import type { NotificationsSettings } from '../settings/settings.entity';
@@ -48,6 +49,9 @@ const WHATSAPP_SEND_INTERVAL_MS = 200;
 
 type TReminderResult = { sent: number; failed: number };
 
+/** Por que o WhatsApp não saiu (#37): o e-mail entra no lugar. */
+type TUndeliveredReason = 'no_opt_in' | 'whatsapp_failed';
+
 type TReminderChannelConfig = {
   channel: TScheduleReminderChannel;
   sendIntervalMs: number;
@@ -58,6 +62,14 @@ type TReminderChannelConfig = {
   send: (schedule: Schedule, recipient: string) => Promise<unknown>;
   /** Colunas a mais gravadas na trava quando o envio dá certo. */
   sentFields?: (schedule: Schedule) => Promise<Partial<ScheduleReminder>>;
+  /** O cliente aceitou receber por este canal (opt-in do WhatsApp, #37). */
+  isAllowed?: (schedule: Schedule, recipient: string) => Promise<boolean>;
+  /** Quando o canal não sai; devolve se tentou um envio no lugar. */
+  onUndelivered?: (
+    schedule: Schedule,
+    now: Date,
+    reason: TUndeliveredReason,
+  ) => Promise<boolean>;
 };
 
 const parseAdvanceHours = (value?: string) => {
@@ -80,6 +92,7 @@ export class RemindersService {
     private readonly configService: ConfigService,
     private readonly whatsappService: WhatsappService,
     private readonly planFeatureGuard: PlanFeatureGuard,
+    private readonly consentService: WhatsappConsentService,
   ) {}
 
   /** Um canal com erro não impede o outro de sair na mesma execução. */
@@ -106,14 +119,22 @@ export class RemindersService {
   }
 
   async sendDueEmailReminders(now = new Date()) {
-    return this.deliver(now, await this.findCandidates(now, 'email'), {
+    return this.deliver(
+      now,
+      await this.findCandidates(now, 'email'),
+      this.emailConfig('Lembrete do agendamento'),
+    );
+  }
+
+  private emailConfig(historyLabel: string): TReminderChannelConfig {
+    return {
       channel: 'email',
       sendIntervalMs: EMAIL_SEND_INTERVAL_MS,
-      historyLabel: 'Lembrete do agendamento',
+      historyLabel,
       advanceOf: (settings) => settings.emailReminderAdvanceHours,
       recipientOf: (schedule) => schedule.user.email || null,
       send: (schedule, email) => this.sendEmail(schedule, email),
-    });
+    };
   }
 
   async sendDueWhatsappReminders(now = new Date()) {
@@ -141,6 +162,15 @@ export class RemindersService {
           (await templateOf(schedule.store))?.withConfirmation,
         ),
       }),
+      // Só a quem aceitou, e no número que aceitou (#37)
+      isAllowed: (schedule, phone) =>
+        this.consentService.hasConsent(
+          schedule.store.id,
+          schedule.user.id,
+          phone,
+        ),
+      onUndelivered: (schedule, now, reason) =>
+        this.fallbackToEmail(schedule, now, reason),
     });
   }
 
@@ -156,8 +186,20 @@ export class RemindersService {
       if (attemptedSends === MAX_SENDS_PER_RUN) break;
 
       const recipient = config.recipientOf(schedule);
-      if (!recipient || !this.isDue(schedule, now, config)) continue;
+      if (!this.isDue(schedule, now, config)) continue;
+      if (!recipient && !config.onUndelivered) continue;
       if (config.isStoreReady && !(await config.isStoreReady(schedule.store))) {
+        continue;
+      }
+
+      // Sem número ou sem opt-in o WhatsApp não sai: o e-mail pode entrar
+      if (
+        !recipient ||
+        (config.isAllowed && !(await config.isAllowed(schedule, recipient)))
+      ) {
+        if (await config.onUndelivered?.(schedule, now, 'no_opt_in')) {
+          attemptedSends += 1;
+        }
         continue;
       }
 
@@ -182,9 +224,102 @@ export class RemindersService {
       if (status === 'sent' || claim.attempts >= SCHEDULE_REMINDER_ATTEMPTS) {
         await this.recordHistory(schedule, recipient, status, now, config);
       }
+
+      // Última tentativa falhou: o e-mail entra uma vez no lugar
+      if (
+        status === 'failed' &&
+        claim.attempts >= SCHEDULE_REMINDER_ATTEMPTS &&
+        (await config.onUndelivered?.(schedule, now, 'whatsapp_failed'))
+      ) {
+        attemptedSends += 1;
+      }
     }
 
     return result;
+  }
+
+  /**
+   * E-mail no lugar do WhatsApp (#37), só se a loja deixou o lembrete por
+   * e-mail desligado: ligado, o cliente já o recebe. Usa a mesma trava do
+   * e-mail, então nunca saem dois e-mails para o mesmo lembrete.
+   */
+  private async fallbackToEmail(
+    schedule: Schedule,
+    now: Date,
+    reason: TUndeliveredReason,
+  ): Promise<boolean> {
+    if (schedule.store.notificationsSettings?.emailReminderEnabled) {
+      return false;
+    }
+
+    const claim = await this.claim(schedule, 'email');
+    if (!claim) return false;
+
+    const config = this.emailConfig(
+      'Lembrete por e-mail (no lugar do WhatsApp) do agendamento',
+    );
+    const email = config.recipientOf(schedule);
+
+    if (!email) {
+      // Sem canal nenhum: fica registado uma vez e não é tentado de novo
+      await this.reminderRepository.update(
+        { id: claim.id },
+        { status: 'failed', attempts: SCHEDULE_REMINDER_ATTEMPTS },
+      );
+      await this.recordUndelivered(schedule, now, reason);
+      this.logFallback(schedule, reason, 'no_email');
+      return false;
+    }
+
+    await sleep(EMAIL_SEND_INTERVAL_MS);
+    const status = await this.send(schedule, email, config);
+
+    await this.reminderRepository.update({ id: claim.id }, { status });
+    if (status === 'sent' || claim.attempts >= SCHEDULE_REMINDER_ATTEMPTS) {
+      await this.recordHistory(schedule, email, status, now, config);
+    }
+    this.logFallback(schedule, reason, status);
+
+    return true;
+  }
+
+  /** Sem dado pessoal: só o motivo, o tipo e o resultado (#31). */
+  private logFallback(
+    schedule: Schedule,
+    reason: TUndeliveredReason,
+    result: 'sent' | 'failed' | 'no_email',
+  ) {
+    this.logger.log(
+      `notification_fallback_email type=reminder reason=${reason} result=${result} schedule=${schedule.id}`,
+    );
+  }
+
+  private async recordUndelivered(
+    schedule: Schedule,
+    now: Date,
+    reason: TUndeliveredReason,
+  ) {
+    const why =
+      reason === 'no_opt_in'
+        ? 'sem opt-in de WhatsApp e sem e-mail'
+        : 'falha no WhatsApp e sem e-mail';
+    const history = new NotificationsHistory();
+    history.type = 'reminder';
+    history.title = 'Lembrete não enviado';
+    history.message = `Lembrete de ${this.formatAppointment(schedule)} não enviado: ${why}`;
+    history.timestamp = now;
+    history.read = false;
+    history.store = schedule.store;
+    history.status = 'failed';
+
+    try {
+      await this.notificationsHistoryService.create(history);
+    } catch (error) {
+      this.logger.error(
+        `Lembrete não enviado do agendamento ${schedule.id} sem linha no histórico`,
+        error instanceof Error ? error.stack : undefined,
+      );
+    }
   }
 
   /** O filtro exato depende do fuso da loja, então a consulta só limita por dia. */
@@ -356,8 +491,12 @@ export class RemindersService {
     }
   }
 
-  private sendEmail(schedule: Schedule, email: string) {
+  private async sendEmail(schedule: Schedule, email: string) {
     return this.notificationService.scheduleReminder(email, {
+      whatsappOptOutLink: await this.consentService.findOptOutLink(
+        schedule.store.id,
+        schedule.user.id,
+      ),
       ...buildCustomerEmailData(schedule),
       price: this.formatPrice(schedule),
       customMessage:

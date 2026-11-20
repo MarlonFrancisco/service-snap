@@ -10,6 +10,7 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
 import { PackagesModule } from './packages/packages.module';
 import { ScheduleSeriesModule } from './schedule-series/schedule-series.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
+import { WhatsappConsentModule } from './whatsapp-consent/whatsapp-consent.module';
 
 /**
  * Gestão da loja da Fase 4 (caixa, comissões, pacotes, fidelidade...). Fica num
@@ -28,6 +29,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     ScheduleSeriesModule,
     AnamnesisModule,
     CampaignsModule,
+    WhatsappConsentModule,
   ],
 })
 export class StoreManagementModule {}
