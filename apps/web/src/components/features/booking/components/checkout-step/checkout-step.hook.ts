@@ -23,6 +23,7 @@ import {
 import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
 import type { TCheckoutStepConfig } from './checkout-step.types';
+import { useWhatsappOptIn } from './whatsapp-opt-in';
 
 const SLOT_TAKEN_MESSAGE =
   'Este horário acabou de ser ocupado. Volte e escolha outro horário.';
@@ -36,6 +37,12 @@ export const useCheckoutStep = ({ onConfirmed }: TCheckoutStepConfig) => {
   const openAuthAction = useAuthStore((state) => state.openAuthAction);
   const form = useFormContext<TBookingFormData>();
   const analytics = useAnalytics();
+  const whatsappOptIn = useWhatsappOptIn({
+    storeId: store.id,
+    hasWhatsapp: !!store.whatsappBot,
+    hasPhone: !!user?.telephone,
+    isLoggedIn,
+  });
 
   // A tela de confirmação já é o retorno do sucesso: sem toast aqui
   const { mutate: createSchedule, isPending: isCreatingSchedule } = useMutation(
@@ -108,6 +115,7 @@ export const useCheckoutStep = ({ onConfirmed }: TCheckoutStepConfig) => {
           } as Partial<ICreateAppointment>,
           {
             onSuccess: (appointments: IAppointment[]) => {
+              void whatsappOptIn.grantIfChecked();
               analytics.track('booking_completed', {
                 ...summary,
                 appointment_ids: appointments.map(({ id }) => id),
@@ -180,5 +188,6 @@ export const useCheckoutStep = ({ onConfirmed }: TCheckoutStepConfig) => {
     isCreatingSchedule,
     handleSchedule,
     handleLoginClick,
+    whatsappOptIn,
   };
 };
