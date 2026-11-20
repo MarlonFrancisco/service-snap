@@ -24,6 +24,7 @@ import { ValidationCodeDto } from './dto/validation-code.dto';
 import { GoogleSSOService } from './google-sso.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import type { TSignupAttributionInput } from '../users/signup-attribution';
 
 @Controller('auth')
 export class AuthController {
@@ -131,12 +132,18 @@ export class AuthController {
 
   @Post('social/google')
   async googleLogin(
-    @Body() body: { token: string; referralCode?: string },
+    @Body()
+    body: {
+      token: string;
+      referralCode?: string;
+      attribution?: TSignupAttributionInput;
+    },
     @Res({ passthrough: true }) res: Response,
   ) {
     const { tokens, isNewUser, user } = await this.googleSSOService.login(
       body.token,
       body.referralCode,
+      body.attribution,
     );
 
     this.setSessionCookies(res, tokens, user.id);

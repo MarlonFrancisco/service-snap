@@ -75,7 +75,17 @@ export class PrivacyService {
   ) {}
 
   async exportData(userId: string): Promise<TUserDataExport> {
-    const user = await this.userRepository.findOneByOrFail({ id: userId });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect([
+        'user.signupUtmSource',
+        'user.signupUtmMedium',
+        'user.signupUtmCampaign',
+        'user.signupRef',
+        'user.signupLandingPath',
+      ])
+      .where('user.id = :userId', { userId })
+      .getOneOrFail();
     const [
       schedules,
       reviews,
@@ -147,6 +157,13 @@ export class PrivacyService {
         country: user.country,
         acceptedTerms: user.acceptedTerms,
         createdAt: user.createdAt,
+        signupAttribution: {
+          utmSource: user.signupUtmSource,
+          utmMedium: user.signupUtmMedium,
+          utmCampaign: user.signupUtmCampaign,
+          ref: user.signupRef,
+          landingPath: user.signupLandingPath,
+        },
       },
       schedules: schedules.map((schedule) => ({
         store: schedule.store?.name,
@@ -331,6 +348,11 @@ export class PrivacyService {
       authCodeExpiresAt: null,
       referralCode: null,
       referredById: null,
+      signupUtmSource: null,
+      signupUtmMedium: null,
+      signupUtmCampaign: null,
+      signupRef: null,
+      signupLandingPath: null,
       paymentCustomerId: null,
       acceptedTerms: false,
       isDeleted: true,
