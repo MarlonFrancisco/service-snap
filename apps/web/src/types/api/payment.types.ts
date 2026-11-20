@@ -16,6 +16,8 @@ export interface IPlan {
   discount: number;
   trialPeriodDays: number;
   currency: TCurrencyCode;
+  /** `false` no Enterprise (#22): o cartão leva ao contato, sem checkout. */
+  selfServe?: boolean;
 }
 
 export interface IInvoice {
