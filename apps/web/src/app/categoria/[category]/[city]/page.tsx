@@ -7,9 +7,18 @@ import {
 } from '@/utils/helpers/category-city.helper';
 import { serializeJsonLd } from '@/utils/helpers/json-ld.helper';
 import { createPageMetadata } from '@/utils/helpers/site-metadata.helper';
+import { isIndexableCategoryCity } from '@/utils/helpers/store-sitemap.helper';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { loadCategoryCity } from './category-city.data';
+
+// ISR: refeita em segundo plano a cada 10 min; a lista vazia liga o cache
+// para qualquer cidade.
+export const revalidate = 600;
+
+export function generateStaticParams() {
+  return [];
+}
 
 type CategoryCityPageProps = {
   params: Promise<{ category: string; city: string }>;
@@ -35,8 +44,9 @@ export async function generateMetadata({
     title: `${resolved.categoryName} em ${loaded.displayCity} | ServiceSnap`,
     description,
     path,
-    // Qualquer cidade gera uma URL válida; sem lojas a página é conteúdo raso.
-    noindex: loaded.status === 'ok' && count === 0,
+    // Qualquer cidade gera uma URL válida; com poucas lojas é conteúdo raso.
+    // Mesmo limite do sitemap. Se a busca falhar, não muda a decisão às cegas.
+    noindex: loaded.status === 'ok' && !isIndexableCategoryCity(count),
   });
 }
 
@@ -48,6 +58,10 @@ export default async function CategoryCityPage({
   if (!resolved) notFound();
 
   const loaded = await loadCategoryCity(resolved);
+  // API fora: mantém no cache a última versão boa.
+  if (loaded.status === 'unavailable') {
+    throw new Error(`Busca indisponível: ${category}/${city}`);
+  }
   const path = categoryCityPath(resolved.categorySlug, resolved.citySlug);
   const jsonLd =
     loaded.stores.length > 0

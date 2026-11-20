@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { PublicCdnCache } from '../../utils/decorators/public-cache.decorator';
 import { parseSitemapCategories } from './search.helpers';
 import { SearchService } from './search.service';
 
@@ -11,6 +12,7 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get('sitemap')
+  @PublicCdnCache()
   async sitemap(@Query('categories') categories?: string) {
     return this.searchService.getSitemap(parseSitemapCategories(categories));
   }

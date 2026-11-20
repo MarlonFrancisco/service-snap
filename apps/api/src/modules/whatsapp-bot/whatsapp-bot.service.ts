@@ -52,6 +52,14 @@ import {
 import { WaitlistService } from '../partner/stores/waitlist/waitlist.service';
 import { WhatsappConfig } from '../partner/stores/whatsapp/whatsapp.entity';
 import { WhatsappService } from '../partner/stores/whatsapp/whatsapp.service';
+import { toWhatsappRecipient } from '../partner/stores/whatsapp/whatsapp-reminder-template';
+import {
+  BOT_CONSENT_VERSION,
+  getConsentText,
+  isWhatsappOptOutReply,
+} from '../partner/stores/whatsapp-consent/whatsapp-consent.helpers';
+import { WhatsappConsentService } from '../partner/stores/whatsapp-consent/whatsapp-consent.service';
+import type { User } from '../users/user.entity';
 import { UsersService } from '../users/users.service';
 import {
   buildPresenceConfirmedText,
@@ -126,6 +134,7 @@ export class WhatsappBotService {
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly schedulePresenceService: SchedulePresenceService,
     private readonly waitlistService: WaitlistService,
+    private readonly consentService: WhatsappConsentService,
   ) {}
 
   async handleWebhookMessage(body: IWhatsappWebhook) {
@@ -217,6 +226,11 @@ export class WhatsappBotService {
     const waitlistEntryId = parseWaitlistPayload(input.reply);
     if (waitlistEntryId) return this.onWaitlistNotice(ctx, waitlistEntryId);
 
+    // "PARAR" a um lembrete, ou "PARAR LEMBRETES" a qualquer hora (#37)
+    if (!input.reply && isWhatsappOptOutReply(input.text, hasSession)) {
+      return this.onOptOut(ctx);
+    }
+
     // Com um agendamento aberto, "cancelar" é cancelar ele, não sair da conversa
     if (
       ctx.session.state === BotState.APPOINTMENT_ACTIONS &&
@@ -268,12 +282,20 @@ export class WhatsappBotService {
       case 'menu':
         await this.clearSession(ctx);
         return this.enterMenu(ctx);
-      case 'exit':
+      case 'exit': {
         await this.clearSession(ctx);
-        return this.sendText(
-          ctx,
+        const lines = [
           'Tudo bem! Quando quiser marcar um horário, é só mandar *oi* 👋',
-        );
+        ];
+        // "parar" numa conversa só a encerra: diz como cortar os lembretes
+        if (await this.hasWhatsappConsent(ctx)) {
+          lines.push(
+            '',
+            'Para deixar de receber lembretes por WhatsApp, responda *PARAR LEMBRETES*.',
+          );
+        }
+        return this.sendText(ctx, lines.join('\n'));
+      }
       case 'book':
         await this.clearSession(ctx);
         return this.enterServices(ctx);
@@ -960,6 +982,10 @@ export class WhatsappBotService {
       'Para ver, remarcar ou cancelar, é só mandar *menu*.',
     );
 
+    // Marcou pelo WhatsApp: o lembrete vem por aqui, com o aviso de como parar
+    const consentText = previous ? null : await this.grantBotConsent(ctx);
+    if (consentText) lines.push('', consentText);
+
     await this.sendText(ctx, lines.join('\n'));
   }
 
@@ -1513,13 +1539,15 @@ export class WhatsappBotService {
     }
     if (!service || professionalId === undefined) return this.expired(ctx);
 
+    const customer = await this.findOrCreateCustomer(ctx);
+
     try {
       await this.waitlistService.join({
         storeId: ctx.config.store.id,
         serviceId: service.id,
         storeMemberId: professionalId,
         date,
-        customer: await this.findOrCreateCustomer(ctx),
+        customer,
         channel: 'whatsapp',
       });
     } catch (error) {
@@ -1543,13 +1571,15 @@ export class WhatsappBotService {
     }
 
     // O nome sai da sessão: monta o texto antes de limpá-la
-    const text = buildWaitlistJoinedText({
+    const joinedText = buildWaitlistJoinedText({
       serviceName: service.name,
       professionalName: professionalId
         ? this.professionalName(ctx, professionalId)
         : undefined,
       date,
     });
+    const consentText = await this.grantBotConsent(ctx, customer);
+    const text = consentText ? `${joinedText}\n\n${consentText}` : joinedText;
 
     await this.clearSession(ctx);
     await this.sendButtons(ctx, text, [{ id: 'menu:home', title: '🏠 Menu' }]);
@@ -1599,6 +1629,87 @@ export class WhatsappBotService {
   }
 
   /** O cliente da lista de espera é achado pelo telefone, como na reserva. */
+  // ---------------------------------------------------------------------------
+  // Opt-in e opt-out do WhatsApp (#37)
+  // ---------------------------------------------------------------------------
+
+  /** Número de quem escreveu, no formato do lembrete (E.164 sem `+`). */
+  private recipientOf(ctx: IBotContext) {
+    const country = ctx.config.store.country;
+
+    return toWhatsappRecipient(
+      normalizePhoneNumber(ctx.from, country),
+      country,
+    );
+  }
+
+  private async hasWhatsappConsent(ctx: IBotContext) {
+    const phone = this.recipientOf(ctx);
+
+    try {
+      return (
+        !!phone &&
+        (await this.consentService.hasConsentForPhone(
+          ctx.config.store.id,
+          phone,
+        ))
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Quem marca ou entra na lista pela conversa aceita o lembrete por aqui, com
+   * o texto que diz como parar. Uma falha não desfaz a marcação: o lembrete
+   * cai no e-mail.
+   */
+  private async grantBotConsent(ctx: IBotContext, known?: User) {
+    try {
+      const customer = known ?? (await this.findOrCreateCustomer(ctx));
+      if (!customer?.telephone) return null;
+
+      await this.consentService.grant({
+        storeId: ctx.config.store.id,
+        customerId: customer.id,
+        phone: customer.telephone,
+        source: 'bot',
+        textVersion: BOT_CONSENT_VERSION,
+      });
+
+      return (
+        getConsentText(BOT_CONSENT_VERSION, 'bot', ctx.config.store.country)
+          ?.text ?? null
+      );
+    } catch (error) {
+      this.logger.warn(
+        `Consentimento do WhatsApp não gravado: ${(error as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  private async onOptOut(ctx: IBotContext) {
+    await this.clearSession(ctx);
+
+    const phone = this.recipientOf(ctx);
+    const revoked =
+      !!phone &&
+      (await this.consentService.revokeByPhone(
+        ctx.config.store.id,
+        phone,
+        'reply',
+      ));
+    const storeName = ctx.config.store.name || 'a loja';
+
+    return this.sendText(
+      ctx,
+      revoked
+        ? `Pronto, você não vai mais receber lembretes de ${storeName} por WhatsApp. Os próximos chegam por e-mail, se você tiver um no cadastro.\nPara voltar a receber por aqui, é só marcar pelo WhatsApp.`
+        : `Você não recebe lembretes de ${storeName} por WhatsApp. Para marcar um horário, mande *oi* 👋`,
+    );
+  }
+
   private async findOrCreateCustomer(ctx: IBotContext) {
     const telephone = normalizePhoneNumber(ctx.from, ctx.config.store.country);
     const existing =

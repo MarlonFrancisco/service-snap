@@ -3,7 +3,7 @@ import { act, type ReactNode } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlanFeatureGate } from './plan-feature-gate';
-import { getMinPlanName, hasPlanAccess } from './plan-feature-gate.constants';
+import { getMinPlanSlug, hasPlanAccess } from './plan-feature-gate.constants';
 import type { TPlanFeatures } from './plan-feature-gate.types';
 
 const subscription = vi.hoisted(() => ({
@@ -27,8 +27,9 @@ vi.mock('@/hooks/use-query/use-plans-query', () => ({
     return {
       data: {
         month: [
-          { name: 'Professional', price: 8990, currency: 'brl' },
-          { name: 'Business', price: 19990, currency: 'brl' },
+          { name: 'Professional', slug: 'team', price: 8990, currency: 'brl' },
+          // Nome visível diferente: o preço é achado pelo slug.
+          { name: 'Multi', slug: 'multi', price: 19990, currency: 'brl' },
         ],
         year: [],
       },
@@ -57,14 +58,12 @@ describe('plan access rules', () => {
 
   it('asks for the highest plan among the missing features', () => {
     expect(
-      getMinPlanName(
+      getMinPlanSlug(
         ['DASHBOARD_GENERAL_ACCESS', 'DASHBOARD_SALES_ACCESS'],
         features({}),
       ),
-    ).toBe('Business');
-    expect(getMinPlanName(['WHATSAPP_INTEGRATION'], features({}))).toBe(
-      'Professional',
-    );
+    ).toBe('multi');
+    expect(getMinPlanSlug(['WHATSAPP_INTEGRATION'], features({}))).toBe('team');
   });
 });
 
@@ -126,7 +125,7 @@ describe('PlanFeatureGate', () => {
       'A análise de vendas não está no seu plano',
     );
     expect(text()).toContain('Você está no plano Professional.');
-    expect(link('Fazer upgrade para Business')?.getAttribute('href')).toBe(
+    expect(link('Fazer upgrade para Multi')?.getAttribute('href')).toBe(
       '/partner/plans/upgrade',
     );
     expect(text()).toMatch(/A partir de R\$\s?199,90\/mês\./);

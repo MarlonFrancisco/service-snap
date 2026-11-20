@@ -14,16 +14,22 @@ const stripe = new Stripe(stripeKey);
 
 interface ProductMetadata {
   productName: string;
+  /** Nome no Stripe antes da #22, para achar o produto ainda sem `plan_slug`. */
+  legacyName: string;
   metadata: Record<string, string>;
   marketing_features: Array<{ name: string }>;
   description: string;
 }
 
 // Espelha o que está no Stripe (live e teste). TRIAL_PERIOD_DAYS só vale no preço mensal.
+// Rodar primeiro em modo de teste; no live só com aprovação do Marlon (#22).
 const productsMetadata: ProductMetadata[] = [
   {
-    productName: 'Starter',
+    productName: 'Solo',
+    legacyName: 'Starter',
     metadata: {
+      plan_slug: 'solo',
+      self_serve: 'true',
       UNIT_LIMIT: '1',
       PRO_LIMIT: '1',
       RANK_TIER: 'TIER_3',
@@ -47,8 +53,11 @@ const productsMetadata: ProductMetadata[] = [
     description: 'Plano ideal para profissionais começando',
   },
   {
-    productName: 'Professional',
+    productName: 'Equipe',
+    legacyName: 'Professional',
     metadata: {
+      plan_slug: 'team',
+      self_serve: 'true',
       UNIT_LIMIT: '1',
       PRO_LIMIT: '5',
       RANK_TIER: 'TIER_2',
@@ -74,8 +83,11 @@ const productsMetadata: ProductMetadata[] = [
     description: 'Para profissionais que querem escalar',
   },
   {
-    productName: 'Business',
+    productName: 'Multi',
+    legacyName: 'Business',
     metadata: {
+      plan_slug: 'multi',
+      self_serve: 'true',
       UNIT_LIMIT: '5',
       PRO_LIMIT: '20',
       RANK_TIER: 'TIER_1',
@@ -102,7 +114,11 @@ const productsMetadata: ProductMetadata[] = [
   },
   {
     productName: 'Enterprise',
+    legacyName: 'Enterprise',
     metadata: {
+      plan_slug: 'enterprise',
+      // Contratado pelo comercial (#22): sem checkout nem upgrade self-service
+      self_serve: 'false',
       UNIT_LIMIT: 'UNLIMITED',
       PRO_LIMIT: 'UNLIMITED',
       RANK_TIER: 'TIER_1',
@@ -146,6 +162,7 @@ async function updateProductsMetadata() {
 
   for (const {
     productName,
+    legacyName,
     metadata,
     marketing_features,
     description,
@@ -153,8 +170,14 @@ async function updateProductsMetadata() {
     try {
       console.log(`📦 Buscando produto "${productName}"...`);
 
-      // Encontrar o produto pelo nome
-      const product = stripeProducts.data.find((p) => p.name === productName);
+      // Pelo `plan_slug` primeiro: o nome visível muda (#22), o slug não.
+      const product =
+        stripeProducts.data.find(
+          (p) => p.metadata.plan_slug === metadata.plan_slug,
+        ) ??
+        stripeProducts.data.find(
+          (p) => p.name === productName || p.name === legacyName,
+        );
 
       if (!product) {
         throw new Error(`Produto "${productName}" não encontrado na Stripe`);
@@ -163,7 +186,9 @@ async function updateProductsMetadata() {
       console.log(`   Encontrado: ${product.id}`);
       console.log(`   Atualizando...`);
 
+      // O nome visível também vem daqui (#22); o slug é que identifica o plano
       const updatedProduct = await stripe.products.update(product.id, {
+        name: productName,
         metadata,
         marketing_features,
         description,

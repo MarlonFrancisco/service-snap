@@ -25,8 +25,11 @@ const loadRowItems = async (config: TExperienceRowConfig) => {
   return mapStores(stores ?? [], config);
 };
 
-/** A home espera as vitrines antes de responder; API lenta não pode segurar a página. */
-const EXPERIENCE_ROWS_MS = 1500;
+/**
+ * Com ISR a home é montada no build e refeita em segundo plano: nenhum visitante
+ * espera por isto, então cabe mais tempo para a API responder.
+ */
+const EXPERIENCE_ROWS_MS = 5000;
 
 export const getExperienceRows = async (): Promise<TExperienceRow[]> =>
   (await withBudget(loadExperienceRows(), EXPERIENCE_ROWS_MS)) ?? [];

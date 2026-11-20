@@ -63,9 +63,7 @@ export const Pricing = () => {
                   />
                 ))}
               </div>
-              <div
-                className={cn('hidden gap-4 md:grid', PLAN_COLUMNS_CLASS)}
-              >
+              <div className={cn('hidden gap-4 md:grid', PLAN_COLUMNS_CLASS)}>
                 {planItems.map(({ plan, isCurrentPlan }) => (
                   <PricingPlanCard
                     key={plan.priceId}

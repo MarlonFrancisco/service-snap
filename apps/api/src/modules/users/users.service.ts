@@ -15,6 +15,10 @@ import {
 } from '../../utils/helpers/user.helpers';
 import { StorageService } from '../storage/storage.service';
 import { StripeService } from '../stripe';
+import {
+  sanitizeSignupAttribution,
+  type TSignupAttributionInput,
+} from './signup-attribution';
 import { User } from './user.entity';
 
 @Injectable()
@@ -135,6 +139,30 @@ export class UsersService {
     }
 
     await this.userRepository.update(userId, { referredById: referrer.id });
+  }
+
+  /**
+   * Grava a origem do cadastro só se ainda não houver nenhuma: o primeiro
+   * registro vence, e um login posterior não reescreve.
+   */
+  async applySignupAttribution(
+    userId: string,
+    input?: TSignupAttributionInput | null,
+  ) {
+    const attribution = sanitizeSignupAttribution(input);
+    if (!attribution) return;
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set(attribution)
+      .where('id = :userId', { userId })
+      .andWhere('signup_utm_source IS NULL')
+      .andWhere('signup_utm_medium IS NULL')
+      .andWhere('signup_utm_campaign IS NULL')
+      .andWhere('signup_ref IS NULL')
+      .andWhere('signup_landing_path IS NULL')
+      .execute();
   }
 
   async ensureReferralCode(userId: string): Promise<string> {
@@ -336,7 +364,12 @@ export class UsersService {
   > {
     return this.userRepository.findOne({
       where: { id },
-      select: ['id', 'pendingEmail', 'pendingEmailCode', 'pendingEmailExpiresAt'],
+      select: [
+        'id',
+        'pendingEmail',
+        'pendingEmailCode',
+        'pendingEmailExpiresAt',
+      ],
     });
   }
 

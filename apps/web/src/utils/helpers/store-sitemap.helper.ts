@@ -11,8 +11,15 @@ import { cache } from 'react';
 
 const SITEMAP_MS = 8000;
 
-/** Abaixo disso a página categoria + cidade fica rasa demais para o índice. */
-export const MIN_STORES_PER_CATEGORY_CITY = 1;
+/**
+ * Abaixo disso a página categoria + cidade fica rasa demais para o índice: sai
+ * do sitemap e recebe `noindex` (os links internos continuam, com `follow`).
+ * Estimativa do plano de SEO; volta ao índice sozinha ao chegar no limite.
+ */
+export const MIN_STORES_TO_INDEX = 3;
+
+export const isIndexableCategoryCity = (storeCount: number): boolean =>
+  storeCount >= MIN_STORES_TO_INDEX;
 
 export type TCategoryCityLink = {
   categoryName: string;
@@ -42,7 +49,7 @@ export function toCategoryCityLinks(
   const links = new Map<string, TCategoryCityLink>();
 
   for (const entry of sitemap?.categoryCities ?? []) {
-    if (entry.storeCount < MIN_STORES_PER_CATEGORY_CITY) continue;
+    if (entry.storeCount < 1) continue;
 
     const resolved = resolveCategoryCity(
       slugify(entry.category),
@@ -75,6 +82,18 @@ export function toCategoryCityLinks(
   }
 
   return [...links.values()];
+}
+
+/**
+ * Só os pares com lojas suficientes para o índice. A soma das grafias da mesma
+ * cidade conta, por isso o filtro vem depois de juntar.
+ */
+export function toIndexableCategoryCityLinks(
+  sitemap: TStoresSitemap | null,
+): TCategoryCityLink[] {
+  return toCategoryCityLinks(sitemap).filter((link) =>
+    isIndexableCategoryCity(link.storeCount),
+  );
 }
 
 /** Data inválida ou ausente vira `undefined`: sem `lastmod` é melhor que um errado. */

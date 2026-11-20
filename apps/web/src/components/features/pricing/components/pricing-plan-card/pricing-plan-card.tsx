@@ -57,9 +57,11 @@ export const PricingPlanCard = (config: TPricingPlanCardConfig) => {
         )}
       >
         {priceLabel}{' '}
-        <span className="text-sm font-medium tracking-normal text-ink-muted">
-          /{intervalLabel}
-        </span>
+        {intervalLabel ? (
+          <span className="text-sm font-medium tracking-normal text-ink-muted">
+            /{intervalLabel}
+          </span>
+        ) : null}
       </p>
 
       {trialLabel ? (

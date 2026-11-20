@@ -12,6 +12,7 @@ export type TUserDataExport = {
   storeMemberships: Record<string, unknown>[];
   ownedStores: Record<string, unknown>[];
   subscriptions: Record<string, unknown>[];
+  whatsappConsents: Record<string, unknown>[];
 };
 
 export const ACCOUNT_HAS_ACTIVE_SUBSCRIPTION =

@@ -25,8 +25,11 @@ export async function createApp(): Promise<INestApplication> {
   // bodyParser: false — registramos parsers manualmente para o webhook
   // receber Buffer bruto (Nest rawBody:true sozinho falha na Vercel: o JSON
   // é re-serializado e o constructEvent rejeita a assinatura).
+  // Em produção só avisos e erros: os logs de arranque (cada rota mapeada pelo
+  // RouterExplorer) custavam CPU a cada cold start.
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bodyParser: false,
+    logger: isProduction ? ['error', 'warn'] : undefined,
   });
 
   const http = app.getHttpAdapter().getInstance();

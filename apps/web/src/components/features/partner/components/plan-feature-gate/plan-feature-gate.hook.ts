@@ -6,9 +6,10 @@ import { useAnalytics } from '@/providers/analytics.provider';
 import { useCallback, useEffect, useRef } from 'react';
 import { formatPlanPrice } from '../plans-module/plans-module.utils';
 import {
-  getMinPlanName,
+  getMinPlanSlug,
   hasPlanAccess,
   LOCKED_MODULES,
+  PLAN_DISPLAY_NAME,
 } from './plan-feature-gate.constants';
 import type { TUsePlanFeatureGateConfig } from './plan-feature-gate.types';
 
@@ -17,13 +18,16 @@ export const usePlanFeatureGate = ({ module }: TUsePlanFeatureGateConfig) => {
   const { currentPlan, isGettingCurrentPlan } = useSubscriptionQuery();
   const features = currentPlan?.features;
   const hasAccess = hasPlanAccess(lockedModule.requires, features);
-  const minPlanName = hasAccess
+  const minPlanSlug = hasAccess
     ? undefined
-    : getMinPlanName(lockedModule.requires, features);
+    : getMinPlanSlug(lockedModule.requires, features);
+  const minPlanName = minPlanSlug ? PLAN_DISPLAY_NAME[minPlanSlug] : undefined;
 
   // Só busca preços quando o aviso aparece.
   const { data: plans } = usePlansQuery({ enabled: !hasAccess });
-  const minPlan = plans?.month.find((plan) => plan.name === minPlanName);
+  const minPlan = minPlanSlug
+    ? plans?.month.find((plan) => plan.slug === minPlanSlug)
+    : undefined;
   const isLoading = isGettingCurrentPlan && !currentPlan;
   const currentPlanId = currentPlan?.planId;
 
@@ -38,9 +42,9 @@ export const usePlanFeatureGate = ({ module }: TUsePlanFeatureGateConfig) => {
     analytics.track('paywall_viewed', {
       module,
       current_plan: currentPlanId,
-      min_plan: minPlanName,
+      min_plan: minPlanSlug,
     });
-  }, [isLoading, hasAccess, module, currentPlanId, minPlanName, analytics]);
+  }, [isLoading, hasAccess, module, currentPlanId, minPlanSlug, analytics]);
 
   const handleUpgradeClick = useCallback(
     (destination: string) => {

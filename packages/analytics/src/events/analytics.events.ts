@@ -218,6 +218,18 @@ export interface IAnalyticsEventMap {
   checkout_failed: { reason: string; source: string };
   checkout_status: { status: string };
   checkout_retry: Record<string, never>;
+  /**
+   * Início do teste grátis: a assinatura nasce em `trialing`, sem cobrança.
+   * Sem `value`, para não contar como receita. O pagamento real sai depois,
+   * pelo Stripe (`invoice.paid`), que é a fonte de verdade dessa etapa.
+   */
+  trial_start: {
+    transaction_id: string;
+    plan_id: string;
+    billing_period: TBillingPeriod;
+    currency: string;
+  };
+  /** Só para cobrança real: compra sem teste ou plano anual. */
   purchase: {
     transaction_id: string;
     plan_id: string;
@@ -367,7 +379,10 @@ export interface IAnalyticsEventMap {
   team_member_removed: { store_id: string };
   team_member_invite_failed: { store_id: string; http_status?: number };
   active_store_switched: { store_id: string; stores_count: number };
-  partner_mutation_failed: { entity: TPartnerEntity; operation: TCrudOperation };
+  partner_mutation_failed: {
+    entity: TPartnerEntity;
+    operation: TCrudOperation;
+  };
 
   // ── Notificações e WhatsApp ─────────────────────────────────────────
   reminder_settings_updated: {
@@ -390,6 +405,10 @@ export interface IAnalyticsEventMap {
     store_id: string;
     placement: TWhatsappBotLinkPlacement;
   };
+  /** Cliente final aceitou os lembretes da loja por WhatsApp (#37). */
+  whatsapp_opt_in: { store_id: string; source: 'checkout' };
+  /** Cliente final deixou de receber por WhatsApp (#37). */
+  whatsapp_opt_out: { store_id?: string; method: 'checkout' | 'email_link' };
 
   // ── Limites do plano e paywall ──────────────────────────────────────
   paywall_viewed: {
@@ -447,7 +466,11 @@ export type TLocaleSetting = 'country' | 'currency' | 'auto_translate' | 'save';
 
 export type TShareContent = 'store' | 'gallery' | 'referral';
 
-export type TBookingStep = 'services' | 'professional' | 'datetime' | 'checkout';
+export type TBookingStep =
+  | 'services'
+  | 'professional'
+  | 'datetime'
+  | 'checkout';
 
 export type TBookingFailureReason =
   | 'slot_taken'
@@ -455,9 +478,18 @@ export type TBookingFailureReason =
   | 'validation'
   | 'api_error';
 
-export type TPlanChangeType = 'new' | 'upgrade' | 'downgrade' | 'interval_change';
+export type TPlanChangeType =
+  | 'new'
+  | 'upgrade'
+  | 'downgrade'
+  | 'interval_change';
 
-export type TOnboardingStep = 'space' | 'hours' | 'services' | 'team' | 'photos';
+export type TOnboardingStep =
+  | 'space'
+  | 'hours'
+  | 'services'
+  | 'team'
+  | 'photos';
 
 export type TOnboardingView = 'welcome' | TOnboardingStep | 'ready';
 
@@ -478,7 +510,11 @@ export type TAppointmentStatus =
   | 'cancelled'
   | 'no-show';
 
-export type TDashboardSection = 'overview' | 'customers' | 'operational' | 'sales';
+export type TDashboardSection =
+  | 'overview'
+  | 'customers'
+  | 'operational'
+  | 'sales';
 
 export type TPartnerEntity =
   | 'service'
@@ -491,7 +527,9 @@ export type TPartnerEntity =
 
 export type TCrudOperation = 'create' | 'update' | 'delete';
 
-export type TWhatsappBotLinkPlacement = 'booking_sidebar' | 'booking_mobile_bar';
+export type TWhatsappBotLinkPlacement =
+  | 'booking_sidebar'
+  | 'booking_mobile_bar';
 
 export type TNotificationChannel = 'email' | 'sms' | 'whatsapp';
 

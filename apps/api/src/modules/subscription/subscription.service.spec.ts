@@ -44,9 +44,15 @@ describe('SubscriptionService.getCheckoutSessionStatus', () => {
   });
 
   it('is active once Stripe and the local subscription agree', async () => {
-    ctx.subscriptionRepository.findOne.mockResolvedValue({ id: 's' });
+    ctx.subscriptionRepository.findOne.mockResolvedValue({
+      id: 's',
+      status: 'active',
+    });
 
-    await expect(check()).resolves.toEqual({ status: 'active' });
+    await expect(check()).resolves.toEqual({
+      status: 'active',
+      isTrial: false,
+    });
     expect(ctx.subscriptionRepository.findOne).toHaveBeenCalledWith({
       where: expect.objectContaining({
         subscriptionId: 'sub_1',
@@ -60,9 +66,12 @@ describe('SubscriptionService.getCheckoutSessionStatus', () => {
       ...SESSION,
       payment_status: 'no_payment_required',
     });
-    ctx.subscriptionRepository.findOne.mockResolvedValue({ id: 's' });
+    ctx.subscriptionRepository.findOne.mockResolvedValue({
+      id: 's',
+      status: 'trialing',
+    });
 
-    await expect(check()).resolves.toEqual({ status: 'active' });
+    await expect(check()).resolves.toEqual({ status: 'active', isTrial: true });
   });
 
   it('waits for the webhook when Stripe is paid but nothing is saved', async () => {
@@ -107,5 +116,72 @@ describe('SubscriptionService.getCheckoutSessionStatus', () => {
     ctx.retrieve.mockRejectedValue(new Error('network'));
 
     await expect(check()).rejects.toThrow('network');
+  });
+});
+
+describe('SubscriptionService.create (#22)', () => {
+  const makeCheckout = (metadata: Record<string, string>, name: string) => {
+    const sessionsCreate = vi.fn().mockResolvedValue({ url: 'https://pay' });
+    const stripeService = {
+      prices: {
+        retrieve: vi.fn().mockResolvedValue({
+          id: 'price_1',
+          product: 'prod_1',
+          currency: 'brl',
+          recurring: { interval: 'month' },
+        }),
+      },
+      products: {
+        retrieve: vi.fn().mockResolvedValue({ id: 'prod_1', name, metadata }),
+      },
+      checkout: { sessions: { create: sessionsCreate } },
+    };
+
+    const service = new SubscriptionService(
+      { findOne: vi.fn().mockResolvedValue(null) } as never,
+      {} as never,
+      stripeService as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+      {} as never,
+    );
+
+    return { service, sessionsCreate };
+  };
+
+  it('refuses the checkout of a plan with self_serve=false', async () => {
+    const { service, sessionsCreate } = makeCheckout(
+      { plan_slug: 'enterprise', self_serve: 'false' },
+      'Enterprise',
+    );
+
+    await expect(service.create('price_1', CUSTOMER_ID)).rejects.toThrow(
+      'contratado com a nossa equipe',
+    );
+    expect(sessionsCreate).not.toHaveBeenCalled();
+  });
+
+  it('refuses Enterprise before the self_serve backfill', async () => {
+    const { service } = makeCheckout({}, 'Enterprise');
+
+    await expect(service.create('price_1', CUSTOMER_ID)).rejects.toThrow(
+      'contratado com a nossa equipe',
+    );
+  });
+
+  it('keeps the checkout of a self-service plan', async () => {
+    const { service, sessionsCreate } = makeCheckout(
+      { plan_slug: 'team', self_serve: 'true' },
+      'Equipe',
+    );
+
+    await expect(service.create('price_1', CUSTOMER_ID)).resolves.toEqual({
+      url: 'https://pay',
+      currency: 'BRL',
+    });
+    expect(sessionsCreate).toHaveBeenCalled();
   });
 });

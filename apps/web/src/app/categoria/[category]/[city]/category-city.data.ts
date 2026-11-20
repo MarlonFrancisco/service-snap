@@ -14,7 +14,7 @@ import { slugify } from '@/utils/helpers/slug.helper';
 import { withBudget } from '@/utils/helpers/promise.helper';
 import { cache } from 'react';
 
-const SEARCH_MS = 4000;
+const SEARCH_MS = 6000;
 
 export type TCategoryCityLoad = {
   status: 'ok' | 'unavailable';
