@@ -7,7 +7,7 @@ import {
   IsString,
 } from 'class-validator';
 import type Stripe from 'stripe';
-import { resolvePlanSlug, type TPlanSlug } from '../../utils';
+import { isSelfServePlan, resolvePlanSlug, type TPlanSlug } from '../../utils';
 
 export class PlanDto {
   @IsString()
@@ -29,6 +29,10 @@ export class PlanDto {
   @IsNumber()
   price: number;
 
+  /** ISO 4217 em maiúsculas, como o web formata. */
+  @IsString()
+  currency: string;
+
   @IsBoolean()
   popular: boolean;
 
@@ -45,10 +49,15 @@ export class PlanDto {
   @IsNumber()
   trialPeriodDays: number;
 
+  /** `false` no Enterprise (#22): o cartão leva ao contato, sem checkout. */
+  @IsBoolean()
+  selfServe: boolean;
+
   static fromStripe(
     plan: Stripe.Product,
     price: Stripe.Price,
     subscriptions: Stripe.Subscription[],
+    customerCurrency?: string,
   ): PlanDto {
     const hasSubscription = subscriptions.length > 0;
     const dto = new PlanDto();
@@ -58,8 +67,17 @@ export class PlanDto {
     dto.name = plan.name;
     dto.slug = resolvePlanSlug(plan);
     dto.description = plan.description;
-    dto.price = price.unit_amount;
+    // Sem a moeda do customer em currency_options, fica a padrão do price
+    const option =
+      customerCurrency &&
+      price.currency_options?.[customerCurrency.toLowerCase()];
+    const useOption = Boolean(option?.unit_amount != null);
+    dto.price = useOption ? option.unit_amount : price.unit_amount;
+    dto.currency = (
+      useOption ? customerCurrency : price.currency
+    ).toUpperCase();
     dto.popular = plan.metadata.IS_RECOMMENDED === 'true';
+    dto.selfServe = isSelfServePlan(plan);
     dto.features = plan.marketing_features.map((feature) => feature.name);
     dto.interval = price.recurring?.interval as 'month' | 'year';
     dto.discount = parseInt(price.metadata.discount || '0');

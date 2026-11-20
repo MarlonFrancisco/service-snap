@@ -1,6 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import {
   BadRequestException,
+  ForbiddenException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -16,6 +17,7 @@ import type { Cache } from 'cache-manager';
 import Stripe from 'stripe';
 import {
   getSubscriptionIdFromInvoice,
+  isSelfServePlan,
   normalizeSubscriptionMetadata,
 } from '../../utils';
 import { isUniqueViolation } from '../../utils/helpers/database.helpers';
@@ -37,7 +39,6 @@ const WEBHOOK_EVENT_TTL_MS = 72 * 60 * 60 * 1000;
 const isStripeResourceMissing = (error: unknown) =>
   error instanceof Stripe.errors.StripeError &&
   error.code === 'resource_missing';
-
 
 @Injectable()
 export class SubscriptionService {
@@ -246,6 +247,13 @@ export class SubscriptionService {
     const product = await this.stripeService.products.retrieve(
       price.product as string,
     );
+
+    // O Enterprise é contratado pelo comercial (#22): nem a UI nem a API abrem checkout
+    if (!isSelfServePlan(product)) {
+      throw new ForbiddenException(
+        'Este plano é contratado com a nossa equipe. Fale conosco em /contact.',
+      );
+    }
 
     // Validate currency if provided
     if (

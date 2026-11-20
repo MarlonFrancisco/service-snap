@@ -1,4 +1,5 @@
 import { Partner } from '@/components/features/partner';
+import { UserSession } from '@/providers/user-session.server';
 import { OnboardingService } from '@/service/partner/onboarding';
 import { StoreService } from '@/service/store';
 import { SubscriptionService } from '@/service/subscription';
@@ -69,7 +70,9 @@ export default async function PartnerLayout({ children }: PartnerLayoutProps) {
 
   return (
     <HydrationBoundary state={dehydratedState}>
-      <Partner>{children}</Partner>
+      <UserSession>
+        <Partner>{children}</Partner>
+      </UserSession>
     </HydrationBoundary>
   );
 }

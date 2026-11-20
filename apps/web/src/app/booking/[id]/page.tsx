@@ -13,6 +13,15 @@ import {
   storePageTitle,
 } from './store-page.data';
 
+// ISR: a página fica no cache da Vercel e é refeita em segundo plano a cada
+// 10 min, para que visitas (e bots) não chamem a API a cada pedido. A lista
+// vazia liga o cache também para as lojas que não existiam no build.
+export const revalidate = 600;
+
+export function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -50,6 +59,11 @@ export default async function BookingPage({
 
   const loaded = await loadStorePage(id);
   if (loaded.status === 'missing') notFound();
+  // API fora: o erro mantém no cache a última versão boa, em vez de guardar
+  // por 10 min uma página sem a loja.
+  if (loaded.status === 'unavailable') {
+    throw new Error(`Loja ${id} indisponível na API`);
+  }
 
   const store = loaded.status === 'ok' ? loaded.store : undefined;
 

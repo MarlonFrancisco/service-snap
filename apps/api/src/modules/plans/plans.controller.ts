@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { OptionalAuth } from '../auth/decorators/optional-auth.decorator';
 import { PlansService } from './plans.service';
@@ -10,15 +10,11 @@ export class PlansController {
   /**
    * Get available subscription plans
    * @param paymentCustomerId - Stripe customer ID (from auth token)
-   * @param currency - Filter by currency (ISO 4217 code, defaults to BRL)
-   * @returns Plans grouped by interval with currency information
+   * @returns Plans grouped by interval. The currency comes from Stripe.
    */
   @Get()
   @OptionalAuth()
-  async getPlans(
-    @CurrentUser('paymentCustomerId') paymentCustomerId?: string,
-    @Query('currency') currency?: string,
-  ) {
-    return this.plansService.findAll(paymentCustomerId, currency);
+  async getPlans(@CurrentUser('paymentCustomerId') paymentCustomerId?: string) {
+    return this.plansService.findAll(paymentCustomerId);
   }
 }

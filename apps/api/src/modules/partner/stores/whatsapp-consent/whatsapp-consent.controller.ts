@@ -69,13 +69,19 @@ export class WhatsappConsentController {
     });
   }
 
+  /** `?via=checkout` quando o cliente retira na caixa do checkout. */
   @Delete('me')
   @HttpCode(200)
   async revokeMine(
     @Param('storeId') storeId: string,
     @CurrentUser('sub') userId: string,
+    @Query('via') via?: string,
   ) {
-    await this.consentService.revoke(storeId, userId, 'profile');
+    await this.consentService.revoke(
+      storeId,
+      userId,
+      via === 'checkout' ? 'checkout' : 'profile',
+    );
 
     return this.consentService.findState(storeId, userId);
   }

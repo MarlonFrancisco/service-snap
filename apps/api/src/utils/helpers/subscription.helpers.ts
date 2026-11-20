@@ -62,6 +62,20 @@ export const resolvePlanSlug = (
   return PLAN_SLUG_BY_LEGACY_NAME[product.name] ?? null;
 };
 
+/**
+ * Plano assinável sem passar pelo comercial. O `self_serve` do metadata manda;
+ * sem ele (antes do backfill), só o Enterprise fica de fora (#22).
+ */
+export const isSelfServePlan = (
+  product: Pick<Stripe.Product, 'name' | 'metadata'>,
+): boolean => {
+  const selfServe = product.metadata?.self_serve;
+  if (selfServe === 'true') return true;
+  if (selfServe === 'false') return false;
+
+  return resolvePlanSlug(product) !== 'enterprise';
+};
+
 /** Extrai o subscription ID de um Invoice (API com `parent.subscription_details`). */
 export const getSubscriptionIdFromInvoice = (
   invoice: Stripe.Invoice,

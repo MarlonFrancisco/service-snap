@@ -3,7 +3,10 @@
 import { useAnalytics } from '@/providers/analytics.provider';
 import { useAuthStore } from '@/store/auth/auth.store';
 import { useConsentStore } from '@/store/consent';
-import { captureReferralCodeFromSearch } from '@/utils/helpers/referral.helper';
+import {
+  captureReferralCodeFromSearch,
+  syncReferralConsent,
+} from '@/utils/helpers/referral.helper';
 import {
   captureSignupAttribution,
   syncSignupAttributionConsent,
@@ -20,24 +23,28 @@ const GOOGLE_MAX_WAIT_MS = 5000;
  */
 export const Config = () => {
   const analytics = useAnalytics();
-  // A mesma escolha que libera o GA4 (analytics_storage) libera guardar a origem
+  // A mesma escolha que libera o GA4 (analytics_storage) libera guardar a
+  // origem e o código de indicação no dispositivo
   const canStoreAttribution = useConsentStore(
     (state) => state.consent?.analytics === true,
   );
 
   useEffect(() => {
     syncSignupAttributionConsent(canStoreAttribution);
+    syncReferralConsent(canStoreAttribution);
   }, [canStoreAttribution]);
 
   useEffect(() => {
+    const canStore = useConsentStore.getState().consent?.analytics === true;
+
     captureSignupAttribution(
       window.location.search,
       window.location.pathname,
-      useConsentStore.getState().consent?.analytics === true,
+      canStore,
     );
 
     // Só o fato de ter chegado por indicação: o código não vai para o analytics.
-    if (captureReferralCodeFromSearch(window.location.search)) {
+    if (captureReferralCodeFromSearch(window.location.search, canStore)) {
       analytics.track('referral_link_landed', {});
     }
 

@@ -2,12 +2,15 @@ import { usePlanCard } from '@/components/ui/plan-card/plan-card.hook';
 import { useAnalytics } from '@/providers/analytics.provider';
 import { toBillingPeriod } from '@/utils/helpers/analytics.helper';
 import { formatPrice } from '@/utils/helpers/price.helper';
+import { useRouter } from 'next/navigation';
 import { savePendingPurchase } from '../../../checkout/checkout.helpers';
 import type { TPricingPlanCardConfig } from './pricing-plan-card.types';
 
 const PRICE_LOCALE = 'pt-BR';
 /** A API de planos não envia a moeda, e `formatPrice` assumiria USD. */
 const DEFAULT_PLAN_CURRENCY = 'BRL';
+/** Destino dos planos contratados pelo comercial (Enterprise, #22). */
+const CONTACT_PATH = '/contact';
 
 export const usePricingPlanCard = ({
   plan,
@@ -19,6 +22,9 @@ export const usePricingPlanCard = ({
 }: TPricingPlanCardConfig) => {
   const { handleCreateSubscription } = usePlanCard({ priceId: plan.priceId });
   const analytics = useAnalytics();
+  const router = useRouter();
+  // Quem já assina o Enterprise continua a vê-lo como plano atual
+  const isContactOnly = plan.selfServe === false && !isCurrentPlan;
 
   const formatPlanPrice = (value: number) =>
     formatPrice(value, {
@@ -28,11 +34,17 @@ export const usePricingPlanCard = ({
 
   const price = plan.price / 100;
   const hasDiscount = plan.discount > 0;
-  const hasTrial = plan.trialPeriodDays > 0 && !isCurrentPlan && !hideTrial;
+  const hasTrial =
+    plan.trialPeriodDays > 0 && !isCurrentPlan && !hideTrial && !isContactOnly;
   const intervalLabel = plan.interval === 'month' ? 'mês' : 'ano';
   const priceLabel = formatPlanPrice(price);
 
   const handleSubscribe = () => {
+    if (isContactOnly) {
+      router.push(CONTACT_PATH);
+      return;
+    }
+
     if (onSelectPlan) {
       // Quem assume o clique (upgrade no painel) registra o próprio checkout.
       onSelectPlan(plan.priceId);
@@ -53,12 +65,13 @@ export const usePricingPlanCard = ({
 
   return {
     handleSubscribe,
-    isDisabled: isCurrentPlan || isActionDisabled,
-    priceLabel,
-    intervalLabel,
-    originalPriceLabel: hasDiscount
-      ? formatPlanPrice(price / (1 - plan.discount / 100))
-      : null,
+    isDisabled: isCurrentPlan || (isActionDisabled && !isContactOnly),
+    priceLabel: isContactOnly ? 'Sob consulta' : priceLabel,
+    intervalLabel: isContactOnly ? null : intervalLabel,
+    originalPriceLabel:
+      hasDiscount && !isContactOnly
+        ? formatPlanPrice(price / (1 - plan.discount / 100))
+        : null,
     discountLabel: hasDiscount ? `-${plan.discount}%` : null,
     trialLabel: hasTrial
       ? `${plan.trialPeriodDays} dias grátis, depois ${priceLabel}/${intervalLabel}`
@@ -68,7 +81,8 @@ export const usePricingPlanCard = ({
       : plan.popular
         ? 'Mais popular'
         : null,
-    actionLabel:
-      actionLabel ?? (isCurrentPlan ? 'Seu plano atual' : 'Assinar plano'),
+    actionLabel: isContactOnly
+      ? 'Fale conosco'
+      : actionLabel ?? (isCurrentPlan ? 'Seu plano atual' : 'Assinar plano'),
   };
 };

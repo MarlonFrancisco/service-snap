@@ -53,12 +53,12 @@ const COMMON_FAQ: TCategoryGuideFaq[] = [
   {
     question: 'Os lembretes por WhatsApp têm custo extra?',
     answer:
-      'Os lembretes por WhatsApp estão nos planos a partir do Professional. As mensagens seguem as tarifas da Meta, cobradas à parte.',
+      'Os lembretes por WhatsApp estão nos planos a partir do plano Equipe. As mensagens seguem as tarifas da Meta, cobradas à parte.',
   },
   {
     question: 'Quantos profissionais posso cadastrar?',
     answer:
-      'Depende do plano: do Starter, para quem atende sozinho, até o Enterprise, com profissionais e lojas ilimitados. Veja os limites de cada um na página de planos.',
+      'Depende do plano: do Solo, para quem atende sozinho, ao Multi, com várias lojas. Para redes maiores, fale conosco. Veja os limites de cada um na página de planos.',
   },
 ];
 
@@ -158,7 +158,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
     benefits: [
       {
         title: 'Ideal para quem atende sozinha',
-        text: 'O plano Starter atende uma profissional, e você pode crescer para uma equipe depois.',
+        text: 'O plano Solo atende uma profissional, e você pode crescer para uma equipe depois.',
       },
       {
         title: 'Agenda sempre atualizada',
@@ -233,7 +233,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
     benefits: [
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o personal que trabalha sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o personal que trabalha sozinho, e você amplia para uma equipe quando precisar.',
       },
       {
         title: 'Menos tempo no WhatsApp',
@@ -283,7 +283,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
     benefits: [
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o psicólogo que atende sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o psicólogo que atende sozinho, e você amplia para uma equipe quando precisar.',
       },
       {
         title: 'Menos tempo no WhatsApp',
@@ -312,7 +312,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
       },
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o nutricionista que atende sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o nutricionista que atende sozinho, e você amplia para uma equipe quando precisar.',
       },
       {
         title: 'Menos faltas',
@@ -666,7 +666,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
       },
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o consultor que trabalha sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o consultor que trabalha sozinho, e você amplia para uma equipe quando precisar.',
       },
     ],
     faq: COMMON_FAQ,
@@ -691,7 +691,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
       },
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o designer que trabalha sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o designer que trabalha sozinho, e você amplia para uma equipe quando precisar.',
       },
     ],
     faq: COMMON_FAQ,
@@ -791,7 +791,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
       },
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o eletricista que trabalha sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o eletricista que trabalha sozinho, e você amplia para uma equipe quando precisar.',
       },
     ],
     faq: COMMON_FAQ,
@@ -816,7 +816,7 @@ export const BUSINESS_SEGMENTS: TBusinessPage[] = [
       },
       {
         title: 'Comece sozinho',
-        text: 'O plano Starter atende o encanador que trabalha sozinho, e você amplia para uma equipe quando precisar.',
+        text: 'O plano Solo atende o encanador que trabalha sozinho, e você amplia para uma equipe quando precisar.',
       },
     ],
     faq: COMMON_FAQ,

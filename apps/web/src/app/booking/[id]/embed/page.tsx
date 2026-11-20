@@ -5,6 +5,13 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import type { Metadata } from 'next';
 import { loadStorePage } from '../store-page.data';
 
+// Mesmo cache da página da loja (ISR de 10 min).
+export const revalidate = 600;
+
+export function generateStaticParams() {
+  return [];
+}
+
 /** Página do iframe do widget: fora do índice, canonical na página da loja. */
 export async function generateMetadata({
   params,
@@ -37,6 +44,9 @@ export default async function BookingEmbedPage({
   // Sem `notFound()`: a 404 do site inteira não cabe no iframe. Loja inexistente
   // cai no aviso compacto do casco quando a busca do cliente falha.
   const loaded = await loadStorePage(id);
+  if (loaded.status === 'unavailable') {
+    throw new Error(`Loja ${id} indisponível na API`);
+  }
   if (loaded.status === 'ok') {
     queryClient.setQueryData(CACHE_QUERY_KEYS.store(id), loaded.store);
   }
