@@ -26,11 +26,11 @@ const PLAN_ORDER: readonly TPlanSlug[] = [
   'enterprise',
 ];
 
-/** Nome mostrado por slug. Os nomes novos da #22 entram só aqui. */
+/** Nome mostrado por slug (#22). Igual ao `productName` do script do Stripe. */
 export const PLAN_DISPLAY_NAME: Record<TPlanSlug, string> = {
-  solo: 'Starter',
-  team: 'Professional',
-  multi: 'Business',
+  solo: 'Solo',
+  team: 'Equipe',
+  multi: 'Multi',
   enterprise: 'Enterprise',
 };
 

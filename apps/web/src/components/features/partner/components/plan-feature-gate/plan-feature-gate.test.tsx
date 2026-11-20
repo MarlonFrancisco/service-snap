@@ -125,7 +125,7 @@ describe('PlanFeatureGate', () => {
       'A análise de vendas não está no seu plano',
     );
     expect(text()).toContain('Você está no plano Professional.');
-    expect(link('Fazer upgrade para Business')?.getAttribute('href')).toBe(
+    expect(link('Fazer upgrade para Multi')?.getAttribute('href')).toBe(
       '/partner/plans/upgrade',
     );
     expect(text()).toMatch(/A partir de R\$\s?199,90\/mês\./);
