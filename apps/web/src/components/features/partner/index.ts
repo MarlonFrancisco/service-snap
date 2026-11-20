@@ -1,4 +1,5 @@
 export { Partner } from './partner';
+export { PartnerSkeleton } from './partner.skeleton';
 
 // Sub-components
 export { AdminSidebar } from './components/admin-sidebar';
