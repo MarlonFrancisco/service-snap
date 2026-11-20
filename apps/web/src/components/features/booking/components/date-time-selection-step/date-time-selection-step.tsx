@@ -32,7 +32,7 @@ const getDaysAhead = (date: Date) => {
 };
 
 const EMPTY_NOTICE_CLASS =
-  'rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-center text-sm text-[#5F5C6E]';
+  'rounded-[14px] bg-surface px-3.5 py-3 text-center text-sm text-ink-muted';
 
 export function DateTimeSelectionStep() {
   const store = useGetStore();
@@ -173,10 +173,10 @@ export function DateTimeSelectionStep() {
 
   return (
     <div>
-      <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-[#0B0B0F]">
+      <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-ink">
         Escolha data e horário
       </h1>
-      <p className="mt-1.5 mb-6 text-[15px] text-[#5F5C6E]">
+      <p className="mt-1.5 mb-6 text-[15px] text-ink-muted">
         Selecione quando deseja realizar{' '}
         {selectedServices.length > 1 ? 'os serviços' : 'o serviço'}
       </p>
@@ -213,7 +213,7 @@ export function DateTimeSelectionStep() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <p className="mb-3 text-[17px] font-bold text-[#0B0B0F] first-letter:uppercase">
+              <p className="mb-3 text-[17px] font-bold text-ink first-letter:uppercase">
                 {formatDate(selectedDate)}
               </p>
 
@@ -230,7 +230,7 @@ export function DateTimeSelectionStep() {
               ) : (
                 groupSlotsByPeriod(availableSlots).map((period) => (
                   <Fragment key={period.label}>
-                    <p className="mb-2 text-[13px] font-bold tracking-[0.06em] text-[#5F5C6E] uppercase">
+                    <p className="mb-2 text-[13px] font-bold tracking-[0.06em] text-ink-muted uppercase">
                       {period.label}
                     </p>
                     <div className="mb-5 grid grid-cols-3 gap-2">
@@ -246,10 +246,10 @@ export function DateTimeSelectionStep() {
                             aria-label={`Selecionar horário ${slot.time}`}
                             onClick={() => handleTimeSelect(slot)}
                             className={cn(
-                              'h-12 rounded-full border text-sm font-semibold transition-colors disabled:cursor-default disabled:border-[#F0EEF4] disabled:bg-[#F7F6FA] disabled:text-[#8D8A9B] disabled:line-through',
+                              'h-12 rounded-full border text-sm font-semibold transition-colors disabled:cursor-default disabled:border-surface-3 disabled:bg-surface disabled:text-ink-faint disabled:line-through',
                               isSelected
-                                ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
-                                : 'border-[#E3E1EA] bg-white text-[#0B0B0F] hover:bg-[#F4F3F7]',
+                                ? 'border-ink bg-ink text-white'
+                                : 'border-line-strong bg-white text-ink hover:bg-surface-2',
                             )}
                           >
                             {slot.time}

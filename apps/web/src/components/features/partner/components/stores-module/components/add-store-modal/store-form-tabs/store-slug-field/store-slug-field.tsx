@@ -36,13 +36,13 @@ export const StoreSlugField = () => {
             <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
               <div
                 className={cn(
-                  'flex h-[50px] min-w-0 flex-1 items-center overflow-hidden rounded-[14px] border border-[#E3E1EA] bg-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#0B0B0F]',
-                  fieldState.invalid && 'border-[1.5px] border-[#A4231A]',
+                  'flex h-[50px] min-w-0 flex-1 items-center overflow-hidden rounded-[14px] border border-line-strong bg-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink',
+                  fieldState.invalid && 'border-[1.5px] border-error',
                 )}
               >
                 <span
                   aria-hidden="true"
-                  className="flex h-full max-w-[55%] shrink-0 items-center truncate bg-[#F7F6FA] pr-1 pl-3.5 text-[15px] font-medium text-[#5F5C6E]"
+                  className="flex h-full max-w-[55%] shrink-0 items-center truncate bg-surface pr-1 pl-3.5 text-[15px] font-medium text-ink-muted"
                 >
                   {STORE_SLUG_PREFIX}
                 </span>
@@ -61,7 +61,7 @@ export const StoreSlugField = () => {
                     onChange={(event) =>
                       field.onChange(normalizeSlugInput(event.target.value))
                     }
-                    className="h-12 min-w-0 flex-1 border-0 bg-transparent pr-3.5 pl-1 text-[15px] font-semibold text-[#0B0B0F] outline-none"
+                    className="h-12 min-w-0 flex-1 border-0 bg-transparent pr-3.5 pl-1 text-[15px] font-semibold text-ink outline-none"
                   />
                 </FormControl>
               </div>
@@ -78,7 +78,7 @@ export const StoreSlugField = () => {
                 Copiar link
               </button>
             </div>
-            <FormMessage className="text-[13px] font-semibold text-[#A4231A]" />
+            <FormMessage className="text-[13px] font-semibold text-error" />
             <FormDescription className={STORES_HINT_CLASS}>
               {isUnsaved
                 ? 'Salve as alterações para usar o novo link.'
@@ -88,7 +88,7 @@ export const StoreSlugField = () => {
         )}
       />
 
-      <p className="rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] leading-normal">
+      <p className="rounded-[14px] bg-surface px-3.5 py-3 text-[13px] leading-normal">
         Links antigos com o código da loja continuam funcionando e levam para
         este. Se você trocar o link, o anterior para de funcionar.
       </p>

@@ -50,7 +50,7 @@ export const AdminUsers = () => {
           {Array.from({ length: 5 }, (_, index) => (
             <Skeleton
               key={index}
-              className="h-12 w-full rounded-2xl bg-[#E9E7EF]"
+              className="h-12 w-full rounded-2xl bg-surface-4"
             />
           ))}
         </div>

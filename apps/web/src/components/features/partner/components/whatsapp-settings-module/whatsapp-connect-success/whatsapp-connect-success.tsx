@@ -53,35 +53,35 @@ export const WhatsappConnectSuccess = ({
   return (
     // Desktop largo: confirmação à esquerda; avisos, teste e próximos passos à direita.
     <div className="grid gap-4 min-[1280px]:grid-cols-2 min-[1280px]:items-start">
-      <section className="grid justify-items-center gap-3 rounded-[26px] border border-[#EBE9F0] px-5 py-10 text-center sm:px-7">
+      <section className="grid justify-items-center gap-3 rounded-[26px] border border-line px-5 py-10 text-center sm:px-7">
         <span
           aria-hidden="true"
-          className="grid size-16 place-items-center rounded-full bg-[#DFF2E7] text-[#0A5536]"
+          className="grid size-16 place-items-center rounded-full bg-success-bg text-success"
         >
           <Check className="size-8 stroke-[2.2]" />
         </span>
         <h2 className="text-[28px] font-extrabold tracking-[-0.03em]">
           WhatsApp conectado
         </h2>
-        <p className="max-w-[560px] text-[15px] leading-relaxed text-[#5F5C6E]">
+        <p className="max-w-[560px] text-[15px] leading-relaxed text-ink-muted">
           As credenciais foram conferidas com a Meta e o WhatsApp está ativo
           para a loja.
         </p>
-        <dl className="mt-2 grid w-full grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-3 rounded-[18px] bg-[#FAFAFC] p-4 text-left text-sm">
+        <dl className="mt-2 grid w-full grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-3 rounded-[18px] bg-surface-0 p-4 text-left text-sm">
           <div>
-            <dt className="text-xs text-[#5F5C6E]">Número</dt>
+            <dt className="text-xs text-ink-muted">Número</dt>
             <dd className="mt-0.5 font-bold">
               {status.displayPhoneNumber || 'Não informado'}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-[#5F5C6E]">Nome de exibição</dt>
+            <dt className="text-xs text-ink-muted">Nome de exibição</dt>
             <dd className="mt-0.5 font-bold">
               {status.verifiedName || 'Não informado'}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-[#5F5C6E]">Qualidade</dt>
+            <dt className="text-xs text-ink-muted">Qualidade</dt>
             <dd className="mt-0.5 font-bold">
               {status.qualityRating || 'Não informada'}
             </dd>
@@ -108,7 +108,7 @@ export const WhatsappConnectSuccess = ({
           <h3 className={MODULE_CARD_TITLE_CLASS}>
             Envie uma mensagem de teste
           </h3>
-          <p className="text-sm leading-normal text-[#5F5C6E]">
+          <p className="text-sm leading-normal text-ink-muted">
             Mande antes um &quot;oi&quot; do seu celular para o número da loja.
             A Meta só libera mensagem livre para quem falou com a loja nas
             últimas 24 horas.
@@ -152,18 +152,18 @@ export const WhatsappConnectSuccess = ({
             {NEXT_STEPS.map(({ Icon, title, text, href, action }) => (
               <li
                 key={title}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-[#EBE9F0] px-4 py-3.5"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-[16px] border border-line px-4 py-3.5"
               >
                 <div className="flex flex-[1_1_320px] items-start gap-3">
                   <span
                     aria-hidden="true"
-                    className="grid size-9 shrink-0 place-items-center rounded-[12px] bg-[#F4F3F7] text-[#9810FA]"
+                    className="grid size-9 shrink-0 place-items-center rounded-[12px] bg-surface-2 text-brand"
                   >
                     <Icon className="size-[18px] stroke-[1.8]" />
                   </span>
                   <div>
                     <b className="block text-sm">{title}</b>
-                    <span className="text-[13px] leading-normal text-[#5F5C6E]">
+                    <span className="text-[13px] leading-normal text-ink-muted">
                       {text}
                     </span>
                   </div>
@@ -178,7 +178,7 @@ export const WhatsappConnectSuccess = ({
           </ul>
         </section>
 
-        <div className="flex gap-3 rounded-[16px] bg-[#F4F3F7] px-4 py-3.5 text-sm leading-normal text-[#2B2934]">
+        <div className="flex gap-3 rounded-[16px] bg-surface-2 px-4 py-3.5 text-sm leading-normal text-ink-body">
           <Info
             aria-hidden="true"
             className="mt-px size-5 shrink-0 stroke-[1.8]"

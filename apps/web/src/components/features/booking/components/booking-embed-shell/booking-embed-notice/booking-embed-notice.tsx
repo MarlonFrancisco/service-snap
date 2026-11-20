@@ -16,9 +16,9 @@ export const BookingEmbedNotice = ({
     )}
     {...props}
   >
-    {isLoading ? <Spinner className="size-6 text-[#5F5C6E]" /> : null}
+    {isLoading ? <Spinner className="size-6 text-ink-muted" /> : null}
     <h2 className="text-lg font-extrabold tracking-[-0.02em]">{title}</h2>
-    <p className="max-w-[300px] text-sm leading-normal text-[#5F5C6E]">
+    <p className="max-w-[300px] text-sm leading-normal text-ink-muted">
       {description}
     </p>
     {children ? (

@@ -18,7 +18,7 @@ import { WidgetPreview } from './components/widget-preview';
 import { WidgetModuleSkeleton } from './widget-module-skeleton';
 import { useWidgetModule } from './widget-module.hook';
 
-const CARD_NOTE_CLASS = 'text-sm leading-[1.55] text-[#5F5C6E]';
+const CARD_NOTE_CLASS = 'text-sm leading-[1.55] text-ink-muted';
 
 export const WidgetModule = () => {
   const {
@@ -91,7 +91,7 @@ export const WidgetModule = () => {
         <pre
           aria-label="Código do widget"
           translate="no"
-          className="rounded-[14px] bg-[#0B0B0F] p-4 font-mono text-[13px] leading-[1.6] font-medium break-all whitespace-pre-wrap text-[#E8E6EF]"
+          className="rounded-[14px] bg-ink p-4 font-mono text-[13px] leading-[1.6] font-medium break-all whitespace-pre-wrap text-surface-4"
         >
           {snippet}
         </pre>
@@ -111,7 +111,7 @@ export const WidgetModule = () => {
         <div className="flex flex-wrap items-center gap-2">
           <span
             translate="no"
-            className="flex min-h-11 min-w-0 flex-[1_1_320px] items-center overflow-hidden rounded-full border border-[#E3E1EA] px-4 text-[13px] font-medium text-ellipsis whitespace-nowrap text-[#5F5C6E]"
+            className="flex min-h-11 min-w-0 flex-[1_1_320px] items-center overflow-hidden rounded-full border border-line-strong px-4 text-[13px] font-medium text-ellipsis whitespace-nowrap text-ink-muted"
           >
             {bookingLink}
           </span>

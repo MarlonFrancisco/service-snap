@@ -8,11 +8,11 @@ const SLOT_BASE_CLASS =
   'flex h-full w-full min-w-0 select-none items-center justify-center gap-1 rounded-[9px] px-0.5 text-xs font-medium';
 
 const SLOT_STATE_CLASS: Record<TAgendaSlotState, string> = {
-  free: 'text-[#5F5C6E] hover:bg-[#F7F6FA]',
-  blocked: 'bg-[#EBE9F0] font-semibold text-[#0B0B0F]',
-  'selected-to-block': 'bg-[#FFF1E0] font-semibold text-[#6E3B00]',
+  free: 'text-ink-muted hover:bg-surface',
+  blocked: 'bg-line font-semibold text-ink',
+  'selected-to-block': 'bg-warning-bg font-semibold text-warning',
   'selected-to-unblock':
-    'bg-[#FFF1E0] font-semibold text-[#6E3B00] ring-1 ring-inset ring-[#8A4B00]',
+    'bg-warning-bg font-semibold text-warning ring-1 ring-inset ring-warning',
 };
 
 const SLOT_STATE_ICON = {
@@ -42,7 +42,7 @@ export const AgendaSlotButton = ({ slot }: TAgendaSlotButtonConfig) => {
       title={slot.isGutter ? slot.ariaLabel : undefined}
       className={cn(
         stateClass,
-        slot.isGutter && 'w-6 shrink-0 bg-[#F7F6FA] hover:bg-[#EBE9F0]',
+        slot.isGutter && 'w-6 shrink-0 bg-surface hover:bg-line',
         PARTNER_FOCUS_CLASS,
         'focus-visible:outline-offset-[-2px]',
       )}

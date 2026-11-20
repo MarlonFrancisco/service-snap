@@ -107,19 +107,19 @@ export const ScheduleRulesTab = () => {
 
       <aside
         aria-labelledby={PREVIEW_TITLE_ID}
-        className="grid gap-3 rounded-[24px] bg-[#F7F6FA] p-5"
+        className="grid gap-3 rounded-[24px] bg-surface p-5"
       >
         <h3 id={PREVIEW_TITLE_ID} className={cn(STORES_LEGEND_CLASS, 'mb-0')}>
           Como o cliente vê
         </h3>
         <div
           aria-live="polite"
-          className="grid gap-2 rounded-2xl border border-[#EBE9F0] bg-white p-4 text-[15px] leading-normal font-medium"
+          className="grid gap-2 rounded-2xl border border-line bg-white p-4 text-[15px] leading-normal font-medium"
         >
           <p>{preview.booking}</p>
           <p>{preview.policy}</p>
         </div>
-        <p className={cn(NOTE_CLASS, 'text-[#5F5C6E]')}>
+        <p className={cn(NOTE_CLASS, 'text-ink-muted')}>
           <MessageSquare aria-hidden="true" className={NOTE_ICON_CLASS} />
           Vale para o agendamento pelo site e pelo WhatsApp.
         </p>

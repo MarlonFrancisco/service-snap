@@ -43,8 +43,8 @@ export const Integrations = () => {
         aria-label="Carregando integrações"
         className="grid gap-7 xl:grid-cols-2"
       >
-        <Skeleton className="h-72 w-full rounded-[24px] bg-[#F0EEF4]" />
-        <Skeleton className="h-72 w-full rounded-[24px] bg-[#F0EEF4]" />
+        <Skeleton className="h-72 w-full rounded-[24px] bg-surface-3" />
+        <Skeleton className="h-72 w-full rounded-[24px] bg-surface-3" />
       </div>
     );
   }

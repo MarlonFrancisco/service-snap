@@ -189,11 +189,11 @@ export function SalesRevenueMetricsModule() {
                   {hasGoalLine && (
                     <div aria-hidden="true" className={METRICS_LEGEND_CLASS}>
                       <span className="flex items-center gap-1.5">
-                        <span className="h-0.5 w-4 bg-[#0B0B0F]" />
+                        <span className="h-0.5 w-4 bg-ink" />
                         Receita
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <span className="w-4 border-t-2 border-dashed border-[#5F5C6E]" />
+                        <span className="w-4 border-t-2 border-dashed border-ink-muted" />
                         Meta atual
                       </span>
                     </div>

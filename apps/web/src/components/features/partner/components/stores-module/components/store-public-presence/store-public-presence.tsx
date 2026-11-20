@@ -37,7 +37,7 @@ export const StorePublicPresence = (config: TStorePublicPresenceConfig) => {
 
       <div
         className={cn(
-          'flex items-center gap-2.5 rounded-[14px] bg-[#F7F6FA] py-2 pr-2 pl-4 text-[13px]',
+          'flex items-center gap-2.5 rounded-[14px] bg-surface py-2 pr-2 pl-4 text-[13px]',
           PARTNER_MUTED_TEXT_CLASS,
         )}
       >

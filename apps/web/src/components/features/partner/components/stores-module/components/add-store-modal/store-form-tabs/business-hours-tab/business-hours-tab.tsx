@@ -39,13 +39,13 @@ export const BusinessHoursTab = () => {
           {days.map((day) => (
             <label
               key={day.key}
-              className="flex min-h-12 cursor-pointer items-center justify-between rounded-[14px] bg-[#F7F6FA] px-3.5 text-sm font-semibold"
+              className="flex min-h-12 cursor-pointer items-center justify-between rounded-[14px] bg-surface px-3.5 text-sm font-semibold"
             >
               {day.label}
               <Switch
                 checked={day.isOpen}
                 onCheckedChange={() => handleDayToggle(day.key)}
-                className="data-[state=checked]:bg-[#0B0B0F]"
+                className="data-[state=checked]:bg-ink"
               />
             </label>
           ))}

@@ -31,10 +31,10 @@ export const ReviewsContent = () => {
       <h2 className="pr-12 text-[28px] font-extrabold tracking-[-0.03em]">
         Avaliações de clientes
       </h2>
-      <p className="mt-1.5 text-[15px] text-[#5F5C6E]">
+      <p className="mt-1.5 text-[15px] text-ink-muted">
         {hasReviews ? (
           <>
-            <b className="text-[#0B0B0F]">★ {formattedAverage}</b> · Baseado em{' '}
+            <b className="text-ink">★ {formattedAverage}</b> · Baseado em{' '}
             {totalLabel}
           </>
         ) : (
@@ -46,7 +46,7 @@ export const ReviewsContent = () => {
         <WriteReviewForm />
       ) : (
         <>
-          <div className="mt-6 grid grid-cols-1 gap-6 border-b border-[#EBE9F0] pb-6 md:grid-cols-2 md:gap-8">
+          <div className="mt-6 grid grid-cols-1 gap-6 border-b border-line pb-6 md:grid-cols-2 md:gap-8">
             <div>
               <h3 className={REVIEWS_SECTION_TITLE_CLASS}>Distribuição</h3>
               {ratingBars.map(({ rating, percentage }) => (
@@ -62,7 +62,7 @@ export const ReviewsContent = () => {
               <h3 className={REVIEWS_SECTION_TITLE_CLASS}>
                 Compartilhe sua opinião
               </h3>
-              <p className="mb-3.5 text-sm leading-[1.55] text-[#5F5C6E]">
+              <p className="mb-3.5 text-sm leading-[1.55] text-ink-muted">
                 Só quem foi atendido aqui avalia, uma vez por atendimento. Assim
                 toda nota vem de uma visita real.
               </p>
@@ -79,13 +79,13 @@ export const ReviewsContent = () => {
                 </button>
               )}
               {shareState === 'not-served' && (
-                <p className="text-[13px] leading-[1.5] text-[#5F5C6E]">
+                <p className="text-[13px] leading-[1.5] text-ink-muted">
                   Depois de ser atendido aqui, você pode avaliar a visita.
                 </p>
               )}
               {shareState === 'logged-out' && (
                 <div className="grid gap-2.5 md:justify-items-start">
-                  <p className="text-[13px] leading-[1.5] text-[#5F5C6E]">
+                  <p className="text-[13px] leading-[1.5] text-ink-muted">
                     Já foi atendido aqui? Entre na sua conta para avaliar a
                     visita.
                   </p>

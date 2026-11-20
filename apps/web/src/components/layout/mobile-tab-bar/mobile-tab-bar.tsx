@@ -35,13 +35,13 @@ export const MobileTabBar = () => {
   return (
     <nav
       aria-label="Navegação principal"
-      className="sticky bottom-0 z-40 flex justify-around border-t border-[#EBE9F0] bg-white/97 px-2 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom,0px))] md:hidden"
+      className="sticky bottom-0 z-40 flex justify-around border-t border-line bg-white/97 px-2 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom,0px))] md:hidden"
     >
       <Link
         href="/"
         onClick={() => handleTabClick('explore', '/')}
         aria-current={isHome ? 'page' : undefined}
-        className={`${TAB_CLASS} text-[#9810FA]`}
+        className={`${TAB_CLASS} text-brand`}
       >
         <Search className={ICON_CLASS} strokeWidth={1.7} aria-hidden />
         Explorar
@@ -51,7 +51,7 @@ export const MobileTabBar = () => {
           key={href}
           href={href}
           onClick={(event) => handleProtectedClick(event, id, href)}
-          className={`${TAB_CLASS} text-[#5F5C6E]`}
+          className={`${TAB_CLASS} text-ink-muted`}
         >
           <Icon className={ICON_CLASS} strokeWidth={1.7} aria-hidden />
           {label}

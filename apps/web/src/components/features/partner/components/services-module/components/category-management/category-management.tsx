@@ -6,7 +6,7 @@ import { CategoryList } from './category-list/category-list';
 import { useCategoryManagement } from './category-management.hook';
 
 const TAB_CLASS =
-  'h-[42px] flex-1 rounded-full border-0 text-[13px] font-bold text-[#0B0B0F] data-[state=active]:bg-[#0B0B0F] data-[state=active]:text-white data-[state=active]:shadow-none focus-visible:ring-2 focus-visible:ring-[#0B0B0F] focus-visible:ring-offset-2';
+  'h-[42px] flex-1 rounded-full border-0 text-[13px] font-bold text-ink data-[state=active]:bg-ink data-[state=active]:text-white data-[state=active]:shadow-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2';
 
 export const CategoryManagementModal = () => {
   const {
@@ -34,7 +34,7 @@ export const CategoryManagementModal = () => {
         className="flex min-h-0 flex-1 flex-col gap-0"
       >
         <div className="shrink-0 px-5 pb-3.5 sm:px-7">
-          <TabsList className="flex h-auto w-full gap-1 rounded-full border border-[#E3E1EA] bg-white p-1">
+          <TabsList className="flex h-auto w-full gap-1 rounded-full border border-line-strong bg-white p-1">
             <TabsTrigger value="list" className={TAB_CLASS}>
               Categorias atuais
             </TabsTrigger>

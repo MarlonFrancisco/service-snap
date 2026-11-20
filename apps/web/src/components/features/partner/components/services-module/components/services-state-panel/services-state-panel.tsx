@@ -22,19 +22,19 @@ export const ServicesStatePanel = ({
 }: TServicesStatePanelConfig) => (
   <div
     role={role}
-    className="flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-[#EBE9F0] p-6 text-center"
+    className="flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-line p-6 text-center"
   >
     <span
       aria-hidden="true"
       className={cn(
         'grid size-12 place-items-center rounded-full',
-        tone === 'error' ? 'bg-[#FBE8E6]' : 'bg-[#F4F3F7]',
+        tone === 'error' ? 'bg-error-bg' : 'bg-surface-2',
       )}
     >
       <Icon
         className={cn(
           'size-[22px] stroke-[1.8]',
-          tone === 'error' ? 'text-[#A4231A]' : 'text-[#0B0B0F]',
+          tone === 'error' ? 'text-error' : 'text-ink',
         )}
       />
     </span>

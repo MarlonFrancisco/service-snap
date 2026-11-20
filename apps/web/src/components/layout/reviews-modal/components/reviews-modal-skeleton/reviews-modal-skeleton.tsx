@@ -14,7 +14,7 @@ export function SkeletonRatingBar() {
 
 export function SkeletonReviewCard() {
   return (
-    <div className="grid grid-cols-[44px_1fr] gap-3 rounded-[14px] bg-[#F7F6FA] p-3.5">
+    <div className="grid grid-cols-[44px_1fr] gap-3 rounded-[14px] bg-surface p-3.5">
       <Skeleton className="size-11 rounded-full" />
 
       <div className="min-w-0 space-y-2">
@@ -37,7 +37,7 @@ export function ReviewsModalSkeleton() {
       <Skeleton className="h-8 w-64 max-w-[calc(100%-3rem)]" />
       <Skeleton className="mt-2.5 h-4 w-48" />
 
-      <div className="mt-6 grid grid-cols-1 gap-6 border-b border-[#EBE9F0] pb-6 md:grid-cols-2 md:gap-8">
+      <div className="mt-6 grid grid-cols-1 gap-6 border-b border-line pb-6 md:grid-cols-2 md:gap-8">
         <div>
           <Skeleton className="mb-3 h-4 w-28" />
           {skeletonItems.ratingBars.map((i) => (

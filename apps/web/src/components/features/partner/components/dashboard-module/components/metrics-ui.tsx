@@ -66,7 +66,7 @@ export const MetricsSection = ({
 );
 
 export const MetricsRow = ({ label, sublabel, value }: TMetricsRowConfig) => (
-  <div className="flex items-center justify-between gap-3.5 border-b border-[#F0EEF4] py-[11px] text-sm last:border-b-0">
+  <div className="flex items-center justify-between gap-3.5 border-b border-surface-3 py-[11px] text-sm last:border-b-0">
     <div className="min-w-0 [overflow-wrap:anywhere]">
       {label}
       {sublabel && (
@@ -80,7 +80,7 @@ export const MetricsRow = ({ label, sublabel, value }: TMetricsRowConfig) => (
 export const MetricsSectionEmpty = ({ message }: { message: string }) => (
   <p
     className={cn(
-      'rounded-[14px] bg-[#F7F6FA] px-4 py-8 text-center text-sm',
+      'rounded-[14px] bg-surface px-4 py-8 text-center text-sm',
       PARTNER_MUTED_TEXT_CLASS,
     )}
   >
@@ -137,7 +137,7 @@ export const MetricsPageHeader = ({
 export const MetricsRefreshAlert = () => (
   <p
     role="status"
-    className="rounded-[14px] bg-[#FFF1E0] px-4 py-3 text-sm text-[#6E3B00]"
+    className="rounded-[14px] bg-warning-bg px-4 py-3 text-sm text-warning"
   >
     Não foi possível atualizar. Estes são os últimos dados carregados.
   </p>

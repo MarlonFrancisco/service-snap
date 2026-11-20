@@ -21,7 +21,7 @@ import {
 import type { TRetentionConfirmDialogConfig } from './retention-confirm-dialog.types';
 
 const DANGER_CLASS =
-  'border-[#A4231A] bg-[#A4231A] hover:bg-[#8A1D16] text-white';
+  'border-error bg-error hover:bg-error-strong text-white';
 
 /** Confirmação curta de ações que não voltam atrás (cancelar saldo, usar recompensa). */
 export const RetentionConfirmDialog = ({
@@ -49,7 +49,7 @@ export const RetentionConfirmDialog = ({
         <AlertDialogTitle className={RETENTION_DIALOG_TITLE_CLASS}>
           {title}
         </AlertDialogTitle>
-        <AlertDialogDescription className="text-sm leading-normal text-[#5F5C6E]">
+        <AlertDialogDescription className="text-sm leading-normal text-ink-muted">
           {description}
         </AlertDialogDescription>
       </AlertDialogHeader>

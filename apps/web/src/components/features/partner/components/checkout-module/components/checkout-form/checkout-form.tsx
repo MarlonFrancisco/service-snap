@@ -63,9 +63,9 @@ export const CheckoutForm = ({ onCancel, ...config }: TCheckoutFormConfig) => {
         aria-label="Carregando o fechamento"
         className="grid gap-3"
       >
-        <Skeleton className="h-12 rounded-2xl bg-[#F0EEF4]" />
-        <Skeleton className="h-[72px] rounded-2xl bg-[#F0EEF4]" />
-        <Skeleton className="h-40 rounded-2xl bg-[#F0EEF4]" />
+        <Skeleton className="h-12 rounded-2xl bg-surface-3" />
+        <Skeleton className="h-[72px] rounded-2xl bg-surface-3" />
+        <Skeleton className="h-40 rounded-2xl bg-surface-3" />
       </div>
     );
   }

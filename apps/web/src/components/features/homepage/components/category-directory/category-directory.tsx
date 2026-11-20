@@ -4,7 +4,7 @@ import { TrackedLink } from '@/components/ui/tracked-link';
 import { CATEGORY_DIRECTORY_GROUPS } from './category-directory.constants';
 
 const FOCUS_CLASS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export const CategoryDirectory = () => {
   return (
@@ -18,24 +18,24 @@ export const CategoryDirectory = () => {
       >
         Explore por categoria
       </h2>
-      <p className="mt-2 max-w-[40rem] text-[15px] leading-[1.6] text-[#5F5C6E] md:text-base">
+      <p className="mt-2 max-w-[40rem] text-[15px] leading-[1.6] text-ink-muted md:text-base">
         De barbearias e clínicas a eletricistas e consultorias: tudo o que
         funciona com hora marcada.
       </p>
 
       {/* Celular: grupos que abrem e fecham, para a lista não ficar enorme. */}
-      <div className="mt-4 border-t border-[#EBE9F0] md:hidden">
+      <div className="mt-4 border-t border-line md:hidden">
         {CATEGORY_DIRECTORY_GROUPS.map((group, index) => (
           <details
             key={group.title}
             open={index === 0}
-            className="group border-b border-[#EBE9F0]"
+            className="group border-b border-line"
           >
             <summary
               className={`flex min-h-14 cursor-pointer list-none items-center justify-between text-base font-bold [&::-webkit-details-marker]:hidden ${FOCUS_CLASS}`}
             >
               {group.title}
-              <span className="flex items-center gap-2 text-[13px] font-semibold text-[#5F5C6E]">
+              <span className="flex items-center gap-2 text-[13px] font-semibold text-ink-muted">
                 {group.items.length}
                 <ChevronDown
                   aria-hidden="true"
@@ -54,7 +54,7 @@ export const CategoryDirectory = () => {
                       item_id: item.slug,
                       destination: categoryGuidePath(item.slug),
                     }}
-                    className={`inline-flex h-11 items-center rounded-full border border-[#E3E1EA] px-4 text-sm font-semibold ${FOCUS_CLASS}`}
+                    className={`inline-flex h-11 items-center rounded-full border border-line-strong px-4 text-sm font-semibold ${FOCUS_CLASS}`}
                   >
                     {item.label}
                   </TrackedLink>
@@ -69,7 +69,7 @@ export const CategoryDirectory = () => {
       <div className="mt-7 hidden gap-x-8 gap-y-9 md:grid md:grid-cols-2 lg:grid-cols-3">
         {CATEGORY_DIRECTORY_GROUPS.map((group) => (
           <div key={group.title}>
-            <h3 className="border-b border-[#EBE9F0] pb-3 text-[15px] font-bold">
+            <h3 className="border-b border-line pb-3 text-[15px] font-bold">
               {group.title}
             </h3>
             <ul className="mt-3 grid gap-0.5">
@@ -83,10 +83,10 @@ export const CategoryDirectory = () => {
                       item_id: item.slug,
                       destination: categoryGuidePath(item.slug),
                     }}
-                    className={`flex min-h-10 items-center justify-between text-[15px] text-[#2C2A36] hover:text-[#0B0B0F] hover:underline ${FOCUS_CLASS}`}
+                    className={`flex min-h-10 items-center justify-between text-[15px] text-ink-body hover:text-ink hover:underline ${FOCUS_CLASS}`}
                   >
                     {item.label}
-                    <span aria-hidden="true" className="text-[#A6A3B4]">
+                    <span aria-hidden="true" className="text-ink-faint">
                       →
                     </span>
                   </TrackedLink>

@@ -42,7 +42,7 @@ export const ServicesFilters = () => {
         value={searchQuery}
         onChange={handleSearchChange}
         className={cn(
-          'h-12 min-w-0 flex-[1_1_260px] rounded-full border border-[#E3E1EA] bg-white px-[18px] text-sm font-medium text-[#0B0B0F] placeholder:text-[#6F6C7E]',
+          'h-12 min-w-0 flex-[1_1_260px] rounded-full border border-line-strong bg-white px-[18px] text-sm font-medium text-ink placeholder:text-ink-muted',
           PARTNER_FOCUS_CLASS,
         )}
       />
@@ -50,7 +50,7 @@ export const ServicesFilters = () => {
       <Select value={filterCategory} onValueChange={setFilterCategory}>
         <SelectTrigger
           aria-label="Filtrar por categoria"
-          className="grow rounded-full border-[#E3E1EA] bg-white px-[18px] text-[13px] font-semibold text-[#0B0B0F] shadow-none hover:bg-[#F7F6FA] focus-visible:ring-2 focus-visible:ring-[#0B0B0F] data-[size=default]:h-12 sm:grow-0"
+          className="grow rounded-full border-line-strong bg-white px-[18px] text-[13px] font-semibold text-ink shadow-none hover:bg-surface focus-visible:ring-2 focus-visible:ring-ink data-[size=default]:h-12 sm:grow-0"
         >
           <SelectValue />
         </SelectTrigger>

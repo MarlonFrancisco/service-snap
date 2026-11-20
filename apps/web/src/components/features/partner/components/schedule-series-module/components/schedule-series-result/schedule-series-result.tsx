@@ -22,7 +22,7 @@ export const ScheduleSeriesResult = ({
 
     <div
       role="status"
-      className="flex gap-3 rounded-[16px] bg-[#F2FAF5] px-4 py-3.5 text-sm leading-[1.45] text-[#0A5536]"
+      className="flex gap-3 rounded-[16px] bg-success-bg-soft px-4 py-3.5 text-sm leading-[1.45] text-success"
     >
       <Check aria-hidden="true" className="size-5 shrink-0 stroke-2" />
       <p>
@@ -39,7 +39,7 @@ export const ScheduleSeriesResult = ({
           <li key={conflict.date} className={SERIES_ITEM_WARNING_CLASS}>
             <div className="grid min-w-0 gap-0.5">
               <b className="text-sm">{conflict.dayLabel} ficou de fora</b>
-              <span className="text-[13px] text-[#5F5C6E]">
+              <span className="text-[13px] text-ink-muted">
                 {conflict.reasonLabel}
               </span>
             </div>

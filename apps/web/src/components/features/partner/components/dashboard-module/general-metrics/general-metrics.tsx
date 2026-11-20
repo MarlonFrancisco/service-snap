@@ -202,7 +202,7 @@ export function GeneralMetricsModule() {
                           innerRadius={58}
                           outerRadius={84}
                           paddingAngle={2}
-                          stroke="#FFFFFF"
+                          stroke="var(--ss-white)"
                         >
                           {topServices.map((service) => (
                             <Cell key={service.id} fill={service.color} />

@@ -19,7 +19,7 @@ export function StoreDetailsDrawer() {
 
   return (
     <Drawer open={mobileDrawerOpen} onOpenChange={setMobileDrawerOpen}>
-      <DrawerContent className="border-[#EDEDED] p-0">
+      <DrawerContent className="border-line p-0">
         <DrawerHeader className="sr-only">
           <DrawerTitle>Detalhes da Loja</DrawerTitle>
         </DrawerHeader>
@@ -37,91 +37,91 @@ export function StoreDetailsDrawer() {
 
             <div className="space-y-3 px-4">
               <div className="flex items-start justify-between gap-3">
-                <h2 className="text-xl leading-tight font-semibold tracking-tight text-[#0A0A0A]">
+                <h2 className="text-xl leading-tight font-semibold tracking-tight text-ink">
                   {selectedStore.name}
                 </h2>
-                <span className="shrink-0 rounded-full bg-[#0A0A0A] px-2.5 py-1 text-xs font-semibold text-white">
+                <span className="shrink-0 rounded-full bg-ink px-2.5 py-1 text-xs font-semibold text-white">
                   {selectedStore.price}
                 </span>
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 rounded-md bg-[#F4F4F5] px-2 py-1">
-                  <Star className="h-4 w-4 fill-[#F59E0B] text-[#F59E0B]" />
-                  <span className="text-sm font-semibold text-[#0A0A0A]">
+                <div className="flex items-center gap-1 rounded-md bg-surface-2 px-2 py-1">
+                  <Star className="h-4 w-4 fill-star text-star" />
+                  <span className="text-sm font-semibold text-ink">
                     {selectedStore.rating}
                   </span>
                 </div>
-                <span className="text-sm text-[#71717A]">
+                <span className="text-sm text-ink-muted">
                   ({selectedStore.reviewCount} avaliações)
                 </span>
               </div>
             </div>
 
-            <div className="mx-4 h-px bg-[#EDEDED]" />
+            <div className="mx-4 h-px bg-line" />
 
             <div className="space-y-2 px-4">
-              <h3 className="text-sm font-semibold text-[#0A0A0A]">Sobre</h3>
-              <p className="text-sm leading-relaxed text-[#2B2B2B]">
+              <h3 className="text-sm font-semibold text-ink">Sobre</h3>
+              <p className="text-sm leading-relaxed text-ink">
                 {selectedStore.description}
               </p>
             </div>
 
-            <div className="mx-4 h-px bg-[#EDEDED]" />
+            <div className="mx-4 h-px bg-line" />
 
             {selectedStore.services && selectedStore.services.length > 0 && (
               <>
                 <div className="space-y-3 px-4">
-                  <h3 className="text-sm font-semibold text-[#0A0A0A]">
+                  <h3 className="text-sm font-semibold text-ink">
                     Serviços
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedStore.services.map((service) => (
                       <span
                         key={service.id}
-                        className="rounded-full bg-[#F4F4F5] px-2.5 py-1 text-xs font-medium text-[#2B2B2B]"
+                        className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-ink"
                       >
                         {service.name}
                       </span>
                     ))}
                   </div>
                 </div>
-                <div className="mx-4 h-px bg-[#EDEDED]" />
+                <div className="mx-4 h-px bg-line" />
               </>
             )}
 
             <div className="space-y-3 px-4">
-              <h3 className="text-sm font-semibold text-[#0A0A0A]">
+              <h3 className="text-sm font-semibold text-ink">
                 Informações
               </h3>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 shrink-0 text-[#A1A1AA]" />
+                  <Phone className="h-4 w-4 shrink-0 text-ink-faint" />
                   <a
                     href={`tel:${selectedStore.telephone}`}
                     onClick={handlePhoneClick}
-                    className="font-medium text-[#0A0A0A] hover:underline"
+                    className="font-medium text-ink hover:underline"
                   >
                     {selectedStore.telephone}
                   </a>
                 </div>
 
                 <div className="flex items-start gap-3 text-sm">
-                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[#A1A1AA]" />
-                  <div className="text-[#2B2B2B]">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-ink-faint" />
+                  <div className="text-ink">
                     <p>
                       {selectedStore.address}, {selectedStore.city} -{' '}
                       {selectedStore.state}
                     </p>
-                    <p className="mt-0.5 text-xs text-[#71717A]">
+                    <p className="mt-0.5 text-xs text-ink-muted">
                       {selectedStore.zipCode}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 text-sm text-[#2B2B2B]">
-                  <Clock className="h-4 w-4 shrink-0 text-[#A1A1AA]" />
+                <div className="flex items-center gap-3 text-sm text-ink">
+                  <Clock className="h-4 w-4 shrink-0 text-ink-faint" />
                   <span>
                     {formatBusinessHours(
                       selectedStore.openTime,
@@ -133,10 +133,10 @@ export function StoreDetailsDrawer() {
               </div>
             </div>
 
-            <div className="mx-4 h-px bg-[#EDEDED]" />
+            <div className="mx-4 h-px bg-line" />
 
             <div className="space-y-3 px-4">
-              <h3 className="text-sm font-semibold text-[#0A0A0A]">
+              <h3 className="text-sm font-semibold text-ink">
                 Avaliações Recentes
               </h3>
 
@@ -145,29 +145,29 @@ export function StoreDetailsDrawer() {
                   selectedStore.reviews.slice(0, 3).map((review) => (
                     <div
                       key={review.id}
-                      className="rounded-xl bg-[#F4F4F5] p-3"
+                      className="rounded-xl bg-surface-2 p-3"
                     >
                       <div className="mb-1.5 flex items-center gap-2">
                         <div className="flex">
                           {Array.from({ length: review.rating }).map((_, i) => (
                             <Star
                               key={i}
-                              className="h-3.5 w-3.5 fill-[#F59E0B] text-[#F59E0B]"
+                              className="h-3.5 w-3.5 fill-star text-star"
                             />
                           ))}
                         </div>
-                        <span className="text-xs font-medium text-[#71717A]">
+                        <span className="text-xs font-medium text-ink-muted">
                           Usuário Anônimo
                         </span>
                       </div>
-                      <p className="text-sm leading-relaxed text-[#2B2B2B]">
+                      <p className="text-sm leading-relaxed text-ink">
                         {review.comment}
                       </p>
                     </div>
                   ))
                 ) : (
-                  <div className="rounded-xl bg-[#F4F4F5] p-4 text-center">
-                    <p className="text-sm text-[#71717A]">
+                  <div className="rounded-xl bg-surface-2 p-4 text-center">
+                    <p className="text-sm text-ink-muted">
                       Nenhuma avaliação disponível
                     </p>
                   </div>
@@ -177,10 +177,10 @@ export function StoreDetailsDrawer() {
           </div>
         </div>
 
-        <div className="border-t border-[#EDEDED] bg-white p-4 shadow-lg">
+        <div className="border-t border-line bg-white p-4 shadow-lg">
           <button
             type="button"
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#0A0A0A] text-sm font-semibold text-white transition-all active:scale-[0.98] hover:bg-[#2B2B2B]"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-ink text-sm font-semibold text-white transition-all active:scale-[0.98] hover:bg-ink-hover"
             onClick={handleBooking}
           >
             <Calendar className="h-5 w-5" />

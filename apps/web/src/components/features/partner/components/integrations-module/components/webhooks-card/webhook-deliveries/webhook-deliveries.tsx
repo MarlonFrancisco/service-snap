@@ -55,8 +55,8 @@ export const WebhookDeliveries = (config: TWebhookDeliveriesConfig) => {
           aria-label="Carregando entregas"
           className="grid gap-2"
         >
-          <Skeleton className="h-11 w-full rounded-2xl bg-[#F0EEF4]" />
-          <Skeleton className="h-11 w-full rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-11 w-full rounded-2xl bg-surface-3" />
+          <Skeleton className="h-11 w-full rounded-2xl bg-surface-3" />
         </div>
       );
     }

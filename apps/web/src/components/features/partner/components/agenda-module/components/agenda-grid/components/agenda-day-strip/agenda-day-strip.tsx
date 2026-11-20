@@ -28,10 +28,10 @@ export const AgendaDayStrip = ({
             aria-current={day.isToday ? 'date' : undefined}
             aria-label={`${day.label} ${day.day}${day.isWorkingDay ? '' : ', dia não útil'}`}
             className={cn(
-              'h-16 min-w-11 flex-1 rounded-2xl border border-[#E3E1EA] bg-white text-xs font-semibold text-[#5F5C6E]',
+              'h-16 min-w-11 flex-1 rounded-2xl border border-line-strong bg-white text-xs font-semibold text-ink-muted',
               !day.isWorkingDay &&
-                'cursor-default border-[#F0EEF4] bg-[#F7F6FA] text-[#6F6C7E]',
-              day.isSelected && 'border-[#0B0B0F] bg-[#0B0B0F] text-white',
+                'cursor-default border-surface-3 bg-surface text-ink-muted',
+              day.isSelected && 'border-ink bg-ink text-white',
               PARTNER_FOCUS_CLASS,
             )}
           >
@@ -39,8 +39,8 @@ export const AgendaDayStrip = ({
             <b
               className={cn(
                 'block text-[17px]',
-                day.isSelected ? 'text-white' : 'text-[#0B0B0F]',
-                !day.isWorkingDay && !day.isSelected && 'text-[#6F6C7E]',
+                day.isSelected ? 'text-white' : 'text-ink',
+                !day.isWorkingDay && !day.isSelected && 'text-ink-muted',
               )}
             >
               {day.day}
@@ -65,7 +65,7 @@ export const AgendaDayStrip = ({
             AGENDA_BUTTON_CLASS,
             'shrink-0 whitespace-nowrap',
             !day.isWorkingDay &&
-              'border-[#F0EEF4] bg-[#F7F6FA] text-[#6F6C7E] disabled:cursor-default disabled:opacity-100',
+              'border-surface-3 bg-surface text-ink-muted disabled:cursor-default disabled:opacity-100',
             day.isSelected && AGENDA_BUTTON_ACTIVE_CLASS,
           )}
         >

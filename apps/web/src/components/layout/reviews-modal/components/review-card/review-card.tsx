@@ -15,10 +15,10 @@ export const ReviewCard = ({ review }: TReviewCardConfig) => {
   } = useReviewCard({ review });
 
   return (
-    <article className="grid grid-cols-[44px_1fr] gap-3 rounded-[14px] bg-[#F7F6FA] p-3.5">
+    <article className="grid grid-cols-[44px_1fr] gap-3 rounded-[14px] bg-surface p-3.5">
       <Avatar aria-hidden="true" className="size-11">
         <AvatarImage src={avatarSrc} />
-        <AvatarFallback className="bg-white text-sm font-bold text-[#0B0B0F]">
+        <AvatarFallback className="bg-white text-sm font-bold text-ink">
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -26,7 +26,7 @@ export const ReviewCard = ({ review }: TReviewCardConfig) => {
       <div className="min-w-0">
         <div className="flex justify-between gap-3 text-sm font-bold">
           <span className="min-w-0 break-words">{fullName}</span>
-          <span className="shrink-0 text-[13px] font-medium text-[#5F5C6E]">
+          <span className="shrink-0 text-[13px] font-medium text-ink-muted">
             {formattedDate}
           </span>
         </div>
@@ -36,7 +36,7 @@ export const ReviewCard = ({ review }: TReviewCardConfig) => {
         </div>
 
         {verifiedLabel && (
-          <span className="mb-1.5 inline-flex items-center gap-[5px] rounded-full bg-white px-[9px] py-[3px] text-xs font-semibold text-[#0A6B44]">
+          <span className="mb-1.5 inline-flex items-center gap-[5px] rounded-full bg-white px-[9px] py-[3px] text-xs font-semibold text-success">
             <svg
               viewBox="0 0 24 24"
               aria-hidden="true"
@@ -51,11 +51,11 @@ export const ReviewCard = ({ review }: TReviewCardConfig) => {
         <p className="text-sm leading-[1.5] break-words">{review.comment}</p>
 
         {reply && (
-          <div className="mt-2.5 rounded-r-[10px] border-l-[3px] border-[#0B0B0F] bg-white px-3 py-2.5 text-sm leading-[1.5]">
+          <div className="mt-2.5 rounded-r-[10px] border-l-[3px] border-ink bg-white px-3 py-2.5 text-sm leading-[1.5]">
             <b className="mb-0.5 block text-xs">
               Resposta da loja{' '}
               {replyDate && (
-                <span className="font-medium text-[#5F5C6E]">
+                <span className="font-medium text-ink-muted">
                   · {replyDate}
                 </span>
               )}

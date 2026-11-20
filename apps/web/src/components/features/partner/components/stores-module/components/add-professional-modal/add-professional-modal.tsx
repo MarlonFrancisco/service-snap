@@ -41,7 +41,7 @@ import { ProfessionalHoursFields } from './professional-hours-fields';
 const TITLE_CLASS = 'text-[22px] font-extrabold tracking-[-0.025em]';
 const DESCRIPTION_CLASS = cn('text-sm', PARTNER_MUTED_TEXT_CLASS);
 const TAB_TRIGGER_CLASS = cn(
-  'h-auto min-h-[46px] flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3.5 text-[13px] font-semibold text-[#5F5C6E] shadow-none data-[state=active]:border-[#0B0B0F] data-[state=active]:bg-transparent data-[state=active]:text-[#0B0B0F] data-[state=active]:shadow-none',
+  'h-auto min-h-[46px] flex-none rounded-none border-0 border-b-2 border-transparent bg-transparent px-3.5 text-[13px] font-semibold text-ink-muted shadow-none data-[state=active]:border-ink data-[state=active]:bg-transparent data-[state=active]:text-ink data-[state=active]:shadow-none',
   PARTNER_FOCUS_CLASS,
 );
 
@@ -86,7 +86,7 @@ export const AddProfessionalModal = () => {
         >
           <TabsList
             aria-label="Seções do profissional"
-            className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-[#EBE9F0] bg-transparent p-0"
+            className="flex h-auto w-full justify-start gap-1 overflow-x-auto rounded-none border-b border-line bg-transparent p-0"
           >
             {tabs.map((tab) => (
               <TabsTrigger
@@ -159,7 +159,7 @@ export const AddProfessionalModal = () => {
 
           <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-2">{fields}</div>
 
-          <DrawerFooter className="flex-row gap-2 border-t border-[#EBE9F0] px-5">
+          <DrawerFooter className="flex-row gap-2 border-t border-line px-5">
             {actions}
           </DrawerFooter>
         </DrawerContent>

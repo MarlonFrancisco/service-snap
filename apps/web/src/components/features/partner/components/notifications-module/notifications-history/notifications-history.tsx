@@ -40,7 +40,7 @@ import { useNotificationsHistory } from './notifications-history.hook';
 import { NotificationsHistorySkeleton } from './notifications-history.skeleton';
 
 const FILTER_TRIGGER_CLASS =
-  'min-h-11 w-full cursor-pointer rounded-full border-[#E3E1EA] bg-white px-4 text-[13px] font-semibold text-[#0B0B0F] shadow-none data-[size=default]:h-11 sm:w-auto';
+  'min-h-11 w-full cursor-pointer rounded-full border-line-strong bg-white px-4 text-[13px] font-semibold text-ink shadow-none data-[size=default]:h-11 sm:w-auto';
 
 const TYPE_OPTIONS = [
   { value: 'all', label: 'Todos os tipos' },
@@ -131,19 +131,19 @@ export function NotificationsHistory() {
     return (
       <section
         aria-label="Notificações"
-        className="overflow-hidden rounded-[22px] border border-[#EBE9F0]"
+        className="overflow-hidden rounded-[22px] border border-line"
       >
         {notifications.map((notification) => (
           <article
             key={notification.id}
-            className="flex flex-wrap justify-between gap-3 border-b border-[#F0EEF4] px-5 py-4 last:border-0"
+            className="flex flex-wrap justify-between gap-3 border-b border-surface-3 px-5 py-4 last:border-0"
           >
             <div className="min-w-0 flex-1 basis-64">
               <h3 className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
                 {notification.read ? null : (
                   <span
                     aria-hidden="true"
-                    className="size-2 shrink-0 rounded-full bg-[#9810FA]"
+                    className="size-2 shrink-0 rounded-full bg-brand"
                   />
                 )}
                 <span className="min-w-0 break-words">
@@ -164,10 +164,10 @@ export function NotificationsHistory() {
                   </span>
                 ) : null}
               </h3>
-              <p className="mt-0.5 text-[13px] leading-normal break-words text-[#5F5C6E]">
+              <p className="mt-0.5 text-[13px] leading-normal break-words text-ink-muted">
                 {notification.message}
               </p>
-              <p className="mt-0.5 text-[13px] leading-normal break-all text-[#5F5C6E]">
+              <p className="mt-0.5 text-[13px] leading-normal break-all text-ink-muted">
                 {notification.recipient
                   ? `Para ${notification.recipient} · ${notification.timeLabel}`
                   : notification.timeLabel}
@@ -233,7 +233,7 @@ export function NotificationsHistory() {
           placeholder="Buscar notificações..."
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
-          className="h-11 min-w-0 flex-[1_1_260px] rounded-full border-[#E3E1EA] bg-white px-[18px] text-base font-medium shadow-none placeholder:text-[#6F6C7E] md:text-sm"
+          className="h-11 min-w-0 flex-[1_1_260px] rounded-full border-line-strong bg-white px-[18px] text-base font-medium shadow-none placeholder:text-ink-muted md:text-sm"
         />
 
         <Select value={filterType} onValueChange={setFilterType}>
@@ -274,7 +274,7 @@ export function NotificationsHistory() {
       {canPaginate ? (
         <nav
           aria-label="Paginação"
-          className="flex items-center justify-center gap-2 text-[13px] text-[#5F5C6E]"
+          className="flex items-center justify-center gap-2 text-[13px] text-ink-muted"
         >
           <button
             type="button"

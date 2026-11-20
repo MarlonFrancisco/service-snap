@@ -23,7 +23,7 @@ export function LoginStep({ onNext, onClose }: TLoginStepConfig) {
     <section className={cn(AUTH_STEP_CLASS, 'gap-[18px]')}>
       <span
         aria-hidden="true"
-        className="relative block size-10 shrink-0 rounded-[11px] border-4 border-current after:absolute after:right-[18%] after:bottom-[16%] after:size-[30%] after:rounded-full after:bg-[#9810FA] after:content-['']"
+        className="relative block size-10 shrink-0 rounded-[11px] border-4 border-current after:absolute after:right-[18%] after:bottom-[16%] after:size-[30%] after:rounded-full after:bg-brand after:content-['']"
       />
 
       <div>
@@ -54,7 +54,7 @@ export function LoginStep({ onNext, onClose }: TLoginStepConfig) {
         {isLoading ? 'Verificando...' : 'Continuar'}
       </button>
 
-      <div className="flex items-center gap-3 text-[13px] text-[#5F5C6E] before:h-px before:flex-1 before:bg-[#EBE9F0] before:content-[''] after:h-px after:flex-1 after:bg-[#EBE9F0] after:content-['']">
+      <div className="flex items-center gap-3 text-[13px] text-ink-muted before:h-px before:flex-1 before:bg-line before:content-[''] after:h-px after:flex-1 after:bg-line after:content-['']">
         ou
       </div>
 

@@ -33,7 +33,7 @@ export default function HelpPage() {
           <h1 className="text-[34px] leading-[1.08] font-extrabold tracking-[-0.035em] md:text-[44px]">
             Central de ajuda
           </h1>
-          <p className="mt-3 mb-7 text-[17px] leading-[1.6] text-[#5F5C6E]">
+          <p className="mt-3 mb-7 text-[17px] leading-[1.6] text-ink-muted">
             Encontre respostas para suas dúvidas sobre o ServiceSnap.
           </p>
 
@@ -41,16 +41,16 @@ export default function HelpPage() {
             <details
               key={item.question}
               open={index === 0}
-              className="group border-b border-[#EBE9F0] first-of-type:border-t"
+              className="group border-b border-line first-of-type:border-t"
             >
               <TrackedSummary
                 event="faq_opened"
                 properties={{ page: 'help', question_index: index }}
-                className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[17px] font-bold after:text-2xl after:font-medium after:content-['+'] group-open:after:content-['−'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F] [&::-webkit-details-marker]:hidden"
+                className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[17px] font-bold after:text-2xl after:font-medium after:content-['+'] group-open:after:content-['−'] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink [&::-webkit-details-marker]:hidden"
               >
                 {item.question}
               </TrackedSummary>
-              <p className="pr-10 pb-5 text-[15px] leading-[1.65] text-[#5F5C6E]">
+              <p className="pr-10 pb-5 text-[15px] leading-[1.65] text-ink-muted">
                 {item.answer}
               </p>
             </details>
@@ -61,13 +61,13 @@ export default function HelpPage() {
               <h2 className="text-xl font-extrabold tracking-[-0.02em]">
                 Não encontrou o que procurava?
               </h2>
-              <p className="mt-[3px] text-sm text-[#5F5C6E]">
+              <p className="mt-[3px] text-sm text-ink-muted">
                 Respondemos por e-mail em dias úteis.
               </p>
             </div>
             <Link
               href="/contact"
-              className="inline-flex min-h-11 items-center rounded-full bg-[#0B0B0F] px-6 py-[15px] text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+              className="inline-flex min-h-11 items-center rounded-full bg-ink px-6 py-[15px] text-sm font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
               Ir para contato
             </Link>

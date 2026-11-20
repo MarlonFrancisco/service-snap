@@ -62,7 +62,7 @@ export const AuditLogsTable = ({
           return (
             <tr
               key={row.id}
-              className={cn('group', isSelected && 'bg-[#F7F6FA]')}
+              className={cn('group', isSelected && 'bg-surface')}
             >
               <td className={cn(PANEL_CELL_CLASS, PANEL_NUMBER_CLASS)}>
                 {row.when}
@@ -86,12 +86,12 @@ export const AuditLogsTable = ({
               <td
                 className={cn(
                   PANEL_CELL_CLASS,
-                  row.isFailure && 'text-[#8F2416]',
+                  row.isFailure && 'text-error-strong',
                 )}
               >
                 {row.action}
               </td>
-              <td className={cn(PANEL_CELL_CLASS, 'text-[#5F5C6E]')}>
+              <td className={cn(PANEL_CELL_CLASS, 'text-ink-muted')}>
                 {row.area}
               </td>
               <td className={cn(PANEL_CELL_CLASS, 'text-right')}>
@@ -126,7 +126,7 @@ export const AuditLogsTableSkeleton = () => (
           <tr key={index} className="group">
             {[...COLUMNS, { label: 'acoes' }].map((column) => (
               <td key={column.label} className={PANEL_CELL_CLASS}>
-                <Skeleton className="h-4 w-full max-w-[140px] rounded-full bg-[#F0EEF4]" />
+                <Skeleton className="h-4 w-full max-w-[140px] rounded-full bg-surface-3" />
               </td>
             ))}
           </tr>

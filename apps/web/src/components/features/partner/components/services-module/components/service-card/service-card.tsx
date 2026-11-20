@@ -23,7 +23,7 @@ export const ServiceCard = ({ service }: { service: IService }) => {
   } = useServiceCard({ service });
 
   return (
-    <article className="flex flex-wrap items-center justify-between gap-3.5 border-t border-[#F0EEF4] px-5 py-4">
+    <article className="flex flex-wrap items-center justify-between gap-3.5 border-t border-surface-3 px-5 py-4">
       <div className="min-w-0">
         <h4 className="flex flex-wrap items-center gap-2 text-[15px] font-bold">
           <span className="min-w-0 break-words">{service.name}</span>
@@ -31,8 +31,8 @@ export const ServiceCard = ({ service }: { service: IService }) => {
             className={cn(
               'rounded-full px-[9px] py-[3px] text-xs font-bold',
               service.isActive
-                ? 'bg-[#DFF2E7] text-[#0A5536]'
-                : 'bg-[#F4F3F7] text-[#5F5C6E]',
+                ? 'bg-success-bg text-success'
+                : 'bg-surface-2 text-ink-muted',
             )}
           >
             {service.isActive ? 'Ativo' : 'Inativo'}

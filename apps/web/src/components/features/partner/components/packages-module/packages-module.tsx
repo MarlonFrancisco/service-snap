@@ -69,7 +69,7 @@ export const PackagesModule = () => {
           {Array.from({ length: 3 }, (_, index) => (
             <Skeleton
               key={index}
-              className="h-[86px] rounded-2xl bg-[#F0EEF4]"
+              className="h-[86px] rounded-2xl bg-surface-3"
             />
           ))}
         </div>

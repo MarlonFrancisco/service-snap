@@ -35,7 +35,7 @@ export const WhatsappSettings = () => {
       {showActivationNotice ? (
         <section
           aria-labelledby="whatsapp-connect-title"
-          className="flex flex-col gap-3 rounded-[22px] bg-[#FFF1E0] p-5 text-[#6E3B00] sm:flex-row sm:flex-wrap sm:items-center sm:gap-5 sm:rounded-[24px] sm:p-6"
+          className="flex flex-col gap-3 rounded-[22px] bg-warning-bg p-5 text-warning sm:flex-row sm:flex-wrap sm:items-center sm:gap-5 sm:rounded-[24px] sm:p-6"
         >
           <span
             aria-hidden="true"
@@ -46,7 +46,7 @@ export const WhatsappSettings = () => {
           <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-1.5">
             <h2
               id="whatsapp-connect-title"
-              className="text-[17px] font-extrabold text-[#4A2700]"
+              className="text-[17px] font-extrabold text-warning-strong"
             >
               Conecte o WhatsApp da sua loja para liberar os lembretes
             </h2>
@@ -63,7 +63,7 @@ export const WhatsappSettings = () => {
           </div>
           <Link
             href="/partner/settings/whatsapp"
-            className={`inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#0B0B0F] px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] sm:w-auto sm:text-sm ${PARTNER_FOCUS_CLASS}`}
+            className={`inline-flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover sm:w-auto sm:text-sm ${PARTNER_FOCUS_CLASS}`}
           >
             Conectar WhatsApp
           </Link>
@@ -81,7 +81,7 @@ export const WhatsappSettings = () => {
       </FormProvider>
 
       {/* Opt-in do cliente final (#37): quem não aceitou recebe por e-mail */}
-      <p className="text-sm leading-[1.55] text-[#5F5C6E]">
+      <p className="text-sm leading-[1.55] text-ink-muted">
         Só os clientes que aceitaram recebem por WhatsApp; os outros recebem por
         e-mail.
         {!isEmailReminderEnabled &&

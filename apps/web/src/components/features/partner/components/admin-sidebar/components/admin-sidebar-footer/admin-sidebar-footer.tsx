@@ -19,7 +19,7 @@ type TAdminSidebarFooterConfig = {
 const getUsageBarClass = (percentage: number) => {
   if (percentage >= 100) return '[&>div]:bg-red-500';
   if (percentage >= 80) return '[&>div]:bg-amber-500';
-  return '[&>div]:bg-[#0B0B0F]';
+  return '[&>div]:bg-ink';
 };
 
 export const AdminSidebarFooter = ({
@@ -59,10 +59,10 @@ export const AdminSidebarFooter = ({
           PARTNER_MUTED_TEXT_CLASS,
         )}
       >
-        <p className="truncate text-sm font-bold text-[#0B0B0F]">
+        <p className="truncate text-sm font-bold text-ink">
           {memberCard.storeName}
         </p>
-        <span className="self-start rounded-full border border-[#E3E1EA] bg-white px-[9px] py-[3px] text-xs font-bold text-[#0B0B0F]">
+        <span className="self-start rounded-full border border-line-strong bg-white px-[9px] py-[3px] text-xs font-bold text-ink">
           {memberCard.roleLabel}
         </span>
         <p>Seu acesso nesta loja</p>
@@ -120,7 +120,7 @@ export const AdminSidebarFooter = ({
               aria-label={`Uso de ${label.toLowerCase()} do plano`}
               value={Math.min(usage.percentage, 100)}
               className={cn(
-                'mt-1.5 h-1.5 bg-[#EBE9F0]',
+                'mt-1.5 h-1.5 bg-line',
                 getUsageBarClass(usage.percentage),
               )}
             />

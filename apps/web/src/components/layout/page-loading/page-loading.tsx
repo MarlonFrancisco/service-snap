@@ -1,7 +1,7 @@
 import { Header } from '@/components/layout';
 
 const SKELETON_CLASS =
-  'rounded-lg bg-[#EFEDF3] animate-pulse motion-reduce:animate-none';
+  'rounded-lg bg-surface-3 animate-pulse motion-reduce:animate-none';
 
 const PLACEHOLDER_CARDS = 4;
 

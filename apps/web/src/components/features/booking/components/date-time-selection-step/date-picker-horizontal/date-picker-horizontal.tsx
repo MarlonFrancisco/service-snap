@@ -5,7 +5,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 const NAV_BUTTON_CLASS =
-  'grid h-11 w-11 shrink-0 place-items-center rounded-full border border-[#E3E1EA] bg-white text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white';
+  'grid h-11 w-11 shrink-0 place-items-center rounded-full border border-line-strong bg-white text-ink transition-colors hover:bg-surface-2 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white';
 
 interface IDatePickerHorizontalProps {
   selected: Date | undefined;
@@ -143,12 +143,12 @@ export function DatePickerHorizontal({
                   disabled={isDisabled}
                   className={cn(
                     'flex min-w-[60px] flex-1 flex-col items-center gap-1 rounded-[14px] border p-3 transition-colors',
-                    isSelected && 'border-[#0B0B0F] bg-[#0B0B0F] text-white',
+                    isSelected && 'border-ink bg-ink text-white',
                     !isSelected &&
                       !isDisabled &&
-                      'border-[#E3E1EA] bg-white hover:bg-[#F4F3F7]',
+                      'border-line-strong bg-white hover:bg-surface-2',
                     isDisabled &&
-                      'cursor-default border-[#F0EEF4] bg-[#F7F6FA] text-[#8D8A9B] line-through',
+                      'cursor-default border-surface-3 bg-surface text-ink-faint line-through',
                   )}
                   aria-label={`Selecionar ${formatDayName(date)}, ${formatDate(date)} de ${formatMonth(date)}`}
                   aria-pressed={isSelected}
@@ -156,8 +156,8 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'text-xs font-semibold uppercase',
-                      !isSelected && 'text-[#5F5C6E]',
-                      isDisabled && 'text-[#8D8A9B]',
+                      !isSelected && 'text-ink-muted',
+                      isDisabled && 'text-ink-faint',
                     )}
                   >
                     {formatDayName(date)}
@@ -165,7 +165,7 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'text-sm font-semibold',
-                      !isSelected && !isDisabled && 'text-[#0B0B0F]',
+                      !isSelected && !isDisabled && 'text-ink',
                     )}
                   >
                     {formatDate(date)}
@@ -173,8 +173,8 @@ export function DatePickerHorizontal({
                   <span
                     className={cn(
                       'text-xs',
-                      !isSelected && 'text-[#5F5C6E]',
-                      isDisabled && 'text-[#8D8A9B]',
+                      !isSelected && 'text-ink-muted',
+                      isDisabled && 'text-ink-faint',
                     )}
                   >
                     {formatMonth(date)}
@@ -182,7 +182,7 @@ export function DatePickerHorizontal({
                   {isToday && !isSelected && (
                     <span
                       aria-hidden
-                      className="mt-0.5 h-1 w-1 rounded-full bg-[#0B0B0F]"
+                      className="mt-0.5 h-1 w-1 rounded-full bg-ink"
                     />
                   )}
                 </button>

@@ -80,7 +80,7 @@ const ApiKeysTable = ({ rows, onRevoke }: TApiKeysTableConfig) => (
         {rows.map((row) => (
           <tr
             key={row.id}
-            className={cn('group', row.isRevoked && 'text-[#5F5C6E]')}
+            className={cn('group', row.isRevoked && 'text-ink-muted')}
           >
             <td className={PANEL_CELL_CLASS}>
               <b className="break-words">{row.name}</b>
@@ -152,8 +152,8 @@ export const ApiKeysCard = ({ storeId }: TApiKeysCardConfig) => {
           aria-label="Carregando chaves"
           className="grid gap-2"
         >
-          <Skeleton className="h-12 w-full rounded-2xl bg-[#F0EEF4]" />
-          <Skeleton className="h-12 w-full rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-12 w-full rounded-2xl bg-surface-3" />
+          <Skeleton className="h-12 w-full rounded-2xl bg-surface-3" />
         </div>
       );
     }

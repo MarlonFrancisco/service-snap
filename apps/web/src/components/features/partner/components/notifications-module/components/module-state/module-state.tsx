@@ -19,15 +19,15 @@ export const ModuleStatePanel = ({
 }: TModuleStatePanelConfig) => (
   <div
     role={role}
-    className="flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-[#EBE9F0] p-6 text-center"
+    className="flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-line p-6 text-center"
   >
     <span
       aria-hidden="true"
       className={cn(
         'grid size-12 place-items-center rounded-full',
         tone === 'danger'
-          ? 'bg-[#FBE8E6] text-[#A4231A]'
-          : 'bg-[#F4F3F7] text-[#0B0B0F]',
+          ? 'bg-error-bg text-error'
+          : 'bg-surface-2 text-ink',
       )}
     >
       <Icon className="size-[22px] stroke-[1.8]" />
@@ -35,7 +35,7 @@ export const ModuleStatePanel = ({
     <Heading className="text-lg font-extrabold tracking-[-0.02em]">
       {title}
     </Heading>
-    <p className="max-w-[340px] text-sm leading-normal text-[#5F5C6E]">
+    <p className="max-w-[340px] text-sm leading-normal text-ink-muted">
       {description}
     </p>
     {children ? <div className="mt-1.5">{children}</div> : null}

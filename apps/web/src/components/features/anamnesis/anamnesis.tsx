@@ -15,10 +15,10 @@ import { AnamnesisFormCard } from './components/anamnesis-form-card';
 
 const InviteSkeleton = () => (
   <div role="status" aria-label="Carregando a ficha" className="grid gap-4">
-    <Skeleton className="h-4 w-32 rounded-full bg-[#F0EEF4]" />
-    <Skeleton className="h-8 w-56 rounded-full bg-[#F0EEF4]" />
-    <Skeleton className="h-4 w-full rounded-full bg-[#F0EEF4]" />
-    <Skeleton className="h-[420px] rounded-[24px] bg-[#F0EEF4]" />
+    <Skeleton className="h-4 w-32 rounded-full bg-surface-3" />
+    <Skeleton className="h-8 w-56 rounded-full bg-surface-3" />
+    <Skeleton className="h-4 w-full rounded-full bg-surface-3" />
+    <Skeleton className="h-[420px] rounded-[24px] bg-surface-3" />
   </div>
 );
 
@@ -38,9 +38,9 @@ export const AnamnesisInvitePage = ({ token }: TAnamnesisInvitePageConfig) => {
         >
           <span
             aria-hidden="true"
-            className="grid size-12 place-items-center rounded-full bg-[#F4F3F7]"
+            className="grid size-12 place-items-center rounded-full bg-surface-2"
           >
-            <Clock className="size-6 stroke-2 text-[#5F5C6E]" />
+            <Clock className="size-6 stroke-2 text-ink-muted" />
           </span>
           <h1 className="text-xl font-extrabold tracking-[-0.02em]">
             Este link não vale mais
@@ -81,7 +81,7 @@ export const AnamnesisInvitePage = ({ token }: TAnamnesisInvitePageConfig) => {
     return (
       <>
         <header className="flex flex-col gap-1">
-          <span className="text-[13px] text-[#5F5C6E]">{header.storeName}</span>
+          <span className="text-[13px] text-ink-muted">{header.storeName}</span>
           <h1 className="text-2xl font-extrabold tracking-[-0.025em]">
             {header.title}
           </h1>

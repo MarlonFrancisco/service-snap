@@ -62,7 +62,7 @@ export const Partner = ({ children }: TPartnerConfig) => {
       </Sheet>
 
       <div className="relative flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#EBE9F0] bg-white px-5 md:hidden">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-line bg-white px-5 md:hidden">
           <HeaderLogo
             width={148}
             height={37}
@@ -84,7 +84,7 @@ export const Partner = ({ children }: TPartnerConfig) => {
           </button>
         </header>
 
-        <header className="hidden min-h-[72px] shrink-0 items-center justify-between gap-4 border-b border-[#EBE9F0] bg-white px-8 md:flex">
+        <header className="hidden min-h-[72px] shrink-0 items-center justify-between gap-4 border-b border-line bg-white px-8 md:flex">
           <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"

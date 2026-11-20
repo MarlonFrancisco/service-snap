@@ -15,7 +15,7 @@ const GOAL_INPUT_ID = 'sales-monthly-goal';
 const GOAL_ERROR_ID = 'sales-monthly-goal-error';
 
 const SECONDARY_ACTION_CLASS = cn(
-  'flex min-h-11 items-center justify-center rounded-full border border-[#E3E1EA] bg-white px-4 text-[13px] font-bold transition-colors hover:bg-[#F7F6FA]',
+  'flex min-h-11 items-center justify-center rounded-full border border-line-strong bg-white px-4 text-[13px] font-bold transition-colors hover:bg-surface',
   PARTNER_FOCUS_CLASS,
 );
 
@@ -44,7 +44,7 @@ export const SalesGoalCard = ({
   const inputError = form.formState.errors.monthlyGoal?.message;
 
   return (
-    <section className="grid grid-cols-1 items-end gap-5 rounded-[24px] bg-[#F7F6FA] p-5 md:p-6 lg:grid-cols-2">
+    <section className="grid grid-cols-1 items-end gap-5 rounded-[24px] bg-surface p-5 md:p-6 lg:grid-cols-2">
       <div className="min-w-0">
         {hasGoal ? (
           <>
@@ -66,10 +66,10 @@ export const SalesGoalCard = ({
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={progress}
-              className="mt-3 h-2 overflow-hidden rounded-full bg-[#EBE9F0]"
+              className="mt-3 h-2 overflow-hidden rounded-full bg-line"
             >
               <div
-                className="h-full rounded-full bg-[#0B0B0F]"
+                className="h-full rounded-full bg-ink"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -118,7 +118,7 @@ export const SalesGoalCard = ({
               aria-invalid={!!inputError}
               aria-describedby={inputError ? GOAL_ERROR_ID : undefined}
               className={cn(
-                'h-12 w-full min-w-0 rounded-[14px] border border-[#E3E1EA] bg-white px-3.5 text-[15px] font-medium aria-invalid:border-[#A4231A]',
+                'h-12 w-full min-w-0 rounded-[14px] border border-line-strong bg-white px-3.5 text-[15px] font-medium aria-invalid:border-error',
                 PARTNER_FOCUS_CLASS,
               )}
               {...form.register('monthlyGoal')}
@@ -127,7 +127,7 @@ export const SalesGoalCard = ({
               <p
                 id={GOAL_ERROR_ID}
                 role="alert"
-                className="text-[13px] font-medium text-[#A4231A]"
+                className="text-[13px] font-medium text-error"
               >
                 {inputError}
               </p>

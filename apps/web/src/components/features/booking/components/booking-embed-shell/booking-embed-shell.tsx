@@ -26,13 +26,13 @@ export const BookingEmbedShell = ({
     <div
       className={cn(
         plusJakartaSans.className,
-        'flex h-dvh flex-col bg-white text-[#0B0B0F] antialiased',
+        'flex h-dvh flex-col bg-white text-ink antialiased',
       )}
     >
-      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-[#EBE9F0] px-5 py-[18px]">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line px-5 py-[18px]">
         <div className="min-w-0">
           <p className="truncate text-base font-bold">{title}</p>
-          <p aria-live="polite" className="truncate text-xs text-[#5F5C6E]">
+          <p aria-live="polite" className="truncate text-xs text-ink-muted">
             {state ? EMBED_STATE_SUBTITLE[state] : subtitle}
           </p>
         </div>
@@ -40,7 +40,7 @@ export const BookingEmbedShell = ({
           type="button"
           aria-label="Fechar"
           onClick={handleClose}
-          className="grid size-11 shrink-0 place-items-center rounded-full bg-[#F4F3F7] text-lg leading-none transition-colors hover:bg-[#EBE9F0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2 text-lg leading-none transition-colors hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           ×
         </button>
@@ -79,10 +79,10 @@ export const BookingEmbedShell = ({
         )}
       </main>
 
-      <footer className="flex shrink-0 items-center justify-center gap-1.5 pt-3.5 pb-4 text-xs text-[#5F5C6E]">
+      <footer className="flex shrink-0 items-center justify-center gap-1.5 pt-3.5 pb-4 text-xs text-ink-muted">
         <span
           aria-hidden="true"
-          className="relative size-3.5 rounded-[4px] border-[1.6px] border-current after:absolute after:right-[16%] after:bottom-[14%] after:size-[30%] after:rounded-full after:bg-[#9810fa] after:content-['']"
+          className="relative size-3.5 rounded-[4px] border-[1.6px] border-current after:absolute after:right-[16%] after:bottom-[14%] after:size-[30%] after:rounded-full after:bg-brand after:content-['']"
         />
         Agendamento por ServiceSnap
       </footer>

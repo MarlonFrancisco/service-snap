@@ -23,7 +23,7 @@ export const MyHoursDialog = () => {
           <DialogTitle className={AGENDA_MODAL_TITLE_CLASS}>
             Meu horário
           </DialogTitle>
-          <DialogDescription className="text-left text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-left text-sm text-ink-muted">
             Para mudar seus horários, fale com o dono ou gerente.
           </DialogDescription>
         </DialogHeader>
@@ -32,13 +32,13 @@ export const MyHoursDialog = () => {
           {rows.map((row) => (
             <div
               key={row.dayKey}
-              className="flex justify-between gap-5 border-b border-[#F0EEF4] py-[11px] text-sm"
+              className="flex justify-between gap-5 border-b border-surface-3 py-[11px] text-sm"
             >
-              <dt className="text-[#5F5C6E]">{row.label}</dt>
+              <dt className="text-ink-muted">{row.label}</dt>
               <dd
                 className={cn(
                   'text-right font-semibold',
-                  row.isOff && 'text-[#5F5C6E]',
+                  row.isOff && 'text-ink-muted',
                 )}
               >
                 {row.value}

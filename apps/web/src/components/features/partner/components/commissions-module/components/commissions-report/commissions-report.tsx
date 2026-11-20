@@ -24,7 +24,7 @@ import { CommissionsPeriod } from '../commissions-period';
 import { useCommissionsReport } from './commissions-report.hook';
 
 const SELECTED_BUTTON_CLASS =
-  'border-[#0B0B0F] bg-[#0B0B0F] text-white hover:bg-[#2B2B2B]';
+  'border-ink bg-ink text-white hover:bg-ink-hover';
 
 export const CommissionsReport = () => {
   const {
@@ -52,7 +52,7 @@ export const CommissionsReport = () => {
         <Skeleton
           role="status"
           aria-label="Carregando comissões"
-          className="h-48 rounded-[20px] bg-[#F0EEF4]"
+          className="h-48 rounded-[20px] bg-surface-3"
         />
       );
     }

@@ -18,10 +18,10 @@ import type { TMarketingOptOutPageConfig } from './marketing-opt-out.types';
 
 const OptOutSkeleton = () => (
   <div role="status" aria-label="Carregando" className="grid gap-4">
-    <Skeleton className="h-4 w-32 rounded-full bg-[#F0EEF4]" />
-    <Skeleton className="h-8 w-48 rounded-full bg-[#F0EEF4]" />
-    <Skeleton className="h-4 w-full rounded-full bg-[#F0EEF4]" />
-    <Skeleton className="h-[180px] rounded-[24px] bg-[#F0EEF4]" />
+    <Skeleton className="h-4 w-32 rounded-full bg-surface-3" />
+    <Skeleton className="h-8 w-48 rounded-full bg-surface-3" />
+    <Skeleton className="h-4 w-full rounded-full bg-surface-3" />
+    <Skeleton className="h-[180px] rounded-[24px] bg-surface-3" />
   </div>
 );
 
@@ -78,7 +78,7 @@ export const MarketingOptOutPage = ({ token }: TMarketingOptOutPageConfig) => {
         <div role="status" className={OPT_OUT_CENTERED_CARD_CLASS}>
           <span
             aria-hidden="true"
-            className="grid size-12 place-items-center rounded-full bg-[#DFF2E7] text-[#0A5536]"
+            className="grid size-12 place-items-center rounded-full bg-success-bg text-success"
           >
             <Check className="size-6 stroke-[2.4]" />
           </span>
@@ -96,7 +96,7 @@ export const MarketingOptOutPage = ({ token }: TMarketingOptOutPageConfig) => {
     return (
       <>
         <header className="flex flex-col gap-1">
-          <span className="text-[13px] text-[#5F5C6E]">{storeName}</span>
+          <span className="text-[13px] text-ink-muted">{storeName}</span>
           <h1 className="text-2xl font-extrabold tracking-[-0.025em]">
             Sair da lista
           </h1>

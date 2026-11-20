@@ -10,7 +10,7 @@ export const StarRating = ({ rating, size = 'default' }: TStarRatingConfig) => {
       role="img"
       aria-label={label}
       className={cn(
-        'block font-bold tracking-[2px] text-[#B45309]',
+        'block font-bold tracking-[2px] text-warning-vivid',
         sizeClassName,
       )}
     >

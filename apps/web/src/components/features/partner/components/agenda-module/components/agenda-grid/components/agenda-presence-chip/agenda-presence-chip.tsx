@@ -16,7 +16,7 @@ export const AgendaPresenceChip = ({
       className={cn(
         'inline-flex max-w-full shrink-0 items-center gap-1 rounded-full bg-white px-2 py-px text-[11px] leading-[14px] font-bold whitespace-nowrap',
         presence.className,
-        isBordered && 'border border-[#E3E1EA]',
+        isBordered && 'border border-line-strong',
         className,
       )}
       {...props}

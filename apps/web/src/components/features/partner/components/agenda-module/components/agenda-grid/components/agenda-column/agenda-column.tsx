@@ -27,8 +27,8 @@ export const AgendaColumn = ({
           <div
             key={time}
             className={cn(
-              'flex justify-end border-b border-l border-[#F0EEF4] p-0.5',
-              closedNotice ? 'bg-[#F7F6FA]' : 'bg-white',
+              'flex justify-end border-b border-l border-surface-3 p-0.5',
+              closedNotice ? 'bg-surface' : 'bg-white',
             )}
             style={{ height: slotHeight }}
             onDragOver={
@@ -48,7 +48,7 @@ export const AgendaColumn = ({
             }
           >
             {isDropActive ? (
-              <span className="flex h-full w-full items-center justify-center rounded-[9px] bg-[#F6ECFE] text-xs font-bold text-[#0B0B0F] outline-2 -outline-offset-2 outline-[#9810FA] outline-dashed">
+              <span className="flex h-full w-full items-center justify-center rounded-[9px] bg-brand-tint text-xs font-bold text-ink outline-2 -outline-offset-2 outline-brand outline-dashed">
                 Soltar aqui
               </span>
             ) : (

@@ -106,11 +106,11 @@ export const HISTORY_STATUSES: TAppointmentStatus[] = [
 const HISTORY_BADGES: Partial<
   Record<TAppointmentStatus, { label: string; className: string }>
 > = {
-  completed: { label: 'Concluído', className: 'bg-white text-[#0B0B0F]' },
-  cancelled: { label: 'Cancelado', className: 'bg-white text-[#5F5C6E]' },
+  completed: { label: 'Concluído', className: 'bg-white text-ink' },
+  cancelled: { label: 'Cancelado', className: 'bg-white text-ink-muted' },
   'no-show': {
     label: 'Não compareceu',
-    className: 'bg-[#FDECEC] text-[#A11A12]',
+    className: 'bg-error-bg text-error-strong',
   },
 };
 

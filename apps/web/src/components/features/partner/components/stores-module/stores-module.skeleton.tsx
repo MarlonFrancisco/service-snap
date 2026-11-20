@@ -16,12 +16,12 @@ export const StoresModuleSkeleton = () => (
         </p>
       </div>
 
-      <Skeleton className="h-12 w-full rounded-full bg-[#EBE9F0] sm:w-40" />
+      <Skeleton className="h-12 w-full rounded-full bg-line sm:w-40" />
     </div>
 
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(220px,100%),1fr))] gap-3.5">
-      <Skeleton className="h-[106px] rounded-[22px] bg-[#EBE9F0]" />
-      <Skeleton className="h-[106px] rounded-[22px] bg-[#EBE9F0]" />
+      <Skeleton className="h-[106px] rounded-[22px] bg-line" />
+      <Skeleton className="h-[106px] rounded-[22px] bg-line" />
     </div>
 
     <div className="grid gap-[18px]">

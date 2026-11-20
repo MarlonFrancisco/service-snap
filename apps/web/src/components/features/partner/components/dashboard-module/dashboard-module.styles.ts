@@ -11,7 +11,7 @@ export const METRICS_SECTION_GRID_CLASS =
   'grid grid-cols-1 gap-3.5 lg:grid-cols-2';
 
 export const METRICS_CARD_CLASS =
-  'min-w-0 rounded-[20px] border border-[#EBE9F0] bg-white p-4 md:rounded-[22px] md:p-[22px]';
+  'min-w-0 rounded-[20px] border border-line bg-white p-4 md:rounded-[22px] md:p-[22px]';
 
 export const METRICS_SECTION_SUBTITLE_CLASS = cn(
   'mt-0.5 mb-3.5 text-[13px]',
@@ -29,40 +29,40 @@ export const METRICS_LEGEND_CLASS = cn(
 );
 
 export const METRICS_HEAT_LEVEL_CLASSES = [
-  'bg-[#F7F6FA] text-[#5F5C6E]',
-  'bg-[#EBE9F0] text-[#0B0B0F]',
-  'bg-[#A6A3B4] text-[#0B0B0F]',
-  'bg-[#0B0B0F] text-white',
+  'bg-surface text-ink-muted',
+  'bg-line text-ink',
+  'bg-ink-faint text-ink',
+  'bg-ink text-white',
 ] as const;
 
 export const METRICS_CHART_COLORS = {
-  ink: '#0B0B0F',
-  muted: '#5F5C6E',
-  area: '#F4F3F7',
-  bar: '#D4D2DC',
-  grid: '#F0EEF4',
+  ink: 'var(--ss-ink)',
+  muted: 'var(--ss-ink-muted)',
+  area: 'var(--ss-surface-2)',
+  bar: 'var(--ss-line-2)',
+  grid: 'var(--ss-surface-3)',
 } as const;
 
 export const METRICS_RANK_COLORS = [
-  '#0B0B0F',
-  '#5F5C6E',
-  '#A6A3B4',
-  '#D4D2DC',
-  '#EBE9F0',
+  'var(--ss-ink)',
+  'var(--ss-ink-muted)',
+  'var(--ss-ink-faint)',
+  'var(--ss-line-2)',
+  'var(--ss-line)',
 ] as const;
 
 export const METRICS_TOOLTIP_STYLE: CSSProperties = {
-  backgroundColor: '#FFFFFF',
-  border: '1px solid #EBE9F0',
+  backgroundColor: 'var(--ss-white)',
+  border: '1px solid var(--ss-line)',
   borderRadius: 14,
   padding: '8px 12px',
   fontSize: 12,
   fontWeight: 600,
-  color: '#0B0B0F',
+  color: 'var(--ss-ink)',
 };
 
 export const METRICS_AXIS_PROPS = {
-  stroke: '#5F5C6E',
+  stroke: 'var(--ss-ink-muted)',
   fontSize: 11,
   tickLine: false,
   axisLine: false,

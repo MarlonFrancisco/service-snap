@@ -19,7 +19,7 @@ const CAPTION_FORMAT = new Intl.DateTimeFormat('pt-BR', {
 const WEEKDAY_FORMAT = new Intl.DateTimeFormat('pt-BR', { weekday: 'narrow' });
 
 const NAV_BUTTON_CLASS =
-  'grid h-11 w-11 place-items-center rounded-full border border-[#E3E1EA] bg-white text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:bg-white';
+  'grid h-11 w-11 place-items-center rounded-full border border-line-strong bg-white text-ink transition-colors hover:bg-surface-2 aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:bg-white';
 
 const CALENDAR_CLASS_NAMES: DayPickerProps['classNames'] = {
   root: 'w-full',
@@ -30,10 +30,10 @@ const CALENDAR_CLASS_NAMES: DayPickerProps['classNames'] = {
   button_next: NAV_BUTTON_CLASS,
   month_caption: 'mb-3 flex h-11 items-center justify-center',
   caption_label:
-    'block text-[17px] font-bold text-[#0B0B0F] first-letter:uppercase',
+    'block text-[17px] font-bold text-ink first-letter:uppercase',
   month_grid: 'block w-full [&>thead]:block',
   weekdays: 'grid grid-cols-7 gap-1',
-  weekday: 'py-2 text-center text-xs font-semibold text-[#5F5C6E]',
+  weekday: 'py-2 text-center text-xs font-semibold text-ink-muted',
   weeks: 'block',
   week: 'mt-1 grid grid-cols-7 gap-1',
   day: 'block p-0 text-center',
@@ -64,12 +64,12 @@ const CalendarDayButton = ({
     modifiers={modifiers}
     className={cn(
       className,
-      'aspect-square min-h-11 w-full rounded-full text-sm font-semibold text-[#0B0B0F] transition-colors',
+      'aspect-square min-h-11 w-full rounded-full text-sm font-semibold text-ink transition-colors',
       modifiers.disabled
-        ? 'cursor-default font-medium text-[#8D8A9B] line-through'
-        : 'cursor-pointer hover:bg-[#F4F3F7]',
+        ? 'cursor-default font-medium text-ink-faint line-through'
+        : 'cursor-pointer hover:bg-surface-2',
       modifiers.selected &&
-        'bg-[#0B0B0F] text-white hover:bg-[#0B0B0F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]',
+        'bg-ink text-white hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
     )}
   />
 );

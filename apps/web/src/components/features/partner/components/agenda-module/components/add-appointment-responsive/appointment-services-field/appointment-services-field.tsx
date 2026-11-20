@@ -46,7 +46,7 @@ export const AppointmentServicesField = ({
               <b className="block text-sm font-bold break-words">
                 {option.name}
               </b>
-              <span className="mt-0.5 block text-[13px] font-medium text-[#5F5C6E]">
+              <span className="mt-0.5 block text-[13px] font-medium text-ink-muted">
                 {option.durationLabel}
               </span>
             </span>

@@ -18,9 +18,9 @@ export const CategorySection = ({ section }: { section: TServiceSection }) => {
   return (
     <section
       aria-labelledby={titleId}
-      className="overflow-hidden rounded-[22px] border border-[#EBE9F0]"
+      className="overflow-hidden rounded-[22px] border border-line"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-[#F7F6FA] px-5 py-3.5">
+      <div className="flex flex-wrap items-center justify-between gap-2.5 bg-surface px-5 py-3.5">
         <div className="min-w-0">
           <h3
             id={titleId}
@@ -52,7 +52,7 @@ export const CategorySection = ({ section }: { section: TServiceSection }) => {
       {isEmpty ? (
         <p
           className={cn(
-            'border-t border-[#F0EEF4] px-5 py-4 text-[13px]',
+            'border-t border-surface-3 px-5 py-4 text-[13px]',
             PARTNER_MUTED_TEXT_CLASS,
           )}
         >

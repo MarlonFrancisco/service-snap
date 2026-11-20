@@ -66,7 +66,7 @@ export const AnamnesisResponseDialog = (
         <div className={ANAMNESIS_LOCK_NOTE_CLASS}>
           <Lock aria-hidden="true" className={ANAMNESIS_NOTE_ICON_CLASS} />
           <p>
-            <b className="block text-[#3B2A6B]">Ficha protegida</b>
+            <b className="block text-brand-ink">Ficha protegida</b>
             Só dono, gerente e o profissional deste atendimento abrem as
             respostas.
           </p>
@@ -107,7 +107,7 @@ export const AnamnesisResponseDialog = (
           {Array.from({ length: 4 }, (_, index) => (
             <Skeleton
               key={index}
-              className="h-12 rounded-[14px] bg-[#F0EEF4]"
+              className="h-12 rounded-[14px] bg-surface-3"
             />
           ))}
         </div>
@@ -141,13 +141,13 @@ export const AnamnesisResponseDialog = (
           {answers.map((answer) => (
             <div
               key={answer.id}
-              className="grid gap-1 border-b border-[#F0EEF4] py-3"
+              className="grid gap-1 border-b border-surface-3 py-3"
             >
-              <dt className="text-[13px] text-[#5F5C6E]">{answer.label}</dt>
+              <dt className="text-[13px] text-ink-muted">{answer.label}</dt>
               <dd
                 className={cn(
                   'm-0 text-[15px] font-bold break-words whitespace-pre-line',
-                  answer.isEmpty && 'font-semibold text-[#5F5C6E]',
+                  answer.isEmpty && 'font-semibold text-ink-muted',
                 )}
               >
                 {answer.answer}
@@ -175,7 +175,7 @@ export const AnamnesisResponseDialog = (
           <div
             role="alertdialog"
             aria-labelledby="anamnesis-delete-title"
-            className="rounded-[14px] bg-[#F7F6FA] px-4 py-3.5 text-sm leading-normal"
+            className="rounded-[14px] bg-surface px-4 py-3.5 text-sm leading-normal"
           >
             <b id="anamnesis-delete-title" className="block">
               Apagar esta ficha?

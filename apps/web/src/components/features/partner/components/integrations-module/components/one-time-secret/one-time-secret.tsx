@@ -29,7 +29,7 @@ export const OneTimeSecret = ({
   return (
     <section
       aria-label={title}
-      className={cn(PANEL_CARD_CLASS, 'border-2 border-[#9810FA]')}
+      className={cn(PANEL_CARD_CLASS, 'border-2 border-brand')}
     >
       <h3 className={PANEL_CARD_TITLE_CLASS}>{title}</h3>
 
@@ -40,7 +40,7 @@ export const OneTimeSecret = ({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-[#F7F6FA] px-3.5 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-surface px-3.5 py-3">
         <code
           className={cn(
             PANEL_CODE_CLASS,

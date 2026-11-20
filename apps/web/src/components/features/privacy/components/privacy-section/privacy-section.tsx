@@ -38,7 +38,7 @@ export const PrivacySection = () => {
         <div className={PRIVACY_ITEM_CLASS}>
           <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
             <b className="text-sm">Baixar meus dados</b>
-            <span className="text-[13px] text-[#5F5C6E]">
+            <span className="text-[13px] text-ink-muted">
               Um arquivo com perfil, agendamentos, avaliações, favoritos, fichas
               de saúde, pacotes e pagamentos registrados pelas lojas
             </span>
@@ -60,10 +60,10 @@ export const PrivacySection = () => {
           </button>
         </div>
 
-        <div className={cn(PRIVACY_ITEM_CLASS, 'border-[#F3C9C4]')}>
+        <div className={cn(PRIVACY_ITEM_CLASS, 'border-error-line')}>
           <div className="flex min-w-0 flex-[1_1_260px] flex-col gap-0.5">
             <b className="text-sm">Excluir minha conta</b>
-            <span className="text-[13px] text-[#5F5C6E]">
+            <span className="text-[13px] text-ink-muted">
               Apaga seus dados pessoais de vez
             </span>
           </div>

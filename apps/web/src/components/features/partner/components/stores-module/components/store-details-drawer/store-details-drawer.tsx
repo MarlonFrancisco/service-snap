@@ -41,7 +41,7 @@ export const StoreDetailsDrawer = () => {
   return (
     <Drawer open={isOpen} onOpenChange={handleOpenChange}>
       <DrawerContent className={cn(PARTNER_PORTAL_CLASS, STORES_DRAWER_CLASS)}>
-        <DrawerHeader className="border-b border-[#EBE9F0] text-left">
+        <DrawerHeader className="border-b border-line text-left">
           <DrawerTitle className="text-xl font-extrabold tracking-[-0.02em]">
             {store.name}
           </DrawerTitle>
@@ -95,7 +95,7 @@ export const StoreDetailsDrawer = () => {
                 {store.amenities.map((amenity) => (
                   <li
                     key={amenity}
-                    className="rounded-full bg-[#F4F3F7] px-2.5 py-1 text-[13px] font-semibold"
+                    className="rounded-full bg-surface-2 px-2.5 py-1 text-[13px] font-semibold"
                   >
                     {amenity}
                   </li>
@@ -105,7 +105,7 @@ export const StoreDetailsDrawer = () => {
           ) : null}
         </div>
 
-        <DrawerFooter className="grid grid-cols-2 gap-2 border-t border-[#EBE9F0]">
+        <DrawerFooter className="grid grid-cols-2 gap-2 border-t border-line">
           <button
             type="button"
             onClick={handleManage}

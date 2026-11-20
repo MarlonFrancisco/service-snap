@@ -70,7 +70,7 @@ export const HoursStep = ({
                 type="button"
                 aria-pressed={businessDays[id]}
                 onClick={() => toggleDay(id)}
-                className="min-h-12 min-w-16 cursor-pointer rounded-full border border-[#E3E1EA] bg-white px-3.5 text-sm font-bold text-[#0B0B0F] aria-pressed:border-[#0B0B0F] aria-pressed:bg-[#0B0B0F] aria-pressed:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+                className="min-h-12 min-w-16 cursor-pointer rounded-full border border-line-strong bg-white px-3.5 text-sm font-bold text-ink aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
               >
                 {label}
               </button>
@@ -106,13 +106,13 @@ export const HoursStep = ({
           </div>
         </fieldset>
 
-        <label className="flex min-h-14 cursor-pointer items-center justify-between rounded-[14px] bg-[#F7F6FA] px-4 text-sm font-semibold">
+        <label className="flex min-h-14 cursor-pointer items-center justify-between rounded-[14px] bg-surface px-4 text-sm font-semibold">
           Faço pausa para almoço
           <input
             type="checkbox"
             checked={hasLunch}
             onChange={(event) => setHasLunch(event.target.checked)}
-            className="h-6 w-11 accent-[#0B0B0F]"
+            className="h-6 w-11 accent-ink"
           />
         </label>
 

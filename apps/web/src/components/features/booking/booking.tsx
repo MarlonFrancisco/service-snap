@@ -296,7 +296,7 @@ export function BookingFlow({ embedded = false }: TBookingFlowConfig = {}) {
                   type="button"
                   onClick={handlePrevStep}
                   className={cn(
-                    'mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-[#0B0B0F] hover:underline',
+                    'mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-ink hover:underline',
                     embedded && 'mb-3',
                   )}
                 >

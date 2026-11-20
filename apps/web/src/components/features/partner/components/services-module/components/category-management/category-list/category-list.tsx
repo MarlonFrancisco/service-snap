@@ -39,7 +39,7 @@ export const CategoryList = ({ onEdit }: TCategoryListConfig) => {
           {categories.map((category) => (
             <li
               key={category.id}
-              className="flex flex-wrap items-center justify-between gap-2.5 rounded-[14px] border border-[#EBE9F0] px-3.5 py-3 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2.5 rounded-[14px] border border-line px-3.5 py-3 text-sm"
             >
               <div className="min-w-0">
                 <p className="flex items-center gap-2 font-bold">

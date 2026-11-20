@@ -5,8 +5,8 @@ import {
 } from '../add-appointment.styles';
 import type { TAppointmentSummaryConfig } from './appointment-summary.types';
 
-const ROW_CLASS = 'border-b border-[#E9E7EF] py-3 text-sm';
-const TERM_CLASS = 'text-xs font-semibold text-[#5F5C6E]';
+const ROW_CLASS = 'border-b border-surface-4 py-3 text-sm';
+const TERM_CLASS = 'text-xs font-semibold text-ink-muted';
 const DETAIL_CLASS = 'mt-[3px] font-semibold break-words';
 
 export const AppointmentSummary = ({
@@ -18,7 +18,7 @@ export const AppointmentSummary = ({
 }: TAppointmentSummaryConfig) => (
   <aside
     aria-label="Resumo do agendamento"
-    className="flex flex-col self-start rounded-[22px] bg-[#F7F6FA] p-[22px] lg:sticky lg:top-0 lg:mt-[52px]"
+    className="flex flex-col self-start rounded-[22px] bg-surface p-[22px] lg:sticky lg:top-0 lg:mt-[52px]"
   >
     <h3 className="mb-1.5 text-[17px] font-extrabold tracking-[-0.015em]">
       Resumo
@@ -30,7 +30,7 @@ export const AppointmentSummary = ({
         <dd className={DETAIL_CLASS}>
           {summary.customerName}
           {summary.customerContact ? (
-            <span className="block text-[13px] font-medium break-all text-[#5F5C6E]">
+            <span className="block text-[13px] font-medium break-all text-ink-muted">
               {summary.customerContact}
             </span>
           ) : null}
@@ -47,7 +47,7 @@ export const AppointmentSummary = ({
                   className="mt-1 flex justify-between gap-3 first:mt-0"
                 >
                   <span>{service.name}</span>
-                  <em className="font-medium whitespace-nowrap text-[#5F5C6E] not-italic">
+                  <em className="font-medium whitespace-nowrap text-ink-muted not-italic">
                     {service.priceLabel}
                   </em>
                 </span>
@@ -72,14 +72,14 @@ export const AppointmentSummary = ({
       Total
       <b className="text-[22px] font-extrabold">{summary.totalLabel}</b>
     </p>
-    <p className="mt-0.5 text-right text-[13px] text-[#5F5C6E]">
+    <p className="mt-0.5 text-right text-[13px] text-ink-muted">
       Pagamento no local
     </p>
 
     {submitError ? (
       <p
         role="alert"
-        className="mt-4 rounded-[14px] bg-[#FBE8E6] px-3.5 py-3 text-[13px] font-semibold text-[#A4231A]"
+        className="mt-4 rounded-[14px] bg-error-bg px-3.5 py-3 text-[13px] font-semibold text-error"
       >
         {submitError}
       </p>

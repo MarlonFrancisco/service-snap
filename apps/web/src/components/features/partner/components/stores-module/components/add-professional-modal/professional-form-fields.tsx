@@ -84,7 +84,7 @@ export const ProfessionalIdentityFields = ({
             <FormItem className="gap-1.5">
               <FormLabel className={STORES_LABEL_CLASS}>
                 Nome{' '}
-                <span className="font-medium text-[#5F5C6E]">(opcional)</span>
+                <span className="font-medium text-ink-muted">(opcional)</span>
               </FormLabel>
               <FormControl>
                 <Input
@@ -131,13 +131,13 @@ export const ProfessionalRoleField = ({
               <label
                 key={option.role}
                 className={cn(
-                  'flex items-start gap-2.5 rounded-[14px] border border-[#E3E1EA] px-3.5 py-3 text-sm font-semibold',
+                  'flex items-start gap-2.5 rounded-[14px] border border-line-strong px-3.5 py-3 text-sm font-semibold',
                   isDisabled
-                    ? 'cursor-not-allowed bg-[#F7F6FA] text-[#5F5C6E]'
+                    ? 'cursor-not-allowed bg-surface text-ink-muted'
                     : 'cursor-pointer',
                   field.value === option.role &&
                     !isDisabled &&
-                    'border-[#0B0B0F]',
+                    'border-ink',
                 )}
               >
                 <input
@@ -148,13 +148,13 @@ export const ProfessionalRoleField = ({
                   disabled={isDisabled}
                   onChange={() => field.onChange(option.role)}
                   className={cn(
-                    'mt-0.5 size-5 shrink-0 accent-[#0B0B0F]',
+                    'mt-0.5 size-5 shrink-0 accent-ink',
                     PARTNER_FOCUS_CLASS,
                   )}
                 />
                 <span>
                   {option.label}
-                  <span className="block text-[13px] font-medium text-[#5F5C6E]">
+                  <span className="block text-[13px] font-medium text-ink-muted">
                     {option.role === 'owner' && !canGrantOwner
                       ? OWNER_ROLE_LOCKED_DESCRIPTION
                       : option.description}

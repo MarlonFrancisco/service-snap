@@ -20,14 +20,14 @@ export function StepIndicator({
   return (
     <div className={className}>
       {/* Mobile: passo atual e barra de progresso */}
-      <p className="flex items-center gap-2.5 text-[13px] font-semibold text-[#5F5C6E] md:hidden">
+      <p className="flex items-center gap-2.5 text-[13px] font-semibold text-ink-muted md:hidden">
         Passo {currentStepIndex + 1} de {steps.length}
         <span
           aria-hidden
-          className="block h-1 flex-1 overflow-hidden rounded-full bg-[#EBE9F0]"
+          className="block h-1 flex-1 overflow-hidden rounded-full bg-line"
         >
           <span
-            className="block h-full bg-[#0B0B0F] transition-all duration-300"
+            className="block h-full bg-ink transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </span>
@@ -49,14 +49,14 @@ export function StepIndicator({
               className={cn(
                 'flex flex-1 items-center gap-2.5 border-t-[3px] pt-3 text-[13px] font-semibold',
                 isActive
-                  ? 'border-[#0B0B0F] text-[#0B0B0F]'
-                  : 'border-[#EBE9F0] text-[#5F5C6E]',
+                  ? 'border-ink text-ink'
+                  : 'border-line text-ink-muted',
               )}
             >
               <span
                 className={cn(
                   'grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full text-xs font-bold',
-                  isActive ? 'bg-[#0B0B0F] text-white' : 'bg-[#F4F3F7]',
+                  isActive ? 'bg-ink text-white' : 'bg-surface-2',
                 )}
               >
                 {isCompleted ? (

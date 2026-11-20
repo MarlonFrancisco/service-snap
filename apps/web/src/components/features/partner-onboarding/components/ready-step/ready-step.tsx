@@ -26,14 +26,14 @@ export const ReadyStep = ({ result }: TReadyStepProps) => {
         <section>
           <div
             aria-hidden="true"
-            className="grid size-14 place-items-center rounded-full bg-[#0B0B0F] text-[25px] font-extrabold text-white"
+            className="grid size-14 place-items-center rounded-full bg-ink text-[25px] font-extrabold text-white"
           >
             ✓
           </div>
           <h1 className="mt-4 text-[32px] leading-[1.06] font-extrabold tracking-[-0.035em] min-[861px]:text-[44px]">
             Seu espaço está no ar
           </h1>
-          <p className="mt-2.5 mb-[22px] text-base leading-[1.55] text-[#5F5C6E]">
+          <p className="mt-2.5 mb-[22px] text-base leading-[1.55] text-ink-muted">
             Clientes com o seu link já podem agendar. Compartilhe para receber
             os primeiros.
           </p>
@@ -41,7 +41,7 @@ export const ReadyStep = ({ result }: TReadyStepProps) => {
           <p className="mb-[7px] text-sm font-semibold">
             Seu link de agendamento
           </p>
-          <div className="flex flex-wrap items-center gap-2 rounded-[28px] border border-[#E3E1EA] py-1.5 pr-1.5 pl-4 text-sm text-[#5F5C6E]">
+          <div className="flex flex-wrap items-center gap-2 rounded-[28px] border border-line-strong py-1.5 pr-1.5 pl-4 text-sm text-ink-muted">
             <span className="min-w-0 flex-[1_1_140px] truncate">
               {bookingUrl.replace(/^https?:\/\//, '')}
             </span>
@@ -60,7 +60,7 @@ export const ReadyStep = ({ result }: TReadyStepProps) => {
               Compartilhar
             </button>
           </div>
-          <p className="mt-2.5 mb-6 text-sm leading-normal text-[#5F5C6E]">
+          <p className="mt-2.5 mb-6 text-sm leading-normal text-ink-muted">
             Cole este link na bio do Instagram e no seu Google Perfil da Empresa.
           </p>
 
@@ -84,7 +84,7 @@ export const ReadyStep = ({ result }: TReadyStepProps) => {
         </section>
 
         <aside aria-label="Prévia do seu cartão">
-          <p className="mb-2.5 text-[13px] font-bold tracking-[0.06em] text-[#5F5C6E] uppercase">
+          <p className="mb-2.5 text-[13px] font-bold tracking-[0.06em] text-ink-muted uppercase">
             Como aparece para o cliente
           </p>
           {/* Sem o selo de disponibilidade: nada aqui garante horário livre hoje. */}

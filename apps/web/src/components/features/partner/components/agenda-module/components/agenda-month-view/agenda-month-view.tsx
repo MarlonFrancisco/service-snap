@@ -18,14 +18,14 @@ export const AgendaMonthView = () => {
 
   return (
     <>
-      <div className="overflow-x-auto rounded-[22px] border border-[#EBE9F0]">
+      <div className="overflow-x-auto rounded-[22px] border border-line">
         <div className="grid min-w-[720px] grid-cols-7">
           {weekdays.map((weekday) => (
             <div
               key={weekday.label}
               className={cn(
-                'border-b border-[#EBE9F0] bg-[#F7F6FA] px-2 py-3 text-center text-[13px] font-bold',
-                weekday.isClosed && 'text-[#5F5C6E]',
+                'border-b border-line bg-surface px-2 py-3 text-center text-[13px] font-bold',
+                weekday.isClosed && 'text-ink-muted',
               )}
             >
               {weekday.label}
@@ -40,11 +40,11 @@ export const AgendaMonthView = () => {
               aria-current={day.isToday ? 'date' : undefined}
               onClick={() => handleOpenDay(day.date)}
               className={cn(
-                'flex h-[124px] min-w-0 flex-col items-start gap-1 border-b border-l border-[#F0EEF4] p-2.5 text-left text-[#0B0B0F] transition-colors hover:bg-[#F7F6FA]',
-                !day.isCurrentMonth && 'bg-[#F7F6FA] text-[#5F5C6E]',
+                'flex h-[124px] min-w-0 flex-col items-start gap-1 border-b border-l border-surface-3 p-2.5 text-left text-ink transition-colors hover:bg-surface',
+                !day.isCurrentMonth && 'bg-surface text-ink-muted',
                 day.isCurrentMonth &&
-                  (day.isClosed || day.holiday ? 'bg-[#F7F6FA]' : 'bg-white'),
-                day.isToday && 'shadow-[inset_0_0_0_2px_#0B0B0F]',
+                  (day.isClosed || day.holiday ? 'bg-surface' : 'bg-white'),
+                day.isToday && 'shadow-[inset_0_0_0_2px_var(--ss-ink)]',
                 PARTNER_FOCUS_CLASS,
                 'focus-visible:outline-offset-[-2px]',
               )}
@@ -54,7 +54,7 @@ export const AgendaMonthView = () => {
                   className={cn(
                     'grid h-7 min-w-7 place-items-center rounded-full px-1 text-sm',
                     day.isCurrentMonth ? 'font-bold' : 'font-medium',
-                    day.isToday && 'bg-[#0B0B0F] text-white',
+                    day.isToday && 'bg-ink text-white',
                   )}
                 >
                   {day.day}
@@ -66,11 +66,11 @@ export const AgendaMonthView = () => {
 
               {day.holiday && (
                 <>
-                  <span className="rounded-full bg-[#DEDBE6] px-2 py-0.5 text-[11px] font-extrabold text-[#0B0B0F]">
+                  <span className="rounded-full bg-line-2 px-2 py-0.5 text-[11px] font-extrabold text-ink">
                     Feriado
                   </span>
                   {day.holiday.name && (
-                    <span className="max-w-full truncate text-[11px] font-semibold text-[#5F5C6E]">
+                    <span className="max-w-full truncate text-[11px] font-semibold text-ink-muted">
                       {day.holiday.name}
                     </span>
                   )}
@@ -78,7 +78,7 @@ export const AgendaMonthView = () => {
               )}
 
               {!day.holiday && day.isClosed && day.isCurrentMonth && (
-                <span className="max-w-full truncate text-[11px] font-semibold text-[#5F5C6E]">
+                <span className="max-w-full truncate text-[11px] font-semibold text-ink-muted">
                   Loja fechada
                 </span>
               )}
@@ -122,7 +122,7 @@ export const AgendaMonthView = () => {
         <span className={cn(LEGEND_CLASS, STATUS_CONFIG['no-show'].className)}>
           Faltas
         </span>
-        <p className="ml-auto text-[#5F5C6E]">
+        <p className="ml-auto text-ink-muted">
           Clique em um dia para abrir a visão Dia.
         </p>
       </div>

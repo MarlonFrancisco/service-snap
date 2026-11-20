@@ -51,7 +51,7 @@ const CHAT_PREVIEW = [
 
 export const WhatsappConnectEmpty = () => (
   <div className="grid gap-4">
-    <section className="flex flex-wrap items-center gap-7 rounded-[26px] border border-[#EBE9F0] p-[22px] sm:p-8">
+    <section className="flex flex-wrap items-center gap-7 rounded-[26px] border border-line p-[22px] sm:p-8">
       <div className="grid flex-[999_1_380px] gap-3.5">
         <span
           className={cn(
@@ -65,7 +65,7 @@ export const WhatsappConnectEmpty = () => (
         <h2 className="text-[28px] leading-[1.15] font-extrabold tracking-[-0.03em]">
           Confirme e lembre agendamentos pelo WhatsApp da sua loja
         </h2>
-        <p className="text-[15px] leading-relaxed text-[#5F5C6E]">
+        <p className="text-[15px] leading-relaxed text-ink-muted">
           Conecte o número oficial da loja à ServiceSnap. As confirmações e os
           lembretes saem com o nome da loja, pela API oficial da Meta.
         </p>
@@ -87,7 +87,7 @@ export const WhatsappConnectEmpty = () => (
       <div
         aria-label="Exemplo de conversa"
         role="img"
-        className="grid flex-[1_1_260px] gap-2 rounded-[22px] bg-[#F4F3F7] p-[18px]"
+        className="grid flex-[1_1_260px] gap-2 rounded-[22px] bg-surface-2 p-[18px]"
       >
         {CHAT_PREVIEW.map(({ fromStore, text, meta }) => (
           <div
@@ -95,15 +95,15 @@ export const WhatsappConnectEmpty = () => (
             className={cn(
               'max-w-[88%] px-3.5 py-2.5 text-[13px] leading-normal',
               fromStore
-                ? 'rounded-[16px_16px_16px_4px] bg-white text-[#2B2934]'
-                : 'justify-self-end rounded-[16px_16px_4px_16px] bg-[#0B0B0F] text-white',
+                ? 'rounded-[16px_16px_16px_4px] bg-white text-ink-body'
+                : 'justify-self-end rounded-[16px_16px_4px_16px] bg-ink text-white',
             )}
           >
             {text}
             <small
               className={cn(
                 'mt-1 block text-[11px]',
-                fromStore ? 'text-[#6F6C7E]' : 'text-[#C9C6D4]',
+                fromStore ? 'text-ink-muted' : 'text-line-3',
               )}
             >
               {meta}
@@ -117,23 +117,23 @@ export const WhatsappConnectEmpty = () => (
       {BENEFITS.map(({ Icon, title, text }) => (
         <div
           key={title}
-          className="grid content-start gap-2.5 rounded-[22px] border border-[#EBE9F0] p-5"
+          className="grid content-start gap-2.5 rounded-[22px] border border-line p-5"
         >
           <span
             aria-hidden="true"
-            className="grid size-10 place-items-center rounded-[12px] bg-[#F4F3F7] text-[#9810FA]"
+            className="grid size-10 place-items-center rounded-[12px] bg-surface-2 text-brand"
           >
             <Icon className="size-5 stroke-[1.8]" />
           </span>
           <h3 className="text-base font-extrabold">{title}</h3>
-          <p className="text-sm leading-relaxed text-[#5F5C6E]">{text}</p>
+          <p className="text-sm leading-relaxed text-ink-muted">{text}</p>
         </div>
       ))}
     </div>
 
     <section className={MODULE_CARD_CLASS}>
       <h3 className={MODULE_CARD_TITLE_CLASS}>Como funciona a conexão</h3>
-      <p className="text-sm leading-relaxed text-[#5F5C6E]">
+      <p className="text-sm leading-relaxed text-ink-muted">
         Você usa a API oficial da Meta, na sua própria conta. O guia mostra cada
         tela e leva cerca de 15 minutos.
       </p>
@@ -142,20 +142,20 @@ export const WhatsappConnectEmpty = () => (
           <li key={title}>
             <Link
               href={getGuideStepHref(index + 1)}
-              className="grid h-full gap-1 rounded-[16px] bg-[#FAFAFC] p-3.5 text-[13px] font-bold transition-colors hover:bg-[#F4F3F7]"
+              className="grid h-full gap-1 rounded-[16px] bg-surface-0 p-3.5 text-[13px] font-bold transition-colors hover:bg-surface-2"
             >
-              <span className="text-xs font-extrabold text-[#9810FA]">
+              <span className="text-xs font-extrabold text-brand">
                 {index + 1}
               </span>
               {title}
-              <span className="text-xs font-medium text-[#6F6C7E]">{hint}</span>
+              <span className="text-xs font-medium text-ink-muted">{hint}</span>
             </Link>
           </li>
         ))}
       </ol>
     </section>
 
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-[#FAFAFC] px-[22px] py-[18px] text-sm text-[#2B2934]">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[22px] bg-surface-0 px-[22px] py-[18px] text-sm text-ink-body">
       <span>
         Prefere não configurar agora? Os lembretes continuam saindo por e-mail.
       </span>

@@ -25,13 +25,13 @@ export const BlockedTimeDialog = () => {
           <DialogTitle className={AGENDA_MODAL_TITLE_CLASS}>
             Bloqueado · {details?.range}
           </DialogTitle>
-          <DialogDescription className="text-left text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-left text-sm text-ink-muted">
             {details?.day}
             {details?.professionalName ? ` · ${details.professionalName}` : ''}
           </DialogDescription>
         </DialogHeader>
 
-        <p className="text-sm text-[#5F5C6E]">
+        <p className="text-sm text-ink-muted">
           Enquanto estiver bloqueado, este horário não aparece na agenda
           online.
         </p>

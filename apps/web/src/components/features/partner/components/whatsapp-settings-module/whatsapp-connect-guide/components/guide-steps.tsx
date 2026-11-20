@@ -69,11 +69,11 @@ export const GuideIntroStep = () => (
       {REQUIREMENTS.map(({ title, text }) => (
         <li
           key={title}
-          className="flex items-start gap-2.5 text-sm leading-normal text-[#2B2934]"
+          className="flex items-start gap-2.5 text-sm leading-normal text-ink-body"
         >
           <span
             aria-hidden="true"
-            className="mt-px grid size-[22px] shrink-0 place-items-center rounded-full bg-[#DFF2E7] text-[#0A5536]"
+            className="mt-px grid size-[22px] shrink-0 place-items-center rounded-full bg-success-bg text-success"
           >
             <Check className="size-3.5 stroke-[2.4]" />
           </span>
@@ -174,7 +174,7 @@ const ID_FIELDS = [
 const IllustrationTag = ({ children }: { children: string }) => (
   <span
     aria-hidden="true"
-    className="mr-2 inline-flex size-5 items-center justify-center rounded-full bg-[#9810FA] text-[11px] font-extrabold text-white"
+    className="mr-2 inline-flex size-5 items-center justify-center rounded-full bg-brand text-[11px] font-extrabold text-white"
   >
     {children}
   </span>
@@ -203,17 +203,17 @@ export const GuideIdsStep = () => {
           </>,
         ]}
       />
-      <figure className="grid gap-2.5 rounded-[18px] border border-dashed border-[#D8D5E0] bg-[#FAFAFC] p-[18px]">
+      <figure className="grid gap-2.5 rounded-[18px] border border-dashed border-line-2 bg-surface-0 p-[18px]">
         <div
           aria-hidden="true"
-          className="grid gap-2 rounded-[14px] border border-[#E3E1EA] bg-white p-4 text-[13px]"
+          className="grid gap-2 rounded-[14px] border border-line-strong bg-white p-4 text-[13px]"
         >
-          <div className="border-b border-[#F0EEF4] pb-2 font-bold">
+          <div className="border-b border-surface-3 pb-2 font-bold">
             Configuração da API
           </div>
-          <div className="flex justify-between gap-3 px-2.5 py-2 text-[#5F5C6E]">
+          <div className="flex justify-between gap-3 px-2.5 py-2 text-ink-muted">
             <span>De</span>
-            <b className="font-semibold text-[#0B0B0F]">+55 11 90000-0000</b>
+            <b className="font-semibold text-ink">+55 11 90000-0000</b>
           </div>
           {[
             { tag: 'A', label: 'Identificação do número de telefone' },
@@ -221,19 +221,19 @@ export const GuideIdsStep = () => {
           ].map(({ tag, label }) => (
             <div
               key={tag}
-              className="flex justify-between gap-3 rounded-[10px] bg-[#FAF5FF] px-2.5 py-2 text-[#5F5C6E] outline-2 -outline-offset-2 outline-[#9810FA]"
+              className="flex justify-between gap-3 rounded-[10px] bg-brand-tint-soft px-2.5 py-2 text-ink-muted outline-2 -outline-offset-2 outline-brand"
             >
               <span>
                 <IllustrationTag>{tag}</IllustrationTag>
                 {label}
               </span>
-              <b className="font-semibold text-[#0B0B0F] tabular-nums">
+              <b className="font-semibold text-ink tabular-nums">
                 1234567890…
               </b>
             </div>
           ))}
         </div>
-        <figcaption className="text-xs font-semibold text-[#6F6C7E]">
+        <figcaption className="text-xs font-semibold text-ink-muted">
           Ilustração simplificada. Os nomes dos campos podem aparecer em inglês:
           Phone number ID e WhatsApp Business Account ID.
         </figcaption>
@@ -323,7 +323,7 @@ export const GuideTokenStep = () => {
             <FormLabel className={MODULE_FIELD_LABEL_CLASS}>
               Access Token *
             </FormLabel>
-            <FormDescription className="text-xs text-[#6F6C7E]">
+            <FormDescription className="text-xs text-ink-muted">
               Começa com EAA.
             </FormDescription>
             <FormControl>
@@ -365,7 +365,7 @@ const CopyField = ({
       <Input
         readOnly
         value={value}
-        className={cn(MODULE_FIELD_CLASS, 'text-[#5F5C6E]')}
+        className={cn(MODULE_FIELD_CLASS, 'text-ink-muted')}
       />
     </label>
     <button
@@ -462,7 +462,7 @@ export const GuideVerifyStep = ({
     {isVerifying ? (
       <p
         role="status"
-        className="flex items-center gap-2 text-sm text-[#5F5C6E]"
+        className="flex items-center gap-2 text-sm text-ink-muted"
       >
         <Spinner />
         Conferindo com a Meta...

@@ -55,7 +55,7 @@ export const PricingRoiCalculator = () => {
         {FIELDS.map(({ field, label, placeholder, inputMode }) => (
           <label
             key={field}
-            className="grid gap-1.5 text-sm font-semibold text-[#0B0B0F] md:gap-[7px]"
+            className="grid gap-1.5 text-sm font-semibold text-ink md:gap-[7px]"
           >
             {label}
             <input
@@ -64,7 +64,7 @@ export const PricingRoiCalculator = () => {
               value={values[field]}
               placeholder={placeholder}
               onChange={(event) => handleChange(field, event.target.value)}
-              className="h-[50px] rounded-[14px] border border-[#E3E1EA] bg-white px-4 text-base font-medium text-[#0B0B0F] outline-none placeholder:text-[#6F6C7E] focus-visible:border-[#0B0B0F] md:text-[15px]"
+              className="h-[50px] rounded-[14px] border border-line-strong bg-white px-4 text-base font-medium text-ink outline-none placeholder:text-ink-muted focus-visible:border-ink md:text-[15px]"
             />
           </label>
         ))}
@@ -72,31 +72,31 @@ export const PricingRoiCalculator = () => {
 
       <div
         aria-live="polite"
-        className="flex flex-col justify-center gap-2.5 bg-[#F7F6FA] px-5 py-[22px] md:p-10"
+        className="flex flex-col justify-center gap-2.5 bg-surface px-5 py-[22px] md:p-10"
       >
         {result ? (
           <>
-            <h3 className="text-[19px] font-extrabold tracking-[-0.02em] text-[#0B0B0F] md:text-[22px]">
+            <h3 className="text-[19px] font-extrabold tracking-[-0.02em] text-ink md:text-[22px]">
               Seu retorno estimado
             </h3>
             <dl className="grid gap-3.5 py-2">
               <div>
-                <dt className="text-[13px] text-[#5F5C6E]">Ganho mensal</dt>
-                <dd className="text-[30px] font-extrabold tracking-[-0.03em] text-[#0B0B0F]">
+                <dt className="text-[13px] text-ink-muted">Ganho mensal</dt>
+                <dd className="text-[30px] font-extrabold tracking-[-0.03em] text-ink">
                   {result.monthlyGain}
                 </dd>
               </div>
               <div>
-                <dt className="text-[13px] text-[#5F5C6E]">
+                <dt className="text-[13px] text-ink-muted">
                   Retorno anual, já descontado o plano
                 </dt>
-                <dd className="text-[22px] font-extrabold tracking-[-0.02em] text-[#0B0B0F]">
+                <dd className="text-[22px] font-extrabold tracking-[-0.02em] text-ink">
                   {result.annualReturn}
                 </dd>
               </div>
               <div>
-                <dt className="text-[13px] text-[#5F5C6E]">Payback</dt>
-                <dd className="text-[15px] font-bold text-[#0B0B0F]">
+                <dt className="text-[13px] text-ink-muted">Payback</dt>
+                <dd className="text-[15px] font-bold text-ink">
                   {result.payback}
                 </dd>
               </div>
@@ -104,16 +104,16 @@ export const PricingRoiCalculator = () => {
           </>
         ) : (
           <>
-            <h3 className="text-[19px] font-extrabold tracking-[-0.02em] text-[#0B0B0F] md:text-[22px]">
+            <h3 className="text-[19px] font-extrabold tracking-[-0.02em] text-ink md:text-[22px]">
               Seu retorno aparece aqui
             </h3>
-            <p className="text-sm leading-[1.55] text-[#5F5C6E] md:text-[15px] md:leading-[1.6]">
+            <p className="text-sm leading-[1.55] text-ink-muted md:text-[15px] md:leading-[1.6]">
               Preencha os números do seu negócio para ver o ganho mensal, o
               retorno anual e o tempo para recuperar o investimento.
             </p>
           </>
         )}
-        <small className="text-xs leading-[1.5] text-[#5F5C6E] md:text-[13px]">
+        <small className="text-xs leading-[1.5] text-ink-muted md:text-[13px]">
           Estimativa ilustrativa: considera {noShowReductionPoints} pontos a
           menos de no-show e {bookingsLiftPercent}% mais agendamentos. Não há
           benchmark público por trás destes números.

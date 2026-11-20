@@ -49,8 +49,8 @@ export const CustomerPackagesPanel = (config: TCustomerPackagesPanelConfig) => {
           aria-label="Carregando pacotes"
           className="grid gap-3"
         >
-          <Skeleton className="h-[132px] rounded-2xl bg-[#F0EEF4]" />
-          <Skeleton className="h-16 rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-[132px] rounded-2xl bg-surface-3" />
+          <Skeleton className="h-16 rounded-2xl bg-surface-3" />
         </div>
       );
     }
@@ -128,9 +128,9 @@ export const CustomerPackagesPanel = (config: TCustomerPackagesPanelConfig) => {
                     >
                       <span className="grid">
                         <b>{usage.title}</b>
-                        <span className="text-[#5f5c6e]">{usage.detail}</span>
+                        <span className="text-ink-muted">{usage.detail}</span>
                       </span>
-                      <span className="shrink-0 text-[#5f5c6e]">1 sessão</span>
+                      <span className="shrink-0 text-ink-muted">1 sessão</span>
                     </li>
                   ))}
                 </ul>

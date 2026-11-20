@@ -14,8 +14,8 @@ const PREVIEW_CHANNEL: Record<
   whatsapp: { icon: MessageCircle, title: 'Prévia do lembrete por WhatsApp' },
 };
 
-const PREVIEW_NOTE_CLASS = 'mt-2.5 text-[13px] leading-normal text-[#5F5C6E]';
-const PREVIEW_COUNTER_CLASS = 'mt-2 text-right text-xs text-[#5F5C6E]';
+const PREVIEW_NOTE_CLASS = 'mt-2.5 text-[13px] leading-normal text-ink-muted';
+const PREVIEW_COUNTER_CLASS = 'mt-2 text-right text-xs text-ink-muted';
 const PREVIEW_SENDER_CLASS = 'mb-3 text-center text-[13px] font-bold';
 
 type TPreviewContent = ReturnType<typeof useNotificationPreviewModal>;
@@ -35,29 +35,29 @@ const EmailPreview = ({
   message,
 }: TPreviewContent) => (
   <article className="rounded-[24px] bg-white p-6 shadow-[0_12px_40px_rgba(15,12,30,0.1)]">
-    <p className="mb-3.5 border-b border-[#F0EEF4] pb-3 text-[13px] text-[#5F5C6E]">
+    <p className="mb-3.5 border-b border-surface-3 pb-3 text-[13px] text-ink-muted">
       Assunto: Lembrete do seu agendamento em {storeName}
     </p>
     <h3 className="text-[21px] leading-[1.2] font-extrabold tracking-[-0.02em]">
       Seu horário está chegando
     </h3>
-    <p className="mt-2.5 text-sm leading-normal text-[#2C2A36]">
+    <p className="mt-2.5 text-sm leading-normal text-ink-body">
       Olá, [Nome do cliente]. Este é um lembrete do seu agendamento.
     </p>
-    <dl className="mt-3.5 grid gap-2 rounded-[14px] bg-[#F7F6FA] p-3.5 text-sm">
+    <dl className="mt-3.5 grid gap-2 rounded-[14px] bg-surface p-3.5 text-sm">
       {EMAIL_DETAILS(storeAddress).map(({ label, value }) => (
         <div key={label} className="flex justify-between gap-3">
-          <dt className="text-[#5F5C6E]">{label}</dt>
+          <dt className="text-ink-muted">{label}</dt>
           <dd className="text-right font-semibold">{value}</dd>
         </div>
       ))}
     </dl>
     {message ? (
-      <p className="mt-2.5 text-sm leading-normal break-words text-[#2C2A36]">
+      <p className="mt-2.5 text-sm leading-normal break-words text-ink-body">
         {message}
       </p>
     ) : null}
-    <p className="mt-2.5 text-sm leading-normal text-[#2C2A36]">
+    <p className="mt-2.5 text-sm leading-normal text-ink-body">
       Precisa falar com a loja? {storePhone}
     </p>
   </article>
@@ -72,7 +72,7 @@ const SmsPreview = ({
   <div>
     <div className="rounded-[28px] bg-white px-3.5 py-[18px] shadow-[0_12px_40px_rgba(15,12,30,0.1)]">
       <p className={PREVIEW_SENDER_CLASS}>ServiceSnap</p>
-      <p className="rounded-[18px_18px_18px_4px] bg-[#EBE9F0] px-3.5 py-3 text-sm leading-[1.45] break-words">
+      <p className="rounded-[18px_18px_18px_4px] bg-line px-3.5 py-3 text-sm leading-[1.45] break-words">
         {smsText}
       </p>
       <p className={PREVIEW_COUNTER_CLASS}>
@@ -92,7 +92,7 @@ const WhatsappPreview = ({
   message,
 }: TPreviewContent) => (
   <div>
-    <div className="rounded-[28px] bg-[#E6EFE6] px-3.5 py-[18px] shadow-[0_12px_40px_rgba(15,12,30,0.1)]">
+    <div className="rounded-[28px] bg-success-bg px-3.5 py-[18px] shadow-[0_12px_40px_rgba(15,12,30,0.1)]">
       <p className={PREVIEW_SENDER_CLASS}>{storeName}</p>
       <div className="rounded-[4px_16px_16px_16px] bg-white px-3.5 py-3 text-sm leading-normal break-words">
         <strong className="mb-1 block">Lembrete do seu horário</strong>
@@ -144,7 +144,7 @@ export const NotificationPreviewModal = ({
         aria-describedby={undefined}
         className={cn(
           PARTNER_PORTAL_CLASS,
-          'max-h-[90vh] overflow-y-auto rounded-[24px] border-0 bg-[#F4F3F7] p-5 sm:max-w-md',
+          'max-h-[90vh] overflow-y-auto rounded-[24px] border-0 bg-surface-2 p-5 sm:max-w-md',
         )}
       >
         <DialogHeader>

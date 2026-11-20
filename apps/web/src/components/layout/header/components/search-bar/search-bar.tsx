@@ -25,7 +25,7 @@ export const SearchBar = () => {
         className={cn(
           HEADER_SEARCH_FIELD_CLASS,
           'gap-2 transition-colors',
-          isFocused ? 'border-[#0B0B0F]' : 'border-[#E3E1EA]',
+          isFocused ? 'border-ink' : 'border-line-strong',
         )}
       >
         <input
@@ -36,7 +36,7 @@ export const SearchBar = () => {
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-[#0B0B0F] outline-none placeholder:text-[#5F5C6E]"
+          className="min-w-0 flex-1 bg-transparent text-ink outline-none placeholder:text-ink-muted"
           aria-label="Buscar serviços com IA"
         />
         <button
@@ -44,7 +44,7 @@ export const SearchBar = () => {
           aria-label="Buscar"
           className={cn(
             HEADER_SEARCH_ICON_CLASS,
-            'transition-colors hover:bg-[#2B2B2B] active:scale-[0.98]',
+            'transition-colors hover:bg-ink-hover active:scale-[0.98]',
           )}
         >
           <Search className="h-4 w-4" strokeWidth={2.6} aria-hidden />

@@ -108,7 +108,7 @@ export const CategoryForm = ({
                         className={cn(
                           'grid size-11 place-items-center rounded-full border-2 border-transparent text-white',
                           color.swatchClass,
-                          isSelected && 'border-[#0B0B0F]',
+                          isSelected && 'border-ink',
                           PARTNER_FOCUS_CLASS,
                         )}
                       >

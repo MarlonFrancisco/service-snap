@@ -25,14 +25,14 @@ export const WhatsappBotHomeCard = () => {
   return (
     <section
       aria-labelledby="whatsapp-bot-home-title"
-      className="relative mb-5 flex flex-col gap-2.5 rounded-[18px] bg-[#F7F6FA] px-5 py-[18px] text-[#0B0B0F]"
+      className="relative mb-5 flex flex-col gap-2.5 rounded-[18px] bg-surface px-5 py-[18px] text-ink"
     >
       <button
         type="button"
         aria-label="Fechar aviso do bot de WhatsApp"
         onClick={handleDismiss}
         className={cn(
-          'absolute top-2 right-2 grid size-11 cursor-pointer place-items-center rounded-full text-lg text-[#0B0B0F] hover:bg-[#EBE9F0]',
+          'absolute top-2 right-2 grid size-11 cursor-pointer place-items-center rounded-full text-lg text-ink hover:bg-line',
           PARTNER_FOCUS_CLASS,
         )}
       >

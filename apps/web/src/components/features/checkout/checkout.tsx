@@ -6,9 +6,9 @@ import { CheckoutHeader } from './components/checkout-header';
 
 const TITLE_CLASS =
   'mt-5 text-[38px] leading-[1.1] font-extrabold tracking-[-0.035em]';
-const LEAD_CLASS = 'mt-3 text-base leading-[1.6] text-[#5F5C6E]';
+const LEAD_CLASS = 'mt-3 text-base leading-[1.6] text-ink-muted';
 const CTA_CLASS =
-  'mt-6 block w-full cursor-pointer rounded-full bg-[#0B0B0F] p-[17px] text-[15px] font-bold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'mt-6 block w-full cursor-pointer rounded-full bg-ink p-[17px] text-[15px] font-bold text-white transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export const Checkout = () => {
   const {
@@ -24,7 +24,7 @@ export const Checkout = () => {
     <div
       className={cn(
         plusJakartaSans.className,
-        'min-h-screen bg-white text-[#0B0B0F]',
+        'min-h-screen bg-white text-ink',
       )}
     >
       <CheckoutHeader />
@@ -34,7 +34,7 @@ export const Checkout = () => {
           <>
             <div
               aria-hidden="true"
-              className="mx-auto grid size-[72px] place-items-center rounded-full bg-[#F4F3F7] text-[30px] font-extrabold"
+              className="mx-auto grid size-[72px] place-items-center rounded-full bg-surface-2 text-[30px] font-extrabold"
             >
               !
             </div>
@@ -64,9 +64,9 @@ export const Checkout = () => {
             <div
               role="progressbar"
               aria-label="Confirmando pagamento"
-              className="mt-6 h-1.5 overflow-hidden rounded-full bg-[#EBE9F0]"
+              className="mt-6 h-1.5 overflow-hidden rounded-full bg-line"
             >
-              <div className="h-full w-1/3 animate-pulse bg-[#0B0B0F]" />
+              <div className="h-full w-1/3 animate-pulse bg-ink" />
             </div>
           </div>
         )}
@@ -75,7 +75,7 @@ export const Checkout = () => {
           <>
             <div
               aria-hidden="true"
-              className="mx-auto grid size-[72px] place-items-center rounded-full bg-[#F4F3F7] text-[30px] font-extrabold"
+              className="mx-auto grid size-[72px] place-items-center rounded-full bg-surface-2 text-[30px] font-extrabold"
             >
               …
             </div>
@@ -99,7 +99,7 @@ export const Checkout = () => {
           <>
             <div
               aria-hidden="true"
-              className="mx-auto grid size-[72px] place-items-center rounded-full bg-[#0B0B0F] text-[32px] font-extrabold text-white"
+              className="mx-auto grid size-[72px] place-items-center rounded-full bg-ink text-[32px] font-extrabold text-white"
             >
               ✓
             </div>
@@ -108,7 +108,7 @@ export const Checkout = () => {
               Sua assinatura está ativa. Agora você pode voltar a gerenciar seus
               agendamentos.
             </p>
-            <p className="mt-2 text-[13px] text-[#5F5C6E]">
+            <p className="mt-2 text-[13px] text-ink-muted">
               Confirmado em {activationDate}
             </p>
 

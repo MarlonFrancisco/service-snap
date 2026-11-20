@@ -10,7 +10,7 @@ export const AdminNotAllowed = () => (
   <main
     className={cn(
       PARTNER_SHELL_CLASS,
-      'grid min-h-dvh place-items-center bg-[#F4F3F7] p-5',
+      'grid min-h-dvh place-items-center bg-surface-2 p-5',
     )}
   >
     <div className="w-full max-w-[480px] rounded-[24px] bg-white">

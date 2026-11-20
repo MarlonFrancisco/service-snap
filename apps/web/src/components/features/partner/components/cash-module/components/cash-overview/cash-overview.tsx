@@ -74,12 +74,12 @@ export const CashOverview = () => {
         aria-label="Carregando o caixa"
         className="grid gap-[18px]"
       >
-        <Skeleton className="h-[98px] rounded-[24px] bg-[#F0EEF4]" />
+        <Skeleton className="h-[98px] rounded-[24px] bg-surface-3" />
         <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
           {kpis.map((kpi) => (
             <Skeleton
               key={kpi.label}
-              className="h-[88px] rounded-[20px] bg-[#F0EEF4]"
+              className="h-[88px] rounded-[20px] bg-surface-3"
             />
           ))}
         </div>

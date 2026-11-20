@@ -10,17 +10,17 @@ import { useGetStore } from '../../booking.hook';
 import { TBookingFormData } from '../../booking.schema';
 
 const OPTION_CLASS =
-  'flex w-full items-center gap-4 rounded-[22px] border border-[#E3E1EA] bg-white px-5 py-[18px] text-left text-[#0B0B0F] transition-colors enabled:hover:border-[#A6A3B4] disabled:cursor-not-allowed disabled:opacity-50';
+  'flex w-full items-center gap-4 rounded-[22px] border border-line-strong bg-white px-5 py-[18px] text-left text-ink transition-colors enabled:hover:border-ink-faint disabled:cursor-not-allowed disabled:opacity-50';
 const OPTION_SELECTED_CLASS =
-  'border-2 border-[#0B0B0F] px-[19px] py-[17px] enabled:hover:border-[#0B0B0F]';
+  'border-2 border-ink px-[19px] py-[17px] enabled:hover:border-ink';
 const OPTION_AVATAR_CLASS =
-  'grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-[#F4F3F7] text-[15px] font-bold';
+  'grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-surface-2 text-[15px] font-bold';
 const OPTION_TITLE_CLASS =
   'flex flex-wrap items-center gap-2 text-base font-bold';
-const OPTION_DESCRIPTION_CLASS = 'mt-[3px] block text-sm text-[#5F5C6E]';
+const OPTION_DESCRIPTION_CLASS = 'mt-[3px] block text-sm text-ink-muted';
 const OPTION_RADIO_CLASS =
-  'ml-auto h-6 w-6 shrink-0 rounded-full border-2 border-[#A6A3B4]';
-const OPTION_RADIO_ON_CLASS = 'border-[7px] border-[#0B0B0F]';
+  'ml-auto h-6 w-6 shrink-0 rounded-full border-2 border-ink-faint';
+const OPTION_RADIO_ON_CLASS = 'border-[7px] border-ink';
 
 export function ProfessionalSelectionStep() {
   const stores = useGetStore();
@@ -146,24 +146,24 @@ export function ProfessionalSelectionStep() {
 
   return (
     <div>
-      <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-[#0B0B0F]">
+      <h1 className="text-[30px] font-extrabold tracking-[-0.03em] text-ink">
         Escolha o profissional
       </h1>
-      <p className="mt-1.5 mb-6 text-[15px] text-[#5F5C6E]">
+      <p className="mt-1.5 mb-6 text-[15px] text-ink-muted">
         Selecione um profissional ou deixe o sistema escolher automaticamente
       </p>
 
       {/* Informações de compatibilidade */}
       {!compatibilityStatus.canUseAny &&
         !compatibilityStatus.hasIncompatibleCombination && (
-          <div className="mb-3 flex items-start gap-3 rounded-[14px] bg-[#F7F6FA] px-[18px] py-4 text-sm leading-[1.5] text-[#0B0B0F]">
+          <div className="mb-3 flex items-start gap-3 rounded-[14px] bg-surface px-[18px] py-4 text-sm leading-[1.5] text-ink">
             <Info className="mt-0.5 h-5 w-5 shrink-0" aria-hidden />
             <div>
               <p>
                 <strong>Atenção:</strong> A combinação de serviços selecionados
                 exige profissionais específicos.
               </p>
-              <p className="mt-1 text-[13px] text-[#5F5C6E]">
+              <p className="mt-1 text-[13px] text-ink-muted">
                 Escolha um dos profissionais listados abaixo para continuar.
               </p>
             </div>
@@ -199,7 +199,7 @@ export function ProfessionalSelectionStep() {
       </button>
 
       {/* Lista de Profissionais */}
-      <p className="mt-7 mb-3 text-[13px] font-bold tracking-[0.06em] text-[#5F5C6E] uppercase">
+      <p className="mt-7 mb-3 text-[13px] font-bold tracking-[0.06em] text-ink-muted uppercase">
         Ou escolha um profissional específico
       </p>
 
@@ -227,7 +227,7 @@ export function ProfessionalSelectionStep() {
                 <span className={OPTION_TITLE_CLASS}>
                   {professional.user.firstName} {professional.user.lastName}
                   {!canDoAll && (
-                    <span className="rounded-full bg-[#FFF1E0] px-[9px] py-[3px] text-xs font-bold text-[#8A4B00]">
+                    <span className="rounded-full bg-warning-bg px-[9px] py-[3px] text-xs font-bold text-warning">
                       Parcial
                     </span>
                   )}
