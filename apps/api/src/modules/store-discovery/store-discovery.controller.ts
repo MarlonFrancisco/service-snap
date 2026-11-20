@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { PublicCdnCache } from '../../utils/decorators/public-cache.decorator';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { StoreDiscoveryService } from './store-discovery.service';
 
@@ -8,6 +9,7 @@ export class StoreDiscoveryController {
 
   /** Busca pública: texto, cidade, categoria, nota e vaga hoje. */
   @Get()
+  @PublicCdnCache()
   async search(@Query() query: SearchQueryDto) {
     return this.storeDiscoveryService.search(query);
   }

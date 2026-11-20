@@ -4,7 +4,9 @@ import type { IStore } from '@/types/api/stores.types';
 import { withBudget } from '@/utils/helpers/promise.helper';
 import { cache } from 'react';
 
-const STORE_MS = 4000;
+// Com ISR, só a 1.ª visita espera; o resto vem do cache ou é refeito em
+// segundo plano.
+const STORE_MS = 6000;
 export const STORE_ID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 /** Link curto, como a API gera: minúsculas, números e hífen. */

@@ -1,4 +1,5 @@
 import { AdminNotAllowed, AdminShell } from '@/components/features/admin';
+import { UserSession } from '@/providers/user-session.server';
 import { AdminService } from '@/service/admin';
 import { isApiHttpError, isUnauthorizedError } from '@/service/api';
 import { CACHE_QUERY_KEYS, getQueryClient } from '@/utils/helpers/query.helper';
@@ -48,7 +49,9 @@ export default async function AdminLayout({ children }: TAdminLayoutParams) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <AdminShell>{children}</AdminShell>
+      <UserSession>
+        <AdminShell>{children}</AdminShell>
+      </UserSession>
     </HydrationBoundary>
   );
 }

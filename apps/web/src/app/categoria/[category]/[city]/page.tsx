@@ -12,6 +12,14 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { loadCategoryCity } from './category-city.data';
 
+// ISR: refeita em segundo plano a cada 10 min; a lista vazia liga o cache
+// para qualquer cidade.
+export const revalidate = 600;
+
+export function generateStaticParams() {
+  return [];
+}
+
 type CategoryCityPageProps = {
   params: Promise<{ category: string; city: string }>;
 };
@@ -50,6 +58,10 @@ export default async function CategoryCityPage({
   if (!resolved) notFound();
 
   const loaded = await loadCategoryCity(resolved);
+  // API fora: mantém no cache a última versão boa.
+  if (loaded.status === 'unavailable') {
+    throw new Error(`Busca indisponível: ${category}/${city}`);
+  }
   const path = categoryCityPath(resolved.categorySlug, resolved.citySlug);
   const jsonLd =
     loaded.stores.length > 0
