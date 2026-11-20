@@ -13,6 +13,7 @@ const product = {
 const price = (interval: 'month' | 'year') =>
   ({
     id: `price_${interval}`,
+    currency: 'brl',
     unit_amount: 3990,
     metadata: {},
     recurring: { interval },
