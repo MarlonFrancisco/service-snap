@@ -5,6 +5,7 @@ import { PlanFeatureGuard } from '../../guards';
 import { StoreGuardsModule } from '../../guards/store-guards.module';
 import { Schedule } from '../../schedule/schedule.entity';
 import { WhatsappModule } from '../../whatsapp';
+import { WhatsappConsentModule } from '../../whatsapp-consent/whatsapp-consent.module';
 import { NotificationsHistoryModule } from '../history/history.module';
 import { CronSecretGuard } from './cron-secret.guard';
 import { RemindersController } from './reminders.controller';
@@ -18,6 +19,7 @@ import { ScheduleReminder } from './schedule-reminder.entity';
     NotificationsHistoryModule,
     StoreGuardsModule,
     WhatsappModule,
+    WhatsappConsentModule,
   ],
   controllers: [RemindersController],
   providers: [RemindersService, CronSecretGuard, PlanFeatureGuard],

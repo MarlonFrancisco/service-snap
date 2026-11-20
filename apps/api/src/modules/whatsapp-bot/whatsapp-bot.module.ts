@@ -5,6 +5,7 @@ import { ScheduleModule } from '../partner/stores/schedule';
 import { StoreMemberModule } from '../partner/stores/store-member/store-member.module';
 import { WaitlistModule } from '../partner/stores/waitlist';
 import { WhatsappModule } from '../partner/stores/whatsapp';
+import { WhatsappConsentModule } from '../partner/stores/whatsapp-consent/whatsapp-consent.module';
 import { UsersModule } from '../users/users.module';
 import { WhatsappBotController } from './whatsapp-bot.controller';
 import { WhatsappBotService } from './whatsapp-bot.service';
@@ -18,6 +19,7 @@ import { WhatsappBotService } from './whatsapp-bot.service';
     UsersModule,
     NotificationModule,
     WaitlistModule,
+    WhatsappConsentModule,
   ],
   controllers: [WhatsappBotController],
   providers: [WhatsappBotService],
