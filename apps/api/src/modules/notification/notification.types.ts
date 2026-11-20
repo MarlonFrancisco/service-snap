@@ -40,6 +40,8 @@ export type TScheduleReminderEmail = TScheduleCustomerEmail & {
   price: string;
   customMessage?: string;
   manageLink: string;
+  /** Só para quem recebe WhatsApp da loja: o link para deixar de receber (#37). */
+  whatsappOptOutLink?: string | null;
 };
 
 export type TScheduleConfirmedEmail = TScheduleCustomerEmail & {
@@ -109,4 +111,6 @@ export type TWaitlistSlotEmail = {
   professionalName: string;
   freeTimes: string;
   bookingLink: string;
+  /** Só para quem recebe WhatsApp da loja: o link para deixar de receber (#37). */
+  whatsappOptOutLink?: string | null;
 };

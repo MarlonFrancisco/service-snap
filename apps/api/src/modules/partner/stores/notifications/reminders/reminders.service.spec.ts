@@ -66,8 +66,9 @@ const fakeReminderRepository = () => {
         return [{ id: row.id, attempts: row.attempts }];
       },
     ),
-    update: vi.fn(async ({ id }: { id: string }, { status }) => {
+    update: vi.fn(async ({ id }: { id: string }, { status, attempts }) => {
       rows.get(id).status = status;
+      if (attempts) rows.get(id).attempts = attempts;
     }),
   };
 };
@@ -78,7 +79,12 @@ const setup = (
   {
     templateStatus = 'APPROVED',
     missingFeatures = [] as string[],
-  }: { templateStatus?: string; missingFeatures?: string[] } = {},
+    hasConsent = true,
+  }: {
+    templateStatus?: string;
+    missingFeatures?: string[];
+    hasConsent?: boolean;
+  } = {},
 ) => {
   const builder = new Proxy(
     { getMany: vi.fn().mockResolvedValue(schedules) },
@@ -101,6 +107,10 @@ const setup = (
   const planFeatureGuard = {
     getMissingFeatures: vi.fn().mockResolvedValue(missingFeatures),
   };
+  const consent = {
+    hasConsent: vi.fn().mockResolvedValue(hasConsent),
+    findOptOutLink: vi.fn().mockResolvedValue(null),
+  };
   const service = new RemindersService(
     { createQueryBuilder: () => builder } as never,
     reminders as never,
@@ -109,9 +119,11 @@ const setup = (
     { get: () => 'https://app.test' } as never,
     whatsapp as never,
     planFeatureGuard as never,
+    consent as never,
   );
 
   return {
+    consent,
     service,
     scheduleReminder,
     createHistory,
@@ -414,5 +426,144 @@ describe('RemindersService WhatsApp', () => {
       whatsapp: null,
     });
     expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+  });
+
+  it('checks the opt-in on the number it is sending to', async () => {
+    const { service, consent } = setup([
+      whatsappSchedule({
+        user: { id: 'user-1', firstName: 'Ana', telephone: '11988887777' },
+      }),
+    ]);
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(consent.hasConsent).toHaveBeenCalledWith(
+      'store-1',
+      'user-1',
+      '5511988887777',
+    );
+  });
+});
+
+describe('RemindersService WhatsApp opt-in fallback', () => {
+  const withEmail = (emailReminderEnabled?: boolean) => {
+    const base = whatsappSchedule();
+
+    return whatsappSchedule({
+      user: {
+        firstName: 'Ana',
+        email: 'ana@teste.com',
+        telephone: '11988887777',
+      },
+      store: {
+        ...base.store,
+        notificationsSettings: {
+          ...base.store.notificationsSettings,
+          emailReminderEnabled,
+        },
+      },
+    });
+  };
+
+  it('emails once at the WhatsApp time when the customer did not opt in', async () => {
+    const { service, whatsapp, scheduleReminder, createHistory } = setup(
+      [withEmail(false)],
+      undefined,
+      { hasConsent: false },
+    );
+
+    await service.sendDueWhatsappReminders(NOW);
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+    expect(scheduleReminder).toHaveBeenCalledTimes(1);
+    expect(scheduleReminder).toHaveBeenCalledWith(
+      'ana@teste.com',
+      expect.anything(),
+    );
+    expect(createHistory).toHaveBeenCalledTimes(1);
+    expect(createHistory.mock.calls[0][0]).toMatchObject({
+      status: 'sent',
+      recipient: 'ana@teste.com',
+      message:
+        'Lembrete por e-mail (no lugar do WhatsApp) do agendamento de 03/11/2026 às 09:30',
+    });
+  });
+
+  it('leaves it to the email reminder when the store already sends it', async () => {
+    const { service, whatsapp, scheduleReminder, reminders } = setup(
+      [withEmail(true)],
+      undefined,
+      { hasConsent: false },
+    );
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(whatsapp.sendTemplate).not.toHaveBeenCalled();
+    expect(scheduleReminder).not.toHaveBeenCalled();
+    expect(reminders.rows.size).toBe(0);
+  });
+
+  it('does not email twice when the email reminder already went out', async () => {
+    const { service, scheduleReminder, reminders } = setup(
+      [withEmail(false)],
+      undefined,
+      { hasConsent: false },
+    );
+    reminders.rows.set('schedule-1|email|2026-11-03T09:30', {
+      id: 'email',
+      status: 'sent',
+      attempts: 1,
+    });
+
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(scheduleReminder).not.toHaveBeenCalled();
+  });
+
+  it('records once that the reminder could not go anywhere', async () => {
+    const { service, scheduleReminder, createHistory } = setup(
+      [whatsappSchedule()],
+      undefined,
+      { hasConsent: false },
+    );
+
+    await service.sendDueWhatsappReminders(NOW);
+    await service.sendDueWhatsappReminders(NOW);
+
+    expect(scheduleReminder).not.toHaveBeenCalled();
+    expect(createHistory).toHaveBeenCalledTimes(1);
+    expect(createHistory.mock.calls[0][0]).toMatchObject({
+      status: 'failed',
+      title: 'Lembrete não enviado',
+      message:
+        'Lembrete de 03/11/2026 às 09:30 não enviado: sem opt-in de WhatsApp e sem e-mail',
+    });
+  });
+
+  it('emails once after the last WhatsApp attempt fails', async () => {
+    const { service, whatsapp, scheduleReminder } = setup([withEmail(false)]);
+    whatsapp.sendTemplate.mockRejectedValue(new Error('meta down'));
+
+    for (let run = 0; run < 4; run += 1) {
+      await service.sendDueWhatsappReminders(NOW);
+      if (run < 2) expect(scheduleReminder).not.toHaveBeenCalled();
+    }
+
+    expect(whatsapp.sendTemplate).toHaveBeenCalledTimes(3);
+    expect(scheduleReminder).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds the WhatsApp opt-out link to the email', async () => {
+    const { service, scheduleReminder, consent } = setup([schedule()]);
+    consent.findOptOutLink.mockResolvedValue(
+      'https://app.test/whatsapp/sair/t',
+    );
+
+    await service.sendDueEmailReminders(NOW);
+
+    expect(scheduleReminder.mock.calls[0][1]).toMatchObject({
+      whatsappOptOutLink: 'https://app.test/whatsapp/sair/t',
+    });
   });
 });
