@@ -1,0 +1,44 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  // API (NestJS) no Cloudflare Workers. Build: `pnpm build:worker`; deploy: `pnpm deploy:cf`.
+  // Passo a passo em docs/deploy-cloudflare.md.
+  "name": "ssnap-api",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Pacotes que o bundle do Worker não pode carregar. Os opcionais do Nest/Terminus
+  // já são tratados como ausentes; sharp e AWS SDK só são usados fora do Worker.
+  "alias": {
+    "@aws-sdk/client-s3": "./worker/optional-module-stub.cjs",
+    "sharp": "./worker/optional-module-stub.cjs",
+    "app-root-path": "./worker/app-root-path-stub.cjs",
+    "@mikro-orm/core": "./worker/optional-module-stub.cjs",
+    "@nestjs/microservices": "./worker/optional-module-stub.cjs",
+    "@nestjs/microservices/microservices-module": "./worker/optional-module-stub.cjs",
+    "@nestjs/mongoose": "./worker/optional-module-stub.cjs",
+    "@nestjs/sequelize/dist/common/sequelize.utils": "./worker/optional-module-stub.cjs",
+    "@nestjs/websockets/socket-module": "./worker/optional-module-stub.cjs"
+  },
+
+  // Mesmo bucket R2 de hoje (R2_BUCKET), acessado por binding em vez da API S3.
+  "r2_buckets": [
+    { "binding": "STORAGE_BUCKET", "bucket_name": "ssnap-production" }
+  ],
+
+  // Conversão para WebP das fotos (galeria e avatar): o sharp não roda no Worker.
+  "images": { "binding": "IMAGES" },
+
+  // Opcional: Hyperdrive na frente do mesmo Postgres, para não abrir TCP+TLS
+  // a cada requisição. Com o binding presente, ele substitui o DB_URL.
+  // "hyperdrive": [{ "binding": "HYPERDRIVE", "id": "<id do hyperdrive>" }],
+
+  // Os demais valores (DB_URL, JWT_SECRET, STRIPE_*, ...) são secrets:
+  // `npx wrangler secret put NOME` ou `npx wrangler secret bulk arquivo.json`.
+  "vars": {
+    "NODE_ENV": "production",
+    // Impede o main.ts de chamar app.listen() fora do handler
+    "IS_SERVELESS": "true"
+  }
+}

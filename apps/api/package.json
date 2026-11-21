@@ -17,7 +17,10 @@
     "seed:stores:json": "ts-node --project tsconfig.scripts.json src/scripts/seed-stores.ts",
     "reset:db": "ts-node --project tsconfig.scripts.json src/scripts/reset-db.ts",
     "products:update": "ts-node --project tsconfig.scripts.json src/scripts/update-stripe-products-metadata.ts",
-    "stripe:eur-test": "ts-node --project tsconfig.scripts.json src/scripts/stripe-eur-test.ts"
+    "stripe:eur-test": "ts-node --project tsconfig.scripts.json src/scripts/stripe-eur-test.ts",
+    "build:worker": "pnpm build && node worker/precompile-templates.mjs",
+    "dev:worker": "pnpm build:worker && wrangler dev",
+    "deploy:cf": "pnpm build:worker && wrangler deploy"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1166.0",
@@ -75,6 +78,7 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "wrangler": "4.166.0"
   }
 }

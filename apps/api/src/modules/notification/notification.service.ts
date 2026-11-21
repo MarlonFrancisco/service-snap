@@ -4,9 +4,6 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import fs from 'fs/promises';
-import handlebars from 'handlebars';
-import path from 'path';
 import { Resend } from 'resend';
 import { WhatsappService } from '../partner/stores/whatsapp';
 import {
@@ -18,6 +15,7 @@ import {
   toSenderName,
   waitlistFooter,
 } from './notification.helpers';
+import { loadEmailTemplate } from './notification.templates';
 import type {
   TCampaignMessageEmail,
   TTeamInviteEmail,
@@ -139,12 +137,9 @@ export class NotificationService {
   }
 
   async invoicePaid(to: string, invoiceId: string, currentPeriodEnd: string) {
-    const template = await fs.readFile(
-      path.join(__dirname, '../../templates', 'invoice-paid.hbs'),
-      'utf8',
-    );
+    const template = await loadEmailTemplate('invoice-paid');
 
-    const body = handlebars.compile(template)({
+    const body = template({
       invoiceId,
       currentPeriodEnd: new Date(currentPeriodEnd).toLocaleDateString('pt-BR', {
         day: '2-digit',
@@ -158,12 +153,9 @@ export class NotificationService {
   }
 
   async paymentFailed(to: string, invoiceId: string, attemptCount: number) {
-    const template = await fs.readFile(
-      path.join(__dirname, '../../templates', 'payment-failed.hbs'),
-      'utf8',
-    );
+    const template = await loadEmailTemplate('payment-failed');
 
-    const body = handlebars.compile(template)({
+    const body = template({
       invoiceId,
       attemptCount,
       currentYear: new Date().getFullYear(),
@@ -343,16 +335,9 @@ export class NotificationService {
     data: object,
     layout: TEmailLayout,
   ) {
-    const compile = async (name: string) =>
-      handlebars.compile(
-        await fs.readFile(
-          path.join(__dirname, '../../templates', `${name}.hbs`),
-          'utf8',
-        ),
-      );
     const [content, shell] = await Promise.all([
-      compile(template),
-      compile('email-layout'),
+      loadEmailTemplate(template),
+      loadEmailTemplate('email-layout'),
     ]);
 
     return shell({

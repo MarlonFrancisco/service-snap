@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import sharp from 'sharp';
 import { ILike, type Repository } from 'typeorm';
 import { generateReferralCode } from '../../utils';
+import { convertToWebp } from '../../utils/runtime';
 import {
   getUserFullName,
   normalizePhoneNumber,
@@ -407,7 +407,7 @@ export class UsersService {
   async updateAvatar(id: string, avatar: string): Promise<User> {
     const cleanBase64 = avatar.split('base64,')[1];
     const arrayBuffer = Buffer.from(cleanBase64, 'base64');
-    const webpBuffer = await sharp(arrayBuffer).webp().toBuffer();
+    const webpBuffer = await convertToWebp(arrayBuffer);
 
     const avatarUrl = await this.storageService.uploadFile({
       folder: 'users',

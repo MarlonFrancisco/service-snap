@@ -1,0 +1,13 @@
+# Copie para .dev.vars para rodar `pnpm dev:worker` (wrangler dev).
+# Mesmos nomes do .env.example; R2 e Images são simulados localmente.
+DB_URL=postgresql://postgres@localhost:5432/service_snap
+JWT_SECRET=change-me
+STRIPE_API_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+R2_BUCKET=ssnap-development
+RESEND_API_KEY=re_...
+FRONTEND_URL=http://localhost:3001
+DATA_ENCRYPTION_KEY=
+# Cache no Worker: REST do mesmo banco Upstash (sem isso, cache em memória)
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
