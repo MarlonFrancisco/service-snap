@@ -7,7 +7,7 @@ import { useAdminShell } from './admin-shell.hook';
 import type { TAdminShellConfig } from './admin-shell.types';
 
 const NAV_LINK_CLASS =
-  'flex min-h-11 shrink-0 items-center rounded-[12px] px-3 text-sm font-semibold whitespace-nowrap text-[#C9C6D3] transition-colors hover:bg-[#24222C] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
+  'flex min-h-11 shrink-0 items-center rounded-[12px] px-3 text-sm font-semibold whitespace-nowrap text-line-3 transition-colors hover:bg-ink-hover hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white';
 
 /** Casco do painel da plataforma: menu escuro à esquerda (no alto no celular). */
 export const AdminShell = ({ children }: TAdminShellConfig) => {
@@ -17,12 +17,12 @@ export const AdminShell = ({ children }: TAdminShellConfig) => {
     <div
       className={cn(
         PARTNER_SHELL_CLASS,
-        'flex min-h-dvh flex-col bg-[#F4F3F7] md:flex-row',
+        'flex min-h-dvh flex-col bg-surface-2 md:flex-row',
       )}
     >
       <nav
         aria-label="Painel da plataforma"
-        className="flex shrink-0 flex-col gap-1 bg-[#0B0B0F] px-3.5 py-4 text-white md:w-60 md:py-5"
+        className="flex shrink-0 flex-col gap-1 bg-ink px-3.5 py-4 text-white md:w-60 md:py-5"
       >
         <Link
           href="/admin"
@@ -38,7 +38,7 @@ export const AdminShell = ({ children }: TAdminShellConfig) => {
               aria-current={item.isActive ? 'page' : undefined}
               className={cn(
                 NAV_LINK_CLASS,
-                item.isActive && 'bg-[#24222C] text-white',
+                item.isActive && 'bg-ink-hover text-white',
               )}
             >
               {item.label}

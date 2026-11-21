@@ -51,7 +51,7 @@ export const WhatsappBotPromo = ({
       <h3 id="whatsapp-bot-promo-title" className={MODULE_CARD_TITLE_CLASS}>
         Divulgue seu atendimento no WhatsApp
       </h3>
-      <p className="text-sm leading-normal text-[#5F5C6E]">
+      <p className="text-sm leading-normal text-ink-muted">
         Seus clientes agendam, remarcam e cancelam pela conversa. Coloque o QR
         no balcão e o link na bio do Instagram.
       </p>

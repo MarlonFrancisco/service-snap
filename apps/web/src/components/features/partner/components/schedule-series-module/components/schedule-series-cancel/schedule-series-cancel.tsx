@@ -36,12 +36,12 @@ export const ScheduleSeriesCancel = ({
       role="alertdialog"
       aria-labelledby="series-cancel-title"
       aria-describedby="series-cancel-description"
-      className="grid gap-3 rounded-[14px] bg-[#F7F6FA] px-4 py-3.5 text-sm leading-normal"
+      className="grid gap-3 rounded-[14px] bg-surface px-4 py-3.5 text-sm leading-normal"
     >
       <h3 id="series-cancel-title" className="text-base font-extrabold">
         Cancelar agendamento
       </h3>
-      <p id="series-cancel-description" className="text-[#5F5C6E]">
+      <p id="series-cancel-description" className="text-ink-muted">
         {isLoading ? 'Carregando a série...' : description}
       </p>
 
@@ -61,7 +61,7 @@ export const ScheduleSeriesCancel = ({
         <label
           className={cn(
             SERIES_RADIO_CLASS,
-            !canCancelFollowing && 'cursor-not-allowed text-[#8D8A9B]',
+            !canCancelFollowing && 'cursor-not-allowed text-ink-faint',
           )}
         >
           <input
@@ -77,7 +77,7 @@ export const ScheduleSeriesCancel = ({
         </label>
       </fieldset>
 
-      <p className="text-[#5F5C6E]">
+      <p className="text-ink-muted">
         O cliente recebe um aviso só, com a primeira data cancelada.
       </p>
 

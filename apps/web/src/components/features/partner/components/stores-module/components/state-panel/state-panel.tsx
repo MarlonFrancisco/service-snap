@@ -17,13 +17,13 @@ export const StatePanel = ({
   return (
     <div
       role={isError ? 'alert' : undefined}
-      className="flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-[#EBE9F0] p-6 text-center"
+      className="flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-line p-6 text-center"
     >
       <span
         aria-hidden="true"
         className={cn(
           'grid size-12 place-items-center rounded-full',
-          isError ? 'bg-[#FBE8E6] text-[#A4231A]' : 'bg-[#F4F3F7] text-[#0B0B0F]',
+          isError ? 'bg-error-bg text-error' : 'bg-surface-2 text-ink',
         )}
       >
         <Icon className="size-[22px] stroke-[1.8]" />

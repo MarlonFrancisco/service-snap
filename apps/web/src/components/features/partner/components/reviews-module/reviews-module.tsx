@@ -69,7 +69,7 @@ export const ReviewsModule = () => {
       <div className="flex flex-wrap gap-3">
         {summaryCards.map(({ label, value }) => (
           <div key={label} className={REVIEWS_SUMMARY_CARD_CLASS}>
-            <small className="block text-xs font-semibold text-[#5F5C6E]">
+            <small className="block text-xs font-semibold text-ink-muted">
               {label}
             </small>
             <strong className="mt-1 block text-2xl font-extrabold tracking-[-0.02em]">
@@ -82,7 +82,7 @@ export const ReviewsModule = () => {
       {isReplyForbidden ? (
         <p
           role="alert"
-          className="rounded-[14px] bg-[#FFF4E5] px-3.5 py-3 text-sm leading-normal text-[#6B3A00]"
+          className="rounded-[14px] bg-warning-bg px-3.5 py-3 text-sm leading-normal text-warning"
         >
           {REVIEW_REPLY_FORBIDDEN_MESSAGE}
         </p>
@@ -110,7 +110,7 @@ export const ReviewsModule = () => {
         <>
           <section
             aria-label="Avaliações"
-            className="overflow-hidden rounded-[22px] border border-[#EBE9F0]"
+            className="overflow-hidden rounded-[22px] border border-line"
           >
             {pageReviews.map((review) => (
               <ReviewItem
@@ -125,7 +125,7 @@ export const ReviewsModule = () => {
 
           <nav
             aria-label="Paginação"
-            className="flex items-center justify-center gap-2 text-[13px] text-[#5F5C6E]"
+            className="flex items-center justify-center gap-2 text-[13px] text-ink-muted"
           >
             <button
               type="button"

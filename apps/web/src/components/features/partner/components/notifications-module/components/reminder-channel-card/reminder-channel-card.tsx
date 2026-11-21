@@ -65,13 +65,13 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
         <div className="flex min-w-0 items-center gap-3">
           <span
             aria-hidden="true"
-            className="grid size-11 shrink-0 place-items-center rounded-full bg-[#F4F3F7]"
+            className="grid size-11 shrink-0 place-items-center rounded-full bg-surface-2"
           >
             <Icon className="size-5 stroke-[1.8]" />
           </span>
           <div className="min-w-0">
             <h3 className="text-lg font-extrabold">{title}</h3>
-            <p className="mt-0.5 text-sm text-[#5F5C6E]">{description}</p>
+            <p className="mt-0.5 text-sm text-ink-muted">{description}</p>
           </div>
         </div>
         <Controller
@@ -82,7 +82,7 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
               className={cn(
                 'flex min-h-11 items-center gap-2 text-sm font-semibold',
                 isLocked
-                  ? 'cursor-not-allowed text-[#5F5C6E]'
+                  ? 'cursor-not-allowed text-ink-muted'
                   : 'cursor-pointer',
               )}
             >
@@ -101,7 +101,7 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
       {isLocked ? (
         <p
           id={lockedHintId}
-          className="flex items-center gap-2 rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] font-semibold text-[#5F5C6E]"
+          className="flex items-center gap-2 rounded-[14px] bg-surface px-3.5 py-3 text-[13px] font-semibold text-ink-muted"
         >
           <Lock aria-hidden="true" className="size-4 flex-none stroke-2" />
           {lockedHint}
@@ -165,7 +165,7 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
                     )}
                   />
                 </FormControl>
-                <div className="flex flex-wrap justify-between gap-2 text-[13px] font-medium text-[#5F5C6E]">
+                <div className="flex flex-wrap justify-between gap-2 text-[13px] font-medium text-ink-muted">
                   <span>{messageHint}</span>
                   <span>
                     {messageLength}/{messageLimit}
@@ -195,7 +195,7 @@ export const ReminderChannelCard = <TFormValues extends FieldValues>({
           disabled={isSaving || isLocked}
           className={cn(
             MODULE_PRIMARY_ACTION_CLASS,
-            'min-h-12 w-full px-5 text-sm disabled:cursor-not-allowed disabled:bg-[#EBE9F0] disabled:text-[#5F5C6E] sm:w-auto',
+            'min-h-12 w-full px-5 text-sm disabled:cursor-not-allowed disabled:bg-line disabled:text-ink-muted sm:w-auto',
           )}
         >
           {isSaving ? (

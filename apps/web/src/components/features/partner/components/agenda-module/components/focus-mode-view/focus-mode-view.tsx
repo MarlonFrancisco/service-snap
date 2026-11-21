@@ -13,7 +13,7 @@ export function FocusModeView() {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      <div className="border-b border-[#EBE9F0] bg-white px-4 py-3 md:px-6 md:py-3.5">
+      <div className="border-b border-line bg-white px-4 py-3 md:px-6 md:py-3.5">
         <AgendaToolbar variant="focus" />
       </div>
 
@@ -30,7 +30,7 @@ export function FocusModeView() {
         aria-label="Novo agendamento"
         onClick={handleOpenAddAppointment}
         className={cn(
-          'fixed right-5 bottom-5 z-40 grid size-14 place-items-center rounded-full bg-[#0B0B0F] text-white shadow-[0_12px_40px_rgba(15,12,30,0.25)] md:hidden',
+          'fixed right-5 bottom-5 z-40 grid size-14 place-items-center rounded-full bg-ink text-white shadow-[0_12px_40px_rgba(15,12,30,0.25)] md:hidden',
           PARTNER_FOCUS_CLASS,
         )}
       >

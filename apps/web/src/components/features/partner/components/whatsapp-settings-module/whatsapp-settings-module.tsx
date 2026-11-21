@@ -37,7 +37,7 @@ import { WhatsappConnectionChecks } from './whatsapp-connection-checks';
 import { WhatsappSettingsModuleSkeleton } from './whatsapp-settings-module-skeleton';
 import { useWhatsappSettingsModule } from './whatsapp-settings-module.hook';
 
-const CARD_NOTE_CLASS = 'text-sm leading-normal text-[#5F5C6E]';
+const CARD_NOTE_CLASS = 'text-sm leading-normal text-ink-muted';
 const LARGE_ACTION_CLASS = 'min-h-12 px-[18px]';
 
 const CREDENTIAL_FIELDS = [
@@ -131,19 +131,19 @@ export const WhatsappSettingsModule = () => {
           {isConnected ? (
             <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-3 text-sm">
               <div>
-                <dt className="text-xs text-[#5F5C6E]">Nome verificado</dt>
+                <dt className="text-xs text-ink-muted">Nome verificado</dt>
                 <dd className="mt-0.5 font-semibold">
                   {whatsappStatus?.verifiedName || 'Não informado'}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-[#5F5C6E]">Número</dt>
+                <dt className="text-xs text-ink-muted">Número</dt>
                 <dd className="mt-0.5 font-semibold">
                   {whatsappStatus?.displayPhoneNumber || 'Não informado'}
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-[#5F5C6E]">Qualidade</dt>
+                <dt className="text-xs text-ink-muted">Qualidade</dt>
                 <dd className="mt-0.5 font-semibold">
                   {whatsappStatus?.qualityRating || 'Não informada'}
                 </dd>
@@ -163,7 +163,7 @@ export const WhatsappSettingsModule = () => {
           {hasUnsavedCredentials ? (
             <p
               role="status"
-              className="rounded-[14px] bg-[#FFF4E5] px-3.5 py-3 text-sm leading-normal text-[#6B3A00]"
+              className="rounded-[14px] bg-warning-bg px-3.5 py-3 text-sm leading-normal text-warning"
             >
               Você alterou as credenciais abaixo. Salve as alterações para
               conferir os novos dados: o status mostra o que está salvo.
@@ -258,7 +258,7 @@ export const WhatsappSettingsModule = () => {
               Carregando templates...
             </p>
           ) : isWhatsappTemplatesError ? (
-            <p role="alert" className="text-sm leading-normal text-[#A4231A]">
+            <p role="alert" className="text-sm leading-normal text-error">
               {templatesErrorMessage}
             </p>
           ) : whatsappTemplates?.length ? (
@@ -266,11 +266,11 @@ export const WhatsappSettingsModule = () => {
               {whatsappTemplates.map((template) => (
                 <li
                   key={`${template.name}-${template.language}`}
-                  className="flex justify-between gap-3 border-t border-[#F0EEF4] py-2.5 text-sm"
+                  className="flex justify-between gap-3 border-t border-surface-3 py-2.5 text-sm"
                 >
                   <div className="min-w-0 break-words">
                     {template.name}
-                    <span className="block text-[13px] text-[#5F5C6E]">
+                    <span className="block text-[13px] text-ink-muted">
                       {template.language}
                       {template.category ? ` · ${template.category}` : ''}
                     </span>
@@ -313,7 +313,7 @@ export const WhatsappSettingsModule = () => {
             Não sabe onde encontrar esses dados?{' '}
             <Link
               href={WHATSAPP_GUIDE_ROUTE}
-              className="font-bold text-[#0B0B0F] underline underline-offset-[3px]"
+              className="font-bold text-ink underline underline-offset-[3px]"
             >
               Ver o passo a passo na Meta
             </Link>
@@ -374,7 +374,7 @@ export const WhatsappSettingsModule = () => {
               <Input
                 readOnly
                 value={webhookTokenLabel}
-                className={cn(MODULE_FIELD_CLASS, 'text-[#5F5C6E]')}
+                className={cn(MODULE_FIELD_CLASS, 'text-ink-muted')}
               />
             </label>
             <button

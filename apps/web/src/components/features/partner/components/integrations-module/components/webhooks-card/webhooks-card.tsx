@@ -49,8 +49,8 @@ export const WebhooksCard = ({ storeId }: TWebhooksCardConfig) => {
           aria-label="Carregando webhooks"
           className="grid gap-2"
         >
-          <Skeleton className="h-28 w-full rounded-2xl bg-[#F0EEF4]" />
-          <Skeleton className="h-16 w-full rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-28 w-full rounded-2xl bg-surface-3" />
+          <Skeleton className="h-16 w-full rounded-2xl bg-surface-3" />
         </div>
       );
     }

@@ -19,7 +19,7 @@ const HEADER_HEIGHT = GRID_CONSTANTS.WEEK_HEADER_HEIGHT;
 /** Mesmas listras da coluna de folga. */
 const OFF_LEGEND_STYLE = {
   backgroundImage:
-    'repeating-linear-gradient(135deg, #F4F3F7 0 5px, #E6E4EC 5px 10px)',
+    'repeating-linear-gradient(135deg, var(--ss-surface-2) 0 5px, var(--ss-surface-4) 5px 10px)',
 };
 
 export const AgendaGridDesktopView = memo(
@@ -41,7 +41,7 @@ export const AgendaGridDesktopView = memo(
       <>
         <div
           className={cn(
-            'overflow-auto rounded-[22px] border border-[#EBE9F0]',
+            'overflow-auto rounded-[22px] border border-line',
             scrollClassName,
           )}
         >
@@ -64,11 +64,11 @@ export const AgendaGridDesktopView = memo(
               <div key={day.dayIndex} className="min-w-0">
                 <div
                   className={cn(
-                    'sticky top-0 z-30 flex flex-col items-center justify-center border-b border-[#EBE9F0] text-center text-[13px] font-bold',
+                    'sticky top-0 z-30 flex flex-col items-center justify-center border-b border-line text-center text-[13px] font-bold',
                     day.isToday
-                      ? 'bg-[#0B0B0F] text-white'
-                      : 'bg-[#F7F6FA] text-[#0B0B0F]',
-                    !day.isWorkingDay && !day.isToday && 'text-[#5F5C6E]',
+                      ? 'bg-ink text-white'
+                      : 'bg-surface text-ink',
+                    !day.isWorkingDay && !day.isToday && 'text-ink-muted',
                   )}
                   style={{ height: HEADER_HEIGHT }}
                   aria-label={`${day.label}, ${day.date.getDate()}${day.isToday ? ', hoje' : ''}${day.headerNote ? `, ${day.headerNote.toLowerCase()}` : ''}`}
@@ -81,7 +81,7 @@ export const AgendaGridDesktopView = memo(
                     <small
                       className={cn(
                         'block text-[11px] font-bold',
-                        day.isToday ? 'text-white/80' : 'text-[#5F5C6E]',
+                        day.isToday ? 'text-white/80' : 'text-ink-muted',
                       )}
                     >
                       {day.headerNote}
@@ -105,7 +105,7 @@ export const AgendaGridDesktopView = memo(
                   </div>
                 ) : (
                   <div
-                    className="border-l border-[#F0EEF4] bg-[#F7F6FA] p-2 text-center text-xs font-medium text-[#5F5C6E]"
+                    className="border-l border-surface-3 bg-surface p-2 text-center text-xs font-medium text-ink-muted"
                     style={{ height: SLOT_HEIGHT * timeSlots.length }}
                   >
                     Dia não útil
@@ -129,7 +129,7 @@ export const AgendaGridDesktopView = memo(
                 {status.label}
               </span>
             ))}
-            <span className="rounded-full bg-[#DEDBE6] px-2.5 py-[5px]">
+            <span className="rounded-full bg-line-2 px-2.5 py-[5px]">
               Bloqueado
             </span>
             <span
@@ -138,7 +138,7 @@ export const AgendaGridDesktopView = memo(
             >
               Folga
             </span>
-            <span className="inline-flex items-center gap-1.5 font-medium text-[#5F5C6E]">
+            <span className="inline-flex items-center gap-1.5 font-medium text-ink-muted">
               <AgendaPresenceChip kind={PRESENCE_LEGEND.kind} isBordered />
               {PRESENCE_LEGEND.description}
             </span>

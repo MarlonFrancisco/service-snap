@@ -13,7 +13,7 @@ export function CancellationWarningAlert() {
   return (
     <div
       role="status"
-      className="col-[1/-1] rounded-[14px] bg-[#FFF1E0] px-[18px] py-3.5 text-sm leading-normal text-[#6E3B00]"
+      className="col-[1/-1] rounded-[14px] bg-warning-bg px-[18px] py-3.5 text-sm leading-normal text-warning"
     >
       <strong className="block">Cancelamento agendado</strong>
       {accessUntil

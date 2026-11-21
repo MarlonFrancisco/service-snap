@@ -71,7 +71,7 @@ export const ServicesConfirmDialog = ({
           className={cn(
             SERVICES_BUTTON_CLASS,
             ACTION_CLASS,
-            'm-0 h-auto focus-visible:ring-2 focus-visible:ring-[#0B0B0F] focus-visible:ring-offset-2',
+            'm-0 h-auto focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2',
           )}
         >
           {cancelLabel}

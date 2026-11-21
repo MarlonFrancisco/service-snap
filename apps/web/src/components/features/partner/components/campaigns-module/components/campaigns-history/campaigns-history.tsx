@@ -40,7 +40,7 @@ export const CampaignsHistory = (config: TCampaignsHistoryConfig) => {
         <Skeleton
           role="status"
           aria-label="Carregando campanhas"
-          className="h-[140px] rounded-[20px] bg-[#F0EEF4]"
+          className="h-[140px] rounded-[20px] bg-surface-3"
         />
       );
     }
@@ -97,7 +97,7 @@ export const CampaignsHistory = (config: TCampaignsHistoryConfig) => {
                     {row.name}
                     <span className="sr-only">: ver envios</span>
                   </button>
-                  <span className="block text-[13px] text-[#5F5C6E]">
+                  <span className="block text-[13px] text-ink-muted">
                     {row.channel}
                   </span>
                 </td>

@@ -8,13 +8,13 @@ import { PRICING_BENEFITS } from './pricing.constants';
 import { usePricing } from './pricing.hook';
 
 const PILL_CLASS =
-  'inline-block rounded-full bg-[#F4F3F7] px-3 py-[0.4375rem] text-[0.6875rem] font-bold tracking-[0.06em] uppercase md:px-3.5 md:py-2 md:text-xs';
+  'inline-block rounded-full bg-surface-2 px-3 py-[0.4375rem] text-[0.6875rem] font-bold tracking-[0.06em] uppercase md:px-3.5 md:py-2 md:text-xs';
 const SECTION_CLASS = 'pt-14 md:pt-[5.5rem]';
 const SECTION_HEAD_CLASS = 'md:mx-auto md:mb-9 md:max-w-[40rem] md:text-center';
 const SECTION_TITLE_CLASS =
   'mt-3 text-[1.75rem] leading-[1.12] font-extrabold tracking-[-0.03em] md:mt-3.5 md:text-[2.25rem]';
 const SECTION_LEAD_CLASS =
-  'mt-3 hidden text-base leading-[1.6] text-[#5F5C6E] md:block';
+  'mt-3 hidden text-base leading-[1.6] text-ink-muted md:block';
 const PLAN_COLUMNS_CLASS =
   'md:grid-cols-[repeat(auto-fit,minmax(min(16.25rem,100%),1fr))]';
 
@@ -30,7 +30,7 @@ export const Pricing = () => {
           <h1 className="mt-3.5 text-[2.125rem] leading-[1.08] font-extrabold tracking-[-0.035em] md:mt-4 md:text-[3rem]">
             Preços que crescem com você
           </h1>
-          <p className="mt-3 text-[0.9375rem] leading-[1.6] text-[#5F5C6E] md:mt-4 md:text-[1.0625rem]">
+          <p className="mt-3 text-[0.9375rem] leading-[1.6] text-ink-muted md:mt-4 md:text-[1.0625rem]">
             Organize agenda, WhatsApp e clientes em um só lugar. Comece com
             teste gratuito e escolha o plano certo para o seu espaço.
           </p>
@@ -48,7 +48,7 @@ export const Pricing = () => {
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="h-[28rem] animate-pulse rounded-3xl border border-[#E3E1EA] bg-white md:rounded-[1.625rem]"
+                  className="h-[28rem] animate-pulse rounded-3xl border border-line-strong bg-white md:rounded-[1.625rem]"
                 />
               ))}
             </div>
@@ -97,7 +97,7 @@ export const Pricing = () => {
                 <h3 className="text-base font-bold md:text-[1.0625rem] md:tracking-[-0.01em]">
                   {benefit.title}
                 </h3>
-                <p className="mt-[0.1875rem] text-sm leading-[1.5] text-[#5F5C6E] md:mt-1.5 md:text-[0.9375rem] md:leading-[1.55]">
+                <p className="mt-[0.1875rem] text-sm leading-[1.5] text-ink-muted md:mt-1.5 md:text-[0.9375rem] md:leading-[1.55]">
                   {benefit.description}
                 </p>
               </div>

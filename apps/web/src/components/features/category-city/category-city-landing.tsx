@@ -14,12 +14,12 @@ import { CategoryCityTracker } from './components/category-city-tracker';
 import type { TCategoryCityLandingConfig } from './category-city-landing.types';
 
 const FOCUS_CLASS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
-const NOTICE_CLASS = 'rounded-3xl bg-[#F7F6FA] px-6 py-12 text-center';
-const NOTICE_ICON_CLASS = 'mx-auto mb-3 h-10 w-10 text-[#A6A3B4]';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
+const NOTICE_CLASS = 'rounded-3xl bg-surface px-6 py-12 text-center';
+const NOTICE_ICON_CLASS = 'mx-auto mb-3 h-10 w-10 text-ink-faint';
 const NOTICE_TITLE_CLASS = 'mb-1 text-base font-bold';
-const NOTICE_TEXT_CLASS = 'mb-4 text-sm text-[#5F5C6E]';
-const ACTION_CLASS = `inline-flex h-11 items-center rounded-full bg-[#0B0B0F] px-5 text-[13px] font-bold text-white transition-colors hover:bg-[#2B2B2B] ${FOCUS_CLASS}`;
+const NOTICE_TEXT_CLASS = 'mb-4 text-sm text-ink-muted';
+const ACTION_CLASS = `inline-flex h-11 items-center rounded-full bg-ink px-5 text-[13px] font-bold text-white transition-colors hover:bg-ink-hover ${FOCUS_CLASS}`;
 
 export function CategoryCityLanding({
   resolved,
@@ -46,7 +46,7 @@ export function CategoryCityLanding({
         <h1 className="mt-3 text-[34px] leading-[1.08] font-extrabold tracking-[-0.035em] md:mt-8 md:text-[44px]">
           {resolved.categoryName} em {city}
         </h1>
-        <p className="mt-3 mb-8 max-w-[42.5rem] text-base leading-[1.6] text-[#5F5C6E]">
+        <p className="mt-3 mb-8 max-w-[42.5rem] text-base leading-[1.6] text-ink-muted">
           Profissionais de {resolved.categoryName} em {city} no ServiceSnap. A
           lista abaixo só inclui quem realmente atende essa categoria nessa
           cidade.
@@ -96,7 +96,7 @@ export function CategoryCityLanding({
               return (
                 <li key={store.path}>
                   <article className="relative">
-                    <div className="relative aspect-square overflow-hidden rounded-[22px] bg-[#F4F3F7]">
+                    <div className="relative aspect-square overflow-hidden rounded-[22px] bg-surface-2">
                       <ImageWithFallback
                         src={store.image}
                         alt=""
@@ -139,13 +139,13 @@ export function CategoryCityLanding({
                     </div>
 
                     {location ? (
-                      <p className="mt-[3px] text-sm text-[#5F5C6E]">
+                      <p className="mt-[3px] text-sm text-ink-muted">
                         {location}
                       </p>
                     ) : null}
 
                     {store.instagramUrl ? (
-                      <p className="mt-[3px] flex items-center gap-1.5 text-sm text-[#5F5C6E]">
+                      <p className="mt-[3px] flex items-center gap-1.5 text-sm text-ink-muted">
                         <Instagram
                           aria-hidden="true"
                           className="h-3.5 w-3.5 shrink-0"

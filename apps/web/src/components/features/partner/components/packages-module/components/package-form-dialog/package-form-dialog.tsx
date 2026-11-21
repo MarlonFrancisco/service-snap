@@ -73,7 +73,7 @@ export const PackageFormDialog = (config: TPackageFormDialogConfig) => {
           <DialogTitle className={RETENTION_DIALOG_TITLE_CLASS}>
             {title}
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-sm text-ink-muted">
             Vendido e cobrado fora do app. O ServiceSnap controla o saldo de
             sessões.
           </DialogDescription>
@@ -292,12 +292,12 @@ export const PackageFormDialog = (config: TPackageFormDialogConfig) => {
                 control={form.control}
                 name="isActive"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between gap-3 rounded-2xl bg-[#F7F6FA] px-4 py-3.5">
+                  <FormItem className="flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3.5">
                     <div className="grid gap-0.5">
                       <FormLabel className="text-sm font-bold">
                         À venda
                       </FormLabel>
-                      <p className="text-[13px] text-[#5F5C6E]">
+                      <p className="text-[13px] text-ink-muted">
                         Pausado sai da venda. Quem já comprou continua usando.
                       </p>
                     </div>

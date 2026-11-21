@@ -46,8 +46,8 @@ export const CommissionRules = () => {
           aria-label="Carregando regras"
           className="grid gap-2.5"
         >
-          <Skeleton className="h-[68px] rounded-2xl bg-[#F0EEF4]" />
-          <Skeleton className="h-[68px] rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-[68px] rounded-2xl bg-surface-3" />
+          <Skeleton className="h-[68px] rounded-2xl bg-surface-3" />
         </div>
       );
     }
@@ -134,7 +134,7 @@ export const CommissionRules = () => {
 
         {groups.previous.length > 0 ? (
           <details>
-            <summary className="flex min-h-11 cursor-pointer items-center text-[13px] text-[#5F5C6E]">
+            <summary className="flex min-h-11 cursor-pointer items-center text-[13px] text-ink-muted">
               Versões anteriores ({groups.previous.length})
             </summary>
             <ul className="grid gap-2.5 pt-1">
@@ -160,7 +160,7 @@ export const CommissionRules = () => {
       <div className={cn(MANAGEMENT_NOTE_CLASS, MANAGEMENT_NOTE_TONE.lock)}>
         <Lock aria-hidden="true" className={MANAGEMENT_NOTE_ICON_CLASS} />
         <p>
-          <b className="block text-[#3B2A6B]">
+          <b className="block text-brand-ink">
             Profissional vê só a própria comissão
           </b>
           Em Minhas comissões, com o mesmo detalhamento. Regras e relatório da

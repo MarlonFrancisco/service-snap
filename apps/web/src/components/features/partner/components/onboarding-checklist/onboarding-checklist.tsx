@@ -32,7 +32,7 @@ export const OnboardingChecklist = () => {
           aria-label="Dispensar checklist"
           onClick={handleDismiss}
           className={cn(
-            'grid size-11 shrink-0 place-items-center rounded-full transition-colors hover:bg-[#F7F6FA]',
+            'grid size-11 shrink-0 place-items-center rounded-full transition-colors hover:bg-surface',
             PARTNER_MUTED_TEXT_CLASS,
             PARTNER_FOCUS_CLASS,
           )}
@@ -47,7 +47,7 @@ export const OnboardingChecklist = () => {
             <Link
               href={step.href}
               className={cn(
-                'flex min-h-[52px] items-center justify-between gap-3 rounded-[14px] bg-[#F7F6FA] px-4 text-sm font-semibold transition-colors hover:bg-[#F4F3F7]',
+                'flex min-h-[52px] items-center justify-between gap-3 rounded-[14px] bg-surface px-4 text-sm font-semibold transition-colors hover:bg-surface-2',
                 PARTNER_FOCUS_CLASS,
               )}
             >

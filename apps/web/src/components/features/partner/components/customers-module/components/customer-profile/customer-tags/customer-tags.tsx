@@ -46,7 +46,7 @@ export const CustomerTags = (config: TCustomerTagsConfig) => {
           {config.tags.map((tag) => (
             <li
               key={tag}
-              className="inline-flex h-11 items-center gap-0.5 rounded-full bg-[#F4F3F7] pr-1 pl-3.5 text-[13px] font-semibold"
+              className="inline-flex h-11 items-center gap-0.5 rounded-full bg-surface-2 pr-1 pl-3.5 text-[13px] font-semibold"
             >
               {tag}
               <button
@@ -55,7 +55,7 @@ export const CustomerTags = (config: TCustomerTagsConfig) => {
                 disabled={isSaving}
                 aria-label={`Remover etiqueta ${tag}`}
                 className={cn(
-                  'grid size-9 cursor-pointer place-items-center rounded-full text-[#5F5C6E] hover:bg-[#EBE9F0] hover:text-[#0B0B0F] disabled:cursor-default',
+                  'grid size-9 cursor-pointer place-items-center rounded-full text-ink-muted hover:bg-line hover:text-ink disabled:cursor-default',
                   PARTNER_FOCUS_CLASS,
                 )}
               >
@@ -65,7 +65,7 @@ export const CustomerTags = (config: TCustomerTagsConfig) => {
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-[#5F5C6E]">Nenhuma etiqueta ainda.</p>
+        <p className="text-sm text-ink-muted">Nenhuma etiqueta ainda.</p>
       )}
 
       <form onSubmit={handleAdd} className="mt-3.5 flex gap-2">

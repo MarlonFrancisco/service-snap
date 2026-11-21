@@ -21,7 +21,7 @@ export const GuideSummary = ({
     >
       <div>
         <h3 className="text-base font-extrabold">Seus dados</h3>
-        <p className="mt-0.5 text-[13px] text-[#5F5C6E]">
+        <p className="mt-0.5 text-[13px] text-ink-muted">
           {filled} de {items.length} preenchidos. Nada é salvo até o passo 6.
         </p>
       </div>
@@ -33,7 +33,7 @@ export const GuideSummary = ({
               type="button"
               onClick={() => onGoToStep(step)}
               className={cn(
-                'flex w-full cursor-pointer items-center gap-3 rounded-[14px] bg-[#FAFAFC] px-3 py-2.5 text-left transition-colors hover:bg-[#F4F3F7]',
+                'flex w-full cursor-pointer items-center gap-3 rounded-[14px] bg-surface-0 px-3 py-2.5 text-left transition-colors hover:bg-surface-2',
                 PARTNER_FOCUS_CLASS,
               )}
             >
@@ -42,15 +42,15 @@ export const GuideSummary = ({
                 className={cn(
                   'grid size-6 shrink-0 place-items-center rounded-full border-[1.5px] text-[11px] font-bold',
                   value
-                    ? 'border-[#0A5536] bg-[#DFF2E7] text-[#0A5536]'
-                    : 'border-[#D8D5E0] text-[#5F5C6E]',
+                    ? 'border-success bg-success-bg text-success'
+                    : 'border-line-2 text-ink-muted',
                 )}
               >
                 {value ? <Check className="size-3.5 stroke-[2.4]" /> : step}
               </span>
               <span className="min-w-0 flex-1 text-[13px]">
                 <b className="block font-semibold">{label}</b>
-                <span className="block truncate text-[#5F5C6E] tabular-nums">
+                <span className="block truncate text-ink-muted tabular-nums">
                   {value || `Falta · passo ${step}`}
                 </span>
               </span>
@@ -59,9 +59,9 @@ export const GuideSummary = ({
         ))}
       </ul>
 
-      <div className="border-t border-[#F0EEF4] pt-3 text-[13px]">
+      <div className="border-t border-surface-3 pt-3 text-[13px]">
         <b className="block font-semibold">Webhook Verify Token</b>
-        <span className="block truncate text-[#5F5C6E]">
+        <span className="block truncate text-ink-muted">
           {webhookTokenLabel} · usado no passo 5
         </span>
       </div>

@@ -52,7 +52,7 @@ export const BlockTimeDialog = () => {
           <DialogTitle className={AGENDA_MODAL_TITLE_CLASS}>
             Bloquear horário
           </DialogTitle>
-          <DialogDescription className="text-left text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-left text-sm text-ink-muted">
             O horário bloqueado some da agenda online.
           </DialogDescription>
         </DialogHeader>
@@ -133,7 +133,7 @@ export const BlockTimeDialog = () => {
                         {...field}
                       />
                     </FormControl>
-                    <small className="text-xs text-[#5F5C6E]">
+                    <small className="text-xs text-ink-muted">
                       Para férias, escolha o último dia
                     </small>
                     <FormMessage />
@@ -146,10 +146,10 @@ export const BlockTimeDialog = () => {
               control={form.control}
               name="isFullDay"
               render={({ field }) => (
-                <FormItem className="flex items-center justify-between gap-4 rounded-[14px] bg-[#F7F6FA] px-4 py-3">
+                <FormItem className="flex items-center justify-between gap-4 rounded-[14px] bg-surface px-4 py-3">
                   <span id="block-full-day-label" className="grid text-sm">
                     <b>Dia inteiro</b>
-                    <small className="text-xs text-[#5F5C6E]">
+                    <small className="text-xs text-ink-muted">
                       Para folgas e férias
                     </small>
                   </span>
@@ -223,7 +223,7 @@ export const BlockTimeDialog = () => {
                   </FormControl>
                   <FormLabel className="grid gap-0.5 text-sm font-semibold">
                     Repetir toda semana
-                    <small className="text-xs font-normal text-[#5F5C6E]">
+                    <small className="text-xs font-normal text-ink-muted">
                       No mesmo dia e horário
                     </small>
                   </FormLabel>

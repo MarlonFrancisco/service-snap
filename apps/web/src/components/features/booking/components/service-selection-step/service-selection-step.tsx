@@ -11,9 +11,9 @@ import { TBookingFormData } from '../../booking.schema';
 
 const CHIP_CLASS =
   'h-11 rounded-full border px-4 text-[13px] font-semibold transition-colors';
-const CHIP_ON_CLASS = 'border-[#0B0B0F] bg-[#0B0B0F] text-white';
+const CHIP_ON_CLASS = 'border-ink bg-ink text-white';
 const CHIP_OFF_CLASS =
-  'border-[#E3E1EA] bg-white text-[#0B0B0F] hover:bg-[#F4F3F7]';
+  'border-line-strong bg-white text-ink hover:bg-surface-2';
 const QUANTITY_BUTTON_CLASS =
   'h-11 w-10 rounded-full text-lg text-white focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white md:h-9 md:w-9';
 
@@ -147,10 +147,10 @@ export function ServiceSelectionStep() {
 
   return (
     <div>
-      <h2 className="mt-1.5 text-[22px] font-extrabold tracking-[-0.025em] text-[#0B0B0F] md:mt-0 md:text-[26px]">
+      <h2 className="mt-1.5 text-[22px] font-extrabold tracking-[-0.025em] text-ink md:mt-0 md:text-[26px]">
         Selecione os serviços
       </h2>
-      <p className="mt-1 text-sm text-[#5F5C6E] md:mt-1.5 md:text-[15px]">
+      <p className="mt-1 text-sm text-ink-muted md:mt-1.5 md:text-[15px]">
         Escolha um ou mais serviços que deseja agendar
       </p>
 
@@ -195,23 +195,23 @@ export function ServiceSelectionStep() {
       {filteredServices.map((service) => (
         <article
           key={service.id}
-          className="flex items-center justify-between gap-4 border-b border-[#EBE9F0] py-[18px] md:gap-6 md:py-5"
+          className="flex items-center justify-between gap-4 border-b border-line py-[18px] md:gap-6 md:py-5"
         >
           <div className="min-w-0">
-            <h3 className="text-[15px] font-bold text-[#0B0B0F] md:text-base">
+            <h3 className="text-[15px] font-bold text-ink md:text-base">
               {service.name}
             </h3>
-            <p className="mt-[3px] text-[13px] text-[#5F5C6E] md:text-sm">
+            <p className="mt-[3px] text-[13px] text-ink-muted md:text-sm">
               {service.description}
             </p>
-            <p className="mt-1.5 text-sm text-[#0B0B0F] md:mt-2">
+            <p className="mt-1.5 text-sm text-ink md:mt-2">
               <b className="font-extrabold">{formatPrice(service.price)}</b> ·{' '}
               {formatDuration(service.duration)}
             </p>
           </div>
 
           {isSelected(service.id) ? (
-            <div className="flex h-11 shrink-0 items-center gap-0.5 rounded-full bg-[#0B0B0F] text-sm font-bold text-white md:gap-1.5 md:px-1">
+            <div className="flex h-11 shrink-0 items-center gap-0.5 rounded-full bg-ink text-sm font-bold text-white md:gap-1.5 md:px-1">
               <button
                 type="button"
                 aria-label={`Remover um: ${service.name}`}
@@ -244,7 +244,7 @@ export function ServiceSelectionStep() {
             <button
               type="button"
               aria-label={`Adicionar ${service.name}`}
-              className="h-11 shrink-0 rounded-full border border-[#0B0B0F] bg-white px-4 text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] md:px-5"
+              className="h-11 shrink-0 rounded-full border border-ink bg-white px-4 text-[13px] font-bold text-ink transition-colors hover:bg-surface-2 md:px-5"
               onClick={() => handleServiceToggle(service)}
             >
               Adicionar

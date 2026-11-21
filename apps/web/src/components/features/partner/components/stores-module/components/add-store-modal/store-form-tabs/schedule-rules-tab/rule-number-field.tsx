@@ -35,8 +35,8 @@ export const RuleNumberField = ({
           <FormLabel className={STORES_LABEL_CLASS}>{label}</FormLabel>
           <div
             className={cn(
-              'flex h-[50px] items-center overflow-hidden rounded-[14px] border border-[#E3E1EA] bg-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#0B0B0F]',
-              fieldState.invalid && 'border-[1.5px] border-[#A4231A]',
+              'flex h-[50px] items-center overflow-hidden rounded-[14px] border border-line-strong bg-white focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ink',
+              fieldState.invalid && 'border-[1.5px] border-error',
             )}
           >
             <FormControl>
@@ -51,12 +51,12 @@ export const RuleNumberField = ({
                 step={step}
                 value={Number.isNaN(field.value) ? '' : field.value}
                 onChange={(event) => field.onChange(event.target.valueAsNumber)}
-                className="h-12 min-w-0 flex-1 border-0 bg-transparent px-3.5 text-[15px] font-medium text-[#0B0B0F] outline-none"
+                className="h-12 min-w-0 flex-1 border-0 bg-transparent px-3.5 text-[15px] font-medium text-ink outline-none"
               />
             </FormControl>
             <span
               aria-hidden="true"
-              className="shrink-0 px-3.5 text-sm font-semibold text-[#5F5C6E]"
+              className="shrink-0 px-3.5 text-sm font-semibold text-ink-muted"
             >
               {unit}
             </span>

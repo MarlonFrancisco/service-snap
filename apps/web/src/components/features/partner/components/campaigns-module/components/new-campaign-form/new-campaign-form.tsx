@@ -52,7 +52,7 @@ import { CampaignEmailPreview } from './campaign-email-preview';
 import { useNewCampaignForm } from './new-campaign-form.hook';
 import type { TNewCampaignFormConfig } from './new-campaign-form.types';
 
-const LOCK_NOTE_CLASS = cn(RETENTION_NOTE_CLASS, 'bg-[#F2F0FB] text-[#3B2A6B]');
+const LOCK_NOTE_CLASS = cn(RETENTION_NOTE_CLASS, 'bg-brand-tint text-brand-ink');
 
 export const NewCampaignForm = (config: TNewCampaignFormConfig) => {
   const {
@@ -359,7 +359,7 @@ export const NewCampaignForm = (config: TNewCampaignFormConfig) => {
                       <ul className="m-0 mt-1 list-none p-0">
                         {previewParams.map((param) => (
                           <li key={param.position}>
-                            <span className="font-mono text-[13px] text-[#6F6C7E]">
+                            <span className="font-mono text-[13px] text-ink-muted">
                               {`{{${param.position}}}`}
                             </span>{' '}
                             {param.value}
@@ -367,7 +367,7 @@ export const NewCampaignForm = (config: TNewCampaignFormConfig) => {
                         ))}
                       </ul>
                     ) : null}
-                    <span className="mt-1.5 block text-right text-[11px] text-[#6F6C7E]">
+                    <span className="mt-1.5 block text-right text-[11px] text-ink-muted">
                       Prévia
                     </span>
                   </div>
@@ -474,7 +474,7 @@ export const NewCampaignForm = (config: TNewCampaignFormConfig) => {
             <DialogTitle className={RETENTION_DIALOG_TITLE_CLASS}>
               Prévia do e-mail
             </DialogTitle>
-            <DialogDescription className="text-sm text-[#5F5C6E]">
+            <DialogDescription className="text-sm text-ink-muted">
               Como o primeiro cliente marcado vai receber.
             </DialogDescription>
           </DialogHeader>

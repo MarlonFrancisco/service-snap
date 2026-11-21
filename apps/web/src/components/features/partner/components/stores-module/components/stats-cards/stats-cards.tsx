@@ -4,7 +4,7 @@ import { useStatsCards } from './stats-cards.hook';
 
 const LABEL_CLASS = cn('text-[13px] font-semibold', PARTNER_MUTED_TEXT_CLASS);
 const VALUE_CLASS = 'mt-1.5 text-[28px] leading-tight font-extrabold';
-const CARD_CLASS = 'rounded-[22px] border border-[#EBE9F0] p-[22px]';
+const CARD_CLASS = 'rounded-[22px] border border-line p-[22px]';
 
 export const StatsCards = () => {
   const { totalStores, activeStores } = useStatsCards();

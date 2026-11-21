@@ -17,7 +17,7 @@ import {
 } from './experience-carousel.constants';
 
 const arrowClassName =
-  'static top-auto right-auto left-auto hidden size-9 translate-x-0 translate-y-0 border-[#E3E1EA] bg-white md:inline-flex';
+  'static top-auto right-auto left-auto hidden size-9 translate-x-0 translate-y-0 border-line-strong bg-white md:inline-flex';
 
 type TExperienceCarouselConfig = {
   /** Identificador estável da lista nos eventos de analytics. */
@@ -45,7 +45,7 @@ export const ExperienceCarousel = ({
         }}
       >
         <div className="mb-4 flex items-baseline justify-between gap-3 px-5 md:mb-[22px] md:items-center md:px-0">
-          <h2 className="min-w-0 flex-1 text-xl font-bold tracking-[-0.02em] text-[#0B0B0F] md:text-2xl md:tracking-[-0.025em]">
+          <h2 className="min-w-0 flex-1 text-xl font-bold tracking-[-0.02em] text-ink md:text-2xl md:tracking-[-0.025em]">
             {title}
           </h2>
           <div className="flex shrink-0 items-center gap-3">
@@ -57,7 +57,7 @@ export const ExperienceCarousel = ({
                 item_id: listName,
                 destination: seeAllHref,
               }}
-              className="text-[13px] font-semibold text-[#0B0B0F] underline md:text-sm md:no-underline md:hover:underline"
+              className="text-[13px] font-semibold text-ink underline md:text-sm md:no-underline md:hover:underline"
             >
               Ver todos
             </TrackedLink>

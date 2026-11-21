@@ -185,16 +185,16 @@ export const AnamnesisFormEditor = (config: TAnamnesisFormEditorConfig) => {
                 className={cn(
                   ANAMNESIS_ITEM_CLASS,
                   'flex-wrap items-start',
-                  question.isEditing && 'border-[#0B0B0F]',
+                  question.isEditing && 'border-ink',
                 )}
               >
                 <div className="grid min-w-0 flex-1 gap-1">
                   <b className="text-sm break-words">{question.label}</b>
-                  <span className="text-[13px] text-[#5F5C6E]">
+                  <span className="text-[13px] text-ink-muted">
                     {question.meta}
                   </span>
                   {question.optionsLabel ? (
-                    <span className="text-[13px] break-words text-[#5F5C6E]">
+                    <span className="text-[13px] break-words text-ink-muted">
                       {question.optionsLabel}
                     </span>
                   ) : null}

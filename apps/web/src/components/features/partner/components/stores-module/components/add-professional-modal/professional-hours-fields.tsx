@@ -9,8 +9,8 @@ import { useProfessionalHoursFields } from './professional-hours-fields.hook';
 const GRID_CLASS =
   'grid grid-cols-2 items-center gap-2 md:grid-cols-[84px_118px_repeat(4,minmax(0,1fr))] md:gap-x-2.5';
 const TIME_INPUT_CLASS =
-  'h-11 rounded-xl border-[#E3E1EA] bg-white px-2.5 text-sm font-medium text-[#0B0B0F] shadow-none md:text-sm';
-const MOBILE_LABEL_CLASS = 'text-xs font-semibold text-[#5F5C6E] md:sr-only';
+  'h-11 rounded-xl border-line-strong bg-white px-2.5 text-sm font-medium text-ink shadow-none md:text-sm';
+const MOBILE_LABEL_CLASS = 'text-xs font-semibold text-ink-muted md:sr-only';
 
 const TIME_FIELDS = [
   { field: 'openTime', label: 'Início', aria: 'início' },
@@ -39,8 +39,8 @@ export const ProfessionalHoursFields = () => {
             <label
               key={option.value}
               className={cn(
-                'flex cursor-pointer items-start gap-2.5 rounded-[14px] border border-[#E3E1EA] px-3.5 py-3 text-sm font-semibold',
-                hoursMode === option.value && 'border-[#0B0B0F]',
+                'flex cursor-pointer items-start gap-2.5 rounded-[14px] border border-line-strong px-3.5 py-3 text-sm font-semibold',
+                hoursMode === option.value && 'border-ink',
               )}
             >
               <input
@@ -50,13 +50,13 @@ export const ProfessionalHoursFields = () => {
                 checked={hoursMode === option.value}
                 onChange={() => handleModeChange(option.value)}
                 className={cn(
-                  'mt-0.5 size-5 shrink-0 accent-[#0B0B0F]',
+                  'mt-0.5 size-5 shrink-0 accent-ink',
                   PARTNER_FOCUS_CLASS,
                 )}
               />
               <span>
                 {option.label}
-                <span className="block text-[13px] font-medium text-[#5F5C6E]">
+                <span className="block text-[13px] font-medium text-ink-muted">
                   {option.description}
                 </span>
               </span>
@@ -75,7 +75,7 @@ export const ProfessionalHoursFields = () => {
             aria-hidden="true"
             className={cn(
               GRID_CLASS,
-              'hidden text-xs font-bold tracking-[0.04em] text-[#5F5C6E] uppercase md:grid',
+              'hidden text-xs font-bold tracking-[0.04em] text-ink-muted uppercase md:grid',
             )}
           >
             <span>Dia</span>
@@ -88,13 +88,13 @@ export const ProfessionalHoursFields = () => {
           {rows.map((row) => (
             <div
               key={row.day}
-              className="grid gap-1.5 rounded-[14px] border border-[#EBE9F0] p-3 md:rounded-none md:border-0 md:border-t md:px-0 md:py-2"
+              className="grid gap-1.5 rounded-[14px] border border-line p-3 md:rounded-none md:border-0 md:border-t md:px-0 md:py-2"
             >
               <div className={GRID_CLASS}>
                 <span
                   className={cn(
                     'text-sm font-bold',
-                    row.isStoreClosed && 'text-[#5F5C6E]',
+                    row.isStoreClosed && 'text-ink-muted',
                   )}
                 >
                   {row.label}
@@ -104,7 +104,7 @@ export const ProfessionalHoursFields = () => {
                   className={cn(
                     'flex min-h-11 items-center gap-2 text-[13px] font-semibold',
                     row.isStoreClosed
-                      ? 'cursor-not-allowed text-[#5F5C6E]'
+                      ? 'cursor-not-allowed text-ink-muted'
                       : 'cursor-pointer',
                   )}
                 >
@@ -113,7 +113,7 @@ export const ProfessionalHoursFields = () => {
                     disabled={row.isStoreClosed}
                     aria-label={row.switchLabel}
                     onCheckedChange={() => handleToggleDay(row.index)}
-                    className="data-[state=checked]:bg-[#0B0B0F]"
+                    className="data-[state=checked]:bg-ink"
                   />
                   {row.isStoreClosed
                     ? 'Fechado'
@@ -138,7 +138,7 @@ export const ProfessionalHoursFields = () => {
                     </label>
                   ))
                 ) : (
-                  <span className="col-span-2 text-[13px] font-medium text-[#5F5C6E] md:col-span-4">
+                  <span className="col-span-2 text-[13px] font-medium text-ink-muted md:col-span-4">
                     {row.isStoreClosed
                       ? 'Loja fechada'
                       : `Folga fixa: não atende ${row.offLabel}`}
@@ -147,7 +147,7 @@ export const ProfessionalHoursFields = () => {
               </div>
 
               {row.error ? (
-                <p role="alert" className="text-[13px] font-semibold text-[#A4231A]">
+                <p role="alert" className="text-[13px] font-semibold text-error">
                   {row.label}: {row.error}
                 </p>
               ) : null}
@@ -156,7 +156,7 @@ export const ProfessionalHoursFields = () => {
         </div>
       ) : null}
 
-      <p className="rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] leading-normal">
+      <p className="rounded-[14px] bg-surface px-3.5 py-3 text-[13px] leading-normal">
         Folgas e férias pontuais ficam em Bloquear horário, na agenda.
       </p>
     </div>

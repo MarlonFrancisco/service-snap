@@ -13,7 +13,7 @@ export const BookingWhatsappCard = () => {
   return (
     <section
       aria-labelledby="booking-whatsapp-title"
-      className="mb-5 flex flex-col gap-3.5 rounded-3xl bg-white p-6 text-[#0B0B0F] shadow-[0_12px_40px_rgba(15,12,30,0.1)]"
+      className="mb-5 flex flex-col gap-3.5 rounded-3xl bg-white p-6 text-ink shadow-[0_12px_40px_rgba(15,12,30,0.1)]"
     >
       <h2
         id="booking-whatsapp-title"
@@ -21,7 +21,7 @@ export const BookingWhatsappCard = () => {
       >
         Prefere marcar pelo WhatsApp?
       </h2>
-      <p className="text-sm leading-normal text-[#5F5C6E]">
+      <p className="text-sm leading-normal text-ink-muted">
         Agende, remarque ou cancele pela conversa, sem criar conta.
       </p>
       <a
@@ -29,16 +29,16 @@ export const BookingWhatsappCard = () => {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-full bg-[#0B0B0F] px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]"
+        className="flex min-h-[52px] items-center justify-center gap-2.5 rounded-full bg-ink px-[22px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         <WhatsappGlyph />
         Agendar pelo WhatsApp
       </a>
       <div className="flex items-center gap-[18px]">
         <WhatsappBotQr link={whatsappBot.link} size={96} />
-        <small className="text-[13px] leading-[1.45] text-[#5F5C6E]">
+        <small className="text-[13px] leading-[1.45] text-ink-muted">
           No computador, aponte a câmera do celular para abrir a conversa.
-          <b className="block font-bold text-[#0B0B0F]">
+          <b className="block font-bold text-ink">
             {whatsappBot.displayPhoneNumber}
           </b>
         </small>

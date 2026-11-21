@@ -32,7 +32,7 @@ export const ExperienceCard = ({
         className="absolute inset-0 z-10 rounded-[20px] md:rounded-[22px]"
         aria-label={`Ver ${experience.name}`}
       />
-      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[20px] bg-[#e8e7f1] md:rounded-[22px]">
+      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[20px] bg-surface-4 md:rounded-[22px]">
         <ImageWithFallback
           src={experience.image}
           alt={experience.imageAlt}
@@ -41,22 +41,22 @@ export const ExperienceCard = ({
           sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 252px"
           className="object-cover transition-transform duration-500 md:group-hover:scale-105"
         />
-        <span className="absolute top-3 left-3 max-w-[calc(100%-4.5rem)] truncate rounded-full bg-[#0B0B0F] px-[11px] py-1.5 text-xs font-semibold text-white md:top-3.5 md:left-3.5 md:px-3">
+        <span className="absolute top-3 left-3 max-w-[calc(100%-4.5rem)] truncate rounded-full bg-ink px-[11px] py-1.5 text-xs font-semibold text-white md:top-3.5 md:left-3.5 md:px-3">
           {experience.badgeLabel}
         </span>
         <ExperienceFavoriteButton storeId={experience.id} />
       </div>
-      <h3 className="mt-3 line-clamp-1 text-base font-bold tracking-[-0.01em] text-[#0B0B0F] md:mt-3.5">
+      <h3 className="mt-3 line-clamp-1 text-base font-bold tracking-[-0.01em] text-ink md:mt-3.5">
         {experience.name}
       </h3>
-      <p className="mt-[3px] line-clamp-1 text-sm text-[#5F5C6E] md:mt-1">
+      <p className="mt-[3px] line-clamp-1 text-sm text-ink-muted md:mt-1">
         {experience.rating ? (
           <>
             <Star
-              className="mr-1 inline h-3.5 w-3.5 -translate-y-px fill-[#0B0B0F] text-[#0B0B0F]"
+              className="mr-1 inline h-3.5 w-3.5 -translate-y-px fill-ink text-ink"
               aria-hidden
             />
-            <b className="text-[#0B0B0F]">{experience.rating}</b> (
+            <b className="text-ink">{experience.rating}</b> (
             {experience.reviews}) · {experience.location}
           </>
         ) : (
@@ -64,13 +64,13 @@ export const ExperienceCard = ({
         )}
       </p>
       <div className="mt-auto flex items-end justify-between gap-2 pt-2.5 md:pt-3">
-        <span className="min-w-0 text-xs text-[#5F5C6E]">
+        <span className="min-w-0 text-xs text-ink-muted">
           A partir de
-          <b className="block text-[17px] font-extrabold whitespace-nowrap text-[#0B0B0F]">
+          <b className="block text-[17px] font-extrabold whitespace-nowrap text-ink">
             {experience.price}
           </b>
         </span>
-        <span className="shrink-0 rounded-full bg-[#0B0B0F] px-5 py-[11px] text-[13px] font-bold text-white">
+        <span className="shrink-0 rounded-full bg-ink px-5 py-[11px] text-[13px] font-bold text-white">
           Agendar
         </span>
       </div>

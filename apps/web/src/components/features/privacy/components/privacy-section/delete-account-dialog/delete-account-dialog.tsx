@@ -51,7 +51,7 @@ export const DeleteAccountDialog = (config: TDeleteAccountDialogConfig) => {
           </DialogDescription>
         </DialogHeader>
 
-        <ul className="m-0 list-disc pl-5 text-sm leading-[1.7] text-[#3D3A4A]">
+        <ul className="m-0 list-disc pl-5 text-sm leading-[1.7] text-ink-soft">
           {CONSEQUENCES.map((item) => (
             <li key={item}>{item}</li>
           ))}

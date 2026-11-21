@@ -42,7 +42,7 @@ export function UpgradePlan() {
   return (
     <div className="grid gap-[22px]">
       {isCancellationScheduled ? (
-        <div className="rounded-[14px] bg-[#FFF1E0] px-[18px] py-3.5 text-sm leading-normal text-[#6E3B00]">
+        <div className="rounded-[14px] bg-warning-bg px-[18px] py-3.5 text-sm leading-normal text-warning">
           <strong className="block">
             Cancelamento agendado no plano {currentPlan?.planName}
           </strong>
@@ -56,7 +56,7 @@ export function UpgradePlan() {
           </Link>
         </div>
       ) : (
-        <p className="rounded-[14px] bg-[#F7F6FA] px-[18px] py-3.5 text-sm leading-normal">
+        <p className="rounded-[14px] bg-surface px-[18px] py-3.5 text-sm leading-normal">
           <strong>Você está no plano {currentPlan?.planName}.</strong>{' '}
           {isOnHighestPlan
             ? 'Este já é o plano mais completo disponível neste ciclo de cobrança.'
@@ -88,7 +88,7 @@ export function UpgradePlan() {
             <h2 className="text-[28px] leading-tight font-extrabold tracking-[-0.03em]">
               Calcule seu retorno sobre investimento
             </h2>
-            <p className="mt-1.5 text-[15px] text-[#5F5C6E]">
+            <p className="mt-1.5 text-[15px] text-ink-muted">
               Veja quanto você pode economizar reduzindo no-shows com o
               ServiceSnap.
             </p>

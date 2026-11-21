@@ -43,7 +43,7 @@ export const CampaignDetailDialog = (config: TCampaignDetailDialogConfig) => {
         <Skeleton
           role="status"
           aria-label="Carregando envios"
-          className="h-[180px] rounded-[20px] bg-[#F0EEF4]"
+          className="h-[180px] rounded-[20px] bg-surface-3"
         />
       );
     }
@@ -73,7 +73,7 @@ export const CampaignDetailDialog = (config: TCampaignDetailDialogConfig) => {
           </p>
         ) : null}
         {message ? (
-          <p className="rounded-2xl bg-[#F7F6FA] px-4 py-3.5 text-sm leading-normal whitespace-pre-line text-[#2C2A36]">
+          <p className="rounded-2xl bg-surface px-4 py-3.5 text-sm leading-normal whitespace-pre-line text-ink-body">
             {message}
           </p>
         ) : null}
@@ -109,7 +109,7 @@ export const CampaignDetailDialog = (config: TCampaignDetailDialogConfig) => {
                   <td
                     className={cn(
                       RETENTION_TD_CLASS,
-                      'text-[13px] break-words text-[#5F5C6E]',
+                      'text-[13px] break-words text-ink-muted',
                     )}
                   >
                     {recipient.detail}
@@ -130,7 +130,7 @@ export const CampaignDetailDialog = (config: TCampaignDetailDialogConfig) => {
           <DialogTitle className={RETENTION_DIALOG_TITLE_CLASS}>
             {title}
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-sm text-ink-muted">
             {summary || 'Andamento de cada envio'}
           </DialogDescription>
         </DialogHeader>

@@ -8,13 +8,13 @@ import {
 import type { TCustomersTableConfig } from './customers-table.types';
 
 const TABLE_WRAPPER_CLASS = cn(
-  'overflow-x-auto rounded-[22px] border border-[#EBE9F0]',
+  'overflow-x-auto rounded-[22px] border border-line',
   PARTNER_FOCUS_CLASS,
 );
 const HEAD_CELL_CLASS =
-  'border-b border-[#EBE9F0] bg-[#F7F6FA] px-[18px] py-3.5 text-left text-xs font-bold whitespace-nowrap text-[#5F5C6E]';
+  'border-b border-line bg-surface px-[18px] py-3.5 text-left text-xs font-bold whitespace-nowrap text-ink-muted';
 const CELL_CLASS =
-  'border-b border-[#F0EEF4] px-[18px] py-3.5 align-middle group-last:border-b-0';
+  'border-b border-surface-3 px-[18px] py-3.5 align-middle group-last:border-b-0';
 const NUMBER_CLASS = 'text-right whitespace-nowrap tabular-nums';
 
 const COLUMNS = [
@@ -65,7 +65,7 @@ export const CustomersTable = ({
               <Link
                 href={row.href}
                 className={cn(
-                  'inline-flex min-h-11 items-center font-bold underline decoration-[#D6D3DE] underline-offset-[3px] hover:decoration-[#0B0B0F]',
+                  'inline-flex min-h-11 items-center font-bold underline decoration-line-2 underline-offset-[3px] hover:decoration-ink',
                   PARTNER_FOCUS_CLASS,
                 )}
               >
@@ -133,7 +133,7 @@ export const CustomersTableSkeleton = () => (
   <div
     role="status"
     aria-label="Carregando clientes"
-    className="overflow-x-auto rounded-[22px] border border-[#EBE9F0]"
+    className="overflow-x-auto rounded-[22px] border border-line"
   >
     <table className="w-full min-w-[1040px] border-collapse text-sm">
       <TableHead />
@@ -142,7 +142,7 @@ export const CustomersTableSkeleton = () => (
           <tr key={index} className="group">
             {COLUMNS.map((column) => (
               <td key={column.label} className={CELL_CLASS}>
-                <Skeleton className="h-4 w-full max-w-[140px] rounded-full bg-[#F0EEF4]" />
+                <Skeleton className="h-4 w-full max-w-[140px] rounded-full bg-surface-3" />
               </td>
             ))}
           </tr>

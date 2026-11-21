@@ -53,9 +53,9 @@ export function SignupStep({ userData, onNext, onBack }: TSignupStepConfig) {
         </p>
       </div>
 
-      <div className="flex justify-between gap-3 rounded-[14px] bg-[#F7F6FA] px-4 py-3.5 text-sm">
+      <div className="flex justify-between gap-3 rounded-[14px] bg-surface px-4 py-3.5 text-sm">
         <span className="min-w-0 truncate">{contact}</span>
-        <span className="text-[13px] font-bold whitespace-nowrap text-[#0A7D4F]">
+        <span className="text-[13px] font-bold whitespace-nowrap text-success-vivid">
           Verificado
         </span>
       </div>
@@ -93,7 +93,7 @@ export function SignupStep({ userData, onNext, onBack }: TSignupStepConfig) {
             phoneCodeOptions={phoneCodeOptions}
             mask={phoneMask}
             phonePlaceholder={phonePlaceholder}
-            triggerClassName="h-[52px]! w-[7.75rem] rounded-[14px] border-[#E3E1EA] bg-white px-3 text-sm shadow-none focus-visible:border-[#0B0B0F] focus-visible:ring-[#0B0B0F]/15"
+            triggerClassName="h-[52px]! w-[7.75rem] rounded-[14px] border-line-strong bg-white px-3 text-sm shadow-none focus-visible:border-ink focus-visible:ring-ink/15"
             inputClassName={AUTH_INPUT_CLASS}
           />
         </div>
@@ -121,7 +121,7 @@ export function SignupStep({ userData, onNext, onBack }: TSignupStepConfig) {
           onCheckedChange={(checked) =>
             handleInputChange('acceptedTerms', checked === true)
           }
-          className="size-[22px] rounded-md border-[#E3E1EA] bg-white data-[state=checked]:border-[#0B0B0F] data-[state=checked]:bg-[#0B0B0F] data-[state=checked]:text-white"
+          className="size-[22px] rounded-md border-line-strong bg-white data-[state=checked]:border-ink data-[state=checked]:bg-ink data-[state=checked]:text-white"
         />
         <span>
           Li e concordo com os{' '}

@@ -24,7 +24,7 @@ export function BillingCard() {
   return (
     <section
       aria-label="Forma de pagamento e faturas"
-      className="grid gap-3.5 rounded-[24px] border border-[#EBE9F0] p-6"
+      className="grid gap-3.5 rounded-[24px] border border-line p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-2.5">
         <h3 className="text-lg font-extrabold">Forma de pagamento e faturas</h3>
@@ -36,7 +36,7 @@ export function BillingCard() {
       {isPaymentFailed ? (
         <div
           role="alert"
-          className="flex items-start gap-2.5 rounded-[14px] bg-[#FBE8E6] px-3.5 py-3 text-sm font-semibold text-[#A4231A]"
+          className="flex items-start gap-2.5 rounded-[14px] bg-error-bg px-3.5 py-3 text-sm font-semibold text-error"
         >
           <AlertCircle aria-hidden="true" className="mt-px size-[18px] shrink-0" />
           Pagamento recusado. Atualize a forma de pagamento para manter o plano.
@@ -44,8 +44,8 @@ export function BillingCard() {
       ) : null}
 
       {charge ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#F0EEF4] pt-3 text-sm">
-          <span className="text-[#5F5C6E]">{charge.label}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-surface-3 pt-3 text-sm">
+          <span className="text-ink-muted">{charge.label}</span>
           <b>{charge.value}</b>
         </div>
       ) : null}
@@ -71,7 +71,7 @@ export function BillingCard() {
           </>
         )}
       </button>
-      <p className="text-[13px] leading-normal text-[#5F5C6E]">
+      <p className="text-[13px] leading-normal text-ink-muted">
         Abre a página segura do Stripe para trocar o cartão, ver faturas e
         atualizar dados de cobrança.
       </p>

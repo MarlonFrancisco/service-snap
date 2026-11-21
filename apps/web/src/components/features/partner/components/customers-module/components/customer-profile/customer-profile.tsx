@@ -41,17 +41,17 @@ const BackLink = () => (
 const ProfileSkeleton = () => (
   <div role="status" aria-label="Carregando cliente" className="grid gap-5">
     <div className="flex items-center gap-[18px]">
-      <Skeleton className="size-[72px] rounded-full bg-[#F0EEF4]" />
+      <Skeleton className="size-[72px] rounded-full bg-surface-3" />
       <div className="grid gap-2">
-        <Skeleton className="h-7 w-56 rounded-full bg-[#F0EEF4]" />
-        <Skeleton className="h-4 w-72 rounded-full bg-[#F0EEF4]" />
+        <Skeleton className="h-7 w-56 rounded-full bg-surface-3" />
+        <Skeleton className="h-4 w-72 rounded-full bg-surface-3" />
       </div>
     </div>
     <div className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-3.5">
       {Array.from({ length: 4 }, (_, index) => (
         <Skeleton
           key={index}
-          className="h-[104px] rounded-[22px] bg-[#F0EEF4]"
+          className="h-[104px] rounded-[22px] bg-surface-3"
         />
       ))}
     </div>
@@ -93,18 +93,18 @@ export const CustomerProfile = ({ userId }: TCustomerProfileConfig) => {
           <div className="flex min-w-0 items-center gap-[18px]">
             <span
               aria-hidden="true"
-              className="grid size-[72px] shrink-0 place-items-center rounded-full bg-[#F4F3F7]"
+              className="grid size-[72px] shrink-0 place-items-center rounded-full bg-surface-2"
             >
-              <User className="size-[30px] stroke-[1.8] text-[#5F5C6E]" />
+              <User className="size-[30px] stroke-[1.8] text-ink-muted" />
             </span>
             <div className="min-w-0">
               <h2 className="text-[28px] font-extrabold tracking-[-0.03em] break-words">
                 {name}
               </h2>
-              <p className="mt-1 text-sm break-all text-[#5F5C6E]">
+              <p className="mt-1 text-sm break-all text-ink-muted">
                 {contactLine}
               </p>
-              <p className="mt-1 text-sm text-[#5F5C6E]">{visitsLine}</p>
+              <p className="mt-1 text-sm text-ink-muted">{visitsLine}</p>
             </div>
           </div>
 
@@ -141,14 +141,14 @@ export const CustomerProfile = ({ userId }: TCustomerProfileConfig) => {
         <dl className="grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-3.5">
           {stats.map((stat) => (
             <div key={stat.label} className={CUSTOMERS_CARD_CLASS}>
-              <dt className="text-[13px] font-semibold text-[#5F5C6E]">
+              <dt className="text-[13px] font-semibold text-ink-muted">
                 {stat.label}
               </dt>
               <dd className="mt-1.5 text-[28px] font-extrabold tracking-[-0.03em]">
                 {stat.value}
               </dd>
               {stat.hint ? (
-                <dd className="mt-1 text-[13px] text-[#5F5C6E]">{stat.hint}</dd>
+                <dd className="mt-1 text-[13px] text-ink-muted">{stat.hint}</dd>
               ) : null}
             </div>
           ))}

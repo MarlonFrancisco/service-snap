@@ -30,7 +30,7 @@ export const HowItWorks = () => {
       >
         Como funciona o ServiceSnap
       </h2>
-      <p className="mt-2 max-w-[40rem] text-[15px] leading-[1.6] text-[#5F5C6E] md:text-base">
+      <p className="mt-2 max-w-[40rem] text-[15px] leading-[1.6] text-ink-muted md:text-base">
         Encontre quem atende perto de você, veja só os horários livres e
         confirme sem precisar ligar.
       </p>
@@ -38,7 +38,7 @@ export const HowItWorks = () => {
         {STEPS.map(({ icon: Icon, title, text }) => (
           <li
             key={title}
-            className="flex gap-3.5 rounded-[20px] bg-[#F7F6FA] p-5 md:block md:rounded-3xl md:p-7"
+            className="flex gap-3.5 rounded-[20px] bg-surface p-5 md:block md:rounded-3xl md:p-7"
           >
             <Icon
               aria-hidden="true"
@@ -49,7 +49,7 @@ export const HowItWorks = () => {
               <h3 className="text-base font-bold md:mt-4 md:text-[17px]">
                 {title}
               </h3>
-              <p className="mt-1 text-sm leading-[1.55] text-[#5F5C6E] md:mt-1.5 md:leading-[1.6]">
+              <p className="mt-1 text-sm leading-[1.55] text-ink-muted md:mt-1.5 md:leading-[1.6]">
                 {text}
               </p>
             </div>

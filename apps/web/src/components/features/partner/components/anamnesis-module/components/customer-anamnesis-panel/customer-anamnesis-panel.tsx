@@ -43,7 +43,7 @@ export const CustomerAnamnesisPanel = ({
         <div className={ANAMNESIS_LOCK_NOTE_CLASS}>
           <Lock aria-hidden="true" className={ANAMNESIS_NOTE_ICON_CLASS} />
           <p>
-            <b className="block text-[#3B2A6B]">Ficha protegida</b>
+            <b className="block text-brand-ink">Ficha protegida</b>
             Só dono, gerente e o profissional deste atendimento abrem as
             respostas.
           </p>
@@ -57,8 +57,8 @@ export const CustomerAnamnesisPanel = ({
           aria-label="Carregando fichas"
           className="grid gap-2"
         >
-          <Skeleton className="h-[68px] rounded-[16px] bg-[#F0EEF4]" />
-          <Skeleton className="h-[68px] rounded-[16px] bg-[#F0EEF4]" />
+          <Skeleton className="h-[68px] rounded-[16px] bg-surface-3" />
+          <Skeleton className="h-[68px] rounded-[16px] bg-surface-3" />
         </div>
       );
     }
@@ -98,7 +98,7 @@ export const CustomerAnamnesisPanel = ({
           <li key={row.id} className={ANAMNESIS_ITEM_CLASS}>
             <div className="grid min-w-0 gap-0.5">
               <b className="text-sm break-words">{row.formName}</b>
-              <span className="text-[13px] text-[#5F5C6E]">{row.meta}</span>
+              <span className="text-[13px] text-ink-muted">{row.meta}</span>
             </div>
             <button
               type="button"

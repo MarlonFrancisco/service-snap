@@ -133,7 +133,7 @@ export const RegionTab = () => {
 
         <div
           role="note"
-          className="rounded-[14px] bg-[#FFF1E0] px-[18px] py-3.5 text-sm leading-normal text-[#6E3B00]"
+          className="rounded-[14px] bg-warning-bg px-[18px] py-3.5 text-sm leading-normal text-warning"
         >
           <p className="font-bold">Importante</p>
           <p>

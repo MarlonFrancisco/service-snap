@@ -52,7 +52,7 @@ export function VerificationStep({
         <h2 className={AUTH_TITLE_CLASS}>Confirme sua identidade</h2>
         <p className={AUTH_SUBTITLE_CLASS}>
           Enviamos um código de 6 dígitos para{' '}
-          <b className="break-all text-[#0B0B0F]">{maskedContact}</b>
+          <b className="break-all text-ink">{maskedContact}</b>
         </p>
       </div>
 
@@ -73,7 +73,7 @@ export function VerificationStep({
               onChange={(e) => handleCodeChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               className={cn(
-                'h-14 w-full min-w-0 rounded-[14px] border border-[#E3E1EA] bg-white p-0 text-center text-xl font-bold text-[#0B0B0F]',
+                'h-14 w-full min-w-0 rounded-[14px] border border-line-strong bg-white p-0 text-center text-xl font-bold text-ink',
                 AUTH_FOCUS_RING_CLASS,
               )}
             />

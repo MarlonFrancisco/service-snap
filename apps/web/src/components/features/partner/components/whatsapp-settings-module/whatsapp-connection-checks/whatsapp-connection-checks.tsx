@@ -14,10 +14,10 @@ import {
 import type { IWhatsappConnectionChecksProps } from './whatsapp-connection-checks.types';
 
 const STATE_ICON = {
-  ok: { Icon: CircleCheck, className: 'text-[#0A5536]' },
-  warning: { Icon: TriangleAlert, className: 'text-[#8A4B00]' },
-  error: { Icon: CircleX, className: 'text-[#B42318]' },
-  pending: { Icon: Clock, className: 'text-[#5F5C6E]' },
+  ok: { Icon: CircleCheck, className: 'text-success' },
+  warning: { Icon: TriangleAlert, className: 'text-warning' },
+  error: { Icon: CircleX, className: 'text-error' },
+  pending: { Icon: Clock, className: 'text-ink-muted' },
 } satisfies Record<TWhatsappCheckState, unknown>;
 
 export const WhatsappConnectionChecks = ({
@@ -37,7 +37,7 @@ export const WhatsappConnectionChecks = ({
           key={check.key}
           className={cn(
             'grid gap-2 rounded-[16px] border p-4',
-            check.state === 'error' ? 'border-[#F2C4C4]' : 'border-[#EBE9F0]',
+            check.state === 'error' ? 'border-error-line' : 'border-line',
           )}
         >
           <div className="flex flex-wrap items-center justify-between gap-2.5">
@@ -57,11 +57,11 @@ export const WhatsappConnectionChecks = ({
               {badge.label}
             </span>
           </div>
-          <p className="text-sm leading-normal text-[#5F5C6E]">
+          <p className="text-sm leading-normal text-ink-muted">
             {check.message}
           </p>
           {check.suggestions?.length && onUseSuggestion ? (
-            <div className="grid gap-2 rounded-[14px] bg-[#FAFAFC] p-3.5">
+            <div className="grid gap-2 rounded-[14px] bg-surface-0 p-3.5">
               <p className="text-[13px] font-bold">
                 {check.suggestions.length === 1
                   ? 'Encontramos este número nas contas do seu token:'
@@ -71,7 +71,7 @@ export const WhatsappConnectionChecks = ({
                 {check.suggestions.map((suggestion) => (
                   <li
                     key={`${suggestion.businessAccountId}-${suggestion.phoneNumberId}`}
-                    className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[#EBE9F0] bg-white px-3.5 py-3"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-line bg-white px-3.5 py-3"
                   >
                     <div className="min-w-0 text-[13px] leading-normal">
                       <b className="block text-sm">
@@ -80,7 +80,7 @@ export const WhatsappConnectionChecks = ({
                           ? ` · ${suggestion.verifiedName}`
                           : ''}
                       </b>
-                      <span className="block break-all text-[#5F5C6E] tabular-nums">
+                      <span className="block break-all text-ink-muted tabular-nums">
                         Phone Number ID {suggestion.phoneNumberId} · Business
                         Account ID {suggestion.businessAccountId}
                       </span>

@@ -29,7 +29,7 @@ export const EMBED_STATE_NOTICE: Record<
 };
 
 export const EMBED_PRIMARY_ACTION_CLASS =
-  'flex min-h-12 w-full items-center justify-center rounded-full bg-[#0B0B0F] px-5 text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'flex min-h-12 w-full items-center justify-center rounded-full bg-ink px-5 text-sm font-bold text-white transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 export const EMBED_SECONDARY_ACTION_CLASS =
-  'flex min-h-12 w-full items-center justify-center rounded-full border border-[#E3E1EA] bg-white px-5 text-sm font-bold text-[#0B0B0F] transition-colors hover:bg-[#F7F6FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'flex min-h-12 w-full items-center justify-center rounded-full border border-line-strong bg-white px-5 text-sm font-bold text-ink transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';

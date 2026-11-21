@@ -8,9 +8,9 @@ import { Heart, Share, Star } from 'lucide-react';
 import { useBusinessShowcase } from './business-showcase.hook';
 
 const HEADER_ACTION_CLASS =
-  'flex h-11 items-center gap-2 rounded-full border border-[#E3E1EA] bg-white px-[18px] text-sm font-semibold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7]';
+  'flex h-11 items-center gap-2 rounded-full border border-line-strong bg-white px-[18px] text-sm font-semibold text-ink transition-colors hover:bg-surface-2';
 const PHOTO_ACTION_CLASS =
-  'grid h-11 w-11 place-items-center rounded-full bg-white/92 text-[#0B0B0F]';
+  'grid h-11 w-11 place-items-center rounded-full bg-white/92 text-ink';
 const GALLERY_TILE_CLASS =
   'group relative h-full w-full overflow-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-white disabled:cursor-default';
 const GALLERY_IMAGE_CLASS =
@@ -43,7 +43,7 @@ export function BusinessShowcase() {
   const mobileImages = allImages.length > 0 ? allImages : [''];
   const favoriteIcon = (
     <Heart
-      className={cn('h-4 w-4', isFavorite && 'fill-[#EF4444] text-[#EF4444]')}
+      className={cn('h-4 w-4', isFavorite && 'fill-error text-error')}
       aria-hidden
     />
   );
@@ -54,23 +54,23 @@ export function BusinessShowcase() {
         {/* Título e ações */}
         <div className="order-2 flex flex-wrap items-end justify-between gap-6 px-5 pt-5 md:order-1 md:px-0 md:pt-4">
           <div className="min-w-0">
-            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-[#0B0B0F] md:text-4xl">
+            <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-ink md:text-4xl">
               {businessName}
             </h1>
-            <p className="mt-1.5 flex flex-wrap items-center gap-x-1 text-sm text-[#5F5C6E] md:text-[15px]">
+            <p className="mt-1.5 flex flex-wrap items-center gap-x-1 text-sm text-ink-muted md:text-[15px]">
               {reviewCount > 0 ? (
-                <b className="flex items-center gap-1 font-bold text-[#0B0B0F]">
-                  <Star className="h-3.5 w-3.5 fill-[#0B0B0F]" aria-hidden />
+                <b className="flex items-center gap-1 font-bold text-ink">
+                  <Star className="h-3.5 w-3.5 fill-ink" aria-hidden />
                   {formatRating(averageRating)}
                 </b>
               ) : (
-                <b className="font-bold text-[#0B0B0F]">Novo</b>
+                <b className="font-bold text-ink">Novo</b>
               )}
               <span aria-hidden>·</span>
               <button
                 type="button"
                 onClick={handleOpenReviews}
-                className="underline transition-colors hover:text-[#0B0B0F]"
+                className="underline transition-colors hover:text-ink"
               >
                 {reviewCount} {reviewCount === 1 ? 'avaliação' : 'avaliações'}
               </button>
@@ -108,7 +108,7 @@ export function BusinessShowcase() {
           <div
             role="group"
             aria-label="Galeria de fotos"
-            className="hidden grid-cols-[2fr_1fr_1fr] grid-rows-[220px_220px] gap-2 overflow-hidden rounded-[28px] bg-[#F4F3F7] md:grid"
+            className="hidden grid-cols-[2fr_1fr_1fr] grid-rows-[220px_220px] gap-2 overflow-hidden rounded-[28px] bg-surface-2 md:grid"
           >
             <div className="row-span-2">
               <button
@@ -168,7 +168,7 @@ export function BusinessShowcase() {
                       disabled={!image}
                       onClick={() => handleImageClick(index)}
                       aria-label={`Abrir foto ${index + 1} de ${businessName}`}
-                      className="relative block aspect-[4/3] w-full bg-[#F4F3F7]"
+                      className="relative block aspect-[4/3] w-full bg-surface-2"
                     >
                       <ImageWithFallback
                         fill
@@ -211,7 +211,7 @@ export function BusinessShowcase() {
             </div>
 
             {allImages.length > 1 && (
-              <span className="pointer-events-none absolute right-3.5 bottom-3.5 grid h-8 place-items-center rounded-full bg-[#0B0B0F]/70 px-3 text-xs font-semibold text-white">
+              <span className="pointer-events-none absolute right-3.5 bottom-3.5 grid h-8 place-items-center rounded-full bg-ink/70 px-3 text-xs font-semibold text-white">
                 {visibleImageIndex + 1} / {allImages.length}
               </span>
             )}
@@ -221,7 +221,7 @@ export function BusinessShowcase() {
             <button
               type="button"
               onClick={() => handleImageClick(0)}
-              className="absolute right-4 bottom-4 hidden h-11 rounded-full bg-white px-[18px] text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#F4F3F7] md:block"
+              className="absolute right-4 bottom-4 hidden h-11 rounded-full bg-white px-[18px] text-[13px] font-bold text-ink transition-colors hover:bg-surface-2 md:block"
             >
               Ver todas ({allImages.length})
             </button>

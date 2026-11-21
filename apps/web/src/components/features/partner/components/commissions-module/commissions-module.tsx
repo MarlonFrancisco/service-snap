@@ -17,7 +17,7 @@ export const CommissionsModule = () => {
       <Skeleton
         role="status"
         aria-label="Carregando comissões"
-        className="h-64 rounded-[24px] bg-[#F0EEF4]"
+        className="h-64 rounded-[24px] bg-surface-3"
       />
     );
   }

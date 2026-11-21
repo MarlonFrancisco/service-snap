@@ -99,7 +99,7 @@ export const CashHistory = () => {
                 <tr key={index} className="group">
                   {[...COLUMNS, { label: 'Ações' }].map((column) => (
                     <td key={column.label} className={MANAGEMENT_CELL_CLASS}>
-                      <Skeleton className="h-4 w-full max-w-[110px] rounded-full bg-[#F0EEF4]" />
+                      <Skeleton className="h-4 w-full max-w-[110px] rounded-full bg-surface-3" />
                     </td>
                   ))}
                 </tr>
@@ -241,7 +241,7 @@ export const CashHistory = () => {
       {showPager ? (
         <nav
           aria-label="Paginação dos caixas"
-          className="flex flex-wrap items-center justify-between gap-3 text-sm text-[#5F5C6E]"
+          className="flex flex-wrap items-center justify-between gap-3 text-sm text-ink-muted"
         >
           <span>
             Página {page} de {totalPages}

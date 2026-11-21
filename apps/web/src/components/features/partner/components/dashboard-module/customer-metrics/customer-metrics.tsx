@@ -81,7 +81,7 @@ export function CustomerMetricsModule() {
             onClick={handleExportCsv}
             disabled={!canExport}
             className={cn(
-              'h-[50px] w-full rounded-full border border-[#0B0B0F] bg-white px-5 text-[13px] font-bold transition-colors hover:bg-[#F7F6FA] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto',
+              'h-[50px] w-full rounded-full border border-ink bg-white px-5 text-[13px] font-bold transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50 md:w-auto',
               PARTNER_FOCUS_CLASS,
             )}
           >
@@ -157,11 +157,11 @@ export function CustomerMetricsModule() {
                 </div>
                 <div aria-hidden="true" className={METRICS_LEGEND_CLASS}>
                   <span className="flex items-center gap-1.5">
-                    <span className="h-0.5 w-4 bg-[#0B0B0F]" />
+                    <span className="h-0.5 w-4 bg-ink" />
                     Clientes no mês
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="h-0.5 w-4 bg-[#5F5C6E]" />
+                    <span className="h-0.5 w-4 bg-ink-muted" />
                     Novos
                   </span>
                 </div>

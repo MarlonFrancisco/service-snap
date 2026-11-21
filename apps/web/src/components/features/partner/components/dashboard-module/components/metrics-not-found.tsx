@@ -18,7 +18,7 @@ export type TMetricsNotFoundConfig = {
 };
 
 export const METRICS_STATE_PANEL_CLASS =
-  'flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-[#EBE9F0] bg-white p-6 text-center';
+  'flex min-h-[230px] flex-col items-center justify-center gap-2 rounded-[24px] border border-line bg-white p-6 text-center';
 
 export const MetricsNotFound = ({
   title,
@@ -31,7 +31,7 @@ export const MetricsNotFound = ({
   <div className={METRICS_STATE_PANEL_CLASS}>
     <span
       aria-hidden="true"
-      className="grid size-12 place-items-center rounded-full bg-[#F4F3F7]"
+      className="grid size-12 place-items-center rounded-full bg-surface-2"
     >
       <Icon className="size-[22px] stroke-[1.8]" />
     </span>

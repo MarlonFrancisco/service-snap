@@ -53,10 +53,10 @@ const NEW_CUSTOMER_FIELDS = [
 ] as const;
 
 const NOTICE_CLASS =
-  'rounded-[14px] bg-[#F7F6FA] px-3.5 py-3 text-[13px] font-medium text-[#5F5C6E]';
+  'rounded-[14px] bg-surface px-3.5 py-3 text-[13px] font-medium text-ink-muted';
 
 const OPTION_CLASS =
-  'flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border border-[#E3E1EA] px-3.5 py-2 transition-colors hover:bg-[#F7F6FA] has-[:checked]:border-[#0B0B0F] has-[:checked]:bg-[#F7F6FA] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#0B0B0F]';
+  'flex min-h-[56px] cursor-pointer items-center gap-3 rounded-2xl border border-line-strong px-3.5 py-2 transition-colors hover:bg-surface has-[:checked]:border-ink has-[:checked]:bg-surface has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink';
 
 export const SellPackageDialog = (config: TSellPackageDialogConfig) => {
   const {
@@ -114,13 +114,13 @@ export const SellPackageDialog = (config: TSellPackageDialogConfig) => {
               value={option.id}
               checked={option.id === selectedCustomer?.id}
               onChange={() => handleSelectCustomer(option)}
-              className="size-5 shrink-0 accent-[#0B0B0F]"
+              className="size-5 shrink-0 accent-ink"
             />
             <span className="min-w-0">
               <b className="block text-sm font-bold break-words">
                 {option.name}
               </b>
-              <span className="mt-0.5 block text-[13px] font-medium break-all text-[#5F5C6E]">
+              <span className="mt-0.5 block text-[13px] font-medium break-all text-ink-muted">
                 {option.contact}
               </span>
             </span>
@@ -156,7 +156,7 @@ export const SellPackageDialog = (config: TSellPackageDialogConfig) => {
                   <span className="relative">
                     <Search
                       aria-hidden="true"
-                      className="pointer-events-none absolute top-3.5 left-3.5 size-[18px] stroke-2 text-[#5F5C6E]"
+                      className="pointer-events-none absolute top-3.5 left-3.5 size-[18px] stroke-2 text-ink-muted"
                     />
                     <Input
                       type="search"
@@ -244,7 +244,7 @@ export const SellPackageDialog = (config: TSellPackageDialogConfig) => {
             <dl className="m-0 grid gap-2.5 text-sm">
               {summary.map((row) => (
                 <div key={row.label} className="flex justify-between gap-4">
-                  <dt className="text-[#5F5C6E]">{row.label}</dt>
+                  <dt className="text-ink-muted">{row.label}</dt>
                   <dd className="m-0 text-right font-semibold">{row.value}</dd>
                 </div>
               ))}

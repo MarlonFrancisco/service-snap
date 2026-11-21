@@ -33,13 +33,13 @@ export const AgendaReschedulePopover = () => {
         aria-label="Confirmar remarcação"
         className={cn(
           PARTNER_PORTAL_CLASS,
-          'flex w-[300px] flex-col gap-2 rounded-[20px] border-[#EBE9F0] bg-white p-4 shadow-[0_20px_50px_rgba(15,12,30,0.2)]',
+          'flex w-[300px] flex-col gap-2 rounded-[20px] border-line bg-white p-4 shadow-[0_20px_50px_rgba(15,12,30,0.2)]',
         )}
       >
         <p className="text-[15px] leading-[1.35] font-bold text-pretty">
           {question}
         </p>
-        <p className="text-[13px] text-[#5F5C6E]">
+        <p className="text-[13px] text-ink-muted">
           Avisamos o cliente por e-mail.
         </p>
         <div className="mt-1 flex gap-2">

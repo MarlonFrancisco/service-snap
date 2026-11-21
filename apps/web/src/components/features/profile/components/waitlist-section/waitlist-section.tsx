@@ -29,11 +29,11 @@ export const WaitlistSection = () => {
           return (
             <li
               key={item.id}
-              className="flex items-center justify-between gap-3 border-t border-[#F0EEF4] py-3.5 text-sm"
+              className="flex items-center justify-between gap-3 border-t border-surface-3 py-3.5 text-sm"
             >
               <div className="min-w-0">
-                <p className="font-bold text-[#0B0B0F]">{item.storeName}</p>
-                <p className="text-[#5F5C6E]">{item.details}</p>
+                <p className="font-bold text-ink">{item.storeName}</p>
+                <p className="text-ink-muted">{item.details}</p>
               </div>
               <Button
                 type="button"
@@ -41,7 +41,7 @@ export const WaitlistSection = () => {
                 onClick={() => handleLeave(item)}
                 disabled={isLeaving}
                 aria-label={`Sair da lista de espera de ${item.storeName}`}
-                className="h-11 shrink-0 rounded-full border-[#E3E1EA] bg-white px-4 text-[13px] font-bold text-[#0B0B0F] shadow-none hover:bg-[#F7F6FA]"
+                className="h-11 shrink-0 rounded-full border-line-strong bg-white px-4 text-[13px] font-bold text-ink shadow-none hover:bg-surface"
               >
                 {isLeaving ? 'Saindo...' : 'Sair'}
               </Button>

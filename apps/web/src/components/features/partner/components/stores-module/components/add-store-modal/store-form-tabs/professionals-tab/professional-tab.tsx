@@ -74,8 +74,8 @@ export const ProfessionalTab = () => {
 
       {isLoadingProfessionals ? (
         <div className="grid gap-3" role="status" aria-label="Carregando equipe">
-          <Skeleton className="h-[148px] rounded-[20px] bg-[#EBE9F0]" />
-          <Skeleton className="h-[148px] rounded-[20px] bg-[#EBE9F0]" />
+          <Skeleton className="h-[148px] rounded-[20px] bg-line" />
+          <Skeleton className="h-[148px] rounded-[20px] bg-line" />
         </div>
       ) : isErrorProfessionals ? (
         <StatePanel

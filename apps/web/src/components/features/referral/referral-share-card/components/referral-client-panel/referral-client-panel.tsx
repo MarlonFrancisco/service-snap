@@ -4,9 +4,9 @@ import { Loader2 } from 'lucide-react';
 import type { TReferralClientPanelConfig } from './referral-client-panel.types';
 
 const FOCUS_CLASS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 const COPY_BUTTON_CLASS = cn(
-  'h-11 shrink-0 rounded-full bg-white px-3.5 text-xs font-bold text-[#0B0B0F] transition-colors hover:bg-[#EBE9F0] md:h-9 md:bg-[#F4F3F7]',
+  'h-11 shrink-0 rounded-full bg-white px-3.5 text-xs font-bold text-ink transition-colors hover:bg-line md:h-9 md:bg-surface-2',
   FOCUS_CLASS,
 );
 
@@ -37,25 +37,25 @@ export const ReferralClientPanel = ({
       <h2 className="text-xl font-extrabold tracking-[-0.02em] md:tracking-[-0.025em]">
         Indique e compartilhe
       </h2>
-      <p className="mt-1 mb-3.5 text-sm leading-normal text-[#5F5C6E] md:mb-[18px]">
+      <p className="mt-1 mb-3.5 text-sm leading-normal text-ink-muted md:mb-[18px]">
         Convide amigos ou parceiros com o seu link exclusivo.
       </p>
 
       {isPendingReferral ? (
-        <div className="flex items-center justify-center gap-2 py-6 text-sm text-[#5F5C6E]">
+        <div className="flex items-center justify-center gap-2 py-6 text-sm text-ink-muted">
           <Loader2 className="size-5 animate-spin" aria-hidden />
           Carregando seu link…
         </div>
       ) : isErrorReferral || !referral ? (
         <div className="text-center">
-          <p className="text-sm text-[#5F5C6E]">
+          <p className="text-sm text-ink-muted">
             Não foi possível carregar seu código de indicação.
           </p>
           <button
             type="button"
             onClick={() => refetchReferral()}
             className={cn(
-              'mt-3.5 h-11 rounded-full border border-[#E3E1EA] px-[18px] text-[13px] font-semibold transition-colors hover:bg-[#F7F6FA]',
+              'mt-3.5 h-11 rounded-full border border-line-strong px-[18px] text-[13px] font-semibold transition-colors hover:bg-surface',
               FOCUS_CLASS,
             )}
           >
@@ -64,7 +64,7 @@ export const ReferralClientPanel = ({
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between gap-2 rounded-[14px] bg-[#F7F6FA] py-2 pr-2 pl-3.5 text-base font-extrabold tracking-[0.04em] md:py-3 md:pl-4 md:text-lg">
+          <div className="flex items-center justify-between gap-2 rounded-[14px] bg-surface py-2 pr-2 pl-3.5 text-base font-extrabold tracking-[0.04em] md:py-3 md:pl-4 md:text-lg">
             <span className="min-w-0 truncate">{referral.code}</span>
             <button
               type="button"
@@ -80,7 +80,7 @@ export const ReferralClientPanel = ({
             <p className="mt-4 mb-1.5 text-[13px] font-semibold">
               {primaryLabel}
             </p>
-            <div className="flex items-center gap-2 rounded-full border border-[#E3E1EA] py-1.5 pr-1.5 pl-3.5 text-[13px] text-[#5F5C6E]">
+            <div className="flex items-center gap-2 rounded-full border border-line-strong py-1.5 pr-1.5 pl-3.5 text-[13px] text-ink-muted">
               <span className="min-w-0 flex-1 truncate">
                 {primaryDisplayUrl}
               </span>
@@ -97,7 +97,7 @@ export const ReferralClientPanel = ({
             <p className="mt-4 mb-1.5 text-[13px] font-semibold">
               {secondaryLabel}
             </p>
-            <div className="flex items-center gap-2 rounded-full border border-[#E3E1EA] py-1.5 pr-1.5 pl-3.5 text-[13px] text-[#5F5C6E]">
+            <div className="flex items-center gap-2 rounded-full border border-line-strong py-1.5 pr-1.5 pl-3.5 text-[13px] text-ink-muted">
               <span className="min-w-0 flex-1 truncate">
                 {secondaryDisplayUrl}
               </span>
@@ -116,7 +116,7 @@ export const ReferralClientPanel = ({
             type="button"
             onClick={() => void handleShare()}
             className={cn(
-              'mt-3 block h-[50px] w-full rounded-full bg-[#0B0B0F] text-sm font-bold text-white transition-colors hover:bg-[#2B2B2B] md:mt-[18px] md:h-[52px]',
+              'mt-3 block h-[50px] w-full rounded-full bg-ink text-sm font-bold text-white transition-colors hover:bg-ink-hover md:mt-[18px] md:h-[52px]',
               FOCUS_CLASS,
             )}
           >
@@ -124,7 +124,7 @@ export const ReferralClientPanel = ({
             <span className="hidden md:inline">Compartilhar</span>
           </button>
 
-          <p className="mt-2.5 text-center text-[13px] text-[#5F5C6E] md:mt-3">
+          <p className="mt-2.5 text-center text-[13px] text-ink-muted md:mt-3">
             {referredLabel}
           </p>
         </>

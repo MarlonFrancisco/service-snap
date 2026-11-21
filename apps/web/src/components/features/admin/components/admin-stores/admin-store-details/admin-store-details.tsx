@@ -60,7 +60,7 @@ export const AdminStoreDetails = (config: TAdminStoreDetailsConfig) => {
           {Array.from({ length: 5 }, (_, index) => (
             <Skeleton
               key={index}
-              className="h-4 w-full rounded-full bg-[#F0EEF4]"
+              className="h-4 w-full rounded-full bg-surface-3"
             />
           ))}
         </div>
@@ -157,7 +157,7 @@ export const AdminStoreDetails = (config: TAdminStoreDetailsConfig) => {
               <li key={item.id} className={PANEL_ITEM_CLASS}>
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <b className="text-sm">{item.label}</b>
-                  <span className="text-[13px] text-[#5F5C6E]">
+                  <span className="text-[13px] text-ink-muted">
                     {item.meta}
                   </span>
                 </span>

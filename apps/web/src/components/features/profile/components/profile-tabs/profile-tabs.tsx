@@ -12,7 +12,7 @@ export const ProfileTabs = (config: TProfileTabsConfig) => {
   return (
     <nav
       aria-label="Seções do perfil"
-      className="-mx-5 mt-[22px] flex gap-6 overflow-x-auto border-b border-[#EBE9F0] px-5 md:mx-0 md:mt-8 md:gap-8 md:px-0"
+      className="-mx-5 mt-[22px] flex gap-6 overflow-x-auto border-b border-line px-5 md:mx-0 md:mt-8 md:gap-8 md:px-0"
     >
       {tabs.map((tab) => (
         <Link
@@ -25,14 +25,14 @@ export const ProfileTabs = (config: TProfileTabsConfig) => {
             PROFILE_FOCUS_CLASS,
             'focus-visible:-outline-offset-2',
             tab.isActive
-              ? 'border-[#0B0B0F] text-[#0B0B0F]'
-              : 'border-transparent text-[#5F5C6E] hover:text-[#0B0B0F]',
+              ? 'border-ink text-ink'
+              : 'border-transparent text-ink-muted hover:text-ink',
           )}
         >
           <span className="md:hidden">{tab.shortLabel}</span>
           <span className="hidden md:inline">{tab.label}</span>
           {tab.count > 0 && (
-            <span className="rounded-full bg-[#F4F3F7] px-[7px] py-px text-xs font-bold text-[#0B0B0F] md:px-2 md:py-0.5">
+            <span className="rounded-full bg-surface-2 px-[7px] py-px text-xs font-bold text-ink md:px-2 md:py-0.5">
               {tab.count}
             </span>
           )}

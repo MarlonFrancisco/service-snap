@@ -14,9 +14,9 @@ import { TrackedLink } from '@/components/ui/tracked-link';
 import Link from 'next/link';
 
 const FOCUS_CLASS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
-const PRIMARY_ACTION_CLASS = `inline-flex h-[52px] items-center rounded-full bg-[#0B0B0F] px-[26px] text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] ${FOCUS_CLASS}`;
-const SECONDARY_ACTION_CLASS = `inline-flex h-11 items-center rounded-full border border-[#0B0B0F] px-5 text-[13px] font-bold transition-colors hover:bg-[#F7F6FA] ${FOCUS_CLASS}`;
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
+const PRIMARY_ACTION_CLASS = `inline-flex h-[52px] items-center rounded-full bg-ink px-[26px] text-[15px] font-bold text-white transition-colors hover:bg-ink-hover ${FOCUS_CLASS}`;
+const SECONDARY_ACTION_CLASS = `inline-flex h-11 items-center rounded-full border border-ink px-5 text-[13px] font-bold transition-colors hover:bg-surface ${FOCUS_CLASS}`;
 const SECTION_TITLE_CLASS =
   'text-[22px] leading-[1.15] font-extrabold tracking-[-0.025em] md:text-[28px]';
 
@@ -66,14 +66,14 @@ export function CategoryGuide({
     <Header>
       <main className="mx-auto max-w-[82.5rem] px-5 pb-20 md:px-10">
         <nav aria-label="Navegação estrutural" className="mt-3 md:mt-8">
-          <ol className="flex gap-1.5 text-sm text-[#5F5C6E]">
+          <ol className="flex gap-1.5 text-sm text-ink-muted">
             <li>
               <Link href="/" className={`hover:underline ${FOCUS_CLASS}`}>
                 Início
               </Link>
             </li>
             <li aria-hidden="true">/</li>
-            <li aria-current="page" className="text-[#0B0B0F]">
+            <li aria-current="page" className="text-ink">
               {guide.name}
             </li>
           </ol>
@@ -82,7 +82,7 @@ export function CategoryGuide({
         <h1 className="mt-3 max-w-[48rem] text-[34px] leading-[1.08] font-extrabold tracking-[-0.035em] md:text-[44px]">
           {guide.heading}
         </h1>
-        <p className="mt-3 max-w-[42.5rem] text-base leading-[1.6] text-[#5F5C6E]">
+        <p className="mt-3 max-w-[42.5rem] text-base leading-[1.6] text-ink-muted">
           {guide.intro}
         </p>
         <div className="mt-7">
@@ -108,7 +108,7 @@ export function CategoryGuide({
             {guide.services.map((service) => (
               <li
                 key={service}
-                className="rounded-full bg-[#F7F6FA] px-4 py-2.5 text-sm font-semibold"
+                className="rounded-full bg-surface px-4 py-2.5 text-sm font-semibold"
               >
                 {service}
               </li>
@@ -148,7 +148,7 @@ export function CategoryGuide({
           </h2>
           <ol className="mt-6 grid gap-6 md:grid-cols-3">
             {STEPS.map(({ icon: Icon, title, text }, index) => (
-              <li key={title} className="rounded-3xl bg-[#F7F6FA] p-6">
+              <li key={title} className="rounded-3xl bg-surface p-6">
                 <Icon
                   aria-hidden="true"
                   className="h-7 w-7"
@@ -157,7 +157,7 @@ export function CategoryGuide({
                 <h3 className="mt-4 text-base font-bold">
                   {index + 1}. {title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-[1.6] text-[#5F5C6E]">
+                <p className="mt-1.5 text-sm leading-[1.6] text-ink-muted">
                   {text}
                 </p>
               </li>
@@ -169,7 +169,7 @@ export function CategoryGuide({
           <h2 id="perguntas" className={SECTION_TITLE_CLASS}>
             Perguntas frequentes
           </h2>
-          <div className="mt-5 max-w-[48rem] divide-y divide-[#EBE9F0] border-y border-[#EBE9F0]">
+          <div className="mt-5 max-w-[48rem] divide-y divide-line border-y border-line">
             {guide.faq.map((item) => (
               <details key={item.question} className="group py-4">
                 <summary
@@ -177,7 +177,7 @@ export function CategoryGuide({
                 >
                   {item.question}
                 </summary>
-                <p className="mt-2 text-sm leading-[1.6] text-[#5F5C6E]">
+                <p className="mt-2 text-sm leading-[1.6] text-ink-muted">
                   {item.answer}
                 </p>
               </details>
@@ -209,7 +209,7 @@ export function CategoryGuide({
           </ul>
         </section>
 
-        <section className="mt-14 rounded-3xl bg-[#0B0B0F] px-6 py-10 text-white md:mt-20 md:px-10">
+        <section className="mt-14 rounded-3xl bg-ink px-6 py-10 text-white md:mt-20 md:px-10">
           <h2 className={SECTION_TITLE_CLASS}>{guide.partnerTitle}</h2>
           <p className="mt-2 max-w-[36rem] text-sm leading-[1.6] text-white/70">
             Receba agendamentos online, organize sua equipe e envie lembretes
@@ -223,7 +223,7 @@ export function CategoryGuide({
               destination: partnerHref,
               segment: guide.slug,
             }}
-            className="mt-6 inline-flex h-11 items-center rounded-full bg-white px-5 text-[13px] font-bold text-[#0B0B0F] transition-colors hover:bg-[#EBE9F0] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="mt-6 inline-flex h-11 items-center rounded-full bg-white px-5 text-[13px] font-bold text-ink transition-colors hover:bg-line focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             Conhecer o sistema
           </TrackedLink>

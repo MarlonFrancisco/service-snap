@@ -39,7 +39,7 @@ export const PlanFeatureGate = ({
   return (
     <section
       aria-labelledby={titleId}
-      className="relative sm:min-h-[640px] sm:overflow-hidden sm:rounded-[24px] sm:border sm:border-[#EBE9F0] sm:bg-white"
+      className="relative sm:min-h-[640px] sm:overflow-hidden sm:rounded-[24px] sm:border sm:border-line sm:bg-white"
     >
       {/* Celular: faixa curta atrás do topo do cartão. Desktop: o módulo inteiro por trás. */}
       <div
@@ -50,15 +50,15 @@ export const PlanFeatureGate = ({
       </div>
 
       <div className="relative -mt-12 sm:absolute sm:inset-0 sm:mt-0 sm:flex sm:items-center sm:justify-center sm:bg-white/55 sm:p-6">
-        <div className="mx-auto flex w-full max-w-[480px] flex-col items-center gap-3 rounded-[24px] border border-[#EBE9F0] bg-white px-5 pt-7 pb-6 text-center shadow-[0_16px_40px_rgba(11,11,15,0.10)] sm:gap-3.5 sm:rounded-[28px] sm:px-8 sm:py-9 sm:shadow-[0_24px_60px_rgba(11,11,15,0.10)]">
+        <div className="mx-auto flex w-full max-w-[480px] flex-col items-center gap-3 rounded-[24px] border border-line bg-white px-5 pt-7 pb-6 text-center shadow-[0_16px_40px_rgba(11,11,15,0.10)] sm:gap-3.5 sm:rounded-[28px] sm:px-8 sm:py-9 sm:shadow-[0_24px_60px_rgba(11,11,15,0.10)]">
           <span
             aria-hidden="true"
-            className="grid size-12 place-items-center rounded-full bg-[#F3E8FF] text-[#7A0BC8] sm:size-14"
+            className="grid size-12 place-items-center rounded-full bg-brand-tint text-brand-hover sm:size-14"
           >
             <Lock className="size-[22px] stroke-[1.8] sm:size-6" />
           </span>
           {minPlanName ? (
-            <span className="text-[11px] font-extrabold tracking-[0.08em] text-[#7A0BC8] uppercase sm:text-xs">
+            <span className="text-[11px] font-extrabold tracking-[0.08em] text-brand-hover uppercase sm:text-xs">
               Disponível no {minPlanName}
             </span>
           ) : null}
@@ -80,7 +80,7 @@ export const PlanFeatureGate = ({
               >
                 <Check
                   aria-hidden="true"
-                  className="mt-px size-[18px] flex-none stroke-2 text-[#7A0BC8]"
+                  className="mt-px size-[18px] flex-none stroke-2 text-brand-hover"
                 />
                 {benefit}
               </li>
@@ -92,7 +92,7 @@ export const PlanFeatureGate = ({
               onClick={() => handleUpgradeClick('/partner/plans/upgrade')}
               className={cn(
                 ACTION_CLASS,
-                'bg-[#0B0B0F] text-[15px] text-white hover:bg-[#2B2B2B] sm:text-sm',
+                'bg-ink text-[15px] text-white hover:bg-ink-hover sm:text-sm',
               )}
             >
               {minPlanName
@@ -104,7 +104,7 @@ export const PlanFeatureGate = ({
               onClick={() => handleUpgradeClick('/pricing')}
               className={cn(
                 ACTION_CLASS,
-                'bg-[#F4F3F7] text-[15px] text-[#0B0B0F] hover:bg-[#EBE9F0] sm:px-5 sm:text-sm',
+                'bg-surface-2 text-[15px] text-ink hover:bg-line sm:px-5 sm:text-sm',
               )}
             >
               Comparar planos

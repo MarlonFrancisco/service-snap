@@ -13,7 +13,7 @@ import {
 import type { TProfessionalCardConfig } from './professional-tab.types';
 
 const BADGE_CLASS =
-  'rounded-full bg-[#F4F3F7] px-[9px] py-[3px] text-xs font-bold';
+  'rounded-full bg-surface-2 px-[9px] py-[3px] text-xs font-bold';
 
 export const ProfessionalCard = ({
   professional,
@@ -26,7 +26,7 @@ export const ProfessionalCard = ({
   const statusAction = professional.isActive ? 'Pausar' : 'Ativar';
 
   return (
-    <article className="grid grid-cols-[48px_minmax(0,1fr)] gap-3 rounded-[20px] border border-[#EBE9F0] p-4">
+    <article className="grid grid-cols-[48px_minmax(0,1fr)] gap-3 rounded-[20px] border border-line p-4">
       {professional.user.avatar ? (
         <span className="relative size-12 overflow-hidden rounded-full">
           <ImageWithFallback
@@ -40,7 +40,7 @@ export const ProfessionalCard = ({
       ) : (
         <span
           aria-hidden="true"
-          className="grid size-12 place-items-center rounded-full bg-[#F4F3F7] text-sm font-bold"
+          className="grid size-12 place-items-center rounded-full bg-surface-2 text-sm font-bold"
         >
           {initials}
         </span>
@@ -68,7 +68,7 @@ export const ProfessionalCard = ({
           </p>
         ) : null}
         {hasPendingData ? (
-          <p className="mt-0.5 text-[13px] font-semibold text-[#6E3B00]">
+          <p className="mt-0.5 text-[13px] font-semibold text-warning">
             Dados pendentes no cadastro do usuário
           </p>
         ) : null}

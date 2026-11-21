@@ -71,7 +71,7 @@ export const ServicesStep = ({
       onExitAnyway={onExit}
     >
       <form
-        className="grid gap-3 rounded-[20px] bg-[#F7F6FA] p-4 md:rounded-[22px] md:p-[18px]"
+        className="grid gap-3 rounded-[20px] bg-surface p-4 md:rounded-[22px] md:p-[18px]"
         onSubmit={(event) => {
           event.preventDefault();
           handleAdd();
@@ -119,7 +119,7 @@ export const ServicesStep = ({
           <div className="min-w-0">
             <p className="mb-2 text-sm font-bold">
               Sugestões para {suggestedCategory?.toLowerCase()}{' '}
-              <span className="block text-[13px] font-medium text-[#5F5C6E] md:inline">
+              <span className="block text-[13px] font-medium text-ink-muted md:inline">
                 <span className="hidden md:inline">· </span>você escolhe o preço
               </span>
             </p>
@@ -166,7 +166,7 @@ export const ServicesStep = ({
               />
               <span
                 aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[15px] font-medium text-[#6F6C7E]"
+                className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-[15px] font-medium text-ink-muted"
               >
                 min
               </span>
@@ -196,7 +196,7 @@ export const ServicesStep = ({
 
       {groups.map(({ categoryName, services }) => (
         <div key={categoryName}>
-          <p className="mt-[18px] text-[13px] font-bold tracking-[0.06em] text-[#5F5C6E] uppercase">
+          <p className="mt-[18px] text-[13px] font-bold tracking-[0.06em] text-ink-muted uppercase">
             {categoryName}
           </p>
           <ul
@@ -206,11 +206,11 @@ export const ServicesStep = ({
             {services.map((service) => (
               <li
                 key={service.id}
-                className="flex items-center justify-between gap-3.5 border-b border-[#EBE9F0] py-3 text-sm"
+                className="flex items-center justify-between gap-3.5 border-b border-line py-3 text-sm"
               >
                 <div className="min-w-0">
                   <b className="block text-[15px]">{service.name}</b>
-                  <span className="text-[#5F5C6E]">
+                  <span className="text-ink-muted">
                     {formatDuration(service.duration)} ·{' '}
                     {formatCurrency(service.price)}
                   </span>

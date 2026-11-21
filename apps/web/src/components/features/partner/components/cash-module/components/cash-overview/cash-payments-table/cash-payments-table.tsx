@@ -78,7 +78,7 @@ export const CashPaymentsTable = ({
               className={cn(
                 MANAGEMENT_CELL_CLASS,
                 MANAGEMENT_NUMBER_CLASS,
-                row.isVoided && 'text-[#6F6C7E] line-through',
+                row.isVoided && 'text-ink-muted line-through',
               )}
             >
               {row.isVoided ? (
@@ -136,7 +136,7 @@ export const CashPaymentsTableSkeleton = () => (
           <tr key={index} className="group">
             {[...COLUMNS, { label: 'Ações' }].map((column) => (
               <td key={column.label} className={MANAGEMENT_CELL_CLASS}>
-                <Skeleton className="h-4 w-full max-w-[120px] rounded-full bg-[#F0EEF4]" />
+                <Skeleton className="h-4 w-full max-w-[120px] rounded-full bg-surface-3" />
               </td>
             ))}
           </tr>

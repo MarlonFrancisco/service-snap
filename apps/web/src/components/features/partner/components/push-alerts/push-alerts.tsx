@@ -39,7 +39,7 @@ export const PushAlerts = () => {
           <h2 className="text-[15px] font-bold">
             Saiba na hora quando um cliente agendar
           </h2>
-          <p className="text-[13px] text-[#D6D4DE]">
+          <p className="text-[13px] text-line-2">
             Receba um aviso neste aparelho a cada agendamento novo e a cada
             cancelamento.
           </p>

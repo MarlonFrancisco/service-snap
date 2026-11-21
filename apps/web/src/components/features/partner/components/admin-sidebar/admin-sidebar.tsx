@@ -28,7 +28,7 @@ export const AdminSidebar = ({
   return (
     <aside
       className={cn(
-        'flex h-full flex-none flex-col gap-3 overflow-x-hidden overflow-y-auto border-r border-[#EBE9F0] bg-white px-3.5 py-5 motion-safe:transition-[width] motion-safe:duration-200',
+        'flex h-full flex-none flex-col gap-3 overflow-x-hidden overflow-y-auto border-r border-line bg-white px-3.5 py-5 motion-safe:transition-[width] motion-safe:duration-200',
         isCollapsed ? 'w-[73px]' : 'w-[264px]',
         className,
       )}

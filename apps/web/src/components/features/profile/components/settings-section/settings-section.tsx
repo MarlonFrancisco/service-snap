@@ -16,13 +16,13 @@ export const SettingsSection = () => (
 
     <PrivacySection />
 
-    <div className="mt-4 flex items-start gap-3.5 rounded-[14px] bg-[#F7F6FA] p-4">
+    <div className="mt-4 flex items-start gap-3.5 rounded-[14px] bg-surface p-4">
       <span className="grid size-11 shrink-0 place-items-center rounded-full bg-white">
         <Shield className="size-5" aria-hidden />
       </span>
       <div className="min-w-0">
         <h3 className="text-[15px] font-bold">Seus dados estão seguros</h3>
-        <p className="mt-0.5 text-sm leading-normal text-[#5F5C6E]">
+        <p className="mt-0.5 text-sm leading-normal text-ink-muted">
           Protegemos suas informações e nunca as compartilhamos sem sua
           permissão.
         </p>

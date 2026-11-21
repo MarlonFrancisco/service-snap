@@ -31,13 +31,13 @@ export const PolicyBlockedDialog = ({
         'gap-4 rounded-[28px] border-0 p-[30px] sm:max-w-[460px]',
       )}
     >
-      <span className="grid size-14 place-items-center rounded-full bg-[#FFF1E0] text-[#6E3B00]">
+      <span className="grid size-14 place-items-center rounded-full bg-warning-bg text-warning">
         <Clock className="size-[26px]" strokeWidth={2} aria-hidden />
       </span>
       <DialogTitle className="pr-11 text-2xl font-extrabold tracking-[-0.025em]">
         {block?.title}
       </DialogTitle>
-      <DialogDescription className="text-[15px] leading-[1.55] text-[#0B0B0F]">
+      <DialogDescription className="text-[15px] leading-[1.55] text-ink">
         {block?.message}
       </DialogDescription>
       <p className={PROFILE_HINT_CLASS}>{block?.hint}</p>

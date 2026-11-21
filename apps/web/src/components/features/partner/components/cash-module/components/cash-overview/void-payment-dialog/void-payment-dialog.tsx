@@ -47,7 +47,7 @@ export const VoidPaymentDialog = (config: TVoidPaymentDialogConfig) => {
           <DialogTitle className={MANAGEMENT_DIALOG_TITLE_CLASS}>
             Estornar pagamento
           </DialogTitle>
-          <DialogDescription className="text-sm font-semibold text-[#0B0B0F]">
+          <DialogDescription className="text-sm font-semibold text-ink">
             {description}
           </DialogDescription>
         </DialogHeader>

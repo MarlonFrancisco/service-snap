@@ -118,7 +118,7 @@ export const AppointmentCustomerField = ({
                 <b className="block text-sm font-bold break-words">
                   {option.name}
                 </b>
-                <span className="mt-0.5 block text-[13px] font-medium break-all text-[#5F5C6E]">
+                <span className="mt-0.5 block text-[13px] font-medium break-all text-ink-muted">
                   {option.contact}
                 </span>
               </span>
@@ -139,7 +139,7 @@ export const AppointmentCustomerField = ({
         <div
           role="group"
           aria-label="Tipo de cliente"
-          className="inline-flex gap-1 rounded-full border border-[#E3E1EA] p-1"
+          className="inline-flex gap-1 rounded-full border border-line-strong p-1"
         >
           <button
             type="button"
@@ -173,7 +173,7 @@ export const AppointmentCustomerField = ({
             <span className="sr-only">Buscar cliente</span>
             <Search
               aria-hidden="true"
-              className="pointer-events-none absolute top-4 left-4 size-[18px] stroke-2 text-[#5F5C6E]"
+              className="pointer-events-none absolute top-4 left-4 size-[18px] stroke-2 text-ink-muted"
             />
             <Input
               type="search"

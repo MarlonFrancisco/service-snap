@@ -14,7 +14,7 @@ import { OnboardingStepLayout } from '../onboarding-step-layout';
 import { usePhotosStep } from './photos-step.hook';
 
 const FOCUS_RING =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B0B0F]';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 type TPhotosStepProps = {
   storeId: string;
@@ -84,12 +84,12 @@ export const PhotosStep = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         className={cn(
-          'grid justify-items-center gap-2 rounded-[22px] border-2 border-dashed border-[#C9C6D4] px-5 py-[34px] text-center',
-          isDragging && 'border-[#0B0B0F] bg-[#F7F6FA]',
+          'grid justify-items-center gap-2 rounded-[22px] border-2 border-dashed border-line-3 px-5 py-[34px] text-center',
+          isDragging && 'border-ink bg-surface',
         )}
       >
         <b className="text-base">Arraste as fotos para cá</b>
-        <span className="text-[13px] text-[#5F5C6E]">
+        <span className="text-[13px] text-ink-muted">
           Até {MAX_PHOTOS} fotos, com no máximo 5MB cada
         </span>
         <input
@@ -119,7 +119,7 @@ export const PhotosStep = ({
         <>
           <p
             aria-live="polite"
-            className="mt-[18px] mb-2 text-[13px] font-semibold text-[#5F5C6E]"
+            className="mt-[18px] mb-2 text-[13px] font-semibold text-ink-muted"
           >
             {gallery.length}/{MAX_PHOTOS} fotos
           </p>
@@ -127,7 +127,7 @@ export const PhotosStep = ({
             {gallery.map((image, index) => (
               <div
                 key={image.id}
-                className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-[#E9E3F5]"
+                className="relative aspect-[4/3] overflow-hidden rounded-[18px] bg-brand-tint"
               >
                 <ImageWithFallback
                   src={image.url}
@@ -141,8 +141,8 @@ export const PhotosStep = ({
                   aria-pressed={image.isMain}
                   onClick={() => handleSetMain(image)}
                   className={cn(
-                    'absolute bottom-2 left-2 min-h-11 cursor-pointer rounded-full border-0 bg-white px-3.5 text-xs font-bold text-[#0B0B0F]',
-                    image.isMain && 'bg-[#0B0B0F] text-white',
+                    'absolute bottom-2 left-2 min-h-11 cursor-pointer rounded-full border-0 bg-white px-3.5 text-xs font-bold text-ink',
+                    image.isMain && 'bg-ink text-white',
                     FOCUS_RING,
                   )}
                 >
@@ -153,7 +153,7 @@ export const PhotosStep = ({
                   aria-label={`Remover foto ${index + 1}`}
                   onClick={() => handleRemove(image)}
                   className={cn(
-                    'absolute top-1.5 right-1.5 grid size-11 cursor-pointer place-items-center rounded-full border-0 bg-white/92 text-[17px] text-[#0B0B0F]',
+                    'absolute top-1.5 right-1.5 grid size-11 cursor-pointer place-items-center rounded-full border-0 bg-white/92 text-[17px] text-ink',
                     FOCUS_RING,
                   )}
                 >

@@ -23,7 +23,7 @@ export const ProfileSkeleton = ({ className }: TProfileConfig) => {
           </div>
 
           {/* Abas */}
-          <div className="-mx-5 mt-[22px] flex gap-6 border-b border-[#EBE9F0] px-5 md:mx-0 md:mt-8 md:gap-8 md:px-0">
+          <div className="-mx-5 mt-[22px] flex gap-6 border-b border-line px-5 md:mx-0 md:mt-8 md:gap-8 md:px-0">
             {TAB_PLACEHOLDERS.map((width) => (
               <div key={width} className="flex min-h-12 items-center">
                 <Skeleton className={`h-5 ${width}`} />
@@ -36,7 +36,7 @@ export const ProfileSkeleton = ({ className }: TProfileConfig) => {
               {/* Próximos agendamentos */}
               <Skeleton className="h-7 w-56 md:h-8" />
               <Skeleton className="mt-1 mb-3.5 h-5 w-52 md:mb-[18px]" />
-              <div className="grid grid-cols-1 rounded-[22px] border border-[#E3E1EA] px-3 pt-3 pb-4 md:grid-cols-[150px_minmax(0,1fr)] md:gap-5 md:rounded-3xl md:p-4">
+              <div className="grid grid-cols-1 rounded-[22px] border border-line-strong px-3 pt-3 pb-4 md:grid-cols-[150px_minmax(0,1fr)] md:gap-5 md:rounded-3xl md:p-4">
                 <Skeleton className="aspect-video w-full rounded-[14px] md:aspect-auto md:min-h-[150px] md:rounded-2xl" />
                 <div className="min-w-0">
                   <Skeleton className="mx-1 mt-3 h-6 w-3/4 md:mx-0 md:mt-0" />

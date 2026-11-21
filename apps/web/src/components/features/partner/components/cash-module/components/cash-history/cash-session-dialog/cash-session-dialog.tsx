@@ -72,8 +72,8 @@ export const CashSessionDialog = ({
           aria-label="Carregando o caixa"
           className="grid gap-3"
         >
-          <Skeleton className="h-28 rounded-2xl bg-[#F0EEF4]" />
-          <Skeleton className="h-40 rounded-2xl bg-[#F0EEF4]" />
+          <Skeleton className="h-28 rounded-2xl bg-surface-3" />
+          <Skeleton className="h-40 rounded-2xl bg-surface-3" />
         </div>
       );
     }
@@ -91,7 +91,7 @@ export const CashSessionDialog = ({
         {notes ? (
           <div className={MANAGEMENT_NOTE_CLASS}>
             <p>
-              <b className="block text-[#0B0B0F]">Observação</b>
+              <b className="block text-ink">Observação</b>
               {notes}
             </p>
           </div>
@@ -124,7 +124,7 @@ export const CashSessionDialog = ({
           <DialogTitle className={MANAGEMENT_DIALOG_TITLE_CLASS}>
             {title}
           </DialogTitle>
-          <DialogDescription className="text-sm text-[#5F5C6E]">
+          <DialogDescription className="text-sm text-ink-muted">
             {people || 'Totais e pagamentos do caixa'}
           </DialogDescription>
         </DialogHeader>

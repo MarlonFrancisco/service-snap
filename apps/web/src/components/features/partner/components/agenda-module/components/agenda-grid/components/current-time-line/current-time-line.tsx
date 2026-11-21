@@ -15,11 +15,11 @@ export const CurrentTimeLine = memo((config: TCurrentTimeLineConfig) => {
   return (
     <div
       role="img"
-      className="pointer-events-none absolute inset-x-0 z-20 border-t-2 border-[#B42318]"
+      className="pointer-events-none absolute inset-x-0 z-20 border-t-2 border-error"
       style={{ top: topPosition }}
       aria-label={`Horário atual: ${currentTime}`}
     >
-      <span className="absolute top-[-11px] right-1.5 rounded-full bg-[#B42318] px-[7px] py-px text-[11px] font-bold text-white">
+      <span className="absolute top-[-11px] right-1.5 rounded-full bg-error px-[7px] py-px text-[11px] font-bold text-white">
         {currentTime}
       </span>
     </div>

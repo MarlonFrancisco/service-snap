@@ -32,12 +32,12 @@ export function BookingSidebar({
       <div
         tabIndex={0}
         aria-label="Itens da reserva"
-        className="min-h-0 overflow-y-auto rounded-t-[28px] px-7 pt-7 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#0B0B0F]"
+        className="min-h-0 overflow-y-auto rounded-t-[28px] px-7 pt-7 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink"
       >
-        <h2 className="text-xl font-extrabold tracking-[-0.025em] text-[#0B0B0F]">
+        <h2 className="text-xl font-extrabold tracking-[-0.025em] text-ink">
           Resumo da reserva
         </h2>
-        <p className="mt-1 text-sm text-[#5F5C6E]">
+        <p className="mt-1 text-sm text-ink-muted">
           {isCheckout ? `${businessName} · ${businessAddress}` : businessName}
         </p>
 
@@ -47,13 +47,13 @@ export function BookingSidebar({
       <div className="shrink-0 px-7 pb-7">
         {selectedServices.length > 0 && (
           <>
-            <div className="mt-5 flex items-baseline justify-between border-t border-[#F0EEF4] pt-5 text-[15px] font-semibold text-[#0B0B0F]">
+            <div className="mt-5 flex items-baseline justify-between border-t border-surface-3 pt-5 text-[15px] font-semibold text-ink">
               Total
               <b className="text-2xl font-extrabold">
                 {summary.formatters.formatPrice(totalPrice)}
               </b>
             </div>
-            <p className="mt-1 text-right text-[13px] text-[#5F5C6E]">
+            <p className="mt-1 text-right text-[13px] text-ink-muted">
               Pagamento no local
             </p>
           </>
@@ -64,7 +64,7 @@ export function BookingSidebar({
             type="button"
             onClick={onNext}
             disabled={isNextDisabled}
-            className="mt-5 block w-full rounded-full bg-[#0B0B0F] p-[17px] text-center text-[15px] font-bold text-white transition-colors hover:bg-[#2B2B2B] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0B0B0F]"
+            className="mt-5 block w-full rounded-full bg-ink p-[17px] text-center text-[15px] font-bold text-white transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-ink"
           >
             {nextButtonText}
           </button>

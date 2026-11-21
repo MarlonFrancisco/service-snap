@@ -139,14 +139,14 @@ export const WebhookDialog = (config: TWebhookDialogConfig) => {
                               ),
                             )
                           }
-                          className="mt-0.5 size-5 shrink-0 accent-[#9810FA]"
+                          className="mt-0.5 size-5 shrink-0 accent-brand"
                         />
                         <span>
                           <b>{option.label}</b>{' '}
-                          <code className="text-[13px] text-[#5F5C6E]">
+                          <code className="text-[13px] text-ink-muted">
                             {option.value}
                           </code>
-                          <span className="block text-[13px] text-[#5F5C6E]">
+                          <span className="block text-[13px] text-ink-muted">
                             {option.description}
                           </span>
                         </span>
@@ -163,10 +163,10 @@ export const WebhookDialog = (config: TWebhookDialogConfig) => {
                 control={form.control}
                 name="isActive"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between gap-3 rounded-2xl border border-[#EBE9F0] px-4 py-3">
+                  <FormItem className="flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
                     <span className="grid gap-0.5">
                       <FormLabel className="text-sm font-bold">Ativo</FormLabel>
-                      <span className="text-[13px] text-[#5F5C6E]">
+                      <span className="text-[13px] text-ink-muted">
                         Desligado, o endereço não recebe eventos. Religar zera a
                         contagem de falhas.
                       </span>
@@ -175,7 +175,7 @@ export const WebhookDialog = (config: TWebhookDialogConfig) => {
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
-                        className="data-[state=checked]:bg-[#9810FA]"
+                        className="data-[state=checked]:bg-brand"
                       />
                     </FormControl>
                   </FormItem>

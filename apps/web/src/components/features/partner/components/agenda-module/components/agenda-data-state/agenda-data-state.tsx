@@ -12,7 +12,7 @@ const NO_STORE_MESSAGE =
   'Você ainda não tem uma loja. Cadastre uma loja para ver e organizar a agenda.';
 
 export const AgendaNoStoreMessage = () => (
-  <p className="rounded-[22px] bg-[#F7F6FA] p-8 text-center text-sm font-semibold text-[#5F5C6E]">
+  <p className="rounded-[22px] bg-surface p-8 text-center text-sm font-semibold text-ink-muted">
     {NO_STORE_MESSAGE}
   </p>
 );
@@ -32,7 +32,7 @@ export const AgendaDataState = ({ children }: TAgendaDataStateConfig) => {
     return (
       <div
         role="alert"
-        className="flex flex-col items-center gap-3 rounded-[22px] bg-[#F7F6FA] p-8 text-center"
+        className="flex flex-col items-center gap-3 rounded-[22px] bg-surface p-8 text-center"
       >
         <p className="text-sm font-semibold">
           Não foi possível carregar a agenda
@@ -52,14 +52,14 @@ export const AgendaDataState = ({ children }: TAgendaDataStateConfig) => {
     <div
       role="status"
       aria-busy="true"
-      className="space-y-2 rounded-[22px] border border-[#EBE9F0] p-4"
+      className="space-y-2 rounded-[22px] border border-line p-4"
     >
       <span className="sr-only">Carregando agenda</span>
-      <Skeleton className="h-12 w-full rounded-[14px] bg-[#F4F3F7]" />
+      <Skeleton className="h-12 w-full rounded-[14px] bg-surface-2" />
       {SKELETON_ROWS.map((row) => (
         <Skeleton
           key={row}
-          className="h-14 w-full rounded-[14px] bg-[#F4F3F7]"
+          className="h-14 w-full rounded-[14px] bg-surface-2"
         />
       ))}
     </div>

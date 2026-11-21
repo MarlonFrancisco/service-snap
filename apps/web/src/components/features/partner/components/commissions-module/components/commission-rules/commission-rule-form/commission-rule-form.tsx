@@ -132,7 +132,7 @@ export const CommissionRuleForm = (config: TCommissionRuleFormConfig) => {
               key={option.id}
               className={cn(
                 MANAGEMENT_SEGMENT_CLASS,
-                'inline-flex items-center has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#0B0B0F]',
+                'inline-flex items-center has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink',
                 type === option.id && MANAGEMENT_SEGMENT_ACTIVE_CLASS,
               )}
             >

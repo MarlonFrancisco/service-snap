@@ -121,8 +121,8 @@ export const BasicInfoTab = () => {
                   'min-h-11 rounded-full border px-3.5 text-[13px] font-semibold transition-colors',
                   PARTNER_FOCUS_CLASS,
                   isSelected
-                    ? 'border-[#0B0B0F] bg-[#0B0B0F] text-white'
-                    : 'border-[#E3E1EA] bg-white text-[#0B0B0F] hover:bg-[#F7F6FA]',
+                    ? 'border-ink bg-ink text-white'
+                    : 'border-line-strong bg-white text-ink hover:bg-surface',
                 )}
               >
                 {AMENITY_LABELS[amenity]}

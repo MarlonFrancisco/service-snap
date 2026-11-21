@@ -139,7 +139,7 @@ export const ServiceFormContent = () => {
                   <button
                     type="button"
                     onClick={handleManageCategories}
-                    className="min-h-6 font-semibold text-[#0B0B0F] underline"
+                    className="min-h-6 font-semibold text-ink underline"
                   >
                     Criar categoria
                   </button>
@@ -242,7 +242,7 @@ export const ServiceFormContent = () => {
                 <Switch
                   checked={field.value}
                   onCheckedChange={field.onChange}
-                  className="data-[state=checked]:bg-[#0B0B0F]"
+                  className="data-[state=checked]:bg-ink"
                 />
               </label>
             )}
