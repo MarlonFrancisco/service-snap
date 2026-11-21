@@ -39,7 +39,8 @@ const nextConfig = {
     ],
   },
   turbopack: {
-    root: path.resolve('../../../'),
+    // Raiz do monorepo: o OpenNext espera o standalone em .next/standalone/apps/web
+    root: path.resolve('../../'),
   },
   // Target modern browsers only (ES2022+)
   experimental: {
@@ -65,6 +66,15 @@ const nextConfig = {
         source: '/v2',
         destination: '/',
         permanent: true,
+      },
+      // `/booking` sem busca não tem página indexável: 301 para a home.
+      // Fica aqui e não num proxy.ts porque o OpenNext (Cloudflare) não
+      // suporta o proxy/middleware em Node do Next 16.
+      {
+        source: '/booking',
+        missing: [{ type: 'query', key: 'query', value: '(?<q>.*\\S.*)' }],
+        destination: '/',
+        statusCode: 301,
       },
     ];
   },
