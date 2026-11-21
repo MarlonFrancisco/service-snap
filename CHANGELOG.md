@@ -1,3 +1,40 @@
+## 0.31.0 (2026-11-21)
+
+### Feat
+
+- **web**: cartão Fale conosco no Enterprise e nomes novos dos planos
+- **api**: Enterprise sem checkout e nomes Solo/Equipe/Multi
+- **api**: moeda dos planos vem do Stripe
+- **web**: mostrar e retirar o opt-in de WhatsApp no checkout (#37)
+- **analytics**: eventos whatsapp_opt_in e whatsapp_opt_out (#37)
+- **web**: opt-in de WhatsApp no checkout e página para deixar de receber (#37)
+- **api**: opt-in de WhatsApp do cliente final com fallback para e-mail (#37)
+- **web**: origem do cadastro só no dispositivo com consentimento
+- **web**: gating de plano por slug em vez do nome visível
+- **api**: identificador estável do plano (plan_slug)
+- **api**: informar se o checkout começou um teste
+- **analytics**: evento trial_start separado de purchase
+- **web**: só indexar categoria + cidade com 3 ou mais lojas
+- **web**: first-touch da origem do cadastro por 30 dias
+- **api**: guardar a origem do cadastro (UTM, ref, landing)
+
+### Fix
+
+- **deps**: atualiza next do vitest-config para 16.4.6 (CVE-2025-66478 e outras)
+- **web**: código de indicação só no dispositivo com consentimento
+- **web**: texto do WhatsApp em /pricing igual ao da #28
+- **web**: usar o texto checkout-v2 e retirar com via=checkout (#37)
+- **api**: guardar o texto completo do opt-in e revokedVia=checkout (#37)
+- **web**: moeda dos planos vem do Stripe, não do seletor de região
+- **web**: seletor de moeda só mostra moedas com planos
+- **web**: enviar trial_start em vez de purchase no início do teste
+- **web**: retirar promessas sem prova dos termos e do pricing
+
+### Perf
+
+- **web**: ISR nas páginas públicas e sessão fora do layout raiz
+- **api**: cache na CDN dos GET públicos e arranque sem logs de rotas
+
 ## 0.30.1 (2026-11-18)
 
 ### Fix
