@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import sharp from 'sharp';
 import { Repository, UpdateResult } from 'typeorm';
+import { convertToWebp } from '../../../../utils/runtime';
 import { StorageService } from '../../../storage/storage.service';
 import { Store } from '../store.entity';
 import { CreateGalleryDto } from './dto/create-gallery.dto';
@@ -27,7 +27,7 @@ export class GalleryService {
 
     const cleanBase64 = galleryDto.url.split('base64,')[1];
     const arrayBuffer = Buffer.from(cleanBase64, 'base64');
-    const webpBuffer = await sharp(arrayBuffer).webp().toBuffer();
+    const webpBuffer = await convertToWebp(arrayBuffer);
 
     gallery.url = await this.storageService.uploadFile({
       folder: 'stores',

@@ -1,0 +1,22 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "ssnap-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    // Usado pela fila de revalidação do ISR (memoryQueue)
+    { "binding": "WORKER_SELF_REFERENCE", "service": "ssnap-web" }
+  ],
+  "r2_buckets": [
+    // Cache do ISR. Crie o bucket uma vez: npx wrangler r2 bucket create ssnap-next-cache
+    { "binding": "NEXT_INC_CACHE_R2_BUCKET", "bucket_name": "ssnap-next-cache" }
+  ],
+  // Otimização do next/image
+  "images": { "binding": "IMAGES" },
+  "observability": { "enabled": true }
+}

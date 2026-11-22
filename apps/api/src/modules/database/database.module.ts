@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { getWorkerPgDriver } from '../../utils/runtime';
 
 @Module({
   imports: [
@@ -8,10 +9,16 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       imports: [],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
+        // No Worker: `pg` com um pool por requisição (I/O não atravessa
+        // requisições) e sem glob de entidades, pois não há disco.
+        const workerPgDriver = getWorkerPgDriver();
+
         return {
           type: 'postgres',
           url: configService.get<string>('DB_URL'),
-          entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+          ...(workerPgDriver
+            ? { driver: workerPgDriver }
+            : { entities: [__dirname + '/../**/*.entity{.ts,.js}'] }),
           // Variável de ambiente chega como texto: "false" seria verdadeiro
           synchronize: configService.get('DB_SYNCHRONIZE') === 'true',
           logging: configService.get('DB_LOGGING') === 'true',

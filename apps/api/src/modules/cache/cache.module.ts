@@ -2,6 +2,8 @@ import KeyvRedis from '@keyv/redis';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
 import { Global, Logger, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { isWorkerRuntime } from '../../utils/runtime';
+import { UpstashKeyvStore } from './upstash-keyv.store';
 
 const DEFAULT_TTL_MS = 300000; // 5 minutos em milissegundos
 const REDIS_CONNECT_TIMEOUT_MS = 2000;
@@ -16,6 +18,30 @@ const REDIS_MAX_RECONNECT_RETRIES = 3;
       useFactory: async (configService: ConfigService) => {
         const logger = new Logger(CacheModule.name);
         const redisUrl = configService.get<string>('REDIS_URL');
+        const upstashUrl = configService.get<string>('UPSTASH_REDIS_REST_URL');
+        const upstashToken = configService.get<string>(
+          'UPSTASH_REDIS_REST_TOKEN',
+        );
+
+        // REST do Upstash quando configurado. No Worker é o único Redis possível:
+        // o socket TCP do node-redis não pode ser compartilhado entre requisições.
+        if (upstashUrl && upstashToken) {
+          const store = UpstashKeyvStore.fromCredentials(
+            upstashUrl,
+            upstashToken,
+          );
+          store.on('error', (error: Error) =>
+            logger.error(`❌ Erro no Redis (REST): ${error.message}`),
+          );
+          return { ttl: DEFAULT_TTL_MS, stores: [store] };
+        }
+
+        if (isWorkerRuntime()) {
+          logger.warn(
+            '⚠️  UPSTASH_REDIS_REST_URL/TOKEN ausentes no Worker. Usando cache em memória.',
+          );
+          return { ttl: DEFAULT_TTL_MS };
+        }
 
         if (!redisUrl) {
           logger.warn(
