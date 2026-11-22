@@ -6,6 +6,19 @@ import { ConfigService } from '@nestjs/config';
 const DEFAULT_TTL_MS = 300000; // 5 minutos em milissegundos
 const REDIS_CONNECT_TIMEOUT_MS = 2000;
 const REDIS_MAX_RECONNECT_RETRIES = 3;
+const REDIS_MAX_RECONNECT_DELAY_MS = 5000;
+
+/**
+ * Serverless: a instância morre logo, então desistir após poucas tentativas é
+ * seguro. Servidor contínuo (Railway): desistir deixaria o cache fora até o
+ * próximo restart, então tenta sempre, com espera crescente até 5s.
+ */
+const reconnectStrategy = (retries: number) => {
+  if (process.env.IS_SERVELESS === 'true') {
+    return retries < REDIS_MAX_RECONNECT_RETRIES ? retries * 100 : false;
+  }
+  return Math.min(retries * 200, REDIS_MAX_RECONNECT_DELAY_MS);
+};
 
 @Global()
 @Module({
@@ -35,8 +48,7 @@ const REDIS_MAX_RECONNECT_RETRIES = 3;
             disableOfflineQueue: true,
             socket: {
               connectTimeout: REDIS_CONNECT_TIMEOUT_MS,
-              reconnectStrategy: (retries) =>
-                retries < REDIS_MAX_RECONNECT_RETRIES ? retries * 100 : false,
+              reconnectStrategy,
             },
           },
           { throwOnConnectError: false },
