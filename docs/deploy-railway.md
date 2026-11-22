@@ -11,9 +11,8 @@ O que o repositório já traz:
 | Arquivo | Para quê |
 | --- | --- |
 | `apps/api/Dockerfile` | Build da API (`turbo build --filter=api`) e `node dist/main.js` |
-| `apps/api/railway.json` | Referência dos ajustes da API (healthcheck, watch paths) |
 | `apps/web/Dockerfile` | Build da web (`turbo build --filter=web`) e `next start` |
-| `apps/web/railway.json` | Referência dos ajustes da web (healthcheck, watch paths) |
+| `.railway/railway.ts` | Infrastructure as Code: os 2 serviços, Dockerfile, healthcheck, restart, watch paths e variáveis |
 | `.dockerignore` | Tira `.git`, `node_modules`, builds etc. do contexto |
 
 Os dois apps escutam na porta da variável `PORT`, que a Railway define sozinha.
@@ -26,23 +25,43 @@ Os dois apps escutam na porta da variável `PORT`, que a Railway define sozinha.
    segundo serviço.
 3. Renomeie os serviços para **`api`** e **`web`** (clique no nome do serviço).
    Os nomes importam: as variáveis de referência abaixo usam `${{api.…}}` e `${{web.…}}`.
-4. Em cada serviço, **Settings**:
-   - **Source → Root Directory**: deixe vazio (raiz do repositório). O build
-     precisa dos pacotes de `packages/`.
-   - **Source → Branch**: `main`.
-   - **Deploy → Healthcheck Path**: `/health` na `api`, `/robots.txt` na `web`.
-   - **Deploy → Restart Policy**: On Failure.
-   - **Build → Watch Paths** (opcional, evita rebuild dos dois a cada push):
-     `/apps/api/**` e `/packages/**` na `api`; `/apps/web/**` e `/packages/**` na `web`.
-   - **Variables**: `RAILWAY_DOCKERFILE_PATH=apps/api/Dockerfile` na `api` e
-     `RAILWAY_DOCKERFILE_PATH=apps/web/Dockerfile` na `web`. Sem ela a Railway
-     usa o Railpack e falha com "No start command detected".
+4. Aplique a configuração do repositório (`.railway/railway.ts`) com o
+   [Railway CLI](https://docs.railway.com/cli) 5.42.1 ou mais novo, na raiz do
+   repositório:
 
-   A Railway descontinuou o Config as Code (o campo Railway Config File): serviços
-   novos não podem mais ativá-lo, então os `railway.json` não são lidos e tudo
-   acima é ajustado no painel.
-   - **Deploy → Region**: a mesma região (ou a mais próxima) do banco Neon e do
-     Upstash. Cada consulta atravessa essa distância.
+   ```bash
+   railway login
+   railway link            # escolha o projeto criado acima
+   railway config plan     # mostra o que vai mudar, sem aplicar
+   railway config apply    # aplica depois de você confirmar o plano
+   ```
+
+   O arquivo define, nos serviços `api` e `web`: repositório e branch `main`,
+   build por Dockerfile (`apps/<app>/Dockerfile`, a partir da raiz do monorepo),
+   healthcheck (`/health` e `/robots.txt`), restart On Failure, watch paths e as
+   variáveis. Os segredos estão como `preserve()`: o valor fica o que já está no
+   painel e nunca entra no repositório. Por isso cadastre as variáveis (passos 2
+   e 3) **antes** do `apply`.
+
+   Leia o plano antes de confirmar:
+   - Se o nome do projeto na Railway não for `ssnap`, troque em
+     `project('ssnap', …)` no fim do arquivo, senão o plano renomeia o projeto.
+   - Uma variável que existe no painel e não está no arquivo (por exemplo
+     `RAILWAY_DOCKERFILE_PATH`, que deixa de ser necessária) aparece como
+     remoção. Remova só o que você reconhecer; se for algo que precisa ficar,
+     acrescente no `env` do arquivo com `preserve()`.
+
+   A Railway descontinuou o Config as Code (`railway.json` e o campo Railway
+   Config File): serviços novos não podem mais ativá-lo. O Infrastructure as Code
+   é o substituto.
+
+   Sem o CLI, o mesmo pode ser feito no painel de cada serviço: variável
+   `RAILWAY_DOCKERFILE_PATH=apps/<app>/Dockerfile`, Root Directory vazio, Branch
+   `main`, Healthcheck Path, Restart Policy e Watch Paths como no arquivo.
+   Sem o Dockerfile a Railway usa o Railpack e falha com "No start command detected".
+
+   Em **Settings → Deploy → Region**, escolha a mesma região (ou a mais próxima)
+   do banco Neon e do Upstash. Cada consulta atravessa essa distância.
 5. Em cada serviço, **Settings → Networking → Generate Domain**. Isso cria
    `api-xxxx.up.railway.app` e `web-xxxx.up.railway.app`. Se pedir porta, use a
    sugerida (é a mesma de `PORT`).
