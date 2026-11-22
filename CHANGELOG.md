@@ -1,3 +1,10 @@
+## 0.32.0 (2026-11-22)
+
+### Feat
+
+- **web**: rodar com next start na Railway
+- **api**: rodar como servidor Node na Railway
+
 ## 0.31.0 (2026-11-21)
 
 ### Feat
