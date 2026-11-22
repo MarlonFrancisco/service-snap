@@ -11,9 +11,9 @@ O que o repositório já traz:
 | Arquivo | Para quê |
 | --- | --- |
 | `apps/api/Dockerfile` | Build da API (`turbo build --filter=api`) e `node dist/main.js` |
-| `apps/api/railway.json` | Builder Dockerfile, healthcheck em `/health`, watch paths da API |
+| `apps/api/railway.json` | Referência dos ajustes da API (healthcheck, watch paths) |
 | `apps/web/Dockerfile` | Build da web (`turbo build --filter=web`) e `next start` |
-| `apps/web/railway.json` | Builder Dockerfile, healthcheck em `/robots.txt`, watch paths da web |
+| `apps/web/railway.json` | Referência dos ajustes da web (healthcheck, watch paths) |
 | `.dockerignore` | Tira `.git`, `node_modules`, builds etc. do contexto |
 
 Os dois apps escutam na porta da variável `PORT`, que a Railway define sozinha.
@@ -29,11 +29,18 @@ Os dois apps escutam na porta da variável `PORT`, que a Railway define sozinha.
 4. Em cada serviço, **Settings**:
    - **Source → Root Directory**: deixe vazio (raiz do repositório). O build
      precisa dos pacotes de `packages/`.
-   - **Source → Branch**: a branch deste PR enquanto for teste; depois de mergear,
-     `release`/`main`.
-   - **Config-as-code → Railway Config File**: `/apps/api/railway.json` no
-     serviço `api` e `/apps/web/railway.json` no serviço `web`. O caminho é
-     absoluto a partir da raiz do repositório.
+   - **Source → Branch**: `main`.
+   - **Deploy → Healthcheck Path**: `/health` na `api`, `/robots.txt` na `web`.
+   - **Deploy → Restart Policy**: On Failure.
+   - **Build → Watch Paths** (opcional, evita rebuild dos dois a cada push):
+     `/apps/api/**` e `/packages/**` na `api`; `/apps/web/**` e `/packages/**` na `web`.
+   - **Variables**: `RAILWAY_DOCKERFILE_PATH=apps/api/Dockerfile` na `api` e
+     `RAILWAY_DOCKERFILE_PATH=apps/web/Dockerfile` na `web`. Sem ela a Railway
+     usa o Railpack e falha com "No start command detected".
+
+   A Railway descontinuou o Config as Code (o campo Railway Config File): serviços
+   novos não podem mais ativá-lo, então os `railway.json` não são lidos e tudo
+   acima é ajustado no painel.
    - **Deploy → Region**: a mesma região (ou a mais próxima) do banco Neon e do
      Upstash. Cada consulta atravessa essa distância.
 5. Em cada serviço, **Settings → Networking → Generate Domain**. Isso cria
