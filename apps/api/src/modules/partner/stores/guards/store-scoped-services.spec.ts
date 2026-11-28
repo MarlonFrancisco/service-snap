@@ -151,6 +151,7 @@ describe('store-scoped services with an id from another store', () => {
           notifyUpdate: vi.fn(),
         } as never,
         { isHoliday: vi.fn().mockResolvedValue(false) } as never,
+        { customerLinks: vi.fn().mockResolvedValue([]) } as never,
       );
 
     it('update filters by store and returns 404', async () => {

@@ -48,7 +48,10 @@ const makeService = () => {
     ]),
   };
   const blockedTimeRepository = { find: vi.fn().mockResolvedValue([]) };
-  const usersService = { upsert: vi.fn().mockResolvedValue({ id: 'u1' }) };
+  const usersService = {
+    upsert: vi.fn().mockResolvedValue({ id: 'u1' }),
+    findById: vi.fn().mockResolvedValue({ id: 'u1' }),
+  };
   const notifications = {
     notifyBookingCreated: vi.fn(),
     notifyUpdate: vi.fn(),
@@ -61,6 +64,7 @@ const makeService = () => {
     }),
   };
 
+  const anamnesis = { customerLinks: vi.fn().mockResolvedValue([]) };
   const service = new ScheduleService(
     scheduleRepository as never,
     storeRepository as never,
@@ -70,10 +74,12 @@ const makeService = () => {
     usersService as never,
     notifications as never,
     { isHoliday: vi.fn().mockResolvedValue(false) } as never,
+    anamnesis as never,
   );
 
   return {
     service,
+    anamnesis,
     manager,
     notifications,
     scheduleRepository,
@@ -177,6 +183,46 @@ describe('ScheduleService.create', () => {
     ]);
     expect(rows[0].user).toEqual({ id: 'u1' });
     expect(rows[0].booking).toEqual({ id: 'b1' });
+  });
+});
+
+describe('ScheduleService.createForRequester anamnesis', () => {
+  const SELF_DTO = { ...(DTO as object), user: { id: 'u1' } } as never;
+
+  it('returns the health form link to the customer who booked', async () => {
+    const ctx = makeService();
+    ctx.scheduleRepository.find.mockResolvedValue([{ id: 's0' }, { id: 's1' }]);
+    ctx.anamnesis.customerLinks.mockResolvedValue([
+      {
+        scheduleId: 's0',
+        url: 'https://app.test/anamnese/t',
+        expiresAt: new Date('2099-11-12T00:00:00Z'),
+        forms: [{ id: 'f1', name: 'Ficha' }],
+      },
+    ]);
+
+    const created = await ctx.service.createForRequester(SELF_DTO, 'u1');
+
+    expect(ctx.anamnesis.customerLinks).toHaveBeenCalledWith(['s0', 's1']);
+    expect(created[0]).toMatchObject({
+      anamnesis: { url: 'https://app.test/anamnese/t' },
+    });
+    expect(created[1]).toMatchObject({ anamnesis: null });
+  });
+
+  it('does not hand the link to staff booking for someone else', async () => {
+    const ctx = makeService();
+    ctx.storeRepository.findOne.mockImplementation(async ({ where }) =>
+      where.owner ? true : { openTime: '09:00', closeTime: '18:00' },
+    );
+    (ctx.storeRepository as Record<string, unknown>).exists = vi
+      .fn()
+      .mockResolvedValue(true);
+    ctx.storeMemberRepository.findOne = vi.fn().mockResolvedValue(null);
+
+    await ctx.service.createForRequester(DTO, 'owner-1');
+
+    expect(ctx.anamnesis.customerLinks).not.toHaveBeenCalled();
   });
 });
 

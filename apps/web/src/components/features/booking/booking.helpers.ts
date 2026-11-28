@@ -146,6 +146,16 @@ export const buildBookingConfirmation = ({
           .join(' ')
       : fallbackProfessionalName,
     totalPrice: getBookingTotals(services).totalPrice,
+    anamnesisLinks: ordered.flatMap(({ anamnesis }) =>
+      anamnesis
+        ? [
+            {
+              url: anamnesis.url,
+              label: anamnesis.forms.map(({ name }) => name).join(', '),
+            },
+          ]
+        : [],
+    ),
   };
 };
 

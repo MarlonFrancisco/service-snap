@@ -2,7 +2,13 @@
 
 import { HEADER_STICKY_TOP_CLASS } from '@/components/layout';
 import { cn } from '@repo/ui';
-import { Check, Download, CalendarPlus, MessageCircle } from 'lucide-react';
+import {
+  CalendarPlus,
+  Check,
+  ClipboardList,
+  Download,
+  MessageCircle,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useBookingConfirmation } from './booking-confirmation.hook';
 import type { TBookingConfirmationConfig } from './booking-confirmation.types';
@@ -47,6 +53,7 @@ export const BookingConfirmation = ({
     policySentence,
     googleCalendarUrl,
     whatsAppUrl,
+    anamnesisLinks,
     handleDownloadIcs,
   } = useBookingConfirmation({ confirmation });
 
@@ -85,6 +92,42 @@ export const BookingConfirmation = ({
           <p className="mt-1.5 mb-5 text-[15px] leading-[1.45] text-[#5F5C6E] lg:mb-7">
             Seu horário na {storeName} está reservado.
           </p>
+
+          {anamnesisLinks.length > 0 && (
+            <div className="mb-5 rounded-[22px] border border-[#E3E1EA] p-5 lg:mb-7 lg:max-w-[420px]">
+              <div className="flex items-start gap-3">
+                <ClipboardList
+                  className="mt-0.5 size-5 shrink-0 text-[#0B0B0F]"
+                  strokeWidth={1.9}
+                  aria-hidden
+                />
+                <div className="min-w-0">
+                  <h2 className="text-base font-bold text-[#0B0B0F]">
+                    Preencha sua ficha antes do atendimento
+                  </h2>
+                  <p className="mt-1 text-sm leading-[1.45] text-[#5F5C6E]">
+                    A {storeName} pede algumas informações de saúde para o seu
+                    atendimento. Leva uns 2 minutos.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-2.5">
+                {anamnesisLinks.map((link) => (
+                  <a
+                    key={link.url}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={ACTION_PRIMARY_CLASS}
+                  >
+                    {anamnesisLinks.length > 1
+                      ? `Preencher ${link.label}`
+                      : 'Preencher agora'}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid gap-2.5 lg:max-w-[420px]">
             <a

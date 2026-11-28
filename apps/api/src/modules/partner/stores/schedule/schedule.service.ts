@@ -30,6 +30,7 @@ import { normalizePhoneNumber } from '../../../../utils/helpers/user.helpers';
 import type { User } from '../../../users/user.entity';
 import { UsersService } from '../../../users/users.service';
 import { isStoreDraft } from '../../onboarding/onboarding.helpers';
+import { AnamnesisService } from '../anamnesis/anamnesis.service';
 import { Service } from '../category/service/service.entity';
 import { StoreCustomer } from '../customer/customer.entity';
 import {
@@ -103,6 +104,7 @@ export class ScheduleService {
     private readonly usersService: UsersService,
     private readonly scheduleNotifications: ScheduleNotificationsService,
     private readonly holidayService: HolidayService,
+    private readonly anamnesisService: AnamnesisService,
   ) {}
 
   async getAvailability(
@@ -222,7 +224,7 @@ export class ScheduleService {
     // Profissional marca só na própria agenda
     assertOwnAgenda(actor, scheduleDto.storeMember?.id);
 
-    return this.createSchedules(
+    const created = await this.createSchedules(
       scheduleDto,
       (store) =>
         isStaff
@@ -231,6 +233,23 @@ export class ScheduleService {
       isStaff,
       isStaff ? 'store' : 'customer',
     );
+
+    if (isStaff) return created;
+
+    // O cliente sai da confirmação já com a ficha de saúde do serviço, se houver
+    const links = await this.anamnesisService.customerLinks(
+      created.map(({ id }) => id),
+    );
+
+    return created.map((schedule) => {
+      const link = links.find(({ scheduleId }) => scheduleId === schedule.id);
+
+      return Object.assign(schedule, {
+        anamnesis: link
+          ? { url: link.url, expiresAt: link.expiresAt, forms: link.forms }
+          : null,
+      });
+    });
   }
 
   /** Papel de quem pede na loja; `null` para quem é de fora (o cliente). */

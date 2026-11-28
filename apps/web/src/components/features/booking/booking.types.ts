@@ -21,6 +21,8 @@ export type TBookingConfirmation = {
   }[];
   professionalName: string;
   totalPrice: number;
+  /** Fichas de saúde a preencher antes do atendimento; vazio se a loja não pede. */
+  anamnesisLinks: { url: string; label: string }[];
 };
 
 export type TBookingFlowConfig = {

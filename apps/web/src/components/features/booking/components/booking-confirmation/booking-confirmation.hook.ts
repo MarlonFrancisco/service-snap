@@ -91,6 +91,7 @@ export const useBookingConfirmation = ({
     policySentence: getNoticePolicySentence(store),
     googleCalendarUrl: buildGoogleCalendarUrl(calendarEvent),
     whatsAppUrl: getStoreWhatsAppUrl(store),
+    anamnesisLinks: confirmation.anamnesisLinks,
     handleDownloadIcs,
   };
 };
