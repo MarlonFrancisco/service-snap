@@ -9,16 +9,22 @@ import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Subscription } from '../../../subscription/subscription.entity';
+import {
+  withPlanModules,
+  type TPlanModuleFlag,
+} from '../../../../utils/helpers/subscription.helpers';
 import { Store } from '../store.entity';
 
-export type TPlanFeatureFlag = keyof Pick<
-  Subscription['features'],
-  | 'DASHBOARD_GENERAL_ACCESS'
-  | 'DASHBOARD_SALES_ACCESS'
-  | 'DASHBOARD_OPERATIONAL_ACCESS'
-  | 'DASHBOARD_CUSTOMERS_ACCESS'
-  | 'WHATSAPP_INTEGRATION'
->;
+export type TPlanFeatureFlag =
+  | keyof Pick<
+      Subscription['features'],
+      | 'DASHBOARD_GENERAL_ACCESS'
+      | 'DASHBOARD_SALES_ACCESS'
+      | 'DASHBOARD_OPERATIONAL_ACCESS'
+      | 'DASHBOARD_CUSTOMERS_ACCESS'
+      | 'WHATSAPP_INTEGRATION'
+    >
+  | TPlanModuleFlag;
 
 export const PLAN_FEATURES_KEY = 'requiredPlanFeatures';
 
@@ -27,6 +33,9 @@ export const RequiresPlanFeatures = (...features: TPlanFeatureFlag[]) =>
   SetMetadata(PLAN_FEATURES_KEY, features);
 
 export const PLAN_FEATURE_REQUIRED = 'PLAN_FEATURE_REQUIRED';
+
+export const PLAN_FEATURE_REQUIRED_MESSAGE =
+  'Este recurso não está incluído no seu plano. Faça upgrade para liberar o acesso.';
 
 const ACTIVE_SUBSCRIPTION_STATUSES = ['active', 'paid', 'trialing'];
 
@@ -63,8 +72,7 @@ export class PlanFeatureGuard implements CanActivate {
         statusCode: 403,
         error: 'Forbidden',
         code: PLAN_FEATURE_REQUIRED,
-        message:
-          'Este recurso não está incluído no seu plano. Faça upgrade para liberar o acesso.',
+        message: PLAN_FEATURE_REQUIRED_MESSAGE,
         missingFeatures: missing,
       });
     }
@@ -92,6 +100,8 @@ export class PlanFeatureGuard implements CanActivate {
       .andWhere('subscription."currentPeriodEnd" >= :now', { now: new Date() })
       .getOne();
 
-    return required.filter((flag) => subscription?.features?.[flag] !== true);
+    const features = withPlanModules(subscription?.features);
+
+    return required.filter((flag) => features?.[flag] !== true);
   }
 }

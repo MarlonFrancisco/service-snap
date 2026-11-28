@@ -12,7 +12,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import { RequireStoreRoles, StoreAccessGuard, StoreRoleGuard } from '../guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  RequireStoreRoles,
+  StoreAccessGuard,
+  StoreRoleGuard,
+} from '../guards';
 import type { StoreMember } from '../store-member/store-member.entity';
 import { CommissionsService } from './commissions.service';
 import {
@@ -21,19 +27,21 @@ import {
 } from './dto/commission.dto';
 
 @Controller('partner/stores/:storeId/commissions')
+// Comissões só existem com equipe: do plano Equipe para cima
+@RequiresPlanFeatures('COMMISSIONS_ACCESS')
 export class CommissionsController {
   constructor(private readonly commissionsService: CommissionsService) {}
 
   @Get('rules')
   @RequireStoreRoles('owner', 'manager')
-  @UseGuards(StoreRoleGuard)
+  @UseGuards(StoreRoleGuard, PlanFeatureGuard)
   listRules(@Param('storeId') storeId: string) {
     return this.commissionsService.listRules(storeId);
   }
 
   @Post('rules')
   @RequireStoreRoles('owner', 'manager')
-  @UseGuards(StoreRoleGuard)
+  @UseGuards(StoreRoleGuard, PlanFeatureGuard)
   createRule(
     @Param('storeId') storeId: string,
     @CurrentUser('sub') userId: string,
@@ -44,7 +52,7 @@ export class CommissionsController {
 
   @Delete('rules/:id')
   @RequireStoreRoles('owner', 'manager')
-  @UseGuards(StoreRoleGuard)
+  @UseGuards(StoreRoleGuard, PlanFeatureGuard)
   deleteRule(
     @Param('storeId') storeId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -55,7 +63,7 @@ export class CommissionsController {
   /** Relatório da equipe toda, ou de um profissional com `storeMemberId`. */
   @Get('report')
   @RequireStoreRoles('owner', 'manager')
-  @UseGuards(StoreRoleGuard)
+  @UseGuards(StoreRoleGuard, PlanFeatureGuard)
   report(
     @Param('storeId') storeId: string,
     @Query() query: CommissionReportQueryDto,
@@ -65,7 +73,7 @@ export class CommissionsController {
 
   /** O profissional vê só a própria comissão. */
   @Get('me')
-  @UseGuards(StoreAccessGuard)
+  @UseGuards(StoreAccessGuard, PlanFeatureGuard)
   myReport(
     @Param('storeId') storeId: string,
     @Query() query: CommissionReportQueryDto,

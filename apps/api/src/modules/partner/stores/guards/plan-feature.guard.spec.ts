@@ -105,4 +105,34 @@ describe('PlanFeatureGuard', () => {
       storeId: STORE_ID,
     });
   });
+
+  // Assinaturas gravadas antes dos módulos por plano não têm as flags novas
+  it.each([
+    ['Solo', {}, ['COMMISSIONS_ACCESS', 'API_ACCESS']],
+    ['Equipe', { DASHBOARD_GENERAL_ACCESS: true }, ['API_ACCESS']],
+    [
+      'Multi',
+      { DASHBOARD_GENERAL_ACCESS: true, DASHBOARD_SALES_ACCESS: true },
+      [],
+    ],
+  ] as const)(
+    'infers the modules of an older %s subscription from its dashboards',
+    async (_plan, features, missing) => {
+      const { guard } = setup({ features });
+
+      await expect(
+        guard.getMissingFeatures(STORE_ID, ['COMMISSIONS_ACCESS', 'API_ACCESS']),
+      ).resolves.toEqual(missing);
+    },
+  );
+
+  it('prefers the module flags stored on the subscription', async () => {
+    const { guard } = setup({
+      features: { DASHBOARD_GENERAL_ACCESS: true, API_ACCESS: true },
+    });
+
+    await expect(
+      guard.getMissingFeatures(STORE_ID, ['API_ACCESS']),
+    ).resolves.toEqual([]);
+  });
 });

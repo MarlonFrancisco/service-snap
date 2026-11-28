@@ -10,7 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import { RequireStoreRoles, StoreRoleGuard } from '../guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  RequireStoreRoles,
+  StoreRoleGuard,
+} from '../guards';
 import {
   CreateWebhookEndpointDto,
   UpdateWebhookEndpointDto,
@@ -20,7 +25,9 @@ import { WebhooksService } from './webhooks.service';
 /** Webhook manda dados de clientes para fora: só dono e gerente configuram. */
 @Controller('partner/stores/:storeId/webhooks')
 @RequireStoreRoles('owner', 'manager')
-@UseGuards(StoreRoleGuard)
+// API e webhooks: do plano Multi para cima
+@UseGuards(StoreRoleGuard, PlanFeatureGuard)
+@RequiresPlanFeatures('API_ACCESS')
 export class WebhooksController {
   constructor(private readonly webhooksService: WebhooksService) {}
 

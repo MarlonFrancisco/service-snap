@@ -9,24 +9,31 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import { RequireStoreRoles, StoreAccessGuard, StoreRoleGuard } from '../guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  RequireStoreRoles,
+  StoreAccessGuard,
+  StoreRoleGuard,
+} from '../guards';
 import { SaveLoyaltyProgramDto } from './dto/loyalty.dto';
 import { LoyaltyService } from './loyalty.service';
 
 /** A regra fica com dono e gerente; progresso e resgate, com a equipe. */
 @Controller('partner/stores/:storeId')
+@RequiresPlanFeatures('LOYALTY_ACCESS')
 export class LoyaltyController {
   constructor(private readonly loyaltyService: LoyaltyService) {}
 
   @Get('loyalty-program')
-  @UseGuards(StoreAccessGuard)
+  @UseGuards(StoreAccessGuard, PlanFeatureGuard)
   getProgram(@Param('storeId') storeId: string) {
     return this.loyaltyService.getProgram(storeId);
   }
 
   @Put('loyalty-program')
   @RequireStoreRoles('owner', 'manager')
-  @UseGuards(StoreRoleGuard)
+  @UseGuards(StoreRoleGuard, PlanFeatureGuard)
   saveProgram(
     @Param('storeId') storeId: string,
     @Body() dto: SaveLoyaltyProgramDto,
@@ -35,7 +42,7 @@ export class LoyaltyController {
   }
 
   @Get('customers/:customerId/loyalty')
-  @UseGuards(StoreAccessGuard)
+  @UseGuards(StoreAccessGuard, PlanFeatureGuard)
   getProgress(
     @Param('storeId') storeId: string,
     @Param('customerId', ParseUUIDPipe) customerId: string,
@@ -45,7 +52,7 @@ export class LoyaltyController {
 
   /** Resgate fora do fechamento (ex.: brinde entregue no balcão). */
   @Post('loyalty-rewards/:id/redeem')
-  @UseGuards(StoreAccessGuard)
+  @UseGuards(StoreAccessGuard, PlanFeatureGuard)
   redeem(
     @Param('storeId') storeId: string,
     @Param('id', ParseUUIDPipe) id: string,

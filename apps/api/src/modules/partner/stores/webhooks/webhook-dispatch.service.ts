@@ -18,6 +18,7 @@ import {
 } from '../../../public-api/public-api.helpers';
 import { QueueService } from '../../../queue/queue.service';
 import type { TQueueAttempt } from '../../../queue/queue.types';
+import { PlanFeatureGuard } from '../guards/plan-feature.guard';
 import { Schedule } from '../schedule/schedule.entity';
 import { WebhookDelivery } from './webhook-delivery.entity';
 import { WebhookEndpoint } from './webhook-endpoint.entity';
@@ -52,6 +53,7 @@ export class WebhookDispatchService implements OnModuleInit {
     private readonly scheduleRepository: Repository<Schedule>,
     private readonly configService: ConfigService,
     private readonly queueService: QueueService,
+    private readonly planFeatureGuard: PlanFeatureGuard,
   ) {}
 
   onModuleInit() {
@@ -105,6 +107,14 @@ export class WebhookDispatchService implements OnModuleInit {
         event: JSON.stringify([event]),
       })
       .getMany();
+
+    if (!endpoints.length) return;
+
+    // Webhooks a partir do Multi: num plano abaixo, os endpoints ficam parados
+    const missing = await this.planFeatureGuard.getMissingFeatures(storeId, [
+      'API_ACCESS',
+    ]);
+    if (missing.length) return;
 
     const deliveries = await Promise.all(
       endpoints.map((endpoint) =>

@@ -1,6 +1,7 @@
 import { Column, Entity, Index, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../database/base.entity';
 import { User } from '../users/user.entity';
+import type { TPlanModules } from '../../utils/helpers/subscription.helpers';
 import type { TSubscriptionStatus } from './subscription.types';
 
 @Entity('subscriptions')
@@ -29,7 +30,8 @@ export class Subscription extends BaseEntity {
   currentPeriodStart: Date;
 
   @Column({ type: 'jsonb', nullable: true })
-  features: {
+  /** Gravadas antes dos módulos por plano, as linhas não têm `TPlanModules`. */
+  features: Partial<TPlanModules> & {
     PRO_LIMIT: number;
     RANK_TIER: 'TIER_1' | 'TIER_2' | 'TIER_3';
     SMS_REMINDER: boolean;

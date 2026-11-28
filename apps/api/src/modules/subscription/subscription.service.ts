@@ -19,6 +19,7 @@ import {
   getSubscriptionIdFromInvoice,
   isSelfServePlan,
   normalizeSubscriptionMetadata,
+  resolvePlanSlug,
 } from '../../utils';
 import { isUniqueViolation } from '../../utils/helpers/database.helpers';
 import { formatCurrency } from '../../utils/helpers/format.helpers';
@@ -405,7 +406,10 @@ export class SubscriptionService {
         currentPeriodEnd: stripeSubscription.ended_at
           ? new Date(stripeSubscription.ended_at * 1000)
           : dto.currentPeriodEnd,
-        features: normalizeSubscriptionMetadata(productDetails.metadata),
+        features: normalizeSubscriptionMetadata(
+          productDetails.metadata,
+          resolvePlanSlug(productDetails),
+        ),
       },
     );
 

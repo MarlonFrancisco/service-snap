@@ -9,14 +9,21 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import { RequireStoreRoles, StoreRoleGuard } from '../guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  RequireStoreRoles,
+  StoreRoleGuard,
+} from '../guards';
 import { ApiKeysService } from './api-keys.service';
 import { CreateApiKeyDto } from './dto/create-api-key.dto';
 
 /** Chave de API dá acesso à agenda inteira: só dono e gerente mexem. */
 @Controller('partner/stores/:storeId/api-keys')
 @RequireStoreRoles('owner', 'manager')
-@UseGuards(StoreRoleGuard)
+// API e webhooks: do plano Multi para cima
+@UseGuards(StoreRoleGuard, PlanFeatureGuard)
+@RequiresPlanFeatures('API_ACCESS')
 export class ApiKeysController {
   constructor(private readonly apiKeysService: ApiKeysService) {}
 
