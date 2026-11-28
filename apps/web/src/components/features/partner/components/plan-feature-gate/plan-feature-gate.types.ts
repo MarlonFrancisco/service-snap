@@ -10,6 +10,11 @@ export type TPlanFeatureFlag = keyof Pick<
   | 'DASHBOARD_OPERATIONAL_ACCESS'
   | 'DASHBOARD_CUSTOMERS_ACCESS'
   | 'WHATSAPP_INTEGRATION'
+  | 'COMMISSIONS_ACCESS'
+  | 'AUDIT_LOG_ACCESS'
+  | 'LOYALTY_ACCESS'
+  | 'CAMPAIGNS_ACCESS'
+  | 'API_ACCESS'
 >;
 
 export type TLockedModuleId =
@@ -18,7 +23,12 @@ export type TLockedModuleId =
   | 'operational'
   | 'customers'
   | 'whatsappReminders'
-  | 'whatsappIntegration';
+  | 'whatsappIntegration'
+  | 'commissions'
+  | 'auditLog'
+  | 'loyalty'
+  | 'campaigns'
+  | 'integrations';
 
 export type TLockedModulePreview = 'metrics' | 'chart' | 'heatmap' | 'form';
 

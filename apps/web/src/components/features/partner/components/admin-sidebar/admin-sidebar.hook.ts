@@ -23,14 +23,18 @@ import type {
  */
 const getNavItemsWithAccess = (
   features: TPlanFeatures | undefined,
+  isOwner: boolean,
 ): TNavItem[] =>
   PARTNER_NAV_ITEMS.map<TNavItem>((item) => {
-    const isLocked = !hasPlanAccess(item.requires, features);
+    // Gerente usa o plano do dono: quem confere é a API
+    const canUse = (requires: TNavItem['requires']) =>
+      !isOwner || hasPlanAccess(requires, features);
+    const isLocked = !canUse(item.requires);
     if (item.kind === 'link') return { ...item, isLocked };
 
     const children = item.children.map((child) => ({
       ...child,
-      isLocked: isLocked || !hasPlanAccess(child.requires, features),
+      isLocked: isLocked || !canUse(child.requires),
     }));
 
     return {
@@ -54,14 +58,15 @@ export const useAdminSidebar = ({ onNavigate }: TUseAdminSidebarConfig) => {
   const features = currentPlan?.features;
 
   const searchParams = useSearchParams();
-  const { isProfessional } = useAgendaMemberRole();
+  const { isProfessional, role } = useAgendaMemberRole();
+  const isOwner = role === 'owner';
 
   const items = useMemo<TNavItem[]>(
     () =>
       isProfessional
         ? [...PROFESSIONAL_NAV_ITEMS]
-        : getNavItemsWithAccess(features),
-    [isProfessional, features],
+        : getNavItemsWithAccess(features, isOwner),
+    [isProfessional, features, isOwner],
   );
 
   // Os itens do profissional dividem a rota da agenda e mudam só o `painel`.

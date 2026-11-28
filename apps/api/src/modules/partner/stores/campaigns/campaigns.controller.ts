@@ -10,7 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import { RequireStoreRoles, StoreRoleGuard } from '../guards';
+import {
+  PlanFeatureGuard,
+  RequiresPlanFeatures,
+  RequireStoreRoles,
+  StoreRoleGuard,
+} from '../guards';
 import { CampaignsService } from './campaigns.service';
 import {
   CreateCampaignDto,
@@ -20,11 +25,13 @@ import {
 /** Campanha fala em nome da loja com a base toda: só dono e gerente. */
 @Controller('partner/stores/:storeId')
 @RequireStoreRoles('owner', 'manager')
-@UseGuards(StoreRoleGuard)
+// Campanhas a partir do Equipe; o opt-out do cliente fica aberto em todo plano
+@UseGuards(StoreRoleGuard, PlanFeatureGuard)
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 
   @Get('campaigns/inactive-customers')
+  @RequiresPlanFeatures('CAMPAIGNS_ACCESS')
   inactiveCustomers(
     @Param('storeId') storeId: string,
     @Query() { days }: InactiveCustomersQueryDto,
@@ -36,11 +43,13 @@ export class CampaignsController {
   }
 
   @Get('campaigns')
+  @RequiresPlanFeatures('CAMPAIGNS_ACCESS')
   list(@Param('storeId') storeId: string) {
     return this.campaignsService.list(storeId);
   }
 
   @Get('campaigns/:id')
+  @RequiresPlanFeatures('CAMPAIGNS_ACCESS')
   findOne(
     @Param('storeId') storeId: string,
     @Param('id', ParseUUIDPipe) id: string,
@@ -48,8 +57,9 @@ export class CampaignsController {
     return this.campaignsService.findOne(storeId, id);
   }
 
-  /** O plano só pesa no WhatsApp: o serviço confere conforme o canal. */
+  /** O canal WhatsApp pede mais o plano com WhatsApp: o serviço confere. */
   @Post('campaigns')
+  @RequiresPlanFeatures('CAMPAIGNS_ACCESS')
   create(
     @Param('storeId') storeId: string,
     @CurrentUser('sub') userId: string,

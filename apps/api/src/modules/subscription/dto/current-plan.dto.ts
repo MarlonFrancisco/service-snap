@@ -163,7 +163,10 @@ export class CurrentPlanDto {
       ? product.marketing_features.map((f) => f.name || '')
       : [];
 
-    dto.features = normalizeSubscriptionMetadata(product.metadata);
+    dto.features = normalizeSubscriptionMetadata(
+      product.metadata,
+      dto.planSlug,
+    );
     dto.subscriptionStatus = subscription.status;
     dto.currentPeriodStart = new Date(subscription.current_period_start * 1000);
     dto.currentPeriodEnd = new Date(subscription.current_period_end * 1000);

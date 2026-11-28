@@ -22,6 +22,8 @@ interface ProductMetadata {
 }
 
 // Espelha o que está no Stripe (live e teste). TRIAL_PERIOD_DAYS só vale no preço mensal.
+// Os módulos por plano (comissões, fidelidade, API...) não vêm do metadata: estão em
+// `PLAN_MODULES` (`utils/helpers/subscription.helpers.ts`); aqui só o texto de venda.
 // Rodar primeiro em modo de teste; no live só com aprovação do Marlon (#22).
 const productsMetadata: ProductMetadata[] = [
   {
@@ -47,6 +49,7 @@ const productsMetadata: ProductMetadata[] = [
       { name: '1 Loja' },
       { name: '1 Profissional' },
       { name: 'Lembretes automáticos por e-mail' },
+      { name: 'Caixa, pacotes e anamnese' },
       { name: 'Ranqueamento Padrão' },
       { name: 'Suporte E-mail/FAQ' },
     ],
@@ -77,6 +80,8 @@ const productsMetadata: ProductMetadata[] = [
       { name: 'Lembretes automáticos por e-mail' },
       { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
       { name: 'Dashboard Geral' },
+      { name: 'Comissões e histórico de ações da equipe' },
+      { name: 'Fidelidade e campanhas para clientes inativos' },
       { name: 'Ranqueamento Prioritário' },
       { name: 'Suporte Chat/E-mail' },
     ],
@@ -107,6 +112,7 @@ const productsMetadata: ProductMetadata[] = [
       { name: 'Lembretes automáticos por e-mail' },
       { name: 'Lembretes automáticos via WhatsApp (tarifas da Meta à parte)' },
       { name: 'Analytics Completo' },
+      { name: 'Tudo do Equipe, mais API e webhooks' },
       { name: 'Ranqueamento Máximo' },
       { name: 'Suporte Prioritário' },
     ],

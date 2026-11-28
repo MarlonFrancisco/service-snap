@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,6 +12,11 @@ import {
   getStoreToday,
 } from '../../../../utils/helpers/store-date.helpers';
 import { Service } from '../category/service/service.entity';
+import {
+  PLAN_FEATURE_REQUIRED,
+  PLAN_FEATURE_REQUIRED_MESSAGE,
+  PlanFeatureGuard,
+} from '../guards/plan-feature.guard';
 import { Store } from '../store.entity';
 import type { SaveLoyaltyProgramDto } from './dto/loyalty.dto';
 import { LoyaltyProgram } from './loyalty-program.entity';
@@ -33,7 +39,17 @@ export class LoyaltyService {
     private readonly serviceRepository: Repository<Service>,
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
+    private readonly planFeatureGuard: PlanFeatureGuard,
   ) {}
+
+  /** Fidelidade a partir do Equipe: fora dele não conta visitas nem resgata. */
+  private async hasLoyaltyAccess(storeId: string) {
+    const missing = await this.planFeatureGuard.getMissingFeatures(storeId, [
+      'LOYALTY_ACCESS',
+    ]);
+
+    return missing.length === 0;
+  }
 
   getProgram(storeId: string) {
     return this.programRepository.findOne({
@@ -99,12 +115,13 @@ export class LoyaltyService {
     storeId: string,
     customerId: string,
   ): Promise<TLoyaltyProgress | null> {
-    const [program, store] = await Promise.all([
+    const [program, store, hasAccess] = await Promise.all([
       this.getProgram(storeId),
       this.storeRepository.findOneBy({ id: storeId }),
+      this.hasLoyaltyAccess(storeId),
     ]);
 
-    if (!program) return null;
+    if (!program || !hasAccess) return null;
 
     const today = getStoreToday(store);
     const visits = await this.countVisits(program, storeId, customerId);
@@ -148,6 +165,16 @@ export class LoyaltyService {
     customerId: string | null,
     userId: string,
   ): Promise<LoyaltyReward> {
+    if (!(await this.hasLoyaltyAccess(storeId))) {
+      throw new ForbiddenException({
+        statusCode: 403,
+        error: 'Forbidden',
+        code: PLAN_FEATURE_REQUIRED,
+        message: PLAN_FEATURE_REQUIRED_MESSAGE,
+        missingFeatures: ['LOYALTY_ACCESS'],
+      });
+    }
+
     const reward = await manager.findOne(LoyaltyReward, {
       where: { id: rewardId, store: { id: storeId } },
       relations: ['customer', 'rewardService', 'store'],

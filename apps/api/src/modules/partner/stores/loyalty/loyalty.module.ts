@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Service } from '../category/service/service.entity';
+import { PlanFeatureGuard } from '../guards';
 import { StoreGuardsModule } from '../guards/store-guards.module';
 import { Store } from '../store.entity';
 import { LoyaltyProgram } from './loyalty-program.entity';
@@ -14,7 +15,7 @@ import { LoyaltyService } from './loyalty.service';
     StoreGuardsModule,
   ],
   controllers: [LoyaltyController],
-  providers: [LoyaltyService],
+  providers: [LoyaltyService, PlanFeatureGuard],
   exports: [LoyaltyService],
 })
 export class LoyaltyModule {}

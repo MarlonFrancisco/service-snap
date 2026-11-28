@@ -52,6 +52,7 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         id: 'management-commissions',
         label: 'Comissões',
         href: '/partner/comissoes',
+        requires: ['COMMISSIONS_ACCESS'],
       },
       {
         id: 'management-packages',
@@ -62,11 +63,13 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         id: 'management-loyalty',
         label: 'Fidelidade',
         href: '/partner/fidelidade',
+        requires: ['LOYALTY_ACCESS'],
       },
       {
         id: 'management-campaigns',
         label: 'Campanhas',
         href: '/partner/campanhas',
+        requires: ['CAMPAIGNS_ACCESS'],
       },
       {
         id: 'management-anamnesis',
@@ -182,6 +185,7 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
         id: 'integrations-api',
         label: 'API e webhooks',
         href: '/partner/integracoes',
+        requires: ['API_ACCESS'],
       },
       {
         id: 'integrations-calendar',
@@ -201,6 +205,7 @@ export const PARTNER_NAV_ITEMS: readonly TNavItem[] = [
     label: 'Histórico de ações',
     icon: ShieldCheck,
     href: '/partner/historico-de-acoes',
+    requires: ['AUDIT_LOG_ACCESS'],
   },
 ];
 

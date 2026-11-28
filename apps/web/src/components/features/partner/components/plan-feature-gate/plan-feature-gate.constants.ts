@@ -8,8 +8,9 @@ import type {
 
 /**
  * Plano mais barato que libera cada recurso, pelo slug estável (`plan_slug` no
- * Stripe), nunca pelo nome visível. Espelha o metadata dos produtos em
- * `apps/api/src/scripts/update-stripe-products-metadata.ts`.
+ * Stripe), nunca pelo nome visível. Os painéis e o WhatsApp espelham o metadata
+ * em `apps/api/src/scripts/update-stripe-products-metadata.ts`; os outros
+ * módulos, o `PLAN_MODULES` de `apps/api/src/utils/helpers/subscription.helpers.ts`.
  */
 export const MIN_PLAN_BY_FEATURE: Record<TPlanFeatureFlag, TPlanSlug> = {
   DASHBOARD_GENERAL_ACCESS: 'team',
@@ -17,6 +18,11 @@ export const MIN_PLAN_BY_FEATURE: Record<TPlanFeatureFlag, TPlanSlug> = {
   DASHBOARD_SALES_ACCESS: 'multi',
   DASHBOARD_OPERATIONAL_ACCESS: 'multi',
   DASHBOARD_CUSTOMERS_ACCESS: 'multi',
+  COMMISSIONS_ACCESS: 'team',
+  AUDIT_LOG_ACCESS: 'team',
+  LOYALTY_ACCESS: 'team',
+  CAMPAIGNS_ACCESS: 'team',
+  API_ACCESS: 'multi',
 };
 
 const PLAN_ORDER: readonly TPlanSlug[] = [
@@ -105,6 +111,61 @@ export const LOCKED_MODULES: Record<TLockedModuleId, TLockedModule> = {
     ],
     preview: 'form',
     priceNote: META_PRICE_NOTE,
+  },
+  commissions: {
+    requires: ['COMMISSIONS_ACCESS'],
+    title: 'As comissões não estão no seu plano',
+    lead: 'Faça o upgrade para calcular automaticamente o que cada profissional tem a receber.',
+    benefits: [
+      'Regras por profissional e por serviço',
+      'Relatório do período pronto para pagar a equipe',
+      'Cada profissional vê as próprias comissões',
+    ],
+    preview: 'chart',
+  },
+  auditLog: {
+    requires: ['AUDIT_LOG_ACCESS'],
+    title: 'O histórico de ações não está no seu plano',
+    lead: 'Faça o upgrade para saber quem da equipe fez cada alteração na loja.',
+    benefits: [
+      'Quem criou, mudou ou cancelou cada agendamento',
+      'Filtros por pessoa, tipo de registro e período',
+      'Registro de cada ação da equipe na loja',
+    ],
+    preview: 'form',
+  },
+  loyalty: {
+    requires: ['LOYALTY_ACCESS'],
+    title: 'A fidelidade não está no seu plano',
+    lead: 'Faça o upgrade para premiar quem volta e trazer clientes de volta mais vezes.',
+    benefits: [
+      'Recompensa automática a cada número de visitas',
+      'Progresso de cada cliente na ficha',
+      'Resgate da recompensa no fechamento da comanda',
+    ],
+    preview: 'metrics',
+  },
+  campaigns: {
+    requires: ['CAMPAIGNS_ACCESS'],
+    title: 'As campanhas não estão no seu plano',
+    lead: 'Faça o upgrade para chamar de volta os clientes que pararam de agendar.',
+    benefits: [
+      'Lista de clientes sem visita há um tempo',
+      'Envio por e-mail, e por WhatsApp no mesmo plano',
+      'Respeita quem pediu para não receber',
+    ],
+    preview: 'form',
+  },
+  integrations: {
+    requires: ['API_ACCESS'],
+    title: 'A API e os webhooks não estão no seu plano',
+    lead: 'Faça o upgrade para ligar a agenda da sua loja aos seus outros sistemas.',
+    benefits: [
+      'Chaves de API para ler e criar agendamentos',
+      'Webhooks a cada agendamento novo, alterado ou cancelado',
+      'Histórico de entregas com reenvio',
+    ],
+    preview: 'form',
   },
 };
 

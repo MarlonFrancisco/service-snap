@@ -13,6 +13,13 @@ import { ScheduleController } from '../schedule/schedule.controller';
 import { BlockedTimeController } from '../store-member/blocked-time/blocked-time.controller';
 import { StoreMemberController } from '../store-member/store-member.controller';
 import { TeamController } from '../team/team.controller';
+import { ApiKeysController } from '../api-keys/api-keys.controller';
+import { AuditLogsController } from '../audit-logs/audit-logs.controller';
+import { CampaignsController } from '../campaigns/campaigns.controller';
+import { CommissionsController } from '../commissions/commissions.controller';
+import { LoyaltyController } from '../loyalty/loyalty.controller';
+import { WebhooksController } from '../webhooks/webhooks.controller';
+import { PLAN_FEATURES_KEY, PlanFeatureGuard } from './plan-feature.guard';
 import { StoreAccessGuard } from './store-access.guard';
 import { REQUIRED_ROLES_KEY, StoreRoleGuard } from './store-role.guard';
 
@@ -32,7 +39,42 @@ const methodsOf = (controller: TController) =>
     (name) => name !== 'constructor',
   );
 
+const planFeaturesOf = (controller: TController, method: string) =>
+  Reflect.getMetadata(
+    PLAN_FEATURES_KEY,
+    controller.prototype[method as never] as object,
+  ) ?? Reflect.getMetadata(PLAN_FEATURES_KEY, controller);
+
 describe('partner store routes', () => {
+  // Matriz de acesso por plano: a flag e o guard em todas as rotas do módulo
+  it.each([
+    [CommissionsController, 'COMMISSIONS_ACCESS'],
+    [AuditLogsController, 'AUDIT_LOG_ACCESS'],
+    [LoyaltyController, 'LOYALTY_ACCESS'],
+    [ApiKeysController, 'API_ACCESS'],
+    [WebhooksController, 'API_ACCESS'],
+  ])('%o requires %s on every route', (controller, flag) => {
+    for (const method of methodsOf(controller)) {
+      const guards = guardsOf(controller, method);
+
+      expect(guards, method).toContain(PlanFeatureGuard);
+      // O plano só é lido depois do acesso à loja
+      expect(guards.indexOf(PlanFeatureGuard), method).toBeGreaterThan(0);
+      expect(planFeaturesOf(controller, method), method).toEqual([flag]);
+    }
+  });
+
+  it('keeps the customer marketing opt-out open on every plan', () => {
+    expect(planFeaturesOf(CampaignsController, 'optOut')).toBeUndefined();
+    expect(planFeaturesOf(CampaignsController, 'optIn')).toBeUndefined();
+    for (const method of ['inactiveCustomers', 'list', 'findOne', 'create']) {
+      expect(guardsOf(CampaignsController, method)).toContain(PlanFeatureGuard);
+      expect(planFeaturesOf(CampaignsController, method), method).toEqual([
+        'CAMPAIGNS_ACCESS',
+      ]);
+    }
+  });
+
   it.each([
     [CategoryController],
     [ServiceController],
