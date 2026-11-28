@@ -11,6 +11,7 @@ const subscription = vi.hoisted(() => ({
   isGettingCurrentPlan: false,
 }));
 const plansQuery = vi.hoisted(() => ({ enabled: undefined as unknown }));
+const memberRole = vi.hoisted(() => ({ role: 'owner' as string }));
 
 vi.mock('@repo/ui', () => ({
   cn: (...classes: unknown[]) => classes.filter(Boolean).join(' '),
@@ -20,6 +21,9 @@ vi.mock('@/utils/fonts/plus-jakarta-sans', () => ({
 }));
 vi.mock('@/hooks/use-query/use-subscription-query', () => ({
   useSubscriptionQuery: () => subscription,
+}));
+vi.mock('@/hooks/partner/use-agenda-member-role', () => ({
+  useAgendaMemberRole: () => memberRole,
 }));
 vi.mock('@/hooks/use-query/use-plans-query', () => ({
   usePlansQuery: ({ enabled }: { enabled: boolean }) => {
@@ -65,6 +69,18 @@ describe('plan access rules', () => {
     ).toBe('multi');
     expect(getMinPlanSlug(['WHATSAPP_INTEGRATION'], features({}))).toBe('team');
   });
+
+  it('follows the plan matrix for the retention and integration modules', () => {
+    for (const flag of [
+      'COMMISSIONS_ACCESS',
+      'AUDIT_LOG_ACCESS',
+      'LOYALTY_ACCESS',
+      'CAMPAIGNS_ACCESS',
+    ] as const) {
+      expect(getMinPlanSlug([flag], features({})), flag).toBe('team');
+    }
+    expect(getMinPlanSlug(['API_ACCESS'], features({}))).toBe('multi');
+  });
 });
 
 describe('PlanFeatureGate', () => {
@@ -88,6 +104,7 @@ describe('PlanFeatureGate', () => {
     root = createRoot(container);
     subscription.isGettingCurrentPlan = false;
     plansQuery.enabled = undefined;
+    memberRole.role = 'owner';
   });
 
   afterEach(() => {
@@ -142,5 +159,36 @@ describe('PlanFeatureGate', () => {
     );
 
     expect(text()).toBe('');
+  });
+
+  // A assinatura é do dono; gerente e profissional dependem do que a API decidir
+  it.each(['manager', 'professional'])(
+    'does not lock the module for a %s',
+    (role) => {
+      memberRole.role = role;
+      subscription.currentPlan = undefined;
+
+      render(
+        <PlanFeatureGate module="commissions">
+          <p>Comissões</p>
+        </PlanFeatureGate>,
+      );
+
+      expect(text()).toBe('Comissões');
+    },
+  );
+
+  it('locks commissions for an owner on Solo', () => {
+    onPlan('Solo', {});
+
+    render(
+      <PlanFeatureGate module="commissions">
+        <p>Comissões</p>
+      </PlanFeatureGate>,
+    );
+
+    expect(container.querySelector('h2')?.textContent).toBe(
+      'As comissões não estão no seu plano',
+    );
   });
 });

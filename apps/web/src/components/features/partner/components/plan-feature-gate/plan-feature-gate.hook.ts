@@ -1,5 +1,6 @@
 'use client';
 
+import { useAgendaMemberRole } from '@/hooks/partner/use-agenda-member-role';
 import { usePlansQuery } from '@/hooks/use-query/use-plans-query';
 import { useSubscriptionQuery } from '@/hooks/use-query/use-subscription-query';
 import { useAnalytics } from '@/providers/analytics.provider';
@@ -11,13 +12,36 @@ import {
   LOCKED_MODULES,
   PLAN_DISPLAY_NAME,
 } from './plan-feature-gate.constants';
-import type { TUsePlanFeatureGateConfig } from './plan-feature-gate.types';
+import type {
+  TPlanFeatureFlag,
+  TUsePlanFeatureGateConfig,
+} from './plan-feature-gate.types';
+
+/**
+ * Gerente e profissional entram pelo plano do dono, sem assinatura própria: a
+ * API confere esse plano (`PlanFeatureGuard`), então o painel não bloqueia.
+ */
+export const usePlanFeatureAccess = (
+  requires: readonly TPlanFeatureFlag[] | undefined,
+) => {
+  const { currentPlan, isGettingCurrentPlan } = useSubscriptionQuery();
+  const { role } = useAgendaMemberRole();
+  const isOwner = role === 'owner';
+
+  return {
+    currentPlan,
+    isOwner,
+    hasAccess: !isOwner || hasPlanAccess(requires, currentPlan?.features),
+    isLoading: isOwner && isGettingCurrentPlan && !currentPlan,
+  };
+};
 
 export const usePlanFeatureGate = ({ module }: TUsePlanFeatureGateConfig) => {
   const lockedModule = LOCKED_MODULES[module];
-  const { currentPlan, isGettingCurrentPlan } = useSubscriptionQuery();
+  const { currentPlan, hasAccess, isLoading } = usePlanFeatureAccess(
+    lockedModule.requires,
+  );
   const features = currentPlan?.features;
-  const hasAccess = hasPlanAccess(lockedModule.requires, features);
   const minPlanSlug = hasAccess
     ? undefined
     : getMinPlanSlug(lockedModule.requires, features);
@@ -28,7 +52,6 @@ export const usePlanFeatureGate = ({ module }: TUsePlanFeatureGateConfig) => {
   const minPlan = minPlanSlug
     ? plans?.month.find((plan) => plan.slug === minPlanSlug)
     : undefined;
-  const isLoading = isGettingCurrentPlan && !currentPlan;
   const currentPlanId = currentPlan?.planId;
 
   const analytics = useAnalytics();

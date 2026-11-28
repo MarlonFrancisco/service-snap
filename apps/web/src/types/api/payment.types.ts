@@ -51,6 +51,12 @@ export interface IMySubscription {
     DASHBOARD_SALES_ACCESS: boolean;
     DASHBOARD_OPERATIONAL_ACCESS: boolean;
     DASHBOARD_CUSTOMERS_ACCESS: boolean;
+    /** Módulos por plano, decididos na API pelo `planSlug`. */
+    COMMISSIONS_ACCESS: boolean;
+    AUDIT_LOG_ACCESS: boolean;
+    LOYALTY_ACCESS: boolean;
+    CAMPAIGNS_ACCESS: boolean;
+    API_ACCESS: boolean;
   };
   subscriptionStatus: 'active' | 'inactive';
   currentPeriodStart: Date;

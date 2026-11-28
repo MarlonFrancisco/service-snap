@@ -5,6 +5,7 @@ import { useAuditLogsQuery } from '@/hooks/partner/use-audit-logs-query';
 import { useStoreMembersQuery } from '@/hooks/use-query/use-store-members-query/use-store-members-query.hook';
 import { useCallback, useMemo } from 'react';
 import { useCustomersAccess } from '../../../customers-module/customers-module.hook';
+import { usePlanFeatureAccess } from '../../../plan-feature-gate';
 import { getMemberLabel, toAuditLogRow } from '../../audit-logs-module.helpers';
 import {
   useAuditLogFilters,
@@ -12,6 +13,8 @@ import {
   useAuditLogSelection,
 } from '../../audit-logs-module.hook';
 import type { TAuditActorOption } from '../../audit-logs-module.types';
+
+const API_FEATURE = ['API_ACCESS'] as const;
 
 /** Histórico da loja ativa: só dono e gerente (a API devolve 403 aos demais). */
 export const useStoreAuditLogs = () => {
@@ -32,8 +35,13 @@ export const useStoreAuditLogs = () => {
     storeId,
     enabled: canQuery,
   });
-  // Ação de integração mostra o nome da chave, não só "Chave de API"
-  const { apiKeys } = useApiKeysQuery({ storeId, enabled: canQuery });
+  // Ação de integração mostra o nome da chave, não só "Chave de API"; sem a API
+  // no plano a lista de chaves daria 403
+  const { hasAccess: hasApiAccess } = usePlanFeatureAccess(API_FEATURE);
+  const { apiKeys } = useApiKeysQuery({
+    storeId,
+    enabled: canQuery && hasApiAccess,
+  });
 
   const actorOptions = useMemo<TAuditActorOption[]>(
     () =>

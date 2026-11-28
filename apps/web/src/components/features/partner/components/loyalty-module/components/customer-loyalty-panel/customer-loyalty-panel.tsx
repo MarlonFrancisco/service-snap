@@ -16,8 +16,11 @@ import {
   RETENTION_SMALL_BUTTON_CLASS,
   RETENTION_TEXT_CLASS,
 } from '../../../packages-module/packages-module.styles';
+import { usePlanFeatureAccess } from '../../../plan-feature-gate';
 import { useCustomerLoyaltyPanel } from './customer-loyalty-panel.hook';
 import type { TCustomerLoyaltyPanelConfig } from './customer-loyalty-panel.types';
+
+const LOYALTY_FEATURE = ['LOYALTY_ACCESS'] as const;
 
 const DOT_CLASS =
   'grid size-11 place-items-center rounded-full text-sm font-extrabold';
@@ -30,6 +33,13 @@ const DOT_STATE_CLASS = {
 
 /** Progresso e recompensas na ficha do cliente. Para montar na ficha: `{ customerId }`. */
 export const CustomerLoyaltyPanel = (config: TCustomerLoyaltyPanelConfig) => {
+  const { hasAccess } = usePlanFeatureAccess(LOYALTY_FEATURE);
+
+  // Fora do plano a ficha não mostra (nem busca) a fidelidade
+  return hasAccess ? <CustomerLoyaltyPanelContent {...config} /> : null;
+};
+
+const CustomerLoyaltyPanelContent = (config: TCustomerLoyaltyPanelConfig) => {
   const titleId = useId();
   const {
     title,
