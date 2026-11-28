@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   addMinutesToTime,
+  buildBookingConfirmation,
   buildSchedulePayload,
   getBookingTotals,
   getLocalDateKey,
@@ -96,5 +97,55 @@ describe('buildSchedulePayload', () => {
   it('sends the resolved professional and the local date', () => {
     expect(payload.storeMember).toEqual({ id: 'p1' });
     expect(payload.date).toBe('2026-11-03');
+  });
+});
+
+describe('buildBookingConfirmation', () => {
+  const appointment = (id: string, startTime: string, anamnesis = null) =>
+    ({
+      id,
+      date: '2026-11-03',
+      startTime,
+      endTime: addMinutesToTime(startTime, 30),
+      anamnesis,
+    }) as never;
+
+  it('keeps the health form links, in service order', () => {
+    const confirmation = buildBookingConfirmation({
+      appointments: [
+        appointment('s2', '10:30', {
+          url: 'https://app.test/anamnese/b',
+          expiresAt: '2026-11-05T00:00:00Z',
+          forms: [{ id: 'f2', name: 'Ficha capilar' }],
+        } as never),
+        appointment('s1', '10:00', {
+          url: 'https://app.test/anamnese/a',
+          expiresAt: '2026-11-05T00:00:00Z',
+          forms: [
+            { id: 'f1', name: 'Ficha geral' },
+            { id: 'f3', name: 'Alergias' },
+          ],
+        } as never),
+      ],
+      services: [makeService('cut')],
+      date: DATE,
+      fallbackProfessionalName: 'Qualquer profissional',
+    });
+
+    expect(confirmation.anamnesisLinks).toEqual([
+      { url: 'https://app.test/anamnese/a', label: 'Ficha geral, Alergias' },
+      { url: 'https://app.test/anamnese/b', label: 'Ficha capilar' },
+    ]);
+  });
+
+  it('has no links when the store asks for no form', () => {
+    const confirmation = buildBookingConfirmation({
+      appointments: [appointment('s1', '10:00')],
+      services: [makeService('cut')],
+      date: DATE,
+      fallbackProfessionalName: 'Qualquer profissional',
+    });
+
+    expect(confirmation.anamnesisLinks).toEqual([]);
   });
 });

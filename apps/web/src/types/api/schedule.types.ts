@@ -26,7 +26,18 @@ export interface IAppointment {
   store: IStore;
   /** Visita a que o serviço pertence: os serviços dela andam e cancelam juntos. */
   booking?: { id: string; source?: TBookingSource } | null;
+  /**
+   * Ficha de saúde que o próprio cliente recebe ao agendar. Só vem na resposta
+   * de quem agendou para si; a reserva pede cada ficha num serviço só.
+   */
+  anamnesis?: TAppointmentAnamnesisLink | null;
 }
+
+export type TAppointmentAnamnesisLink = {
+  url: string;
+  expiresAt: string;
+  forms: { id: string; name: string }[];
+};
 
 export type TBookingSource = 'customer' | 'store' | 'whatsapp';
 
