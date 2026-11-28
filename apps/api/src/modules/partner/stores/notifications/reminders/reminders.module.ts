@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { NotificationModule } from '../../../../notification/notification.module';
+import { AnamnesisModule } from '../../anamnesis/anamnesis.module';
 import { PlanFeatureGuard } from '../../guards';
 import { StoreGuardsModule } from '../../guards/store-guards.module';
 import { Schedule } from '../../schedule/schedule.entity';
@@ -20,6 +21,7 @@ import { ScheduleReminder } from './schedule-reminder.entity';
     StoreGuardsModule,
     WhatsappModule,
     WhatsappConsentModule,
+    AnamnesisModule,
   ],
   controllers: [RemindersController],
   providers: [RemindersService, CronSecretGuard, PlanFeatureGuard],

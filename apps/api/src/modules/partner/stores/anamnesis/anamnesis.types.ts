@@ -38,3 +38,11 @@ export type TAnamnesisInvite = {
   }[];
   consentText: string;
 };
+
+/** Link que o cliente recebe sozinho, ligado ao serviço que pede as fichas. */
+export type TAnamnesisCustomerLink = {
+  scheduleId: string;
+  url: string;
+  expiresAt: Date;
+  forms: { id: string; name: string }[];
+};

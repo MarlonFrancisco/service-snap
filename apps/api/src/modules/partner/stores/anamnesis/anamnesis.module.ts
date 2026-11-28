@@ -21,5 +21,6 @@ import { AnamnesisService } from './anamnesis.service';
   ],
   controllers: [AnamnesisController, AnamnesisPublicController],
   providers: [AnamnesisService],
+  exports: [AnamnesisService],
 })
 export class AnamnesisModule {}

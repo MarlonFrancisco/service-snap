@@ -3,6 +3,7 @@ import { signHmac } from '../../../../utils/helpers/crypto.helpers';
 import type {
   TAnamnesisAnswers,
   TAnamnesisAnswerValue,
+  TAnamnesisCustomerLink,
   TAnamnesisField,
 } from './anamnesis.types';
 
@@ -110,3 +111,12 @@ export const formAppliesTo = (
 ) =>
   !form.serviceIds.length ||
   serviceIds.some((serviceId) => form.serviceIds.includes(serviceId));
+
+/** Um botão por link no e-mail, com o nome das fichas que ele abre. */
+export const toAnamnesisEmailLinks = (
+  links: Pick<TAnamnesisCustomerLink, 'url' | 'forms'>[],
+) =>
+  links.map(({ url, forms }) => ({
+    url,
+    label: forms.map(({ name }) => name).join(', '),
+  }));

@@ -42,13 +42,18 @@ export type TScheduleReminderEmail = TScheduleCustomerEmail & {
   manageLink: string;
   /** Só para quem recebe WhatsApp da loja: o link para deixar de receber (#37). */
   whatsappOptOutLink?: string | null;
+  anamnesisLinks?: TAnamnesisEmailLink[];
 };
 
 export type TScheduleConfirmedEmail = TScheduleCustomerEmail & {
   price: string;
   calendarLink: string;
   manageLink: string;
+  anamnesisLinks?: TAnamnesisEmailLink[];
 };
+
+/** Ficha de saúde que o cliente preenche antes do atendimento. */
+export type TAnamnesisEmailLink = { url: string; label: string };
 
 export type TScheduleChangedEmail = TScheduleCustomerEmail & {
   previousSchedule?: string;

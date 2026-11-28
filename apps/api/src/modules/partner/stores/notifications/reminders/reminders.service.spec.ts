@@ -111,6 +111,7 @@ const setup = (
     hasConsent: vi.fn().mockResolvedValue(hasConsent),
     findOptOutLink: vi.fn().mockResolvedValue(null),
   };
+  const anamnesis = { customerLinks: vi.fn().mockResolvedValue([]) };
   const service = new RemindersService(
     { createQueryBuilder: () => builder } as never,
     reminders as never,
@@ -120,6 +121,7 @@ const setup = (
     whatsapp as never,
     planFeatureGuard as never,
     consent as never,
+    anamnesis as never,
   );
 
   return {

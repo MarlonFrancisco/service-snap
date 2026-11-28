@@ -11,6 +11,8 @@ import { NotificationService } from '../../../notification/notification.service'
 import { QueueService } from '../../../queue/queue.service';
 import type { TQueueJob, TQueueJobMap } from '../../../queue/queue.types';
 import { PushService } from '../../../push/push.service';
+import { AnamnesisService } from '../anamnesis/anamnesis.service';
+import { toAnamnesisEmailLinks } from '../anamnesis/anamnesis.helpers';
 import { NotificationsHistory } from '../notifications/history/history.entity';
 import { NotificationsHistoryService } from '../notifications/history/history.service';
 import { WebhookDispatchService } from '../webhooks/webhook-dispatch.service';
@@ -62,6 +64,7 @@ export class ScheduleNotificationsService implements OnModuleInit {
     private readonly queueService: QueueService,
     private readonly scheduleEvents: ScheduleEventsService,
     private readonly pushService: PushService,
+    private readonly anamnesisService: AnamnesisService,
   ) {}
 
   onModuleInit() {
@@ -171,6 +174,14 @@ export class ScheduleNotificationsService implements OnModuleInit {
 
   private async confirmBooking(schedules: Schedule[]) {
     const [first] = schedules;
+    // Só vai no e-mail quando há e-mail: o link do cliente não fica à toa no log
+    const anamnesisLinks = first.user?.email
+      ? toAnamnesisEmailLinks(
+          await this.anamnesisService.customerLinks(
+            schedules.map(({ id }) => id),
+          ),
+        )
+      : [];
 
     await this.notifyCustomer(
       first,
@@ -180,10 +191,10 @@ export class ScheduleNotificationsService implements OnModuleInit {
         message: `Agendamento criado para ${formatScheduleMoment(first)}`,
       },
       (email) =>
-        this.notificationService.scheduleConfirmation(
-          email,
-          buildBookingConfirmationData(schedules, this.frontendUrl),
-        ),
+        this.notificationService.scheduleConfirmation(email, {
+          ...buildBookingConfirmationData(schedules, this.frontendUrl),
+          anamnesisLinks,
+        }),
     );
   }
 

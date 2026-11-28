@@ -9,6 +9,8 @@ import {
 } from '../../../../../utils/helpers/schedule.helpers';
 import { getStoreTimezone } from '../../../../../utils/helpers/region.helpers';
 import { NotificationService } from '../../../../notification/notification.service';
+import { toAnamnesisEmailLinks } from '../../anamnesis/anamnesis.helpers';
+import { AnamnesisService } from '../../anamnesis/anamnesis.service';
 import { PlanFeatureGuard } from '../../guards';
 import {
   buildCustomerEmailData,
@@ -93,6 +95,7 @@ export class RemindersService {
     private readonly whatsappService: WhatsappService,
     private readonly planFeatureGuard: PlanFeatureGuard,
     private readonly consentService: WhatsappConsentService,
+    private readonly anamnesisService: AnamnesisService,
   ) {}
 
   /** Um canal com erro não impede o outro de sair na mesma execução. */
@@ -502,6 +505,12 @@ export class RemindersService {
       customMessage:
         schedule.store.notificationsSettings?.emailReminderCustomMessage,
       manageLink: `${this.configService.get<string>('FRONTEND_URL')}/profile`,
+      // Quem já respondeu não recebe a ficha de novo
+      anamnesisLinks: toAnamnesisEmailLinks(
+        await this.anamnesisService.customerLinks([schedule.id], {
+          onlyPending: true,
+        }),
+      ),
     });
   }
 

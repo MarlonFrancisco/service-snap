@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   GoneException,
   Injectable,
+  Logger,
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -30,7 +31,11 @@ import {
   normalizeFields,
   validateAnswers,
 } from './anamnesis.helpers';
-import type { TAnamnesisAnswers, TAnamnesisInvite } from './anamnesis.types';
+import type {
+  TAnamnesisAnswers,
+  TAnamnesisCustomerLink,
+  TAnamnesisInvite,
+} from './anamnesis.types';
 import type {
   CreateAnamnesisFormDto,
   SubmitAnamnesisDto,
@@ -46,6 +51,8 @@ type TViewer = {
 
 @Injectable()
 export class AnamnesisService {
+  private readonly logger = new Logger(AnamnesisService.name);
+
   constructor(
     @InjectRepository(AnamnesisForm)
     private readonly formRepository: Repository<AnamnesisForm>,
@@ -116,16 +123,30 @@ export class AnamnesisService {
       throw new BadRequestException('No anamnesis form for this service');
     }
 
-    const expiresAt = new Date(
-      `${addDaysToDateKey(toDateKey(schedule.date), 2)}T00:00:00Z`,
-    );
-    const token = createSignedToken(this.linkSecret, schedule.id, expiresAt);
+    return this.buildLink(schedule, forms);
+  }
 
-    return {
-      url: `${this.configService.get<string>('FRONTEND_URL')}/anamnese/${token}`,
-      expiresAt,
-      forms: forms.map(({ id, name }) => ({ id, name })),
-    };
+  /**
+   * Links que o cliente recebe ao agendar, no e-mail de confirmação e no
+   * lembrete. A reserva com vários serviços pede cada ficha uma vez só, no
+   * primeiro serviço que a pede. Com `onlyPending`, ficha já respondida em
+   * qualquer serviço da reserva sai da lista. Falha aqui nunca derruba o
+   * agendamento nem o aviso: sem link, o profissional ainda envia pelo painel.
+   */
+  async customerLinks(
+    scheduleIds: string[],
+    { onlyPending = false }: { onlyPending?: boolean } = {},
+  ): Promise<TAnamnesisCustomerLink[]> {
+    try {
+      return await this.findCustomerLinks(scheduleIds, onlyPending);
+    } catch (error) {
+      this.logger.error(
+        `Links de anamnese dos agendamentos ${scheduleIds.join(', ')}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      return [];
+    }
   }
 
   /** O que a página pública mostra. Sem nenhuma resposta já enviada. */
@@ -281,6 +302,101 @@ export class AnamnesisService {
     return { id };
   }
 
+  private async findCustomerLinks(
+    scheduleIds: string[],
+    onlyPending: boolean,
+  ): Promise<TAnamnesisCustomerLink[]> {
+    // Sem chave de cifra não há como guardar respostas: não há o que oferecer
+    if (!scheduleIds.length || !this.hasKey) return [];
+
+    const requested = await this.scheduleRepository.find({
+      where: { id: In(scheduleIds) },
+      relations: ['booking'],
+    });
+    const bookingIds = [
+      ...new Set(requested.map((s) => s.booking?.id).filter(Boolean)),
+    ];
+    const schedules = (
+      await this.scheduleRepository.find({
+        where: [
+          { id: In(scheduleIds) },
+          ...(bookingIds.length ? [{ booking: { id: In(bookingIds) } }] : []),
+        ],
+        relations: ['store', 'service', 'booking'],
+        order: { date: 'ASC', startTime: 'ASC' },
+      })
+    ).filter((schedule) => schedule.status !== 'cancelled' && schedule.store);
+
+    if (!schedules.length) return [];
+
+    const storeIds = [...new Set(schedules.map((s) => s.store.id))];
+    const forms = await this.formRepository.find({
+      where: { store: { id: In(storeIds) }, isActive: true },
+      relations: ['store'],
+      order: { name: 'ASC' },
+    });
+
+    if (!forms.length) return [];
+
+    const visitOf = (schedule: Schedule) => schedule.booking?.id ?? schedule.id;
+    const visitBySchedule = new Map(schedules.map((s) => [s.id, visitOf(s)]));
+    const answered = new Set<string>();
+
+    if (onlyPending) {
+      const responses = await this.responseRepository.find({
+        where: { schedule: { id: In([...visitBySchedule.keys()]) } },
+        relations: ['form', 'schedule'],
+      });
+
+      responses.forEach((response) => {
+        if (!response.form || !response.schedule) return;
+        answered.add(
+          `${visitBySchedule.get(response.schedule.id)}:${response.form.id}`,
+        );
+      });
+    }
+
+    const seen = new Set<string>();
+    const links: TAnamnesisCustomerLink[] = [];
+
+    schedules.forEach((schedule) => {
+      const owned = forms.filter((form) => {
+        if (form.store?.id !== schedule.store.id) return false;
+        if (!formAppliesTo(form, schedule.service ? [schedule.service.id] : []))
+          return false;
+
+        const key = `${visitOf(schedule)}:${form.id}`;
+
+        if (seen.has(key)) return false;
+        seen.add(key);
+
+        return !answered.has(key);
+      });
+
+      if (owned.length) {
+        links.push({
+          scheduleId: schedule.id,
+          ...this.buildLink(schedule, owned),
+        });
+      }
+    });
+
+    return links;
+  }
+
+  private buildLink(schedule: Schedule, forms: AnamnesisForm[]) {
+    const expiresAt = new Date(
+      `${addDaysToDateKey(toDateKey(schedule.date), 2)}T00:00:00Z`,
+    );
+    const token = createSignedToken(this.linkSecret, schedule.id, expiresAt);
+
+    return {
+      url: `${this.configService.get<string>('FRONTEND_URL')}/anamnese/${token}`,
+      expiresAt,
+      forms: forms.map(({ id, name }) => ({ id, name })),
+    };
+  }
+
   private async scheduleFromToken(token: string) {
     const scheduleId = readSignedToken(this.linkSecret, token);
 
@@ -345,6 +461,12 @@ export class AnamnesisService {
     }
 
     return key;
+  }
+
+  private get hasKey() {
+    return !!parseEncryptionKey(
+      this.configService.get<string>('DATA_ENCRYPTION_KEY'),
+    );
   }
 
   private get linkSecret() {
