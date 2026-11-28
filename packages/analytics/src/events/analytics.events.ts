@@ -539,7 +539,12 @@ export type TPaywallModule =
   | 'operational'
   | 'customers'
   | 'whatsappReminders'
-  | 'whatsappIntegration';
+  | 'whatsappIntegration'
+  | 'commissions'
+  | 'auditLog'
+  | 'loyalty'
+  | 'campaigns'
+  | 'integrations';
 
 export type TPlanLimitType = 'stores' | 'professionals';
 
